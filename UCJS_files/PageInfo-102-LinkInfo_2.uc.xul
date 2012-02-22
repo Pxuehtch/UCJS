@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<!--
+// @note Through encodeURIComponent().
+<?xml-stylesheet href="data:text/css,
+@namespace url('http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul');
+@namespace html url('http://www.w3.org/1999/xhtml');
+#linkTab{list-style-image:url('resource:///chrome/toolkit/skin/classic/mozapps/extensions/localeGeneric.png')!important;}
+#linktree-index{text-align:right;}
+" type="text/css"?>
+ -->
+
+<?xml-stylesheet href="data:text/css,
+%40namespace%20url('http%3A%2F%2Fwww.mozilla.org%2Fkeymaster%2Fgatekeeper%2Fthere.is.only.xul')%3B%40namespace%20html%20url('http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml')%3B%23linkTab%7Blist-style-image%3Aurl('resource%3A%2F%2F%2Fchrome%2Ftoolkit%2Fskin%2Fclassic%2Fmozapps%2Fextensions%2FlocaleGeneric.png')!important%3B%7D%23linktree-index%7Btext-align%3Aright%3B%7D
+" type="text/css"?>
+
+<overlay id="ucjs_pageInfo_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<!--
+// ==UserScript==
+// @name LinkInfo.uc.xul
+// @description Link information xul
+// @include chrome://browser/content/pageinfo/pageInfo.xul
+// ==/UserScript==
+ -->
+
+<radiogroup id="viewGroup">
+  <radio id="linkTab" label="リンク" accesskey="L"
+    oncommand="ucjsLinkInfo.init();showTab('link');"/>
+</radiogroup>
+
+<deck id="mainDeck">
+  <vbox id="linkPanel">
+    <tree id="linktree" flex="1"
+      contextmenu="picontext"
+      ondraggesture="window.onBeginLinkDrag(event,'linktree-address','linktree-name')"
+      ondblclick="ucjsLinkInfo.openLink(event);">
+      <treecols>
+        <treecol id="linktree-index" label="#"
+          persist="hidden" style="min-width:2em;"/>
+        <splitter class="tree-splitter"/>
+        <treecol id="linktree-name" label="名前"
+          persist="hidden width" width="5" flex="5"/>
+        <splitter class="tree-splitter"/>
+        <treecol id="linktree-address" label="URI"
+          persist="hidden width" width="7" flex="7"/>
+        <splitter class="tree-splitter"/>
+        <treecol id="linktree-type" label="タイプ"
+          persist="hidden width" width="2" flex="2"/>
+        <splitter class="tree-splitter"/>
+        <treecol id="linktree-target" label="ターゲット"
+          persist="hidden width" width="2" flex="2" hidden="true"/>
+        <splitter class="tree-splitter"/>
+        <treecol id="linktree-accesskey" label="アクセスキー"
+          persist="hidden width" width="2" hidden="true"/>
+      </treecols>
+      <treechildren flex="1"/>
+    </tree>
+  </vbox>
+</deck>
+
+</overlay>
