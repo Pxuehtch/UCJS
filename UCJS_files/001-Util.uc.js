@@ -117,7 +117,7 @@ function setEventListener(aData) {
   }, false);
 }
 
-function getSelectionAtCursol(aOption) {
+function getSelectionAtCursor(aOption) {
   var {event} = aOption || {};
 
   var targetWindow, rangeParent, rangeOffset;
@@ -760,7 +760,7 @@ function log(aMsg)
 
 return {
   setEventListener: setEventListener,
-  getSelectionAtCursol: getSelectionAtCursol,
+  getSelectionAtCursor: getSelectionAtCursor,
   getFocusedWindow: getFocusedWindow,
   getFocusedDocument: getFocusedDocument,
   createNode: createNode,

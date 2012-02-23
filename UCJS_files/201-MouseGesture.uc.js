@@ -637,7 +637,7 @@ function GestureManager() {
   function getDragInfo(aEvent) {
     var type = '', data = '';
 
-    var text = getSelectionAtCursol({event: aEvent});
+    var text = getSelectionAtCursor({event: aEvent});
     if (text) {
       type = kGestureSign.text;
       data = text;
@@ -961,8 +961,8 @@ function U(aStr)
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
 
-function getSelectionAtCursol(aOption)
-  ucjsUtil.getSelectionAtCursol(aOption);
+function getSelectionAtCursor(aOption)
+  ucjsUtil.getSelectionAtCursor(aOption);
 
 function loadPage(aURL)
   ucjsUtil.loadPage(aURL);

@@ -156,7 +156,7 @@ function getAvailableItems() {
 
   var {onLink, onImage, onTextInput, linkURL, mediaURL} = gContextMenu;
   var pageURL = gBrowser.currentURI.spec;
-  var selection = getSelectionAtCursol();
+  var selection = getSelectionAtCursor();
   var onPlainTextLink = selection && !onLink && linkURL;
 
   kServices.forEach(function(service) {
@@ -263,8 +263,8 @@ function setEvent(aURL, aMenuitem) {
 function U(aStr)
   ucjsUtil.convertForSystem(aStr);
 
-function getSelectionAtCursol()
-  ucjsUtil.getSelectionAtCursol();
+function getSelectionAtCursor()
+  ucjsUtil.getSelectionAtCursor();
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
