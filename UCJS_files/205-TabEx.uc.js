@@ -743,7 +743,7 @@ function closeReadTabs(aOption) {
   var tabs = wholeScan ? gBrowser.tabs : getVisibleTabs(gBrowser.tabs);
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
-    if (!tab.hasAttribute(kID.READ)) {
+    if (tab.hasAttribute(kID.READ)) {
       gBrowser.removeTab(tab);
     }
   }
