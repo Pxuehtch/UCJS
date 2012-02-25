@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @require [for actions] Util.uc.js, NaviLink.uc.js, WebService.uc.js, UI.uc.js
+// @require [for gesture command] Util.uc.js, NaviLink.uc.js, TabEx.uc.js, WebService.uc.js, UI.uc.js
 
 
 (function() {
@@ -144,6 +144,13 @@ const kGestureSet = [
     name: '強制的にタブを閉じる',
     command: function() {
       gBrowser.removeCurrentTab({ucjsForceClose: true});
+    }
+  },
+  {
+    gestures: ['DRL'],
+    name: '既読のタブを閉じる',
+    command: function() {
+      ucjsTabEx.closeReadTabs();
     }
   },
   {
