@@ -138,7 +138,7 @@ const kTypeAction = {
   text:     ['viewPageSource', 'viewFrameSource', 'viewLinkSource'],
   mail:     ['sendMail'],
   news:     ['readNews'],
-  media:    ['viewLinkMedia', 'openMedia'],
+  media:    ['openLinkMedia', 'openMedia'],
   image:    ['viewLinkImage', 'viewImage', 'viewBGImage'],
   download: ['downloadLink', 'downloadMedia', 'downloadImage', 'downloadBGImage'],
   ftp:      ['openFTP']
@@ -182,7 +182,7 @@ const kBundle = {
     viewLinkSource:  'View Link Source in %1',
     sendMail:        'Send Email in %1',
     readNews:        'Read News in %1',
-    viewLinkMedia:   'View Linked Media in %1',
+    openLinkMedia:   'Open Linked Media in %1',
     viewLinkImage:   'View Linked Image in %1',
     openMedia:       'Open Media in %1',
     viewImage:       'View Image in %1',
@@ -406,7 +406,7 @@ function getAvailableActions() {
     } else if (gFileType.matchExt(URL, 'image')) {
       actions.push('viewLinkImage');
     } else if (gFileType.matchExt(URL, 'media')) {
-      actions.push('viewLinkMedia');
+      actions.push('openLinkMedia');
     }
 
     if (/^https?:/.test(URL)) {
@@ -479,7 +479,7 @@ function doAction(aApp, aAction) {
       break;
     case 'openFile':
     case 'viewLinkSource':
-    case 'viewLinkMedia':
+    case 'openLinkMedia':
     case 'viewLinkImage':
       URL = gContextMenu.linkURL;
       save = true;
