@@ -1,10 +1,12 @@
 // ==UserScript==
 // @name ScriptList.uc.js
-// @description userChrome.js_extension user script list viewer.
+// @description List viewer of user scripts for userChromeJS extension.
 // @include main
 // ==/UserScript==
 
 // @require userChrome.js with ucjsScriptLoader.
+// @require Util.uc.js
+// @usage At a menuitem in 'tools' of the main menu.
 // @note Exports a property in global window. (ucjsScriptList.XXX) see ScriptList_init.
 
 
