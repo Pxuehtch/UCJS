@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require userChrome.js with ucjsScriptLoader.
-// @note Some properties is exported in global window. (ucjsScriptList.XXX)
+// @note Exports a property in global window. (ucjsScriptList.XXX) see ScriptList_init.
 
 
 (function() {
@@ -41,42 +41,54 @@ const kUIBundle = {
 };
 
 
-// Main.
+// Functions.
 
-var gScriptLoader = window.ucjsScriptLoader;
-if (gScriptLoader) {
-  createMenu();
-  // Exports in global scope.
-  window.ucjsScriptList = ScriptListPanel();
+/**
+ * Main function.
+ * @note Exports 'ucjsScriptList' in global scope.
+ */
+function ScriptList_init() {
+  if (ucjsScriptLoader) {
+    let scripts = getScripts(ucjsScriptLoader);
+
+    createMenu(scripts);
+
+    // Exports.
+    window.ucjsScriptList = ScriptListPanel(scripts);
+  }
 }
 
-
-// Modules.
-
-function getScriptData(aIndex) {
-  const {jscripts, overlays} = gScriptLoader.scriptList;
+/**
+ * Handler of scripts list.
+ * @param aScriptLoader {hash}
+ * @return {hash}
+ *   @member count {number}
+ *   @member data {function}
+ */
+function getScripts(aScriptLoader) {
+  const {jscripts, overlays} = aScriptLoader.scriptList;
   var data = jscripts.concat(overlays);
-  return aIndex >= 0 ? data[aIndex] : data;
-}
 
-function getScriptCount() {
-  const {jscripts, overlays} = gScriptLoader.scriptList;
-  return jscripts.concat(overlays).length;
+  return {
+    count: data.length,
+    data: function(aIndex) aIndex >= 0 ? data[aIndex] : data,
+  };
 }
 
 /**
  * Create menu in menu-bar.
+ * @param aScripts {hash} scripts data handler.
  */
-function createMenu() {
+function createMenu(aScripts) {
   const {menu: kMenuUI} = kUIBundle;
 
   var menu = $ID('menu_ToolsPopup').appendChild($E('menu', {
     id: kMenuUI.id,
-    label: F(kMenuUI.label, {'COUNT': getScriptCount()}),
+    label: F(kMenuUI.label, {'COUNT': aScripts.count}),
     accesskey: kMenuUI.accesskey
   }));
 
-  if (getScriptCount()) {
+  if (aScripts.count) {
     menu.appendChild($E('menupopup')).appendChild($E('menuitem', {
       label: kMenuUI.selectLabel,
       accesskey: kMenuUI.selectAccesskey,
@@ -93,11 +105,12 @@ function createMenu() {
 
 /**
  * ScriptListPanel handler.
+ * @param aScripts {hash} scripts data handler.
  * @return {hash}
  *   @member open {function}
  *   @member close {function}
  */
-function ScriptListPanel() {
+function ScriptListPanel(aScripts) {
   const {panel: kPanelUI} = kUIBundle;
 
   makePanel();
@@ -142,7 +155,7 @@ function ScriptListPanel() {
     treeCols.appendChild($E('treecol', {label: 'Folder', flex: 1, style: 'min-width:15em;'}));
 
     var treeChildren = treeView.appendChild($E('treechildren'));
-    getScriptData().forEach(function(script, i) {
+    aScripts.data().forEach(function(script, i) {
       var treeRow = treeChildren.appendChild($E('treeitem')).appendChild($E('treerow'));
       treeRow.appendChild($E('treecell', {
         label: i + 1
@@ -190,9 +203,9 @@ function ScriptListPanel() {
 
     getScriptInfoCaption().label = F(kPanelUI.scriptInfoCaption, {
       'SELECTED': index + 1,
-      'COUNT': getScriptCount()
+      'COUNT': aScripts.count
     });
-    getScriptInfoBox().value = getScriptData(index).getMetaList();
+    getScriptInfoBox().value = aScripts.data(index).getMetaList();
   }
 
   function open() {
@@ -285,6 +298,11 @@ function str4ui(aStr)
 
 function log(aMsg)
   ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
+
+
+// Entry point.
+
+ScriptList_init();
 
 
 })();
