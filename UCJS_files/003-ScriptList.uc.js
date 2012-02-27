@@ -286,14 +286,10 @@ function F(aForm, aAttribute) {
 }
 
 /**
- * Converts 2-byte characters into UTF-16 in order to properly display UI.
- * @param aData {string}|{hash}
+ * String converter for UI display.
+ * @param aData {hash}
  */
 function U(aData) {
-  if (typeof aData === 'string') {
-    return str4ui(aData);
-  }
-
   for (let i in aData) {
     aData[i] = str4ui(aData[i]);
   }
