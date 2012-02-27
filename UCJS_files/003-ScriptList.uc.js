@@ -8,10 +8,16 @@
 // @note Exports a property in global window. (ucjsScriptList.XXX) see ScriptList_init.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
+
+
+/**
+ * Required modules.
+ */
+const {ucjsScriptLoader, ucjsUtil} = window;
 
 
 /**
@@ -305,4 +311,4 @@ function log(aMsg)
 ScriptList_init();
 
 
-})();
+})(this);
