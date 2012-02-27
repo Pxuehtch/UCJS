@@ -273,6 +273,11 @@ function $E(aTagOrNode, aAttribute) {
   return element;
 }
 
+/**
+ * String formatter.
+ * @param aForm {string}
+ * @param aAttribute {hash}
+ */
 function F(aForm, aAttribute) {
   for (let [name, value] in Iterator(aAttribute)) {
     aForm = aForm.replace('%' + name + '%', String(value));
