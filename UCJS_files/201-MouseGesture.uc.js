@@ -147,21 +147,21 @@ const kGestureSet = [
     }
   },
   {
-    gestures: ['DRL'],
+    gestures: ['S&DRL'],
     name: '既読のタブを閉じる',
     command: function() {
       ucjsTabEx.closeReadTabs();
     }
   },
   {
-    gestures: ['DRU'],
+    gestures: ['S&DRU'],
     name: '他のタブを閉じる',
     command: function() {
       gBrowser.removeAllTabsBut(gBrowser.mCurrentTab);
     }
   },
   {
-    gestures: ['DRUL'],
+    gestures: ['S&DRUL'],
     name: 'ホームだけにする',
     command: function() {
       openHomePages(true);
