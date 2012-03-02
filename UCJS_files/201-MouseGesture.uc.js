@@ -222,7 +222,6 @@ const kGestureSet = [
     name: 'Google翻訳',
     command: function(aParam) {
       ucjsWebService.open({name: 'GoogleTranslation', data: aParam.data});
-      //ucjsWebService.open({name: 'ExciteTranslationEnToJp', data: aParam.data});
     }
   },
   {
