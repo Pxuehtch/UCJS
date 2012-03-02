@@ -794,7 +794,12 @@ function GestureManager() {
 
   function doAction() {
     if (mMatchItem) {
-      mMatchItem.command({gesture: buildGesture(), data: mData});
+      try {
+        mMatchItem.command({gesture: buildGesture(), data: mData});
+      } catch (e) {
+        setTimeout(function() displayStatus('Gesture: Command error!'), 0);
+        log('Command error: ' + toString() + '\n' + e);
+      }
     }
   }
 
