@@ -133,8 +133,9 @@ const kNoisyURLs = [
  * @param name {string}
  * @param include {regExp|string}|{array of (regexp|string)} {string}:exact match.
  * @param exclude {regexp|string}|{Array of (regexp|string)} [optional]
- * @param wait {integer} [optional] If you do not have to wait to build the DOM, set to 0.
- *   e.g. The command only changes the location.
+ * @param wait {integer} [optional] Millisecond waiting time after document loaded.
+ *   If you do not have to wait for DOM build, set to 0.
+ *   e.g. command only changes the location.
  * @param command {function}
  */
 const kSiteList = [
