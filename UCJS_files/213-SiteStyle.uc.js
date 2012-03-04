@@ -128,7 +128,7 @@ const kNoisyURLs = [
   /^https:\/\/addons\.mozilla\.\w+\/firefox\/details/,
   /^https:\/\/chrome\.google\.com\/webstore\/detail/,
   /^https:\/\/market\.android\.com\/details\?id=/,
-  /^https:\/\/itunes\.apple\.com\/\w+\/app/,
+  /^https:\/\/itunes\.apple\.com\/\w+\/app/
   //,
 ];
 
@@ -153,7 +153,7 @@ const kSiteList = [
     // @WORKAROUND When page is loaded from page navigation or related searches in Google result,
     // I need to wait for DOM build.
     wait: 500,
-    command: function (aDocument) {
+    command: function(aDocument) {
       /**
        * |-li.g (Each item)
        *   |-div.vsc
@@ -306,7 +306,6 @@ const kSiteList = [
       aDocument);
     }
   },
-
   {
     name: 'GoogleImage Result',
     include: [
@@ -315,18 +314,17 @@ const kSiteList = [
       /^http:\/\/images\.google\.(?:com|co\.jp)\/.*q=/
     ],
     wait: 0,
-    command: function (aDocument) {
+    command: function(aDocument) {
       // switch to the old mode.
       if (aDocument.URL.indexOf('&sout=1') < 0) {
         aDocument.location.replace(aDocument.URL + '&sout=1');
       }
     }
   },
-
   {
     name: 'Yahoo!JAPAN Result',
     include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
-    command: function (aDocument) {
+    command: function(aDocument) {
       /**
        * li (Each item)
        * *
@@ -399,11 +397,10 @@ const kSiteList = [
       aDocument);
     }
   },
-
   {
     name: 'bing Result',
     include: /^http:\/\/www\.bing\.com\/search/,
-    command: function (aDocument) {
+    command: function(aDocument) {
       // Page styles.
       setStyleSheet('\
         /* multi-column */\
@@ -424,11 +421,10 @@ const kSiteList = [
       aDocument);
     }
   },
-
   {
     name: 'Wikipedia Article',
     include: /^http:\/\/[a-z]+?\.wikipedia\.org\/wiki/,
-    command: function (aDocument) {
+    command: function(aDocument) {
       // Page styles.
       setStyleSheet('\
         /* popup reference */\
@@ -448,12 +444,11 @@ const kSiteList = [
       aDocument);
     }
   },
-
   {
     name: 'Youtube Player',
     include: /^http:\/\/(?:www\.)?youtube\.com\/(?:watch|user)/,
     exclude: /&list=/,
-    command: function (aDocument) {
+    command: function(aDocument) {
       preventAutoplay();
 
       function preventAutoplay() {
