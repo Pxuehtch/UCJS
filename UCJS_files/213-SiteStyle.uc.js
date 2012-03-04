@@ -143,84 +143,118 @@ const kSiteList = [
     include: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:search|webhp|#).*q=/,
     // image, shopping, place, realtime, recent, wonderwheel, timeline
     exclude: /&tb[ms]=[^&]*(?:isch|shop|plcs|rltm|mbl|ww|tl)/,
+    // @WORKAROUND When page is loaded from page navigation or related searches in Google result,
+    // I need to wait for DOM build.
+    wait: 500,
     command: function (aDocument) {
-      // Each result items.
-      // |-div.vsc
-      //   |-h3.r
-      //     |-a.l
+      /**
+       * |-li.g (Each item)
+       *   |-div.vsc
+       *     *
+       *     |-h3.r
+       *       |-a.l
+       *
+       * --- Old style
+       * table#mn
+       * *
+       * |-li.g, blockquote (Each item)
+       *   *
+       *   |-h3.r
+       *     |-a
+       */
 
       var lastHeaderText = null;
       var lastDomain = null;
 
       // skip items in same domain block and realtime block.
-      Array.forEach(aDocument.querySelectorAll('.vsc:not(.sld)>.r:not(.hcw)>a.l'),
-        function(link) {
-          // remove onmousedown event.
-          link.removeAttribute('onmousedown');
+      const kLinkSelector = '.vsc:not(.sld)>.r:not(.hcw)>a.l,.r>a';
+      Array.forEach(aDocument.querySelectorAll(kLinkSelector), function(a) {
+        normalizeURL(a);
 
-          // weaken noisy URL.
-          kNoisyURLs.some(function(URL) {
-            if (URL.test(link.href)) {
-              weaken(link);
-              return true;
-            }
-            return false;
-          });
-
-          // weaken same header text item.
-          if (link.text === lastHeaderText) {
-            weaken(link);
-          } else {
-            lastHeaderText = link.text;
+        // weaken noisy URL.
+        kNoisyURLs.some(function(URL) {
+          if (URL.test(a.href)) {
+            weaken(a);
+            return true;
           }
+          return false;
+        });
 
-          // emphasize same domain item.
-          var domain = link.hostname;
-          if (domain === lastDomain) {
-            link.parentNode.style.fontSize = 'small';
-          } else {
-            lastDomain = domain;
+        // emphasize same domain item.
+        var domain = a.hostname;
+        if (domain === lastDomain) {
+          let cite = a.parentNode.parentNode.getElementsByTagName('cite')[0];
+          if (cite) {
+            cite.title = 'Ditto';
+            cite.classList.add('ucjs_sitestyle_samedomain');
           }
+        } else {
+          lastDomain = domain;
         }
-      );
+      });
 
-      function weaken(link) {
-        link.title = link.href;
-        link.parentNode.style.fontSize = 'small';
+      function normalizeURL(a) {
+        a.removeAttribute('onmousedown');
 
-        var header = link.parentNode;
-        Array.forEach(header.parentNode.children,
-          function(child) {
-            if (child !== header) {
-              child.style.display = 'none';
-              child.style.visibility = 'collapse';
-            }
-          }
-        );
+        var url = /google\./.test(a.hostname) && /^\/url$/.test(a.pathname) &&
+          /[&?]q=([^&]+)/.exec(a.search);
+        if (url) {
+          a.href = decodeURIComponent(url[1]);
+        }
+      }
+
+      function weaken(a) {
+        var li = $X1('ancestor::li[contains(concat(" ",normalize-space(@class)," "), " g ")]', a);
+        if (li) {
+          li.classList.add('ucjs_sitestyle_weaken');
+        }
       }
 
       // Page styles.
       setStyleSheet('\
-        /* WORKAROUND: disable pseudo link underline. */\
+        /* @note ucjs_XXX is custom class */\
+        .ucjs_sitestyle_samedomain::before\
+        {\
+          content:">";\
+          font-weight:bold;\
+          color:red;\
+          margin-right:2px;\
+        }\
+        .ucjs_sitestyle_weaken h3\
+        {\
+          font-size:small!important;\
+        }\
+        .ucjs_sitestyle_weaken\
+        {\
+          opacity:.3!important;\
+        }\
+        .ucjs_sitestyle_weaken:hover\
+        {\
+          opacity:1!important;\
+        }\
+        /* @WORKAROUND disable pseudo link underline. */\
         h3 a\
         {\
           border-bottom:none!important;\
         }\
-        /* WORKAROUND: ensure visible typing. */\
+        /* @WORKAROUND ensure visible typing. */\
         input:focus\
         {\
           color:black!important;\
         }\
-        /* WORKAROUND: adjust position of predictions box. */\
+        /* @WORKAROUND adjust position of predictions box. */\
         #subform_ctrl, .ksfccl\
         {\
           margin-top:15px!important;\
         }\
-        /* hide parts. */\
-        #rhs, #rhscol /* right pane. */\
+        /* hidden parts. */\
+        /* right pane. */\
+        #rhs, #rhscol,\
+        /* brand thumbnail */\
+        img[id^="leftthumb"]\
         {\
-            display:none!important;\
-            visibility:collapse!important;\
+          display:none!important;\
+          visibility:collapse!important;\
         }\
         /* video items. */\
         #videobox>table>tbody>tr>td\
@@ -244,21 +278,10 @@ const kSiteList = [
         {\
           font-size:small!important;\
         }\
-        /* numbering */\
-        body\
-        {\
-          counter-reset:item;\
-        }\
-        .r::before\
-        {\
-          content:counter(item)". ";\
-          counter-increment:item;\
-          font-size:70%;\
-          color:gray;\
-        }\
         /* multi-column */\
-        #cnt, #res, .s\
+        #cnt, #res, .s, #mn\
         {\
+          width:auto!important;\
           max-width:100%!important;\
           margin:0!important;\
           padding:0!important;\
@@ -268,7 +291,7 @@ const kSiteList = [
           width:auto!important;\
           margin-right:0!important;\
         }\
-        h2.hd+div>ol\
+        h2.hd+div>ol, #mn #ires>ol\
         {\
           -moz-column-count:2;\
           -moz-column-gap:1em;\
@@ -613,6 +636,9 @@ function $ID(aID)
 
 function $E(aTagOrNode, aAttribute)
   ucjsUtil.createNode(aTagOrNode, aAttribute);
+
+function $X1(aXPath, aNode)
+  ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
 
 function U(aStr)
   ucjsUtil.convertForSystem(aStr);
