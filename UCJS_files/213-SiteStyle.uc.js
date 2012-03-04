@@ -399,12 +399,6 @@ const kSiteList = [
     command: function (aDocument) {
       // Page styles.
       setStyleSheet('\
-        /* ad-block */\
-        .sb_adsW, .sb_adsD, .sb_adsN\
-        {\
-          display:none!important;\
-          visibility:collapse!important;\
-        }\
         /* multi-column */\
         #content, .sa_cc\
         {\
@@ -413,7 +407,7 @@ const kSiteList = [
         }\
         #wg0\
         {\
-          -moz-column-width:30em;\
+          -moz-column-count:2;\
           -moz-column-gap:1em;\
         }\
         #wg0>li\
