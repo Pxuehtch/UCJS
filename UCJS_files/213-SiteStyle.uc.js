@@ -41,7 +41,7 @@ const kUI = {
  * @note cf. http://d.hatena.ne.jp/edvakf/20090723/1248365807
  */
 const kNoisyURLs = [
-  /^http:\/\/(?:a|b|r|mgw)\.hatena\.ne\.jp/,
+  /^http:\/\/b\.hatena\.ne\.jp\/entry/,
   /^http:\/\/d\.hatena\.ne\.jp\/keyword/,
   /^http:\/\/k\.hatena\.ne\.jp\/keywordblog/,
   /^http:\/\/(?:chiebukuro|bookmarks|psearch)\.yahoo\.co\.jp/,
@@ -93,7 +93,7 @@ const kNoisyURLs = [
   /^http:\/\/www\.tarikin\.net/,
   /^http:\/\/www\.twitmunin\.com/,
   /^http:\/\/www\.wdclip\.com/,
-  // Sites about okwave Q&A.
+  // About okwave Q&A.
   /^http:\/\/[\w\-\.]*okwave\.jp/,
   /^http:\/\/oshiete\d?\./,
   /^http:\/\/soudan\d?\./,
@@ -104,7 +104,7 @@ const kNoisyURLs = [
   /^http:\/\/questionbox\./,
   /^http:\/\/www\.mag2qa\.com/,
   /^http:\/\/ziddy\.japan\.zdnet\.com/,
-  // Proxy sites.
+  // Proxy.
   /^http:\/\/(?:www\.)?anticensure\.com/,
   /^http:\/\/(?:www\.)?autobypass\.com/,
   /^http:\/\/(?:www\.)?myproxysite\.org/,
@@ -117,12 +117,18 @@ const kNoisyURLs = [
   /^http:\/\/safesurf\.foxrot\.com/,
   /^http:\/\/takewii\.com/,
   /^http:\/\/tehvu\.ir/,
-  // Price comparison sites.
+  // Price comparison.
   /^http:\/\/3mori\.com/,
   /^http:\/\/(?:www\.)?amazon\.[\w-.]+?\/.+?\/dp/,
   /^http:\/\/(?:m|review)\.kakaku\.com/,
   /^http:\/\/(?:www\.)?kakaku\.[\w-.]+?\/item/,
-  /^http:\/\/[\w\-\.]+rakuten\.co\.jp/
+  /^http:\/\/[\w\-\.]+rakuten\.co\.jp/,
+  // Application market.
+  /^https:\/\/addons\.mozilla\.org\/\w+\/firefox\/addon/,
+  /^https:\/\/addons\.mozilla\.\w+\/firefox\/details/,
+  /^https:\/\/chrome\.google\.com\/webstore\/detail/,
+  /^https:\/\/market\.android\.com\/details\?id=/,
+  /^https:\/\/itunes\.apple\.com\/\w+\/app/,
   //,
 ];
 
