@@ -320,63 +320,59 @@ const kSiteList = [
     name: 'Yahoo!JAPAN Result',
     include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
     command: function (aDocument) {
-      // Each result items.
-      // *:item
-      // |-div.hd:header
-      //   |-h3
-      //     |-a:link
-      // |-*:body
+      /**
+       * li (Each item)
+       * *
+       * |-div.hd
+       *   |-h3
+       *     |-a
+       */
 
-      Array.forEach(aDocument.querySelectorAll('div.hd>h3>a'),
-        function(link) {
-          // weaken noisy URL.
-          kNoisyURLs.some(function(URL) {
-            if (URL.test(parseURL(link.href))) {
-              weaken(link);
-              return true;
-            }
-            return false;
-          });
-        }
-      );
+      const kLinkSelector = 'div.hd>h3>a';
+      Array.forEach(aDocument.querySelectorAll(kLinkSelector), function(a) {
+        normalizeURL(a);
 
-      function parseURL(aURL) {
-        try {
-          return decodeURIComponent(aURL.replace(/^.+?\/\*\-/, ''));
-        } catch (e) {
+        // weaken noisy URL.
+        kNoisyURLs.some(function(URL) {
+          if (URL.test(a.href)) {
+            weaken(a);
+            return true;
+          }
+          return false;
+        });
+      });
+
+      function normalizeURL(a) {
+        a.removeAttribute('onmousedown');
+
+        var url = /yahoo\./.test(a.hostname) && /^\/\*\-/.test(a.pathname) &&
+          /\/\*\-([^?]+)/.exec(a.pathname);
+        if (url) {
+          a.href = decodeURIComponent(url[1]);
         }
-        return '';
       }
 
-      function weaken(link) {
-        link.title = link.href;
-
-        var header = link.parentNode.parentNode;
-        header.style.fontSize = 'small';
-
-        Array.forEach(header.parentNode.children,
-          function(child) {
-            if (child !== header) {
-              child.style.display = 'none';
-              child.style.visibility = 'collapse';
-            }
-          }
-        );
+      function weaken(a) {
+        var li = $X1('ancestor::li', a);
+        if (li) {
+          li.classList.add('ucjs_sitestyle_weaken');
+        }
       }
 
       // Page styles.
       setStyleSheet('\
-        /* numbering */\
-        body\
+        /* @note ucjs_XXX is custom class */\
+        .ucjs_sitestyle_weaken h3\
         {\
-          counter-reset:item;\
+          font-size:small!important;\
         }\
-        div.hd>h3::before\
+        .ucjs_sitestyle_weaken\
         {\
-          content:counter(item)". ";\
-          counter-increment:item;\
-          font-size:70%;\
-          color:gray;\
+          opacity:.3!important;\
+        }\
+        .ucjs_sitestyle_weaken:hover\
+        {\
+          opacity:1!important;\
         }\
         /* multi-column */\
         #wrapper, .size2of3, #WS2m .w, .dd\
@@ -390,7 +386,7 @@ const kSiteList = [
         }\
         #WS2m>ul\
         {\
-          -moz-column-width:25em;\
+          -moz-column-count:2;\
           -moz-column-gap:1em;\
         }',
       aDocument);
