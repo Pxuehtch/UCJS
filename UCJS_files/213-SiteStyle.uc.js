@@ -447,13 +447,26 @@ const kSiteList = [
     include: /^http:\/\/(?:www\.)?youtube\.com\/(?:watch|user)/,
     exclude: /&list=/,
     command: function (aDocument) {
-      // Prevents autoplay.
-      var player = aDocument.getElementById('movie_player');
-      if (player) {
-        let flashvars = player.getAttribute('flashvars');
-        if (flashvars.indexOf('autoplay=0') < 0) {
-          player.setAttribute('flashvars', flashvars + '&autoplay=0');
-          player.src += '#';
+      preventAutoplay();
+
+      function preventAutoplay() {
+        var player;
+        // Flash version.
+        player = aDocument.getElementById('movie_player');
+        if (player) {
+          let flashvars = player.getAttribute('flashvars');
+          if (flashvars.indexOf('autoplay=0') < 0) {
+            player.setAttribute('flashvars', flashvars + '&autoplay=0');
+            player.src += '#';
+          }
+          return;
+        }
+        // HTML5 version.
+        player = (aDocument.getElementsByTagName('video') || [])[0];
+        if (player) {
+          player.pause();
+          player.currentTime = 0;
+          return;
         }
       }
     }
