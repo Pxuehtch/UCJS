@@ -192,7 +192,6 @@ const kSiteList = [
         if (domain === lastDomain) {
           let cite = a.parentNode.parentNode.getElementsByTagName('cite')[0];
           if (cite) {
-            cite.title = 'Ditto';
             cite.classList.add('ucjs_sitestyle_samedomain');
           }
         } else {
@@ -231,11 +230,11 @@ const kSiteList = [
         {\
           font-size:small!important;\
         }\
-        .ucjs_sitestyle_weaken\
+        .ucjs_sitestyle_weaken h3~*\
         {\
           opacity:.3!important;\
         }\
-        .ucjs_sitestyle_weaken:hover\
+        .ucjs_sitestyle_weaken h3~*:hover\
         {\
           opacity:1!important;\
         }\
@@ -278,7 +277,7 @@ const kSiteList = [
         .mslg>td, .mslg>td>div\
         {\
           width:auto!important;\
-          margin-left:1em!important;\
+          margin-right:1em!important;\
           padding:0!important;\
         }\
         .mslg .l\
@@ -371,11 +370,11 @@ const kSiteList = [
         {\
           font-size:small!important;\
         }\
-        .ucjs_sitestyle_weaken\
+        .ucjs_sitestyle_weaken .hd~*\
         {\
           opacity:.3!important;\
         }\
-        .ucjs_sitestyle_weaken:hover\
+        .ucjs_sitestyle_weaken .hd~*:hover\
         {\
           opacity:1!important;\
         }\
