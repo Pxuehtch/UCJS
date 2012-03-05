@@ -174,7 +174,7 @@ const kSiteList = [
       var lastDomain = null;
 
       // skip items in same domain block and realtime block.
-      const kLinkSelector = '.vsc:not(.sld)>.r:not(.hcw)>a.l,.r>a';
+      const kLinkSelector = '.vsc:not(.sld)>.r:not(.hcw)>a.l,#mn .r>a';
       Array.forEach(aDocument.querySelectorAll(kLinkSelector), function(a) {
         normalizeURL(a);
 
