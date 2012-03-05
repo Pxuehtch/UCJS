@@ -150,8 +150,8 @@ const kSiteList = [
     include: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:search|webhp|#).*q=/,
     // image, shopping, place, realtime, recent, wonderwheel, timeline
     exclude: /&tb[ms]=[^&]*(?:isch|shop|plcs|rltm|mbl|ww|tl)/,
-    // @WORKAROUND When page is loaded from page navigation or related searches in Google result,
-    // I need to wait for DOM build.
+    // @WORKAROUND When page is loaded from page navigation (goooogle) in Google result,
+    // I need to wait more for DOM build.
     wait: 500,
     command: function(aDocument) {
       /**
