@@ -221,7 +221,7 @@ const kSiteList = [
         /* @note ucjs_XXX is custom class */\
         .ucjs_sitestyle_samedomain::before\
         {\
-          content:">";\
+          content:"=";\
           font-weight:bold;\
           color:red;\
           margin-right:2px;\
