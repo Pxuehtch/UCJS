@@ -170,7 +170,6 @@ const kSiteList = [
        *     |-a
        */
 
-      var lastHeaderText = null;
       var lastDomain = null;
 
       // skip items in same domain block and realtime block.
