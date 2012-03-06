@@ -18,7 +18,7 @@ var ucjsUtil = (function(window, undefined) {
 "use strict";
 
 
-// Generic valuables.
+// Generic variables.
 
 var {document, gBrowser} = window;
 var {classes: Cc, interfaces: Ci} = Components;
