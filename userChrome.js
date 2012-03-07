@@ -59,10 +59,11 @@ const kSystem = {
   // ID of <overlay> for overlayed scripts.
   overlayContainerID: 'userChrome_js_overlay',
 
-  // Timing to validate the modified time of a script to update script cache of Firefox system.
+  // Timing to validate the modified time of a script
+  // in order to update the startup cache of Firefox.
   // @value {boolean}
-  //   true Everytime when script is run on chrome.
-  //   false Only when script is scanned from disk.
+  //   true Always when the script runs.
+  //   false Only when the script is first scanned.
   validateScriptAtRun: false
 };
 
@@ -151,7 +152,7 @@ function ScriptLoader() {
     function initSidebar(aEvent) {
       var target = aEvent.originalTarget;
       if (!(target instanceof XULDocument)) {
-        /* NOISY
+        /* noisy, comment out.
         Log.list('Not init sidebar', {
           'Loaded node': target.nodeName
         });
