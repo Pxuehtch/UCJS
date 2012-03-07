@@ -14,7 +14,7 @@
 "use strict";
 
 
-// ***** Generic valuables.
+// ***** Generic variables.
 
 const {document} = window;
 
