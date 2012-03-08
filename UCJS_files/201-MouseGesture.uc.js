@@ -293,8 +293,7 @@ const kGestureSet = [
 
 /**
  * Handler of tab info.
- * @note This is a workaround function.
- * @see checkTab()
+ * @WORKAROUND See checkTab().
  */
 var mTabInfo = {
   init: function() {
@@ -334,6 +333,7 @@ function MouseGesture() {
   var mMouse = MouseManager();
   var mGesture = GestureManager();
 
+  // Initialization.
   init();
 
   function init() {
@@ -356,9 +356,9 @@ function MouseGesture() {
     addEvent([window, 'drop', onDrop, true]);
   }
 
-  // @WORKAROUND After loading a new URL in the same tab while holding mouse button down,
-  // any events of mouse can not be caught as long as holding it.
-  // We must cancel all state when the URL changes in the current tab.
+  // @WORKAROUND Cancel all state when the URL changes in the current tab.
+  // After loading a new URL in the same tab while holding mouse button down,
+  // any mouse events can not be caught as long as holding it.
   function checkTab() {
     if (mState !== kState.READY) {
       if (mTabInfo.isSameTabButDifferentURL()) {
@@ -446,7 +446,7 @@ function MouseGesture() {
     mMouse.update(aEvent);
   }
 
-  // @note startDrag() is fired here to get dragging data in textbox.
+  // @note Observe 'drag start' here to catch a drag data of textbox.
   function onDragOver(aEvent) {
     if (mCancelDrag)
       return;
@@ -467,7 +467,7 @@ function MouseGesture() {
     }
   }
 
-  // @TODO: prevent drop event when right mouse button is pressed down.
+  // @TODO Prevent drop event when right mouse button is pressed down.
   function onDrop(aEvent) {
     if (mState !== kState.DRAG)
       return;
