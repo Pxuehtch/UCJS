@@ -550,8 +550,10 @@ function MouseManager() {
   }
 
   function update(aEvent) {
-    if (aEvent.type === 'mousedown') {
-      if (aEvent.button === 2) {
+    const {type, button} = aEvent;
+
+    if (type === 'mousedown') {
+      if (button === 2) {
         enableContextMenu(true);
         cancelContext = false;
         isRightDown = true;
@@ -566,15 +568,15 @@ function MouseManager() {
           cancelContext = true;
         }
       }
-    } else if (aEvent.type === 'mouseup') {
-      if (aEvent.button === 2) {
+    } else if (type === 'mouseup') {
+      if (button === 2) {
         isRightDown = false;
       } else {
         isElseDown = false;
       }
-    } else if (aEvent.type === 'dragover') {
+    } else if (type === 'dragover') {
       isElseDown = false;
-    } else if (aEvent.type === 'contextmenu') {
+    } else if (type === 'contextmenu') {
       enableContextMenu(!cancelContext);
       cancelContext = false;
     } else if (isRightDown) {
@@ -693,17 +695,19 @@ function GestureManager() {
   }
 
   function updateChain(aEvent) {
+    const {type, detail} = aEvent;
+
     var sign = '';
 
-    if (aEvent.type === 'mousemove' || aEvent.type === 'dragover') {
-      let toward = mTracer.update(aEvent);
-      if (toward.x !== 0) {
-        sign = (toward.x < 0) ? 'left' : 'right';
-      } else if (toward.y !== 0) {
-        sign = (toward.y < 0) ? 'up' : 'down';
+    if (type === 'mousemove' || type === 'dragover') {
+      let {x, y} = mTracer.update(aEvent);
+      if (x !== 0) {
+        sign = (x < 0) ? 'left' : 'right';
+      } else if (y !== 0) {
+        sign = (y < 0) ? 'up' : 'down';
       }
-    } else if (aEvent.type === 'DOMMouseScroll') {
-      sign = (aEvent.detail < 0) ? 'wheelUp' : 'wheelDown';
+    } else if (type === 'DOMMouseScroll') {
+      sign = (detail < 0) ? 'wheelUp' : 'wheelDown';
     }
 
     if (sign) {
@@ -718,36 +722,37 @@ function GestureManager() {
   }
 
   function updateKey(aEvent) {
-    var {shift, ctrl} = kGestureSign;
+    const {shift, ctrl} = kGestureSign;
+    const {type, keyCode, shiftKey, ctrlKey} = aEvent;
 
-    function has(_key) mKey.indexOf(_key) > -1;
+    function has(aKey) mKey.indexOf(aKey) > -1;
 
     var key = '';
     var pressed = false;
 
-    if (aEvent.type === 'keydown') {
-      if (aEvent.keyCode === 16 && !has(shift)) {
+    if (type === 'keydown') {
+      if (keyCode === 16 && !has(shift)) {
         key = shift;
         pressed = true;
-      } else if (aEvent.keyCode === 17 && !has(ctrl)) {
+      } else if (keyCode === 17 && !has(ctrl)) {
         key = ctrl;
         pressed = true;
       }
-    } else if (aEvent.type === 'keyup') {
-      if (aEvent.keyCode === 16 && has(shift)) {
+    } else if (type === 'keyup') {
+      if (keyCode === 16 && has(shift)) {
         key = shift;
         pressed = false;
-      } else if (aEvent.keyCode === 17 && has(ctrl)) {
+      } else if (keyCode === 17 && has(ctrl)) {
         key = ctrl;
         pressed = false;
       }
-    } else if (aEvent.type === 'dragover') {
-      if (aEvent.shiftKey !== has(shift)) {
+    } else if (type === 'dragover') {
+      if (shiftKey !== has(shift)) {
         key = shift;
-        pressed = aEvent.shiftKey;
-      } else if (aEvent.ctrlKey !== has(ctrl)) {
+        pressed = shiftKey;
+      } else if (ctrlKey !== has(ctrl)) {
         key = ctrl;
-        pressed = aEvent.ctrlKey;
+        pressed = ctrlKey;
       }
     }
 
@@ -883,20 +888,22 @@ function GestureTracer() {
 // Utilities.
 
 function inGestureArea(aEvent) {
-  var d = aEvent.target.ownerDocument;
+  var doc = aEvent.target.ownerDocument;
 
-  if (!(d instanceof HTMLDocument))
+  if (!(doc instanceof HTMLDocument))
     return false;
-  if (d.URL === 'about:blank')
+  if (doc.URL === 'about:blank')
     return true;
 
-  var w = d.defaultView;
+  var {innerWidth, innerHeight} = doc.defaultView;
+  var {clientX, clientY} = aEvent;
+
   // Cancelling margin of gesture.
   // @value Pixels of the width of scrollbar.
-  var m = 16;
+  var margin = 16;
 
-  return m < aEvent.clientX && aEvent.clientX < (w.innerWidth - m) &&
-         m < aEvent.clientY && aEvent.clientY < (w.innerHeight - m);
+  return margin < clientX && clientX < (innerWidth - margin) &&
+         margin < clientY && clientY < (innerHeight - margin);
 }
 
 function inDragArea(aEvent) {
