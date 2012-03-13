@@ -34,6 +34,11 @@ pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
   } else {
     sort(this.data, aColumn.index, direction === 'ascending');
   }
+
+  this.selection.clearSelection();
+  this.selection.select(0);
+  this.invalidate();
+  this.tree.ensureRowIsVisible(0);
 };
 
 function sort(aData, aColumnIndex, aAscending) {
