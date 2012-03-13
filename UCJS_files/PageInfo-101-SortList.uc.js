@@ -14,8 +14,6 @@
 const kSORT_DIRECTION_ATTRIBUTE = 'sortDirection';
 const kSortDirections = ['ascending', 'descending', 'natural'];
 
-var naturalData = null;
-
 pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
   if (this.rowCount < 2)
     return;
@@ -25,12 +23,13 @@ pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
   direction = kSortDirections[(kSortDirections.indexOf(direction) + 1) % 3];
   element.setAttribute(kSORT_DIRECTION_ATTRIBUTE, direction);
 
-  if (!naturalData) {
-    naturalData = this.data.concat();
+  // Extends a custom property.
+  if (!this._naturalData) {
+    this._naturalData = this.data.concat();
   }
 
   if (direction === 'natural') {
-    this.data = naturalData.concat();
+    this.data = this._naturalData.concat();
   } else {
     sort(this.data, aColumn.index, direction === 'ascending');
   }
