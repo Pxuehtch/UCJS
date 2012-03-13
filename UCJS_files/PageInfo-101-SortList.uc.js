@@ -17,6 +17,9 @@ const kSortDirections = ['ascending', 'descending', 'natural'];
 var naturalData = null;
 
 pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
+  if (this.rowCount < 2)
+    return;
+
   var element = aColumn.element;
   var direction = element.getAttribute(kSORT_DIRECTION_ATTRIBUTE) || 'natural';
   direction = kSortDirections[(kSortDirections.indexOf(direction) + 1) % 3];
