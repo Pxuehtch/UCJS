@@ -11,40 +11,28 @@
 "use strict";
 
 
+const kSORT_DIRECTION_ATTRIBUTE = 'sortDirection';
+const kSortDirections = ['ascending', 'descending', 'natural'];
+
 var naturalData = null;
 var sortState = {index: 0, order: 0};
 
 pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
-  const SORT_DIR_ATTR = 'sortDirection';
-
-  var dir = aColumn.element.getAttribute(SORT_DIR_ATTR);
-  switch (dir) {
-    case 'ascending' :
-      dir = 'descending';
-      break;
-    case 'descending':
-      dir = 'natural';
-      break;
-    default:
-      dir = 'ascending';
-      break;
-  }
-
-  aColumn.element.setAttribute(SORT_DIR_ATTR, dir);
+  var element = aColumn.element;
+  var direction = element.getAttribute(kSORT_DIRECTION_ATTRIBUTE) || 'natural';
+  direction = kSortDirections[(kSortDirections.indexOf(direction) + 1) % 3];
+  element.setAttribute(kSORT_DIRECTION_ATTRIBUTE, direction);
 
   if (!naturalData) {
     naturalData = this.data.concat();
   }
 
-  switch (dir) {
-    case 'natural':
-      this.data = naturalData.concat();
-      break;
-    default:
-      sortState.index = this.tree.columns.getColumnFor(aColumn.element).index;
-      sortState.order = (dir === 'ascending') ? 1 : -1;
-      this.data.sort(sorter);
-      break;
+  if (direction === 'natural') {
+    this.data = naturalData.concat();
+  } else {
+    sortState.index = aColumn.index;
+    sortState.order = (direction === 'ascending') ? 1 : -1;
+    this.data.sort(sorter);
   }
 };
 
