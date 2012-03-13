@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name SortList.uc.js
-// @description Sorting function of listview in a page info window.
+// @description Sorting listview of a page info window.
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
 
 
-(function(){
+(function() {
 
 
 "use strict";
@@ -14,6 +14,8 @@
 const kSORT_DIRECTION_ATTRIBUTE = 'sortDirection';
 const kSortDirections = ['ascending', 'descending', 'natural'];
 
+
+// @see chrome://browser/content/pageinfo/pageInfo.js
 pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
   if (this.rowCount < 2)
     return;
