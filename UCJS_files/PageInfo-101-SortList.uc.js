@@ -23,6 +23,14 @@ pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
   direction = kSortDirections[(kSortDirections.indexOf(direction) + 1) % 3];
   element.setAttribute(kSORT_DIRECTION_ATTRIBUTE, direction);
 
+  // Uses a reserved property 'sortcol'.
+  if (this.sortcol !== aColumn) {
+    if (this.sortcol) {
+      this.sortcol.element.removeAttribute(kSORT_DIRECTION_ATTRIBUTE);
+    }
+    this.sortcol = aColumn;
+  }
+
   // Extends a custom property.
   if (!this._naturalData) {
     this._naturalData = this.data.concat();
