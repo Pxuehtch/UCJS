@@ -7,7 +7,7 @@
 // @require Util.uc.js
 // @require [optional] TabEx.uc.js
 // @note Some default functions are modified. search @modified.
-// @usage Access to items through global functions (ucjsUI.XXX).
+// @usage Access to items through global property (ucjsUI.XXX).
 
 
 var ucjsUI = (function() {
@@ -341,6 +341,7 @@ UI_init();
 
 
 // Exports.
+
 return {
   ContentArea: mContentArea,
   URLBar: mURLBar,
