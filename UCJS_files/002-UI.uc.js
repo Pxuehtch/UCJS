@@ -10,7 +10,7 @@
 // @usage Access to items through global functions (ucjsUI.XXX).
 
 
-var ucjsUI = (function(Util) {
+var ucjsUI = (function() {
 
 
 "use strict";
