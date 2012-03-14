@@ -333,8 +333,11 @@ function log(aMsg)
 
 // Entry point.
 
-// Custom functions.
-manageContextMenuSeparators();
+function UI_init() {
+  manageContextMenuSeparators();
+}
+
+UI_init();
 
 
 // Exports.
