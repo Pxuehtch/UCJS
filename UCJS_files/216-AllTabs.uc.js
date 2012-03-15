@@ -239,8 +239,7 @@ function initAllTabsMenu() {
     $E('menu', {
       id: kID.GROUPS_MENU,
       class: 'menu-iconic',
-      label: kFormat.GROUPS_MENU,
-      keepme: true
+      label: kFormat.GROUPS_MENU
     }),
     $(kID.ALLTABS_POPUP_SEPARATOR)
   );
