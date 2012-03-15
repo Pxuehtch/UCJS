@@ -27,7 +27,7 @@
 <commandset id="mainCommandSet">
 
   <command id="cmd_find"
-    oncommand="ucjsUI.FindBar.toggleFindbar();" />
+    oncommand="if (TabView.isVisible()) TabView.enableSearch(event); else ucjsUI.FindBar.toggleFindbar();"/>
 
   <command id="ucjs_cmd_RestartApp"
     oncommand="ucjsUtil.restartApp(event.shiftKey);" />
