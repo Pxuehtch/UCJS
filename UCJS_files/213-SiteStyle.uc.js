@@ -126,6 +126,7 @@ const kNoisyURLs = [
   // Application market.
   /^https:\/\/addons\.mozilla\.org\/\w+\/firefox\/addon/,
   /^https:\/\/addons\.mozilla\.\w+\/firefox\/details/,
+  /^https:\/\/play\.google\.com\/store\/apps\/details/,
   /^https:\/\/chrome\.google\.com\/webstore\/detail/,
   /^https:\/\/market\.android\.com\/details\?id=/,
   /^https:\/\/itunes\.apple\.com\/\w+\/app/
