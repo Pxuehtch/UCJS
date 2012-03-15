@@ -25,25 +25,22 @@
 
 <!-- command -->
 <commandset id="mainCommandSet">
-
   <command id="cmd_find"
     oncommand="if (TabView.isVisible()) TabView.enableSearch(event); else ucjsUI.FindBar.toggleFindbar();"/>
 
   <command id="ucjs_cmd_RestartApp"
-    oncommand="ucjsUtil.restartApp(event.shiftKey);" />
+    oncommand="ucjsUtil.restartApp(event.shiftKey);"/>
 
   <command id="ucjs_cmd_ToggleTabbar"
-    oncommand="var tt=document.getElementById('TabsToolbar');tt.collapsed=!tt.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked', !tt.collapsed);" />
+    oncommand="var tt=document.getElementById('TabsToolbar');tt.collapsed=!tt.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked', !tt.collapsed);"/>
 
   <command id="ucjs_cmd_OpenSearchEngineManager"
-    oncommand="window.openDialog('chrome://browser/content/search/engineManager.xul');" />
-
+    oncommand="window.openDialog('chrome://browser/content/search/engineManager.xul');"/>
 </commandset>
 
 
 <!-- key -->
 <keyset id="mainKeyset">
-
   <key id="ucjs_key_Resize1"
     key="1" modifiers="alt"
     oncommand="window.moveTo(0,1);window.resizeTo(800,600);"/>
@@ -58,16 +55,15 @@
 
   <key id="ucjs_key_RestartApp"
     key="r" modifiers="control,alt"
-    command="ucjs_cmd_RestartApp" />
+    command="ucjs_cmd_RestartApp"/>
 
   <key id="ucjs_key_RestartApp_PurgeCache"
     key="R" modifiers="control,alt,shift"
-    command="ucjs_cmd_RestartApp" />
+    command="ucjs_cmd_RestartApp"/>
 
   <key id="ucjs_key_CloseTabsButHome"
     keycode="VK_F12"
-    oncommand="ucjsUtil.openHomePages(true, true);" />
-
+    oncommand="ucjsUtil.openHomePages(true, true);"/>
 </keyset>
 
 
@@ -76,21 +72,21 @@
   <menuitem id="ucjs_menuitem_RestartApp"
     label="再起動" accesskey="R"
     insertbefore="menu_FileQuitItem"
-    key="ucjs_key_RestartApp" command="ucjs_cmd_RestartApp" />
+    key="ucjs_key_RestartApp" command="ucjs_cmd_RestartApp"/>
 </menupopup>
 
 <menupopup id="menu_ToolsPopup">
   <menuitem id="ucjs_menuitem_OpenSearchEngineManager"
     label="検索エンジンの管理" accesskey="s"
     insertbefore="menu_pageInfo"
-    command="ucjs_cmd_OpenSearchEngineManager" />
+    command="ucjs_cmd_OpenSearchEngineManager"/>
 </menupopup>
 
 <menupopup id="toolbar-context-menu">
   <menuitem id="ucjs_menuitem_ToggleTabbar"
     label="タブバー" accesskey="z" type="checkbox" checked="true"
     position="1"
-    command="ucjs_cmd_ToggleTabbar" />
+    command="ucjs_cmd_ToggleTabbar"/>
 </menupopup>
 
 
