@@ -134,7 +134,7 @@ var mButton = {
  * @see NaviButton_init().
  */
 var mBrowserProgressListener = {
-  onLocationChange: function(aWebProgress, aRequest, aLocation) {
+  onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
     var back = $(kID.BACK_BUTTON);
 
     if (!gBrowser.canGoBack && mReferrer.exists()) {

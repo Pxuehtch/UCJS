@@ -482,7 +482,7 @@ const kSiteList = [
  */
 var mPageObserver = (function() {
   var mProgressListener = {
-    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation) {
+    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlag) {
       apply(aBrowser, aWebProgress, aLocation.spec);
     },
 
