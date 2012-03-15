@@ -61,13 +61,14 @@
   // @modified resource://gre/modules/PlacesUIUtils.jsm::PlacesUIUtils::getBestTitle
   var $getBestTitle = PlacesUIUtils.getBestTitle;
 
-  PlacesUIUtils.getBestTitle = function(aNode) {
+  PlacesUIUtils.getBestTitle = function(aNode, aDoNotCutTitle) {
     var title;
 
     if (!aNode.title && PlacesUtils.uriTypes.indexOf(aNode.type) !== -1) {
       try {
         // PlacesUtils._uri() will throw if aNode.uri is not a valid URI.
         PlacesUtils._uri(aNode.uri);
+        // Use raw URL.
         title = aNode.uri;
       } catch (e) {
         // Use clipped URL for non-standard URIs (e.g. data:, javascript:).
