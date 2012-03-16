@@ -54,11 +54,11 @@
     oncommand="window.moveTo(0,1);window.outerHeight=screen.availHeight-1;window.outerWidth=screen.availWidth;"/>
 
   <key id="ucjs_key_RestartApp"
-    key="r" modifiers="control,alt"
+    key="[" modifiers="control,alt"
     command="ucjs_cmd_RestartApp"/>
 
   <key id="ucjs_key_RestartApp_PurgeCache"
-    key="R" modifiers="control,alt,shift"
+    key="{" modifiers="control,alt,shift"
     command="ucjs_cmd_RestartApp"/>
 
   <key id="ucjs_key_CloseTabsButHome"
@@ -70,7 +70,7 @@
 <!-- menu -->
 <menupopup id="menu_FilePopup">
   <menuitem id="ucjs_menuitem_RestartApp"
-    label="再起動" accesskey="R"
+    label="再起動" accesskey="["
     insertbefore="menu_FileQuitItem"
     key="ucjs_key_RestartApp" command="ucjs_cmd_RestartApp"/>
 </menupopup>
