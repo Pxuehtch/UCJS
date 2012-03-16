@@ -32,7 +32,7 @@
     oncommand="ucjsUtil.restartApp(event.shiftKey);"/>
 
   <command id="ucjs_cmd_ToggleTabbar"
-    oncommand="var tt=document.getElementById('TabsToolbar');tt.collapsed=!tt.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked', !tt.collapsed);"/>
+    oncommand="(function(e){e.collapsed=!e.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked',!e.collapsed);})(document.getElementById('TabsToolbar'));"/>
 
   <command id="ucjs_cmd_OpenSearchEngineManager"
     oncommand="window.openDialog('chrome://browser/content/search/engineManager.xul');"/>
