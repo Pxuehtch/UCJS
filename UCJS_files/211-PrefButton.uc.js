@@ -149,7 +149,9 @@ function PrefButton_init() {
   setStyleSheet();
   makeButtons();
 
-  addEvent([gBrowser.mTabContainer, 'TabSelect', function() updateState(true), false]);
+  addEvent([gBrowser, 'select', function() {
+    updateState(true);
+  }, false]);
 
   gBrowser.addProgressListener(mBrowserProgressListener);
   addEvent([window, 'unload', function() {
