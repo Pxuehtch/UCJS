@@ -103,17 +103,16 @@ var mXPCOM = (function() {
 // Functions for DOM.
 
 function setEventListener(aData) {
-  var [target, type, listener, capture, remover] = aData;
+  var [target, type, listener, capture] = aData;
   if (!target || !type || !listener)
     return;
 
   capture = !!capture;
-  remover = remover || window;
 
   target.addEventListener(type, listener, capture);
-  remover.addEventListener('unload', function removeEvent() {
+  window.addEventListener('unload', function removeEvent() {
     target.removeEventListener(type, listener, capture);
-    remover.removeEventListener('unload', removeEvent, false);
+    window.removeEventListener('unload', removeEvent, false);
   }, false);
 }
 
