@@ -561,16 +561,10 @@ var mPageObserver = (function() {
 
   function init() {
     gBrowser.addTabsProgressListener(mProgressListener);
-
-    window.addEventListener('unload', function removeEvent() {
-      uninit();
-      window.removeEventListener('unload', removeEvent, false);
-    }, false);
-  }
-
-  function uninit() {
-    gBrowser.removeTabsProgressListener(mProgressListener);
-    clearTimer();
+    addEvent([window, 'unload', function() {
+      gBrowser.removeTabsProgressListener(mProgressListener);
+      clearTimer();
+    }, false]);
   }
 
   return {

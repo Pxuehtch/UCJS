@@ -152,10 +152,9 @@ function PrefButton_init() {
   addEvent([gBrowser.mTabContainer, 'TabSelect', function() updateState(true), false]);
 
   gBrowser.addProgressListener(mBrowserProgressListener);
-  window.addEventListener('unload', function onUnload() {
+  addEvent([window, 'unload', function() {
     gBrowser.removeProgressListener(mBrowserProgressListener);
-    window.removeEventListener('unload', onUnload, false);
-  }, false);
+  }, false]);
 }
 
 function updateState(aTabMode) {
