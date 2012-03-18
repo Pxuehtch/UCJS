@@ -41,7 +41,7 @@ const kUI = {
  * @note cf. http://d.hatena.ne.jp/edvakf/20090723/1248365807
  */
 const kNoisyURLs = [
-  /^http:\/\/b\.hatena\.ne\.jp\/entry/,
+  /^http:\/\/b\.hatena\.ne\.jp/,
   /^http:\/\/d\.hatena\.ne\.jp\/keyword/,
   /^http:\/\/k\.hatena\.ne\.jp\/keywordblog/,
   /^http:\/\/(?:chiebukuro|bookmarks|psearch)\.yahoo\.co\.jp/,
@@ -67,6 +67,7 @@ const kNoisyURLs = [
   /^http:\/\/clip\.livedoor\.com/,
   /^http:\/\/clip\.nifty\.com/,
   /^http:\/\/faves\.com/,
+  /^http:\/\/favolog\.org/,
   /^http:\/\/favotter\.net/,
   /^http:\/\/friendfeed\.com/,
   /^http:\/\/hiwihhi\.com/,
@@ -128,7 +129,7 @@ const kNoisyURLs = [
   /^https:\/\/addons\.mozilla\.\w+\/firefox\/details/,
   /^https:\/\/play\.google\.com\/store\/apps\/details/,
   /^https:\/\/chrome\.google\.com\/webstore\/detail/,
-  /^https:\/\/market\.android\.com\/details\?id=/,
+  /^https:\/\/market\.android\.com\/details/,
   /^https:\/\/itunes\.apple\.com\/\w+\/app/
   //,
 ];
