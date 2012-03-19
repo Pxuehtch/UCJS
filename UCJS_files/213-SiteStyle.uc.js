@@ -238,6 +238,7 @@ const kSiteList = [
         .ucjs_sitestyle_weaken h3~*:hover\
         {\
           opacity:1!important;\
+          -moz-transition:opacity .5s!important;\
         }\
         /* @WORKAROUND disable pseudo link underline. */\
         h3 a\
@@ -378,6 +379,7 @@ const kSiteList = [
         .ucjs_sitestyle_weaken .hd~*:hover\
         {\
           opacity:1!important;\
+          -moz-transition:opacity .5s!important;\
         }\
         /* multi-column */\
         #wrapper, .size2of3, #WS2m .w, .dd\
