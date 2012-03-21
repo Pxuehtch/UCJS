@@ -248,24 +248,27 @@
 })();
 
 
-// Show status text in a URL bar.
-// @note In fullscreen, uses the default status field.
+// Show status text in URL bar.
+// @note In fullscreen mode, the default statusbar is used.
 // @require UI.uc.js
 (function() {
-  // Move status-text-field in url-bar to control the visibility of status text by CSS.
-  ucjsUI.URLBar.textBox.appendChild(ucjsUI.StatusField.textBox);
+  // Move '#statusbar-display' before 'input.urlbar-input' to control them by CSS.
+  var urlbarTextbox = ucjsUI.URLBar.textBox;
+  urlbarTextbox.insertBefore(ucjsUI.StatusField.textBox, urlbarTextbox.firstChild);
 
   // Set the position of a status display.
-
   // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
   var $updateStatusField = XULBrowserWindow.updateStatusField;
   XULBrowserWindow.updateStatusField = function() {
+    // style of #statusbar-display
     var style = this.statusTextField.style;
     if (!window.fullScreen) {
-      let {offsetWidth: width, offsetLeft: left, offsetTop: top} = ucjsUI.URLBar.textBox.children[0];
+      // input.urlbar-input
+      let inputBox = this.statusTextField.nextSibling;
+      let {offsetWidth: width, offsetLeft: left, offsetTop: top} = inputBox;
 
       if (style.width !== width + 'px') {
-        style.width = style.maxWidth = width + 'px';
+        style.width = width + 'px';
       }
       if (style.left !== left + 'px') {
         style.left = left + 'px';
@@ -276,7 +279,6 @@
     } else {
       if (style.width) {
         style.removeProperty('width');
-        style.removeProperty('max-width');
         style.removeProperty('left');
         style.removeProperty('top');
       }
@@ -286,37 +288,36 @@
   };
 
   setChromeCSS('\
-    #main-window:not([inFullscreen]) #statusbar-display\
-    {\
+    #main-window:not([inFullscreen]) #statusbar-display{\
       -moz-appearance:none!important;\
       margin:0!important;\
       padding:0!important;\
-      background-image:-moz-linear-gradient(hsl(0,0%,95%),hsl(0,0%,80%))!important;\
-      border-radius:1.5px!important;\
+      max-width:none!important;\
     }\
-    #main-window:not([inFullscreen]) .statuspanel-inner\
-    {\
+    #main-window:not([inFullscreen]) .statuspanel-inner{\
       height:1em!important;\
     }\
-    #main-window:not([inFullscreen]) .statuspanel-inner:before\
-    {\
+    #main-window:not([inFullscreen]) .statuspanel-inner:before{\
       display:inline-block;\
       content:">";\
       color:gray;\
       font-weight:bold;\
       margin:0 2px;\
     }\
-    #main-window:not([inFullscreen]) .statuspanel-label\
-    {\
+    #main-window:not([inFullscreen]) .statuspanel-label{\
       margin:0!important;\
       padding:0!important;\
       border:none!important;\
       background:none transparent!important;\
     }\
     #main-window:not([inFullscreen]) #urlbar:hover #statusbar-display,\
-    #main-window:not([inFullscreen]) #urlbar[focused="true"] #statusbar-display\
-    {\
-      display:none!important;\
+    #main-window:not([inFullscreen]) #urlbar[focused] #statusbar-display{\
+      visibility:collapse!important;\
+    }\
+    #main-window:not([inFullscreen]) #urlbar:not(:hover):not([focused]) #statusbar-display:not([inactive])+.urlbar-input{\
+      border-radius:1.5px!important;\
+      background-color:hsl(0,0%,90%)!important;\
+      color:hsl(0,0%,90%)!important;\
     }\
   ');
 })();
