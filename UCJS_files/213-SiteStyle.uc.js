@@ -316,9 +316,9 @@ const kSiteList = [
   {
     name: 'GoogleImage Result',
     include: [
-      /^http:\/\/www\.google\.(?:com|co\.jp)\/(?:search|webhp|#).*tbm=isch/,
-      /^http:\/\/www\.google\.(?:com|co\.jp)\/(?:imghp|imgres).*q=/,
-      /^http:\/\/images\.google\.(?:com|co\.jp)\/.*q=/
+      /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:search|webhp|#).*tbm=isch/,
+      /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:imghp|imgres).*q=/,
+      /^https?:\/\/images\.google\.(?:com|co\.jp)\/.*q=/
     ],
     wait: 0,
     command: function(aDocument) {
@@ -454,7 +454,7 @@ const kSiteList = [
   },
   {
     name: 'Youtube Player',
-    include: /^http:\/\/(?:www\.)?youtube\.com\/(?:watch|user)/,
+    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|user)/,
     exclude: /&list=/,
     command: function(aDocument) {
       preventAutoplay();
