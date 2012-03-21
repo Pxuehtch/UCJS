@@ -676,8 +676,12 @@ function log(aMsg)
 
 // Entry point.
 
-mPageObserver.init();
-mPrefMenu.init();
+function SiteStyle_init() {
+  mPageObserver.init();
+  mPrefMenu.init();
+}
+
+SiteStyle_init();
 
 
 })();

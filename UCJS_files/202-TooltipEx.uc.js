@@ -390,7 +390,11 @@ function log(aMsg)
 
 // Entry point.
 
-gTooltip.init();
+function TooltipEx_init() {
+  gTooltip.init();
+}
+
+TooltipEx_init();
 
 
 })();

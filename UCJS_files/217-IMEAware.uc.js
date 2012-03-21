@@ -176,22 +176,25 @@ function log(aMsg)
 
 // Entry point.
 
-function onFocus(aEvent) {
-  var node = aEvent.originalTarget;
-
-  if ((node instanceof HTMLTextAreaElement ||
-      (node instanceof HTMLInputElement && /^(?:text|search)$/.test(node.type))) &&
-      !node.readOnly) {
-    mIMEAwareHandler.init(node);
+function IMEAware_init() {
+  function onFocus(aEvent) {
+    var node = aEvent.originalTarget;
+    if ((node instanceof HTMLTextAreaElement ||
+        (node instanceof HTMLInputElement && /^(?:text|search)$/.test(node.type))) &&
+        !node.readOnly) {
+      mIMEAwareHandler.init(node);
+    }
   }
+
+  function onUnload(aEvent) {
+    mIMEAwareHandler.uninit();
+  }
+
+  addEvent([document.documentElement, 'focus', onFocus, true]);
+  addEvent([window, 'unload', onUnload, false]);
 }
 
-function onUnload(aEvent) {
-  mIMEAwareHandler.uninit();
-}
-
-addEvent([document.documentElement, 'focus', onFocus, true]);
-addEvent([window, 'unload', onUnload, false]);
+IMEAware_init();
 
 
 })();

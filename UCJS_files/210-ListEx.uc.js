@@ -552,7 +552,11 @@ function log(aMsg)
 
 // Entry point.
 
-mMenu.init();
+function ListEx_init() {
+  mMenu.init();
+}
+
+ListEx_init();
 
 
 })();

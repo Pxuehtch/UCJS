@@ -1341,7 +1341,11 @@ function log(aMsg)
 
 // Entry point.
 
-mMenu.init();
+function NaviLink_init() {
+  mMenu.init();
+}
+
+NaviLink_init();
 
 
 // Exports to global.

@@ -997,7 +997,11 @@ function log(aMsg)
 
 // Entry point.
 
-MouseGesture();
+function MouseGesture_init() {
+  MouseGesture();
+}
+
+MouseGesture_init();
 
 
 })();

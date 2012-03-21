@@ -92,8 +92,12 @@ function log(aMsg)
 
 // Entry point.
 
-makeUI();
-addEvent([window, 'unload', uninit, false]);
+function ListFilter_init() {
+  makeUI();
+  addEvent([window, 'unload', uninit, false]);
+}
+
+ListFilter_init();
 
 
 })();

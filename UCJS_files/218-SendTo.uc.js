@@ -120,10 +120,6 @@ const kID = {
 
 // Functions.
 
-function SendTo_init(aEvent) {
-  initMenu();
-}
-
 function initMenu() {
   var contextMenu = getContextMenu();
   var refItem = contextMenu.firstChild;
@@ -274,6 +270,10 @@ function log(aMsg)
 
 
 // Entry point.
+
+function SendTo_init() {
+  initMenu();
+}
 
 SendTo_init();
 

@@ -821,17 +821,16 @@ function log(aMsg)
 
 // Entry point.
 
-{
-  // Patch.
+function TabEx_init() {
   modifySystemSetting();
 
-  // Initialize.
   mTabEvent.init();
   mSessionStore.init();
   mTabOpener.init();
   mStartup.init();
 }
 
+TabEx_init();
 
 // Export.
 

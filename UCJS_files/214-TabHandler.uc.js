@@ -299,11 +299,13 @@ function log(aMsg)
 
 // Entry point.
 
-{
+function TabHandler_init() {
   mTabBarClickEvent.init();
   mTabLock.init();
   makeCustomFunctions();
 }
+
+TabHandler_init();
 
 
 })();
