@@ -4,8 +4,7 @@
 
 
 /* [NaviButton.uc.js] backward button with referrer */
-#back-button[ucjs_navibutton_referrer]
-{
+#back-button[ucjs_navibutton_referrer] {
   background-image:-moz-linear-gradient(hsl(215,60%,88%),hsl(215,58%,84%))!important;
   box-shadow:0 0 1px 1px hsla(215,54%,33%,.1) inset!important;
 }
@@ -17,33 +16,29 @@
 
 /* [TabEx.uc.js] unread tab */
 .tabbrowser-tab:not([ucjs_tabex_read]),
-.ucjs_ui_menuitem_unreadTab /* menuitem */
-{
+/* menuitem */
+.ucjs_ui_menuitem_unreadTab {
   color:brown!important;
 }
 
 
 /* [TabEx.uc.js] suspended loading tab */
-.tabbrowser-tab[ucjs_tabex_suspended]
-{
+.tabbrowser-tab[ucjs_tabex_suspended] {
   font-style:italic!important;
 }
 
 
 /* [TabHandler.uc.js] locked tab */
-.tabbrowser-tab[ucjs_tablock] .tab-background
-{
+.tabbrowser-tab[ucjs_tablock] .tab-background {
   margin-top:-3px!important;
   border-top:3px solid red!important;
 }
 
 
 /* [AllTabs.uc.js] all tabs menupopup - menuitem about an overflowed tab on tabstrip */
-.alltabs-item[tabIsVisible]
-{
+.alltabs-item[tabIsVisible] {
   box-shadow:none!important;
 }
-#ucjs_alltabs_group_tag_menuitem[ucjs_alltabs_tabOverflowed]~.alltabs-item:not([tabIsVisible])
-{
+#ucjs_alltabs_group_tag_menuitem[ucjs_alltabs_tabOverflowed]~.alltabs-item:not([tabIsVisible]) {
   box-shadow:inset 0 0 0 2em hsla(0,0%,50%,.4);
 }
