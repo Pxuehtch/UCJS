@@ -37,15 +37,62 @@ const kUI = {
 
 
 /**
- * List of noisy URL on the search results like Bookmark, Q&A, Proxy, etc.
+ * List of noisy URL of the search results.
+ * @param {string} Tests with 'https?://(www.)?' + value.
+ * @param {regexp}
  * @note cf. http://d.hatena.ne.jp/edvakf/20090723/1248365807
  */
-const kNoisyURLs = [
-  /^http:\/\/a\.hatena\.ne\.jp/,
-  /^http:\/\/b\.hatena\.ne\.jp/,
-  /^http:\/\/d\.hatena\.ne\.jp\/keyword/,
-  /^http:\/\/k\.hatena\.ne\.jp\/keywordblog/,
-  /^http:\/\/(?:chiebukuro|bookmarks|psearch)\.yahoo\.co\.jp/,
+const kNoiseList = [
+  // Hatena
+  'a.hatena.ne.jp',
+  'b.hatena.ne.jp',
+  'd.hatena.ne.jp/keyword',
+  'k.hatena.ne.jp/keywordblog',
+  'q.hatena.ne.jp',
+  // Yahoo
+  'chiebukuro.yahoo.co.jp',
+  'bookmarks.yahoo.co.jp',
+  'psearch.yahoo.co.jp',
+  // Misc.
+  '1470.net',
+  'basefeed.net',
+  'bookmark.fc2.com',
+  'buzz.goo.ne.jp',
+  'buzzurl.jp',
+  'ceron.jp',
+  'del.icio.us',
+  'clip.livedoor.com',
+  'clip.nifty.com',
+  'faves.com',
+  'favolog.org',
+  'favotter.net',
+  'friendfeed.com',
+  'hiwihhi.com',
+  'i.pecipeci.net',
+  'knowledge.livedoor.com',
+  'mark.jolt.jp',
+  'matope.com',
+  'newsing.jp',
+  'pookmark.jp',
+  'script-scrap.com',
+  'swik.net',
+  'synclick.jp',
+  'tech.newzia.jp',
+  'twib.jp',
+  'tweetmeme.com',
+  'tyudon.com/blog',
+  'atwiki.jp',
+  'blogpet.net/bookmark',
+  'choix.jp',
+  'cssclip.com',
+  'google.com/buzz',
+  'marici.com',
+  'movook.com',
+  'soukyu-mugen.com',
+  'tarikin.net',
+  'twitmunin.com',
+  'wadaitter.com',
+  'wdclip.com',
   /^http:\/\/[\w\-\.]*brothersoft\./,
   /^http:\/\/[\w\-\.]*clipp\.in/,
   /^http:\/\/[\w\-\.]*designiddatabase\./,
@@ -58,79 +105,42 @@ const kNoisyURLs = [
   /^http:\/\/[\w\-\.]*softpedia.com\./,
   /^http:\/\/[\w\-\.]*thumbnailcloud\./,
   /^http:\/\/[\w\-\.]*tweetbuzz\.jp/,
-  /^http:\/\/1470\.net/,
-  /^http:\/\/basefeed\.net/,
-  /^http:\/\/bookmark\.fc2\.com/,
-  /^http:\/\/buzz\.goo\.ne\.jp/,
-  /^http:\/\/buzzurl\.jp/,
-  /^http:\/\/ceron\.jp/,
-  /^http:\/\/del\.icio\.us/,
-  /^http:\/\/clip\.livedoor\.com/,
-  /^http:\/\/clip\.nifty\.com/,
-  /^http:\/\/faves\.com/,
-  /^http:\/\/favolog\.org/,
-  /^http:\/\/favotter\.net/,
-  /^http:\/\/friendfeed\.com/,
-  /^http:\/\/hiwihhi\.com/,
-  /^http:\/\/i\.pecipeci\.net/,
-  /^http:\/\/mark\.jolt\.jp/,
-  /^http:\/\/matope\.com/,
-  /^http:\/\/newsing\.jp/,
-  /^http:\/\/pookmark\.jp/,
-  /^http:\/\/script\-scrap\.com/,
-  /^http:\/\/swik\.net/,
-  /^http:\/\/synclick\.jp/,
-  /^http:\/\/tech\.newzia\.jp/,
-  /^http:\/\/twib\.jp/,
-  /^http:\/\/tweetmeme\.com/,
-  /^http:\/\/tyudon\.com\/blog/,
-  /^http:\/\/www\.atwiki\.jp/,
-  /^http:\/\/www\.blogpet\.net\/bookmark/,
-  /^http:\/\/www\.choix\.jp/,
-  /^http:\/\/www\.cssclip\.com/,
-  /^http:\/\/www\.google\.com\/buzz/,
-  /^http:\/\/www\.marici\.com/,
-  /^http:\/\/www\.movook\.com/,
-  /^http:\/\/www\.soukyu\-mugen\.com/,
-  /^http:\/\/www\.tarikin\.net/,
-  /^http:\/\/www\.twitmunin\.com/,
-  /^http:\/\/www\.wdclip\.com/,
-  // About okwave Q&A.
+  // OKWave Q&A
+  'nandemo.',
+  'otasuke.',
+  'qa.',
+  'qanda.',
+  'questionbox.',
+  'mag2qa.com',
+  'ziddy.japan.zdnet.com',
   /^http:\/\/[\w\-\.]*okwave\.jp/,
   /^http:\/\/oshiete\d?\./,
   /^http:\/\/soudan\d?\./,
-  /^http:\/\/otasuke\./,
-  /^http:\/\/nandemo\./,
-  /^http:\/\/qa\./,
-  /^http:\/\/qanda\./,
-  /^http:\/\/questionbox\./,
-  /^http:\/\/www\.mag2qa\.com/,
-  /^http:\/\/ziddy\.japan\.zdnet\.com/,
-  // Proxy.
-  /^http:\/\/(?:www\.)?anticensure\.com/,
-  /^http:\/\/(?:www\.)?autobypass\.com/,
-  /^http:\/\/(?:www\.)?myproxysite\.org/,
-  /^http:\/\/(?:www\.)?proxydock\.com/,
-  /^http:\/\/(?:www\.)?rightpaths.com/,
-  /^http:\/\/(?:www\.)?unblockweb\.us/,
-  /^http:\/\/24hr\-computersecurity\.com/,
-  /^http:\/\/proxy\.citec\.us/,
-  /^http:\/\/qqclip\.appspot.com/,
-  /^http:\/\/safesurf\.foxrot\.com/,
-  /^http:\/\/takewii\.com/,
-  /^http:\/\/tehvu\.ir/,
-  // Price comparison.
-  /^http:\/\/3mori\.com/,
+  // Proxy
+  '24hr-computersecurity.com',
+  'anticensure.com',
+  'autobypass.com',
+  'myproxysite.org',
+  'proxy.citec.us',
+  'proxydock.com',
+  'qqclip.appspot.com',
+  'rightpaths.com',
+  'safesurf.foxrot.com',
+  'takewii.com',
+  'tehvu.ir',
+  'unblockweb.us',
+  // Price comparison
+  '3mori.com',
   /^http:\/\/(?:www\.)?amazon\.[\w-.]+?\/.+?\/dp/,
   /^http:\/\/(?:m|review)\.kakaku\.com/,
   /^http:\/\/(?:www\.)?kakaku\.[\w-.]+?\/item/,
   /^http:\/\/[\w\-\.]+rakuten\.co\.jp/,
-  // Application market.
-  /^https?:\/\/addons\.mozilla\./,
-  /^https?:\/\/play\.google\.com/,
-  /^https?:\/\/chrome\.google\.com/,
-  /^https?:\/\/market\.android\.com/,
-  /^https?:\/\/itunes\.apple\.com/
+  // Application market
+  'addons.mozilla.',
+  'play.google.com',
+  'chrome.google.com',
+  'market.android.com',
+  'itunes.apple.com'
   //,
 ];
 
@@ -180,13 +190,9 @@ const kSiteList = [
         sanitizeLink(a);
 
         // weaken noisy URL.
-        kNoisyURLs.some(function(URL) {
-          if (URL.test(a.href)) {
-            weaken(a);
-            return true;
-          }
-          return false;
-        });
+        if (testNoisyURL(a.href)) {
+          weaken(a);
+        };
 
         // emphasize same domain item.
         var domain = a.hostname;
@@ -345,13 +351,9 @@ const kSiteList = [
         sanitizeLink(a);
 
         // weaken noisy URL.
-        kNoisyURLs.some(function(URL) {
-          if (URL.test(a.href)) {
-            weaken(a);
-            return true;
-          }
-          return false;
-        });
+        if (testNoisyURL(a.href)) {
+          weaken(a);
+        }
       });
 
       function sanitizeLink(a) {
@@ -634,6 +636,18 @@ var mPrefMenu = (function() {
 
 
 // Utilities.
+
+function testNoisyURL(aURL) {
+  if (!/^https?:/.test(aURL))
+    return false;
+
+  return kNoiseList.some(function(a) {
+    if (typeof a === 'string') {
+      return aURL.replace(/^https?:\/\/(?:www.)?/, '').indexOf(a) === 0;
+    }
+    return a.test(aURL);
+  });
+}
 
 function $ID(aID)
   document.getElementById(aID);
