@@ -222,13 +222,11 @@ function makeButtons() {
 function setStyleSheet() {
   // @note Suppose the height of toolbar-menubar is 24pt.
   setCSS('\
-    #%%kID.CONTAINER_ID%%\
-    {\
+    #%%kID.CONTAINER_ID%%{\
       margin:3px 0 3px 2px;\
     }\
     .%%kID.ITEM_CLASS_KEY%%,\
-    .%%kID.ITEM_CLASS_KEY%%:focus\
-    {\
+    .%%kID.ITEM_CLASS_KEY%%:focus{\
       -moz-appearance:none;\
       width:20px;\
       min-width:20px;\
@@ -244,18 +242,15 @@ function setStyleSheet() {
       font:8px "Arial";\
     }\
     .%%kID.ITEM_CLASS_KEY%%:active,\
-    .%%kID.ITEM_CLASS_KEY%%[checked=true]\
-    {\
+    .%%kID.ITEM_CLASS_KEY%%[checked=true]{\
       border:1px inset #ccc;\
       background-color:#ffcccc;\
     }\
-    .%%kID.ITEM_CLASS_KEY%%:hover\
-    {\
+    .%%kID.ITEM_CLASS_KEY%%:hover{\
       cursor:pointer;\
       opacity:0.6;\
     }\
-    .%%kID.ITEM_CLASS_KEY%%>hbox\
-    {\
+    .%%kID.ITEM_CLASS_KEY%%>hbox{\
       border:none;\
       padding:0;\
     }\

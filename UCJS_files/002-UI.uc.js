@@ -160,33 +160,26 @@ var mStatusField = (function() {
   function customize() {
     // Custom styles.
     setCSS('\
-      .statuspanel-label\
-      {\
+      .statuspanel-label{\
         font-weight:bolder!important;\
       }\
-      #statusbar-display:not([%%kStatusAttribute.LINKSTATE%%]) label\
-      {\
+      #statusbar-display:not([%%kStatusAttribute.LINKSTATE%%]) label{\
         color:brown!important;\
       }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label\
-      {\
+      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
         color:green!important;\
       }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="visited"] label\
-      {\
+      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
         color:purple!important;\
       }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="unknown"] label\
-      {\
+      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
         color:red!important;\
       }\
-      #statusbar-display[%%kStatusAttribute.MESSAGE%%] label\
-      {\
+      #statusbar-display[%%kStatusAttribute.MESSAGE%%] label{\
         color:blue!important;\
       }\
       #statusbar-display[inactive],\
-      #statusbar-display[label=""]\
-      {\
+      #statusbar-display[label=""]{\
         display:none!important;\
       }\
     '
