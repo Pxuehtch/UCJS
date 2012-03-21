@@ -177,7 +177,7 @@ const kSiteList = [
       // skip items in same domain block and realtime block.
       const kLinkSelector = '.vsc:not(.sld)>.r:not(.hcw)>a.l,#mn .r>a';
       Array.forEach(aDocument.querySelectorAll(kLinkSelector), function(a) {
-        normalizeURL(a);
+        sanitizeLink(a);
 
         // weaken noisy URL.
         kNoisyURLs.some(function(URL) {
@@ -203,10 +203,10 @@ const kSiteList = [
       // sanitize sub links.
       const kSubLinkSelector = 'li.g a';
       Array.forEach(aDocument.querySelectorAll(kSubLinkSelector), function(a) {
-        normalizeURL(a);
+        sanitizeLink(a);
       });
 
-      function normalizeURL(a) {
+      function sanitizeLink(a) {
         a.removeAttribute('onmousedown');
 
         var url = /google\./.test(a.hostname) && /^\/url$/.test(a.pathname) &&
@@ -342,7 +342,7 @@ const kSiteList = [
 
       const kLinkSelector = 'div.hd>h3>a';
       Array.forEach(aDocument.querySelectorAll(kLinkSelector), function(a) {
-        normalizeURL(a);
+        sanitizeLink(a);
 
         // weaken noisy URL.
         kNoisyURLs.some(function(URL) {
@@ -354,7 +354,7 @@ const kSiteList = [
         });
       });
 
-      function normalizeURL(a) {
+      function sanitizeLink(a) {
         a.removeAttribute('onmousedown');
 
         var url = /yahoo\./.test(a.hostname) && /^\/\*\-/.test(a.pathname) &&
