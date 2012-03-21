@@ -200,11 +200,17 @@ const kSiteList = [
         }
       });
 
+      // sanitize sub links.
+      const kSubLinkSelector = 'li.g a';
+      Array.forEach(aDocument.querySelectorAll(kSubLinkSelector), function(a) {
+        normalizeURL(a);
+      });
+
       function normalizeURL(a) {
         a.removeAttribute('onmousedown');
 
         var url = /google\./.test(a.hostname) && /^\/url$/.test(a.pathname) &&
-          /[&?]q=([^&]+)/.exec(a.search);
+          /[&?](?:q|url)=([^&]+)/.exec(a.search);
         if (url) {
           a.href = decodeURIComponent(url[1]);
         }
