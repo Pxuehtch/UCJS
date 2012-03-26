@@ -158,181 +158,150 @@ const kNoiseList = [
  */
 const kSiteList = [
   {
-    name: 'Google Result',
-    include: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:search|webhp|#).*q=/,
-    // image, shopping, place, realtime, recent, wonderwheel, timeline
-    exclude: /&tb[ms]=[^&]*(?:isch|shop|plcs|rltm|mbl|ww|tl)/,
-    // @WORKAROUND When page is loaded from page navigation (goooogle) in Google result,
-    // I need to wait more for DOM build.
-    wait: 500,
-    command: function(aDocument) {
-      /**
-       * |-li.g (Each item)
-       *   |-div.vsc
-       *     *
-       *     |-h3.r
-       *       |-a.l
-       *
-       * --- Old style
-       * table#mn
-       * *
-       * |-li.g, blockquote (Each item)
-       *   *
-       *   |-h3.r
-       *     |-a
-       */
-
-      var lastDomain = null;
-
-      // skip items in same domain block and realtime block.
-      const kLinkSelector = '.vsc:not(.sld)>.r:not(.hcw)>a.l,#mn .r>a';
-      Array.forEach(aDocument.querySelectorAll(kLinkSelector), function(a) {
-        sanitizeLink(a);
-
-        // weaken noisy URL.
-        if (testNoisyURL(a.href)) {
-          weaken(a);
-        };
-
-        // emphasize same domain item.
-        var domain = a.hostname;
-        if (domain === lastDomain) {
-          let cite = a.parentNode.parentNode.getElementsByTagName('cite')[0];
-          if (cite) {
-            cite.classList.add('ucjs_sitestyle_samedomain');
-          }
-        } else {
-          lastDomain = domain;
-        }
-      });
-
-      // sanitize sub links.
-      const kSubLinkSelector = 'li.g a';
-      Array.forEach(aDocument.querySelectorAll(kSubLinkSelector), function(a) {
-        sanitizeLink(a);
-      });
-
-      function sanitizeLink(a) {
-        a.removeAttribute('onmousedown');
-
-        var url = /google\./.test(a.hostname) && /^\/url$/.test(a.pathname) &&
-          /[&?](?:q|url)=([^&]+)/.exec(a.search);
-        if (url) {
-          a.href = decodeURIComponent(url[1]);
-        }
-      }
-
-      function weaken(a) {
-        var li = $X1('ancestor::li[contains(concat(" ",normalize-space(@class)," "), " g ")]', a);
-        if (li) {
-          li.classList.add('ucjs_sitestyle_weaken');
-        }
-      }
-
-      // Page styles.
-      setStyleSheet('\
-        /* @note ucjs_XXX is custom class */\
-        .ucjs_sitestyle_samedomain::before\
-        {\
-          content:"=";\
-          font-weight:bold;\
-          color:red;\
-          margin-right:2px;\
-        }\
-        .ucjs_sitestyle_weaken h3\
-        {\
-          font-size:small!important;\
-        }\
-        .ucjs_sitestyle_weaken h3~*\
-        {\
-          opacity:.3!important;\
-        }\
-        .ucjs_sitestyle_weaken h3~*:hover\
-        {\
-          opacity:1!important;\
-          -moz-transition:opacity .5s!important;\
-        }\
-        /* @WORKAROUND disable pseudo link underline. */\
-        h3 a\
-        {\
-          border-bottom:none!important;\
-        }\
-        /* @WORKAROUND ensure visible typing. */\
-        input:focus\
-        {\
-          color:black!important;\
-        }\
-        /* @WORKAROUND adjust position of predictions box. */\
-        #subform_ctrl, .ksfccl\
-        {\
-          margin-top:15px!important;\
-        }\
-        /* hidden parts. */\
-        /* right pane. */\
-        #rhs, #rhscol,\
-        /* brand thumbnail */\
-        img[id^="leftthumb"]\
-        {\
-          display:none!important;\
-          visibility:collapse!important;\
-        }\
-        /* video items. */\
-        #videobox>table>tbody>tr>td\
-        {\
-          float:left!important;\
-          width:auto!important;\
-        }\
-        /* same domain items. */\
-        .vsc~table\
-        {\
-          margin-left:0!important;\
-          padding-left:0!important;\
-        }\
-        .mslg>td, .mslg>td>div\
-        {\
-          width:auto!important;\
-          margin-right:1em!important;\
-          padding:0!important;\
-        }\
-        .mslg .l\
-        {\
-          font-size:small!important;\
-        }\
-        /* multi-column */\
-        #cnt, #res, .s, #mn\
-        {\
-          width:auto!important;\
-          max-width:100%!important;\
-          margin:0!important;\
-          padding:0!important;\
-        }\
-        #center_col\
-        {\
-          width:auto!important;\
-          margin-right:0!important;\
-        }\
-        h2.hd+div>ol, #mn #ires>ol\
-        {\
-          -moz-column-count:2;\
-          -moz-column-gap:1em;\
-        }',
-      aDocument,
-      // On ajax loading, replace the old CSS.
-      {replace: true});
-    }
-  },
-  {
-    name: 'GoogleImage Result',
+    name: 'Google Image Result',
     include: [
-      /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:search|webhp|#).*tbm=isch/,
-      /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:imghp|imgres).*q=/,
-      /^https?:\/\/images\.google\.(?:com|co\.jp)\/.*q=/
+      /^https?:\/\/www\.google\.[a-z.]+?\/search\?[^#]*tb[ms]=isch[^#]*$/,
+      /^https?:\/\/www\.google\.[a-z.]+?\/search\?.+#.*tb[ms]=isch/,
+      /^https?:\/\/images\.google\.[a-z.]+?\/search\?.+/
     ],
     wait: 0,
     command: function(aDocument) {
+      var location = aDocument.location;
       // switch to the old mode.
-      if (aDocument.URL.indexOf('&sout=1') < 0) {
-        aDocument.location.replace(aDocument.URL + '&sout=1');
+      if (!/[?&#]sout=1/.test(location.href)) {
+        location.replace(location.href + '&sout=1');
+      }
+    }
+  },
+  {
+    // wrapper for ajax search result.
+    // @note needed to put before 'Google Result'
+    name: 'Google Result ajax',
+    include: /^https?:\/\/www\.google\.[a-z.]+?\/search\?.+#/,
+    // wait for ajax loading.
+    wait: 500,
+    command: function(aDocument) {
+      doSiteCommand('Google Result', aDocument);
+    }
+  },
+  {
+    name: 'Google Result',
+    include: /^https?:\/\/www\.google\.[a-z.]+?\/search\?.+/,
+    command: function(aDocument) {
+      var params = aDocument.location.hash || aDocument.location.search;
+      function testMode(a) {
+        var [mode] = /[?&#]tb[ms]=[^&]+/.exec(params) || [];
+        // main or not.
+        if (!a)
+          return !mode;
+        return mode && a.test(mode);
+      }
+
+      processResultItems();
+      setPageCSS({
+        // except for shopping, application, books, places.
+        custom: !testMode(/shop|app|bks|plcs/),
+        // except for shopping, places.
+        multiColumn: !testMode(/shop|plcs/)
+      });
+
+      function processResultItems() {
+        // sanitize links.
+        Array.forEach($S('li.g a', aDocument), function(a) {
+          a.removeAttribute('onmousedown');
+
+          var url = /google\./.test(a.hostname) && /^\/url$/.test(a.pathname) &&
+            /[&?](?:q|url)=([^&]+)/.exec(a.search);
+          if (url) {
+            a.href = decodeURIComponent(url[1]);
+          }
+        });
+
+        var lastHost = null;
+        Array.forEach($S('li.g', aDocument), function(item) {
+          var link = $S1('h3.r>a, .ts td>a', item);
+
+          // weaken noisy item.
+          if (testNoisyURL(link.href)) {
+            item.classList.add('ucjs_sitestyle_weaken');
+          }
+
+          // emphasize same host item.
+          var host = link.hostname;
+          if (host === lastHost) {
+            item.classList.add('ucjs_sitestyle_samehost');
+          } else {
+            lastHost = host;
+          }
+        });
+      }
+
+      function setPageCSS(aOption) {
+        var {custom, multiColumn} = aOption || {};
+
+        var css = '\
+          /* video items */\
+          #videobox>table>tbody>tr>td{\
+            float:left!important;\
+            width:auto!important;\
+          }\
+          /* child items */\
+          .vsc~table,.r~div{\
+            margin-left:0!important;\
+            padding-left:0!important;\
+          }\
+          .mslg>td,.mslg>td>div{\
+            width:auto!important;\
+            margin-right:1em!important;\
+            padding:0!important;\
+          }\
+          .mslg .l{\
+            font-size:small!important;\
+          }';
+
+        if (custom) {
+          css += '\
+            .ucjs_sitestyle_samehost cite::before{\
+              content:"=";\
+              font-weight:bold;\
+              color:red;\
+              margin-right:2px;\
+            }\
+            .ucjs_sitestyle_weaken h3{\
+              font-size:small!important;\
+            }\
+            .ucjs_sitestyle_weaken h3~*{\
+              opacity:.2!important;\
+            }\
+            .ucjs_sitestyle_weaken *:hover{\
+              opacity:1!important;\
+              -moz-transition:opacity .5s!important;\
+            }';
+        }
+        if (multiColumn) {
+          css += '\
+            /* hidden right pane */\
+            #rhs,#rhscol{\
+              display:none!important;\
+            }\
+            #cnt,#res,.s,#mn{\
+              width:auto!important;\
+              max-width:100%!important;\
+              margin:0!important;\
+              padding:0!important;\
+            }\
+            #center_col{\
+              width:auto!important;\
+              margin-right:0!important;\
+            }\
+            h2.hd+div>ol,#mn #ires>ol{\
+              -moz-column-count:2;\
+              -moz-column-gap:1em;\
+            }';
+        }
+
+        // On ajax loading, replace the old CSS.
+        setStyleSheet(css, aDocument, {replace: true});
       }
     }
   },
@@ -340,25 +309,8 @@ const kSiteList = [
     name: 'Yahoo!JAPAN Result',
     include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
     command: function(aDocument) {
-      /**
-       * li (Each item)
-       * *
-       * |-div.hd
-       *   |-h3
-       *     |-a
-       */
-
-      const kLinkSelector = 'div.hd>h3>a';
-      Array.forEach(aDocument.querySelectorAll(kLinkSelector), function(a) {
-        sanitizeLink(a);
-
-        // weaken noisy URL.
-        if (testNoisyURL(a.href)) {
-          weaken(a);
-        }
-      });
-
-      function sanitizeLink(a) {
+      // sanitize links.
+      Array.forEach($S('#contents a'), function(a) {
         a.removeAttribute('onmousedown');
 
         var url = /yahoo\./.test(a.hostname) && /^\/\*\-/.test(a.pathname) &&
@@ -366,43 +318,40 @@ const kSiteList = [
         if (url) {
           a.href = decodeURIComponent(url[1]);
         }
-      }
+      });
 
-      function weaken(a) {
-        var li = $X1('ancestor::li', a);
-        if (li) {
-          li.classList.add('ucjs_sitestyle_weaken');
+      // process items.
+      Array.forEach($S('li'), function(item) {
+        var link = $S1('.hd>h3>a', item);
+
+        // weaken noisy item.
+        if (link && testNoisyURL(link.href)) {
+          item.classList.add('ucjs_sitestyle_weaken');
         }
-      }
+      });
 
-      // Page styles.
+      // set page CSS.
       setStyleSheet('\
-        /* @note ucjs_XXX is custom class */\
-        .ucjs_sitestyle_weaken h3\
-        {\
+        /* custom class */\
+        .ucjs_sitestyle_weaken h3{\
           font-size:small!important;\
         }\
-        .ucjs_sitestyle_weaken .hd~*\
-        {\
+        .ucjs_sitestyle_weaken .hd~*{\
           opacity:.3!important;\
         }\
-        .ucjs_sitestyle_weaken .hd~*:hover\
-        {\
+        .ucjs_sitestyle_weaken *:hover{\
           opacity:1!important;\
           -moz-transition:opacity .5s!important;\
         }\
         /* multi-column */\
-        #wrapper, .size2of3, #WS2m .w, .dd\
-        {\
+        #wrapper, .size2of3, #WS2m .w, .dd{\
           width:100%!important;\
           overflow-x:hidden;\
         }\
-        .nws .noimg\
-        {\
+        .nws .noimg{\
           margin-left:0!important;\
         }\
-        #WS2m>ul\
-        {\
+        #WS2m>ul{\
           -moz-column-count:2;\
           -moz-column-gap:1em;\
         }',
@@ -639,6 +588,18 @@ var mPrefMenu = (function() {
 
 // Utilities.
 
+function doSiteCommand(aName, aDocument) {
+  return kSiteList.some(function(a) {
+    if (a.name === aName) {
+      if (!a.disabled) {
+        a.command(aDocument);
+      }
+      return true;
+    }
+    return false;
+  });
+}
+
 function testNoisyURL(aURL) {
   if (!/^https?:/.test(aURL))
     return false;
@@ -660,8 +621,11 @@ function $ID(aID)
 function $E(aTagOrNode, aAttribute)
   ucjsUtil.createNode(aTagOrNode, aAttribute);
 
-function $X1(aXPath, aNode)
-  ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
+function $S(aSelector, aContext)
+  ucjsUtil.getNodesBySelector(aSelector, aContext);
+
+function $S1(aSelector, aContext)
+  ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
 
 function U(aStr)
   ucjsUtil.convertForSystem(aStr);
