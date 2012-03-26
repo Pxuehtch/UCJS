@@ -530,7 +530,7 @@ var mPageObserver = (function() {
  */
 var mPrefMenu = (function() {
   function init() {
-    var menu = $ID('menu_ToolsPopup').appendChild($E('menu', {
+    var menu = document.getElementById('menu_ToolsPopup').appendChild($E('menu', {
       id: kID.PREFMENU,
       label: kUI.PREFMENU.label,
       accesskey: kUI.PREFMENU.accesskey
@@ -599,9 +599,6 @@ function testNoisyURL(aURL) {
     return a.test(aURL);
   });
 }
-
-function $ID(aID)
-  document.getElementById(aID);
 
 
 // Imports.
