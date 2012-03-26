@@ -475,7 +475,10 @@ var mPageObserver = (function() {
     clearTimer();
 
     kSiteList.some(function(site) {
-      if (!site.disabled && testURL(site, aURL)) {
+      if (testURL(site, aURL)) {
+        if (site.disabled)
+          return true;
+
         if (site.wait === 0) {
           site.command(aBrowser.contentDocument);
           return true;
