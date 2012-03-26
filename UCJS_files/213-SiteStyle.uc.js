@@ -53,7 +53,7 @@ const kNoiseList = [
   'chiebukuro.yahoo.co.jp',
   'bookmarks.yahoo.co.jp',
   'psearch.yahoo.co.jp',
-  // Misc.
+  // misc.
   '1470.net',
   'basefeed.net',
   'bookmark.fc2.com',
@@ -93,18 +93,18 @@ const kNoiseList = [
   'twitmunin.com',
   'wadaitter.com',
   'wdclip.com',
-  /^http:\/\/[\w\-\.]*brothersoft\./,
-  /^http:\/\/[\w\-\.]*clipp\.in/,
-  /^http:\/\/[\w\-\.]*designiddatabase\./,
-  /^http:\/\/[\w\-\.]*designlinkdatabase\./,
-  /^http:\/\/[\w\-\.]*designrecipedatabase\./,
-  /^http:\/\/[\w\-\.]*pastebin\.ca/,
-  /^http:\/\/[\w\-\.]*pg\-feed\.com/,
-  /^http:\/\/[\w\-\.]*recipester\.org/,
-  /^http:\/\/[\w\-\.]*rightclicksright\./,
-  /^http:\/\/[\w\-\.]*softpedia.com\./,
-  /^http:\/\/[\w\-\.]*thumbnailcloud\./,
-  /^http:\/\/[\w\-\.]*tweetbuzz\.jp/,
+  /^http:\/\/[\w-.]*brothersoft\./,
+  /^http:\/\/[\w-.]*clipp\.in/,
+  /^http:\/\/[\w-.]*designiddatabase\./,
+  /^http:\/\/[\w-.]*designlinkdatabase\./,
+  /^http:\/\/[\w-.]*designrecipedatabase\./,
+  /^http:\/\/[\w-.]*pastebin\.ca/,
+  /^http:\/\/[\w-.]*pg\-feed\.com/,
+  /^http:\/\/[\w-.]*recipester\.org/,
+  /^http:\/\/[\w-.]*rightclicksright\./,
+  /^http:\/\/[\w-.]*softpedia.com\./,
+  /^http:\/\/[\w-.]*thumbnailcloud\./,
+  /^http:\/\/[\w-.]*tweetbuzz\.jp/,
   // OKWave Q&A
   'nandemo.',
   'otasuke.',
@@ -113,10 +113,10 @@ const kNoiseList = [
   'questionbox.',
   'mag2qa.com',
   'ziddy.japan.zdnet.com',
-  /^http:\/\/[\w\-\.]*okwave\.jp/,
+  /^http:\/\/[\w-.]*okwave\.jp/,
   /^http:\/\/oshiete\d?\./,
   /^http:\/\/soudan\d?\./,
-  // Proxy
+  // proxy
   '24hr-computersecurity.com',
   'anticensure.com',
   'autobypass.com',
@@ -129,18 +129,13 @@ const kNoiseList = [
   'takewii.com',
   'tehvu.ir',
   'unblockweb.us',
-  // Price comparison
+  // comparison
   '3mori.com',
+  'r.tabelog.com',
   /^http:\/\/(?:www\.)?amazon\.[\w-.]+?\/.+?\/dp/,
   /^http:\/\/(?:m|review)\.kakaku\.com/,
   /^http:\/\/(?:www\.)?kakaku\.[\w-.]+?\/item/,
-  /^http:\/\/[\w\-\.]+rakuten\.co\.jp/,
-  // Application market
-  'addons.mozilla.',
-  'play.google.com',
-  'chrome.google.com',
-  'market.android.com',
-  'itunes.apple.com'
+  /^http:\/\/[\w-.]+rakuten\.co\.jp/
   //,
 ];
 
