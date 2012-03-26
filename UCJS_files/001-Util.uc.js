@@ -662,26 +662,33 @@ function registerChromeStyleSheet(aCSS) {
   return document.insertBefore(stylesheet, document.documentElement);
 }
 
-function registerContentStyleSheet(aCSS, aDocument, aID) {
-  var d = aDocument || getFocusedDocument();
-  if (aID && d.getElementById(aID))
+function registerContentStyleSheet(aCSS, aOption) {
+  var {doc, id, replace} = aOption || {};
+
+  var d = doc || getFocusedDocument();
+
+  var head = (d.getElementsByTagName('head') || [])[0];
+  if (!head)
     return;
 
-  var heads = d.getElementsByTagName('head');
-  if (heads.length === 0)
-    return;
+  var old = id && d.getElementById(id);
+  if (old) {
+    if (!replace)
+      return;
+    head.removeChild(old);
+  }
 
   var css = normalizeCSS(aCSS);
   if (!css)
     return;
 
   var style = d.createElement('style');
-  if (aID) {
-    style.id = aID;
+  if (id) {
+    style.id = id;
   }
   style.appendChild(d.createTextNode(css));
 
-  return heads[0].appendChild(style);
+  return head.appendChild(style);
 }
 
 function normalizeCSS(aCSS) {

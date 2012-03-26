@@ -316,7 +316,9 @@ const kSiteList = [
           -moz-column-count:2;\
           -moz-column-gap:1em;\
         }',
-      aDocument);
+      aDocument,
+      // On ajax loading, replace the old CSS.
+      {replace: true});
     }
   },
   {
@@ -667,8 +669,10 @@ function U(aStr)
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
 
-function setStyleSheet(aCSS, aDocument)
-  ucjsUtil.setContentStyleSheet(aCSS, aDocument, kID.STYLESHEET);
+function setStyleSheet(aCSS, aDocument, aOption) {
+  var {replace} = aOption || {};
+  ucjsUtil.setContentStyleSheet(aCSS, {doc: aDocument, id: kID.STYLESHEET, replace: replace});
+}
 
 function log(aMsg)
   ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
