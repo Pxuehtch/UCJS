@@ -144,10 +144,9 @@ const kNoiseList = [
  * List of target site.
  * @param disabled {boolean} [optional] Set true and this item is ignored.
  * @param name {string}
- * @param include {regExp|string}|{array of (regexp|string)} {string}:exact match.
+ * @param include {regExp|string}|{array of (regexp|string)} {string} tests exact match.
  * @param wait {integer} [optional] Millisecond waiting time after document loaded.
- *   If you do not have to wait for DOM build, set to 0.
- *   e.g. command only changes the location.
+ *   Set to 0 if you do not have to wait for DOM build.
  * @param command {function}
  */
 const kSiteList = [
@@ -356,21 +355,17 @@ const kSiteList = [
     name: 'bing Result',
     include: /^http:\/\/www\.bing\.com\/search/,
     command: function(aDocument) {
-      // Page styles.
       setStyleSheet('\
         /* multi-column */\
-        #content, .sa_cc\
-        {\
+        #content, .sa_cc{\
           max-width:100%!important;\
           padding-right:0!important;\
         }\
-        #wg0\
-        {\
+        #wg0{\
           -moz-column-count:2;\
           -moz-column-gap:1em;\
         }\
-        #wg0>li\
-        {\
+        #wg0>li{\
           float:inherit!important;\
         }',
       aDocument);
@@ -380,15 +375,12 @@ const kSiteList = [
     name: 'Wikipedia Article',
     include: /^http:\/\/[a-z]+?\.wikipedia\.org\/wiki/,
     command: function(aDocument) {
-      // Page styles.
       setStyleSheet('\
         /* popup reference */\
-        .references li\
-        {\
+        .references li{\
           list-style-type:none;\
         }\
-        .references li:target\
-        {\
+        .references li:target{\
           position:fixed;\
           left:155px;\
           right:13px;\
