@@ -150,7 +150,6 @@ const kNoiseList = [
  * @param disabled {boolean} [optional] Set true and this item is ignored.
  * @param name {string}
  * @param include {regExp|string}|{array of (regexp|string)} {string}:exact match.
- * @param exclude {regexp|string}|{Array of (regexp|string)} [optional]
  * @param wait {integer} [optional] Millisecond waiting time after document loaded.
  *   If you do not have to wait for DOM build, set to 0.
  *   e.g. command only changes the location.
@@ -408,8 +407,11 @@ const kSiteList = [
   {
     name: 'Youtube Player',
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|user)/,
-    exclude: /&list=/,
     command: function(aDocument) {
+      // exclude playlist mode.
+      if (/[?&]list=/.test(aDocument.location.search))
+        return;
+
       preventAutoplay();
 
       function preventAutoplay() {
@@ -498,27 +500,15 @@ var mPageObserver = (function() {
   }
 
   function testURL(aSite, aTargetURL) {
-    var {include, exclude} = aSite;
+    var {include} = aSite;
 
     // test inclusion.
     if (!Array.isArray(include)) {
       include = [include];
     }
-    var matched = include.some(function(val) {
-      return (typeof val === 'string') ? val === aTargetURL : val.test(aTargetURL);
+    return include.some(function(a) {
+      return (typeof a === 'string') ? a === aTargetURL : a.test(aTargetURL);
     });
-
-    // test exclusion.
-    if (matched && exclude) {
-      if (!Array.isArray(exclude)) {
-        exclude = [exclude];
-      }
-      matched = exclude.every(function(val) {
-        return (typeof val === 'string') ? aTargetURL.indexOf(val) < 0 : !val.test(aTargetURL);
-      });
-    }
-
-    return matched;
   }
 
   function init() {
