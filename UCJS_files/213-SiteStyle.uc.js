@@ -151,6 +151,7 @@ const kNoiseList = [
  */
 const kSiteList = [
   {
+    // @note needed to put before 'Google Result'
     name: 'Google Image Result',
     include: [
       /^https?:\/\/www\.google\.[a-z.]+\/[^#]*tb[ms]=isch[^#]*$/,
