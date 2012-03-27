@@ -84,7 +84,7 @@ function getScripts(aScriptLoader) {
 }
 
 /**
- * Create menu in menu-bar.
+ * Create a menu in the menu-bar.
  * @param aScripts {hash} scripts data handler.
  */
 function createMenu(aScripts) {
@@ -112,7 +112,7 @@ function createMenu(aScripts) {
 }
 
 /**
- * ScriptListPanel handler.
+ * Handler of a panel of scripts list.
  * @param aScripts {hash} scripts data handler.
  * @return {hash}
  *   @member open {function}
