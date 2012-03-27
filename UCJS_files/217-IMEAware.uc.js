@@ -140,7 +140,7 @@ var mIMEAwareHandler = {
     switch (aEvent.type) {
       case 'keydown':
         // About keys for IME, 'keyup' event is dispatched when the key is down and sometimes unfired.
-        // 'keydown' event is processed property. (keycode is 229 at any key for IME.)
+        // 'keydown' event is processed properly. (keycode is 229 at any key for IME.)
         if (aEvent.keyCode === 229) {
           // Delay for making sure that IME is ready.
           this.delayedUpdateStyle();
