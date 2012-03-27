@@ -153,9 +153,9 @@ const kSiteList = [
   {
     name: 'Google Image Result',
     include: [
-      /^https?:\/\/www\.google\.[a-z.]+?\/search\?[^#]*tb[ms]=isch[^#]*$/,
-      /^https?:\/\/www\.google\.[a-z.]+?\/search\?.+#.*tb[ms]=isch/,
-      /^https?:\/\/images\.google\.[a-z.]+?\/search\?.+/
+      /^https?:\/\/www\.google\.[a-z.]+\/[^#]*tb[ms]=isch[^#]*$/,
+      /^https?:\/\/www\.google\.[a-z.]+\/.*#.*tb[ms]=isch/,
+      /^https?:\/\/images\.google\.[a-z.]+\/search\?.+/
     ],
     wait: 0,
     command: function(aDocument) {
@@ -170,7 +170,7 @@ const kSiteList = [
     // wrapper for ajax search result.
     // @note needed to put before 'Google Result'
     name: 'Google Result ajax',
-    include: /^https?:\/\/www\.google\.[a-z.]+?\/search\?.+#/,
+    include: /^https?:\/\/www\.google\.[a-z.]+\/.*#.*q=/,
     // wait for ajax loading.
     wait: 500,
     command: function(aDocument) {
@@ -179,7 +179,7 @@ const kSiteList = [
   },
   {
     name: 'Google Result',
-    include: /^https?:\/\/www\.google\.[a-z.]+?\/search\?.+/,
+    include: /^https?:\/\/www\.google\.[a-z.]+\/.*q=/,
     command: function(aDocument) {
       var params = aDocument.location.hash || aDocument.location.search;
       function testMode(a) {
@@ -373,7 +373,7 @@ const kSiteList = [
   },
   {
     name: 'Wikipedia Article',
-    include: /^http:\/\/[a-z]+?\.wikipedia\.org\/wiki/,
+    include: /^http:\/\/[a-z]+\.wikipedia\.org\/wiki/,
     command: function(aDocument) {
       setStyleSheet('\
         /* popup reference */\
