@@ -114,14 +114,14 @@ var mIMEAwareHandler = {
    */
   getIMEState: function() {
     var win = this.textbox.ownerDocument.defaultView;
-    var imeMode = win.getComputedStyle(this.textbox, null).imeMode;
-    var utils = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+    if (win) {
+      let imeMode = win.getComputedStyle(this.textbox, null).imeMode;
+      let utils = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
 
-    try {
       if (imeMode !== 'disabled' && utils.IMEStatus === utils.IME_STATUS_ENABLED) {
         return utils.IMEIsOpen ? 'ON' : 'OFF';
       }
-    } catch (e) {}
+    }
     return 'DISABLED';
   },
 
