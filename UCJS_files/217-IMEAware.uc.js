@@ -125,15 +125,13 @@ var mIMEAwareHandler = {
     return 'DISABLED';
   },
 
-  delay: function(aFunc) {
-    if (this._timer) {
-      clearTimeout(this._timer);
-      delete this._timer;
+  delayedUpdateStyle: function() {
+    if (this._delayedUpdateStyleTimer) {
+      clearTimeout(this._delayedUpdateStyleTimer);
+      delete this._delayedUpdateStyleTimer;
     }
 
-    if (aFunc) {
-      this._timer = setTimeout(aFunc.bind(this), 10);
-    }
+    this._delayedUpdateStyleTimer = setTimeout(this.updateStyle.bind(this), 0);
   },
 
   handleEvent: function(aEvent) {
@@ -145,13 +143,13 @@ var mIMEAwareHandler = {
         // 'keydown' event is processed property. (keycode is 229 at any key for IME.)
         if (aEvent.keyCode === 229) {
           // Delay for making sure that IME is ready.
-          this.delay(this.updateStyle);
+          this.delayedUpdateStyle();
         }
         break;
       case 'keyup':
         // Check IME whenever a modifier key is pressed.
         if (aEvent.keyCode < 33) {
-          this.delay(this.updateStyle);
+          this.delayedUpdateStyle();
         }
         break;
       case 'blur':
