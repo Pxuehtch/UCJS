@@ -227,22 +227,19 @@ const kSiteList = [
         var {custom, multiColumn} = aOption || {};
 
         var css = '\
-          /* video items */\
-          #videobox>table>tbody>tr>td{\
+          /* block items */\
+          .nrgt>tbody>tr>td,.ts>tbody>tr>td{\
             float:left!important;\
             width:auto!important;\
           }\
-          /* child items */\
-          .vsc~table,.r~div{\
+          .nrgt,.nrgt *,.r~div{\
+            width:auto!important;\
+            margin-top:0!important;\
             margin-left:0!important;\
+            padding-top:0!important;\
             padding-left:0!important;\
           }\
-          .mslg>td,.mslg>td>div{\
-            width:auto!important;\
-            margin-right:1em!important;\
-            padding:0!important;\
-          }\
-          .mslg .l{\
+          .nrgt .l{\
             font-size:small!important;\
           }';
 
