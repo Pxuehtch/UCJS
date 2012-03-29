@@ -99,14 +99,14 @@ const kNoiseList = [
   /^http:\/\/(?:[\w-]+\.)*designiddatabase\./,
   /^http:\/\/(?:[\w-]+\.)*designlinkdatabase\./,
   /^http:\/\/(?:[\w-]+\.)*designrecipedatabase\./,
-  /^http:\/\/(?:[\w-]+\.)*pastebin\.ca/,
-  /^http:\/\/(?:[\w-]+\.)*pg\-feed\.com/,
-  /^http:\/\/(?:[\w-]+\.)*recipester\.org/,
+  /^http:\/\/(?:[\w-]+\.)*pastebin\./,
+  /^http:\/\/(?:[\w-]+\.)*pg\-feed\./,
+  /^http:\/\/(?:[\w-]+\.)*recipester\./,
   /^http:\/\/(?:[\w-]+\.)*rightclicksright\./,
-  /^http:\/\/(?:[\w-]+\.)*softpedia.com/,
+  /^http:\/\/(?:[\w-]+\.)*softpedia./,
   /^http:\/\/(?:[\w-]+\.)*softonic\./,
   /^http:\/\/(?:[\w-]+\.)*thumbnailcloud\./,
-  /^http:\/\/(?:[\w-]+\.)*tweetbuzz\.jp/,
+  /^http:\/\/(?:[\w-]+\.)*tweetbuzz\./,
   // OKWave Q&A
   'nandemo.',
   'otasuke.',
@@ -135,9 +135,9 @@ const kNoiseList = [
   '3mori.com',
   'e-shops.jp',
   'r.tabelog.com',
-  /^http:\/\/(?:[\w-]+\.)*amazon\.(?:com|co\.jp)\/.+/,
-  /^http:\/\/(?:[\w-]+\.)*kakaku\.(?:com|co\.jp)\/.+/,
-  /^http:\/\/(?:[\w-]+\.)*rakuten\.(?:com|co\.jp)\/.+/
+  /^http:\/\/(?:[\w-]+\.)*amazon\.(?:com|co\.jp)/,
+  /^http:\/\/(?:[\w-]+\.)*kakaku\.(?:com|co\.jp)/,
+  /^http:\/\/(?:[\w-]+\.)*rakuten\.(?:com|co\.jp)/
   //,
 ];
 
