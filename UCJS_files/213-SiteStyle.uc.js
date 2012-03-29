@@ -205,6 +205,8 @@ const kSiteList = [
         var lastHost = null;
         Array.forEach($S('li.g', aDocument), function(item) {
           var link = $S1('h3.r>a, .ts td>a', item);
+          if (!link)
+            return;
 
           // weaken noisy item.
           if (testNoisyURL(link.href)) {
@@ -308,9 +310,11 @@ const kSiteList = [
       // process items.
       Array.forEach($S('li'), function(item) {
         var link = $S1('.hd>h3>a', item);
+        if (!link)
+          return;
 
         // weaken noisy item.
-        if (link && testNoisyURL(link.href)) {
+        if (testNoisyURL(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
       });
