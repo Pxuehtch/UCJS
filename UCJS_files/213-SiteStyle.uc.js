@@ -204,7 +204,7 @@ const kSiteList = [
 
         var lastHost = null;
         Array.forEach($S('li.g', aDocument), function(item) {
-          var link = $S1('h3.r>a, .ts td>a', item);
+          var link = $S1('.r>a, .ts a', item);
           if (!link)
             return;
 
