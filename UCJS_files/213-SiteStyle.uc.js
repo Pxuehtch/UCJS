@@ -170,17 +170,6 @@ const kSiteList = [
     }
   },
   {
-    // wrapper for ajax search result.
-    // @note needed to put before 'Google Result'
-    name: 'Google Result ajax',
-    include: /^https?:\/\/www\.google\.[a-z.]+\/.*#.*q=/,
-    // wait for ajax loading.
-    wait: 500,
-    command: function(aDocument) {
-      doSiteCommand('Google Result', aDocument);
-    }
-  },
-  {
     name: 'Google Result',
     include: /^https?:\/\/www\.google\.[a-z.]+\/.*q=/,
     command: function(aDocument) {
@@ -436,56 +425,94 @@ const kSiteList = [
  *   @member init {function}
  */
 var mPageObserver = (function() {
+  /**
+   * Handler for the cache of browsers on progress listener.
+   */
+  var mBrowserState = (function() {
+    var browsers = new WeakMap();
+
+    function clear(aBrowser) {
+      browsers.delete(aBrowser);
+    }
+
+    function get(aBrowser) {
+      return browsers.get(aBrowser, null);
+    }
+
+    function set(aBrowser, aState) {
+      browsers.set(aBrowser, aState);
+    }
+
+    return {
+      clear: clear,
+      get: get,
+      set: set
+    };
+  })();
+
   var mProgressListener = {
-    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlag) {
-      apply(aBrowser, aWebProgress, aLocation.spec);
+    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
+      mBrowserState.clear(aBrowser);
+
+      var URL = aLocation.spec;
+      if (!/^https?/.test(URL))
+        return;
+
+      // 1st. test quick apply.
+      if (apply(aBrowser, {quick: true}))
+        return;
+
+      // 2nd. wait document loading.
+      // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
+      var observing = (aFlags & 0x1) ? 'STOP_REQUEST' : 'STOP_WINDOW';
+      mBrowserState.set(aBrowser, {URL: URL, observing: observing});
+    },
+
+    onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
+      var URL = aBrowser.currentURI.spec;
+      if (!/^https?/.test(URL))
+        return;
+
+      var state = mBrowserState.get(aBrowser);
+      if (!state || state.URL !== URL)
+        return;
+
+      // aFlags: STATE_STOP=0x10, STATE_IS_REQUEST=0x10000, STATE_IS_WINDOW=0x80000
+      if ((state.observing === 'STOP_WINDOW' && (aFlags & 0x10) && (aFlags & 0x80000) &&
+          aRequest.name === URL) ||
+          (state.observing === 'STOP_REQUEST' && (aFlags & 0x10) && (aFlags & 0x10000) &&
+          aRequest.name === 'about:document-onload-blocker')) {
+        apply(aBrowser);
+        mBrowserState.clear(aBrowser);
+      }
     },
 
     onProgressChange: function() {},
     onSecurityChange: function() {},
-    onStateChange: function() {},
     onStatusChange: function() {},
     onRefreshAttempted: function() {},
     onLinkIconAvailable: function() {}
   };
 
-  var mTimerID = null;
+  function apply(aBrowser, aOption) {
+    var {quick} = aOption || {};
+    var URL = aBrowser.currentURI.spec;
 
-  function clearTimer() {
-    if (mTimerID) {
-      clearInterval(mTimerID);
-      mTimerID = null;
-    }
-  }
-
-  function apply(aBrowser, aWebProgress, aURL) {
-    if (!/^https?/.test(aURL))
-      return;
-
-    clearTimer();
-
-    kSiteList.some(function(site) {
-      if (testURL(site, aURL)) {
-        if (site.disabled)
-          return true;
-
-        if (site.wait === 0) {
-          site.command(aBrowser.contentDocument);
-          return true;
+    return kSiteList.some(function(site) {
+      if (!site.disabled && testURL(site, URL)) {
+        if (quick) {
+          if (site.wait === 0) {
+            site.command(aBrowser.contentDocument);
+            return true;
+          }
+          return false;
         }
 
-        mTimerID = setInterval(function() {
-          if (aWebProgress.isLoadingDocument)
-            return;
-
-          clearTimer();
-
-          setTimeout(function() {
-            if (aBrowser.contentDocument) {
-              site.command(aBrowser.contentDocument);
-            }
-          }, site.wait || 0);
-        }, 0);
+        setTimeout(function() {
+          if (aBrowser && aBrowser.contentDocument) {
+            site.command(aBrowser.contentDocument);
+          }
+        }, site.wait || 0);
         return true;
       }
       return false;
@@ -508,7 +535,6 @@ var mPageObserver = (function() {
     gBrowser.addTabsProgressListener(mProgressListener);
     addEvent([window, 'unload', function() {
       gBrowser.removeTabsProgressListener(mProgressListener);
-      clearTimer();
     }, false]);
   }
 
@@ -570,18 +596,6 @@ var mPrefMenu = (function() {
 
 
 // Utilities.
-
-function doSiteCommand(aName, aDocument) {
-  return kSiteList.some(function(a) {
-    if (a.name === aName) {
-      if (!a.disabled) {
-        a.command(aDocument);
-      }
-      return true;
-    }
-    return false;
-  });
-}
 
 function testNoisyURL(aURL) {
   if (!/^https?:/.test(aURL))
