@@ -451,7 +451,7 @@ var mPageObserver = (function() {
     return {
       init: init,
       uninit: uninit,
-      get: get,
+      get: get
     };
   })();
 
