@@ -177,10 +177,10 @@ const kSiteList = [
       var params = aDocument.location.hash || aDocument.location.search;
       function testMode(a) {
         var [mode] = /[?&#]tb[ms]=[^&]+/.exec(params) || [];
+        if (a)
+          return mode && a.test(mode);
         // main or not.
-        if (!a)
-          return !mode;
-        return mode && a.test(mode);
+        return !mode;
       }
 
       processResultItems();
