@@ -144,9 +144,12 @@ const kNoiseList = [
 
 /**
  * List of target site.
- * @param disabled {boolean} [optional] Set true and this item is ignored.
+ * @param disabled {boolean} [optional]
+ *   true: this item is ignored and following items will be tested.
+ *   false [default]: this item is tested.
  * @param name {string}
- * @param include {regExp|string}|{array of (regexp|string)} {string} tests exact match.
+ * @param include {regExp|string}|{array of (regexp|string)}
+ *   {string}: tests exact match.
  * @param quickApply {boolean} [optional]
  *   true: command is applied as soon as location changes.
  *   false [default]: not applied until document loads.
