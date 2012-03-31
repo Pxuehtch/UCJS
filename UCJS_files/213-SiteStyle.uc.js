@@ -453,6 +453,13 @@ var mPageObserver = (function() {
   })();
 
   var mProgressListener = {
+    init: function() {
+      gBrowser.addTabsProgressListener(mProgressListener);
+      addEvent([window, 'unload', function() {
+        gBrowser.removeTabsProgressListener(mProgressListener);
+      }, false]);
+    },
+
     onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
       var URL = aLocation.spec;
       if (!/^https?/.test(URL))
@@ -533,10 +540,7 @@ var mPageObserver = (function() {
   }
 
   function init() {
-    gBrowser.addTabsProgressListener(mProgressListener);
-    addEvent([window, 'unload', function() {
-      gBrowser.removeTabsProgressListener(mProgressListener);
-    }, false]);
+    mProgressListener.init();
   }
 
   return {
