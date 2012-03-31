@@ -459,14 +459,20 @@ var mPageObserver = (function() {
 
       mBrowserState.clear(aBrowser);
 
-      // 1st. test quick apply.
-      if (apply(aBrowser, {quick: true}))
+      var site = matchSiteList(URL);
+      if (!site)
         return;
+
+      // 1st. test quick apply.
+      if (site.wait === 0) {
+        apply(aBrowser, site);
+        return;
+      }
 
       // 2nd. wait document loading.
       // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
       var observing = (aFlags & 0x1) ? 'STOP_REQUEST' : 'STOP_WINDOW';
-      mBrowserState.set(aBrowser, {URL: URL, observing: observing});
+      mBrowserState.set(aBrowser, {URL: URL, site: site, observing: observing});
     },
 
     onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
@@ -483,7 +489,7 @@ var mPageObserver = (function() {
           aRequest.name === URL) ||
           (state.observing === 'STOP_REQUEST' && (aFlags & 0x10) && (aFlags & 0x10000) &&
           aRequest.name === 'about:document-onload-blocker')) {
-        apply(aBrowser);
+        apply(aBrowser, state.site);
         mBrowserState.clear(aBrowser);
       }
     },
@@ -495,29 +501,18 @@ var mPageObserver = (function() {
     onLinkIconAvailable: function() {}
   };
 
-  function apply(aBrowser, aOption) {
-    var {quick} = aOption || {};
-    var URL = aBrowser.currentURI.spec;
+  function matchSiteList(aURL) {
+    var site = null;
 
-    return kSiteList.some(function(site) {
-      if (!site.disabled && testURL(site, URL)) {
-        if (quick) {
-          if (site.wait === 0) {
-            site.command(aBrowser.contentDocument);
-            return true;
-          }
-          return false;
-        }
-
-        setTimeout(function() {
-          if (aBrowser && aBrowser.contentDocument) {
-            site.command(aBrowser.contentDocument);
-          }
-        }, site.wait || 0);
+    kSiteList.some(function(a) {
+      if (!a.disabled && testURL(a, aURL)) {
+        site = a;
         return true;
       }
       return false;
     });
+
+    return site;
   }
 
   function testURL(aSite, aTargetURL) {
@@ -530,6 +525,10 @@ var mPageObserver = (function() {
     return include.some(function(a) {
       return (typeof a === 'string') ? a === aTargetURL : a.test(aTargetURL);
     });
+  }
+
+  function apply(aBrowser, aSite) {
+    aSite.command(aBrowser.contentDocument);
   }
 
   function init() {
