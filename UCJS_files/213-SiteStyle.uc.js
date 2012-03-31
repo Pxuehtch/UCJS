@@ -453,11 +453,11 @@ var mPageObserver = (function() {
 
   var mProgressListener = {
     onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
-      mBrowserState.clear(aBrowser);
-
       var URL = aLocation.spec;
       if (!/^https?/.test(URL))
         return;
+
+      mBrowserState.clear(aBrowser);
 
       // 1st. test quick apply.
       if (apply(aBrowser, {quick: true}))
