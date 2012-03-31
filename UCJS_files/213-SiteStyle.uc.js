@@ -147,8 +147,9 @@ const kNoiseList = [
  * @param disabled {boolean} [optional] Set true and this item is ignored.
  * @param name {string}
  * @param include {regExp|string}|{array of (regexp|string)} {string} tests exact match.
- * @param wait {integer} [optional] Millisecond waiting time after document loaded.
- *   Set to 0 if you do not have to wait for DOM build.
+ * @param quickApply {boolean} [optional]
+ *   true: command is applied as soon as location changes.
+ *   false [default]: not applied until document loads.
  * @param command {function}
  */
 const kSiteList = [
@@ -160,7 +161,7 @@ const kSiteList = [
       /^https?:\/\/www\.google\.[a-z.]+\/.*#.*tb[ms]=isch/,
       /^https?:\/\/images\.google\.[a-z.]+\/search\?.+/
     ],
-    wait: 0,
+    quickApply: true,
     command: function(aDocument) {
       var location = aDocument.location;
       // switch to the old mode.
@@ -464,7 +465,7 @@ var mPageObserver = (function() {
         return;
 
       // 1st. test quick apply.
-      if (site.wait === 0) {
+      if (site.quickApply) {
         apply(aBrowser, site);
         return;
       }
