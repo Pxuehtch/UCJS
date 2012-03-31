@@ -433,7 +433,11 @@ var mPageObserver = (function() {
   var mBrowserState = (function() {
     var browsers = new WeakMap();
 
-    function clear(aBrowser) {
+    function init(aBrowser, aState) {
+      browsers.set(aBrowser, aState);
+    }
+
+    function uninit(aBrowser) {
       browsers.delete(aBrowser);
     }
 
@@ -441,14 +445,10 @@ var mPageObserver = (function() {
       return browsers.get(aBrowser, null);
     }
 
-    function set(aBrowser, aState) {
-      browsers.set(aBrowser, aState);
-    }
-
     return {
-      clear: clear,
+      init: init,
+      uninit: uninit,
       get: get,
-      set: set
     };
   })();
 
@@ -458,7 +458,7 @@ var mPageObserver = (function() {
       if (!/^https?/.test(URL))
         return;
 
-      mBrowserState.clear(aBrowser);
+      mBrowserState.uninit(aBrowser);
 
       var site = matchSiteList(URL);
       if (!site)
@@ -472,8 +472,8 @@ var mPageObserver = (function() {
 
       // 2nd. wait document loading.
       // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
-      var observing = (aFlags & 0x1) ? 'STOP_REQUEST' : 'STOP_WINDOW';
-      mBrowserState.set(aBrowser, {URL: URL, site: site, observing: observing});
+      var observing = (aFlags & 0x1) ? 'FIRST_STOP_REQUEST' : 'FIRST_STOP_WINDOW';
+      mBrowserState.init(aBrowser, {URL: URL, site: site, observing: observing});
     },
 
     onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
@@ -486,12 +486,12 @@ var mPageObserver = (function() {
         return;
 
       // aFlags: STATE_STOP=0x10, STATE_IS_REQUEST=0x10000, STATE_IS_WINDOW=0x80000
-      if ((state.observing === 'STOP_WINDOW' && (aFlags & 0x10) && (aFlags & 0x80000) &&
+      if ((state.observing === 'FIRST_STOP_WINDOW' && (aFlags & 0x10) && (aFlags & 0x80000) &&
           aRequest.name === URL) ||
-          (state.observing === 'STOP_REQUEST' && (aFlags & 0x10) && (aFlags & 0x10000) &&
+          (state.observing === 'FIRST_STOP_REQUEST' && (aFlags & 0x10) && (aFlags & 0x10000) &&
           aRequest.name === 'about:document-onload-blocker')) {
         apply(aBrowser, state.site);
-        mBrowserState.clear(aBrowser);
+        mBrowserState.uninit(aBrowser);
       }
     },
 
