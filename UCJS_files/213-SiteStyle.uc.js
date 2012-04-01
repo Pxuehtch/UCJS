@@ -457,6 +457,11 @@ var mPageObserver = (function() {
 
   var mProgressListener = {
     init: function() {
+      addEvent([gBrowser.tabContainer, 'TabClose', function(aEvent) {
+        var browser = aEvent.target.linkedBrowser;
+        mBrowserState.uninit(browser);
+      }, false]);
+
       gBrowser.addTabsProgressListener(mProgressListener);
       addEvent([window, 'unload', function() {
         gBrowser.removeTabsProgressListener(mProgressListener);
