@@ -325,7 +325,7 @@ var mTabSelector = {
  * Handler to suspend the loading of a tab.
  */
 var mTabSuspender = {
-  timers: [],
+  timers: {},
 
   set: function(aTab, aDelay) {
     var timer = setTimeout(function(tab) mTabSuspender.stop(tab), aDelay || 0, aTab);
