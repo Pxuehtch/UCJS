@@ -95,11 +95,11 @@
     if (this.focused || !this._contentIsCropped || this._tooltipTimer)
       return;
 
-    this._tooltipTimer = setTimeout(function(self) {
-      self._urlTooltip.firstChild.textContent = self.value;
-      self._urlTooltip.maxWidth = self.boxObject.width;
-      self._urlTooltip.openPopup(self, 'after_start', 0, 0, false, false);
-    }, 500, this);
+    this._tooltipTimer = setTimeout(function() {
+      this._urlTooltip.firstChild.textContent = this.value;
+      this._urlTooltip.maxWidth = this.boxObject.width;
+      this._urlTooltip.openPopup(this, 'after_start', 0, 0, false, false);
+    }.bind(this), 500);
   };
 
 })();

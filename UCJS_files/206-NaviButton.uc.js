@@ -182,7 +182,7 @@ var mTooltip = {
   },
 
   delayShow: function(aEvent) {
-    this.timer = setTimeout(function(_this, e) _this.show(e), 500, this, aEvent);
+    this.timer = setTimeout(this.show.bind(this), 500, aEvent);
   },
 
   hide: function(aEvent) {
