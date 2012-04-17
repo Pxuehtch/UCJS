@@ -888,26 +888,23 @@ function GestureTracer() {
 // Utilities.
 
 function inGestureArea(aEvent) {
-  var doc = aEvent.target.ownerDocument;
+  var {width, height, screenX: left, screenY: top} = gBrowser.mPanelContainer.boxObject;
+  var {screenX: x, screenY: y} = aEvent;
+  // Convert the screen coordinates of cursor to client.
+  x -= left;
+  y -= top;
 
-  var {innerWidth, innerHeight} = doc.defaultView;
-  var {clientX, clientY} = aEvent;
-
-  // Cancelling margin of gesture.
+  // Margin of cancelling a gesture.
   // @value Pixels of the width of scrollbar.
   var margin = 16;
 
-  return margin < clientX && clientX < (innerWidth - margin) &&
-         margin < clientY && clientY < (innerHeight - margin);
+  return margin < x && x < (width - margin) && margin < y && y < (height - margin);
 }
 
 function inDragArea(aEvent) {
-  var src =
-    Cc['@mozilla.org/widget/dragservice;1'].
-    getService(Ci.nsIDragService).
-    getCurrentSession().
-    sourceDocument;
-  var dst = aEvent.target.ownerDocument;
+  var src = Cc['@mozilla.org/widget/dragservice;1'].getService(Ci.nsIDragService).
+    getCurrentSession().sourceDocument.defaultView.top;
+  var dst = aEvent.target.ownerDocument.defaultView.top;
 
   return src && dst && src === dst && inGestureArea(aEvent);
 }
