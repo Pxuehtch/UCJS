@@ -890,11 +890,6 @@ function GestureTracer() {
 function inGestureArea(aEvent) {
   var doc = aEvent.target.ownerDocument;
 
-  if (!(doc instanceof HTMLDocument))
-    return false;
-  if (doc.URL === 'about:blank')
-    return true;
-
   var {innerWidth, innerHeight} = doc.defaultView;
   var {clientX, clientY} = aEvent;
 
