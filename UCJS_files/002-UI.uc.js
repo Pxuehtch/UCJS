@@ -144,12 +144,21 @@ var mStatusField = (function() {
 
     update: function (aText) {
       var text = aText || '';
+      var field = this.textBox;
 
       if (this.text !== text) {
-        this.textBox.label = text;
+        field.label = text;
       }
 
-      this.textBox.setAttribute(kStatusAttribute.MESSAGE, true);
+      if (text) {
+        if (!field.hasAttribute(kStatusAttribute.MESSAGE)) {
+          field.setAttribute(kStatusAttribute.MESSAGE, true);
+        }
+      } else {
+        if (field.hasAttribute(kStatusAttribute.MESSAGE)) {
+          field.removeAttribute(kStatusAttribute.MESSAGE);
+        }
+      }
     },
 
     setOverLink: function(aEnabled) {
