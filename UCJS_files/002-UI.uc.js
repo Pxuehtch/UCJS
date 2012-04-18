@@ -150,6 +150,20 @@ var mStatusField = (function() {
       }
 
       this.textBox.setAttribute(kStatusAttribute.MESSAGE, true);
+    },
+
+    setOverLink: function(aEnabled) {
+      // @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
+      if (!aEnabled) {
+        if (!this.$setOverLink) {
+          this.$setOverLink = XULBrowserWindow.setOverLink;
+        }
+        XULBrowserWindow.setOverLink = function(url, anchorElt) {};
+      } else {
+        if (this.$setOverLink) {
+          XULBrowserWindow.setOverLink = this.$setOverLink;
+        }
+      }
     }
   };
 

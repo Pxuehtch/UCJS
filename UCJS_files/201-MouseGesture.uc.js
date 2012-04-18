@@ -604,6 +604,7 @@ function GestureManager() {
   function clear() {
     mTracer.clear();
     clearGesture();
+    setOverLink(true);
   }
 
   function clearGesture() {
@@ -629,6 +630,7 @@ function GestureManager() {
   }
 
   function init(aEvent) {
+    setOverLink(false);
     mTracer.init(aEvent);
 
     if (aEvent.type === 'dragover') {
@@ -959,6 +961,10 @@ function $(aId)
 
 function enableContextMenu(aEnable) {
   ucjsUI.ContentArea.contextMenu.hidden = !aEnable;
+}
+
+function setOverLink(aEnabled) {
+  ucjsUI.StatusField.setOverLink(aEnabled);
 }
 
 function displayStatus(aText) {
