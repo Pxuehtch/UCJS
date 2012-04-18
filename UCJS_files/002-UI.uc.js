@@ -141,11 +141,11 @@ var mStatusField = (function() {
     // @see chrome://browser/content/tabbrowser.xml::<property name="label"><getter>
     get text() this.textBox.getAttribute('label'),
 
-    exists: function () {
+    exists: function() {
       return this.textBox !== null;
     },
 
-    update: function (aText) {
+    update: function(aText) {
       var text = aText || '';
       var field = this.textBox;
 
@@ -270,7 +270,7 @@ var mStatusField = (function() {
  * @require TabEx.uc.js
  */
 var mMenuitem = {
-  toggleUnreadTab: function (aMenuitem, aTab) {
+  toggleUnreadTab: function(aMenuitem, aTab) {
     if (!ucjsTabEx)
       throw 'TabEx.uc.js is required.';
 
