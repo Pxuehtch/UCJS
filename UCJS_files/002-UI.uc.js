@@ -136,7 +136,10 @@ var mStatusField = (function() {
       return this.textBox = $ID('statusbar-display');
     },
 
-    get text() this.textBox.label,
+    // Gets the raw value of attribute because label getter returns empty
+    // whenever status field is inactive.
+    // @see chrome://browser/content/tabbrowser.xml::<property name="label"><getter>
+    get text() this.textBox.getAttribute('label'),
 
     exists: function () {
       return this.textBox !== null;
