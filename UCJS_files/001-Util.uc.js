@@ -699,7 +699,12 @@ function normalizeCSS(aCSS) {
     aCSS = aCSS.toString();
   }
 
-  return aCSS.replace(/\s{2,}/g, '').trim().replace(/\s*\/\*.*?\*\/\s*/g, '');
+  return aCSS.
+    // remove consecutive white spaces
+    // @note the delimiter of shorthand properties should be a SINGLE white space (margin:1px 2px;)
+    replace(/\s{2,}/g, '').trim().
+    // remove comment
+    replace(/\s*\/\*.*?\*\/\s*/g, '');
 }
 
 function loadOverlay(aOverlay) {
