@@ -153,6 +153,7 @@ const kNoiseList = [
  * @param quickApply {boolean} [optional]
  *   true: command is applied as soon as location changes.
  *   false [default]: not applied until document loads.
+ * @param wait {int} [optional] wait-time[ms] after document loads.
  * @param command {function}
  */
 const kSiteList = [
@@ -391,6 +392,8 @@ const kSiteList = [
   {
     name: 'Youtube Player',
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|user)/,
+    // wait for DOM built.
+    wait: 500,
     command: function(aDocument) {
       // exclude playlist mode.
       if (/[?&]list=/.test(aDocument.location.search))
@@ -544,7 +547,15 @@ var mPageObserver = (function() {
   }
 
   function apply(aBrowser, aSite) {
-    aSite.command(aBrowser.contentDocument);
+    if (aSite.wait) {
+      setTimeout(function() {
+        if (aBrowser) {
+          aSite.command(aBrowser.contentDocument);
+        }
+      }, aSite.wait);
+    } else {
+      aSite.command(aBrowser.contentDocument);
+    }
   }
 
   function init() {
