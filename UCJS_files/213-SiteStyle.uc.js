@@ -214,7 +214,7 @@ const kSiteList = [
             return;
 
           // weaken noisy item.
-          if (testNoisyURL(link.href)) {
+          if (mNoisyURLHandler.test(link.href)) {
             item.classList.add('ucjs_sitestyle_weaken');
           }
 
@@ -316,7 +316,7 @@ const kSiteList = [
           return;
 
         // weaken noisy item.
-        if (testNoisyURL(link.href)) {
+        if (mNoisyURLHandler.test(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
       });
@@ -619,19 +619,28 @@ var mPrefMenu = (function() {
 })();
 
 
-// Utilities.
+/**
+ * Noisy URL handler.
+ * @return {hash}
+ *   @member test {function}
+ */
+var mNoisyURLHandler = (function() {
+  function test(aURL) {
+    if (!/^https?:/.test(aURL))
+      return false;
 
-function testNoisyURL(aURL) {
-  if (!/^https?:/.test(aURL))
-    return false;
+    return kNoiseList.some(function(a) {
+      if (typeof a === 'string') {
+        return aURL.replace(/^https?:\/\/(?:www.)?/, '').indexOf(a) === 0;
+      }
+      return a.test(aURL);
+    });
+  }
 
-  return kNoiseList.some(function(a) {
-    if (typeof a === 'string') {
-      return aURL.replace(/^https?:\/\/(?:www.)?/, '').indexOf(a) === 0;
-    }
-    return a.test(aURL);
-  });
-}
+  return {
+    test: test
+  };
+})();
 
 
 // Imports.
