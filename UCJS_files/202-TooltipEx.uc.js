@@ -46,8 +46,8 @@ const kPanelStyle = {
 
 /**
  * Scanned attributes for tip item.
- * @key titles {array of string}
- * @key URLs {array of string}
+ * @key titles {string[]}
+ * @key URLs {string[]}
  */
 const kScanAttribute = {
   titles: ['title', 'alt', 'summary'],

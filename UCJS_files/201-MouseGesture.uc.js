@@ -33,7 +33,7 @@ const kGestureSign = {
 
 /**
  * Gestures setting.
- * @key gesture {array of string} Combination of kGestureSign.
+ * @key gesture {string[]} Combination of kGestureSign.
  * @key name {string}
  * @key command {function}
  *   @param aParam {hash}

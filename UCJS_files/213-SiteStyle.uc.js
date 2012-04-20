@@ -148,7 +148,7 @@ const kNoiseList = [
  *   true: this item is ignored and following items will be tested.
  *   false [default]: this item is tested.
  * @param name {string}
- * @param include {regExp|string}|{array of (regexp|string)}
+ * @param include {regExp|string}|{regexp[]|string[]}
  *   {string}: tests exact match.
  * @param quickApply {boolean} [optional]
  *   true: command is applied as soon as location changes.

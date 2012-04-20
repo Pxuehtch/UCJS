@@ -27,7 +27,7 @@
  *     @param aData {string}
  * @key types {array of 'PAGE'|'LINK'|'IMAGE'|'TEXT'}
  * @key label {string}
- * @key extensions {array of string} [option]
+ * @key extensions {string[]} [option]
  * @key command {function(aOption)} [option]
  *   @param aOption {hash}
  *     @key menuitem {element}
