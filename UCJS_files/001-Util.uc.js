@@ -130,6 +130,9 @@ function getSelectionAtCursor(aOption) {
     rangeOffset = document.popupRangeOffset;
   }
 
+  if (!targetWindow)
+    return '';
+
   var selection = getSelectionController(targetWindow);
   if (!selection || !selection.toString())
     return '';
