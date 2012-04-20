@@ -391,7 +391,7 @@ const kSiteList = [
   },
   {
     name: 'Youtube Player',
-    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|user)/,
+    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|user\/|\w+$)/,
     // wait for DOM built.
     wait: 500,
     command: function(aDocument) {
@@ -404,7 +404,7 @@ const kSiteList = [
       function preventAutoplay() {
         var player;
         // Flash version.
-        player = aDocument.getElementById('movie_player');
+        player = $S1('embed[id^="movie_player"]', aDocument);
         if (player) {
           let flashvars = player.getAttribute('flashvars');
           if (flashvars.indexOf('autoplay=0') < 0) {
@@ -414,7 +414,7 @@ const kSiteList = [
           return;
         }
         // HTML5 version.
-        player = (aDocument.getElementsByTagName('video') || [])[0];
+        player = $S1('video', aDocument);
         if (player) {
           player.pause();
           player.currentTime = 0;
