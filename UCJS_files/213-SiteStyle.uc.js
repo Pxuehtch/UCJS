@@ -371,7 +371,7 @@ const kSiteList = [
   },
   {
     name: 'Wikipedia Article',
-    include: /^http:\/\/[a-z]+\.wikipedia\.org\/wiki/,
+    include: /^https?:\/\/[a-z]+\.wikipedia\.org\/wiki/,
     command: function(aDocument) {
       setStyleSheet('\
         /* popup reference */\
