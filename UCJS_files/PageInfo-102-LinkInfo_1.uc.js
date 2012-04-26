@@ -13,7 +13,10 @@ var ucjsLinkInfo = (function() {
 "use strict";
 
 
-const COL_LINK_ADRESS = 2;
+const kID = {
+  linkTree: 'linktree',
+  addressColumn: 'linktree-address'
+};
 
 const kType = {
   a: '<A>',
@@ -39,8 +42,11 @@ var isListBuilt = false;
 
 function init() {
   if (!gLinkView) {
-    gLinkView = new pageInfoTreeView(COL_LINK_ADRESS);
-    document.getElementById('linktree').treeBoxObject.view = gLinkView;
+    let tree = document.getElementById(kID.linkTree);
+    let copyColumnIndex = tree.columns.getNamedColumn(kID.addressColumn).index;
+
+    gLinkView = new pageInfoTreeView(copyColumnIndex);
+    tree.view = gLinkView;
   }
   build();
 }
@@ -144,7 +150,7 @@ function openLink(aEvent) {
   if (row.value == -1)
     return;
 
-  var column = tree.columns.getNamedColumn('linktree-address');
+  var column = tree.columns.getNamedColumn(kID.addressColumn);
   var URL = tree.treeBoxObject.view.getCellText(row.value, column);
 
   var opener = window.opener;
