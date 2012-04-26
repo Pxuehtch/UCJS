@@ -38,7 +38,7 @@ const kNote = {
 
 
 var gLinkView = null;
-var isListBuilt = false;
+var gLinkInfoBuilt = false;
 
 function init() {
   if (!gLinkView) {
@@ -52,8 +52,8 @@ function init() {
 }
 
 function build() {
-  if (!isListBuilt) {
-    isListBuilt = true;
+  if (!gLinkInfoBuilt) {
+    gLinkInfoBuilt = true;
 
     goThroughFrames(gDocument, gWindow);
     LI_processFrames();
