@@ -50,9 +50,10 @@ function init() {
     let tree = document.getElementById(kID.linkTree);
     let copyColumnIndex = tree.columns.getNamedColumn(kID.addressColumn).index;
 
-    gLinkView = new pageInfoTreeView(copyColumnIndex);
+    gLinkView = new pageInfoTreeView(kID.linkTree, copyColumnIndex);
     tree.view = gLinkView;
   }
+
   build();
 }
 

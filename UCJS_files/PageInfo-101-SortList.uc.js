@@ -1,8 +1,10 @@
 // ==UserScript==
 // @name SortList.uc.js
-// @description Sorting listview of a page info window.
+// @description Sorting function of a listview of the page infomation window.
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
+
+// @note Disables the default sorting function.
 
 
 (function() {
@@ -15,8 +17,31 @@ const kSORT_DIRECTION_ATTRIBUTE = 'sortDirection';
 const kSortDirections = ['ascending', 'descending', 'natural'];
 
 
-// @see chrome://browser/content/pageinfo/pageInfo.js
+/**
+ * Cache of the custom properties of a tree view.
+ */
+var mSortState = (function() {
+	var mMap = new WeakMap();
+
+	function get(aTreeView) {
+		if (!mMap.has(aTreeView)) {
+			mMap.set(aTreeView, {});
+		}
+		return mMap.get(aTreeView);
+	}
+
+	return {
+		get: get,
+	};
+})();
+
+
+/**
+ * Implements the click handler of a header.
+ * @see chrome://browser/content/pageinfo/pageInfo.js
+ */
 pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
+  // Useless of sorting when a single row.
   if (this.rowCount < 2)
     return;
 
@@ -25,25 +50,28 @@ pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
   direction = kSortDirections[(kSortDirections.indexOf(direction) + 1) % 3];
   element.setAttribute(kSORT_DIRECTION_ATTRIBUTE, direction);
 
-  // Uses a reserved property 'sortcol'.
-  if (this.sortcol !== aColumn) {
-    if (this.sortcol) {
-      this.sortcol.element.removeAttribute(kSORT_DIRECTION_ATTRIBUTE);
+  var state = mSortState.get(this);
+
+  if (state.sortColumn !== aColumn) {
+    if (state.sortColumn) {
+      // Remove the previous sorting mark of a header.
+      state.sortColumn.element.removeAttribute(kSORT_DIRECTION_ATTRIBUTE);
     }
-    this.sortcol = aColumn;
+    state.sortColumn = aColumn;
   }
 
-  // Extends a custom property.
-  if (!this._naturalData) {
-    this._naturalData = this.data.concat();
+  // Only the first time store the natural order.
+  if (!state.naturalData) {
+    state.naturalData = this.data.concat();
   }
 
   if (direction === 'natural') {
-    this.data = this._naturalData.concat();
+    this.data = state.naturalData.concat();
   } else {
     sort(this.data, aColumn.index, direction === 'ascending');
   }
 
+  // Focus the first row.
   this.selection.clearSelection();
   this.selection.select(0);
   this.invalidate();
@@ -60,6 +88,12 @@ function sort(aData, aColumnIndex, aAscending) {
     aData.reverse();
   }
 }
+
+
+// Disable default sort functions.
+// @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
+gMetaView.onPageMediaSort = function() {};
+gImageView.onPageMediaSort = function() {};
 
 
 })();
