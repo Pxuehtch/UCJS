@@ -15,10 +15,14 @@
 "use strict";
 
 
-// Sets margins of browser window.
+// Sets margins of Firefox window.
+// @note this setting is for my own windows theme.
+// @BUG sometimes window layout breaks after returning from fullscreen mode.
 (function() {
 
-  $ID('main-window').setAttribute('chromemargin', '0,2,2,1');
+  var mainWindow = $ID('main-window');
+  mainWindow.setAttribute('chromemargin', '0,0,0,0');
+  mainWindow.style.border = '1px solid #000099';
 
 })();
 
