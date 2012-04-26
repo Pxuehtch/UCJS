@@ -4,6 +4,7 @@
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
 
+// @require LinkInfo.uc.xul
 // @note Some functions are exported. (ucjsLinkInfo.XXX)
 
 
@@ -12,6 +13,8 @@ var ucjsLinkInfo = (function() {
 
 "use strict";
 
+
+// Constances
 
 const kID = {
   linkTree: 'linktree',
@@ -36,6 +39,8 @@ const kNote = {
   image: '[IMG]'
 };
 
+
+// Handlers.
 
 var gLinkView = null;
 var gLinkInfoBuilt = false;
@@ -136,6 +141,9 @@ function addLink(aValueArray) {
   gLinkView.addRow([gLinkView.rowCount + 1].concat(aValueArray));
 }
 
+/**
+ * Open URL of a clicked row.
+ */
 function openLink(aEvent) {
   if (aEvent.originalTarget.localName != 'treechildren')
     return;
