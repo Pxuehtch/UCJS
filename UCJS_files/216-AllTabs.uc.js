@@ -333,9 +333,9 @@ function onPopupShowing(aEvent) {
       $(kID.GROUPS_MENU).disabled = true;
     }
 
-    let item = $(kID.ALLTABS_POPUP_SEPARATOR).nextSibling;
+    let refItem = $(kID.ALLTABS_POPUP_SEPARATOR).nextSibling;
 
-    // Tag of pinned tabs.
+    // About pinned tabs.
     let pinnedCount = mTabs.pinnedCount;
     if (pinnedCount) {
       let pinnedTabsTag = $E('menuitem', {
@@ -346,14 +346,16 @@ function onPopupShowing(aEvent) {
         }),
         disabled: true
       });
-      popup.insertBefore(pinnedTabsTag, item);
+      popup.insertBefore(pinnedTabsTag, refItem);
 
-      for (let i = 0; i < pinnedCount; i++) {
-        item = item.nextSibling;
-      }
+      gBrowser.visibleTabs.forEach(function(tab) {
+        if (tab.pinned) {
+          createTabMenuItem(tab, popup, refItem);
+        }
+      });
     }
 
-    // Tag of active group.
+    // About tabs of the active group.
     let visibleCount = mTabs.visibleCount;
     if (visibleCount) {
       let groupTag = $E('menuitem', {
@@ -365,7 +367,7 @@ function onPopupShowing(aEvent) {
         }),
         disabled: true
       });
-      popup.insertBefore(groupTag, item);
+      popup.insertBefore(groupTag, refItem);
 
       /**
        * @WORKAROUND
@@ -436,6 +438,20 @@ function onPopupHidden(aEvent) {
 
     mTabGroups.clear();
   }
+}
+
+// @see chrome://browser/content/tabbrowser.xml::_createTabMenuItem
+function createTabMenuItem(aTab, aPopup, aRefItem) {
+  var menuItem = $E('menuitem', {
+    class: 'menuitem-iconic alltabs-item menuitem-with-favicon'
+  });
+
+  aPopup._setMenuitemAttributes(menuItem, aTab);
+
+  aTab.mCorrespondingMenuitem = menuItem;
+  menuItem.tab = aTab;
+
+  aPopup.insertBefore(menuItem, aRefItem);
 }
 
 
