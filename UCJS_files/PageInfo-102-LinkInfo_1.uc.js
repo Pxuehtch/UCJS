@@ -165,9 +165,8 @@ function openLink(aEvent) {
 // Exports.
 
 return {
-  openLink: openLink,
   init: init,
-  build: build
+  openLink: openLink
 };
 
 
