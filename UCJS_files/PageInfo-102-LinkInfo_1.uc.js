@@ -14,14 +14,6 @@ var ucjsLinkInfo = (function() {
 
 
 const COL_LINK_ADRESS = 2;
-const LINK_COLS = [
-  'linktree-index',
-  'linktree-name',
-  'linktree-address', // COL_LINK_ADRESS = 2
-  'linktree-type',
-  'linktree-target', 
-  'linktree-accesskey'
-];
 
 const kType = {
   a: '<A>',
@@ -47,7 +39,7 @@ var isListBuilt = false;
 
 function init() {
   if (!gLinkView) {
-    gLinkView = new pageInfoTreeView(LINK_COLS, COL_LINK_ADRESS);
+    gLinkView = new pageInfoTreeView(COL_LINK_ADRESS);
     document.getElementById('linktree').treeBoxObject.view = gLinkView;
   }
   build();
