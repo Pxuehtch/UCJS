@@ -32,16 +32,29 @@ const kPref = {
  * User presets.
  * @key name {string} Display name. U() for UI.
  * @key URL {RegExp}
+ * @key submit {boolean}
+ *   true: Scan form and submit.
+ *   false[default]: Scan link and open URL.
  * @key prev {XPath}
+ *   If submit is true, set xpath of <input>.
+ *   If submit is false, set xpath of element which has URL.
  * @key next {XPath}
  */
 const kPresetNavi = [
   {
     name: U('Google Search'),
-    URL: /^http:\/\/www\.google\.(?:com|co\.jp)\/(?:#|cse|custom|search)/,
+    URL: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:#|cse|custom|search)/,
     prev: 'id("nav")//td[1]/a | id("nf")/parent::a',
     next: 'id("nav")//td[last()]/a | id("nn")/parent::a'
+  },
+  {
+    name: U('DuckDuckGo Search'),
+    URL: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
+    submit: true,
+    prev: '//input[@class="navbutton" and @value[contains(.,"Prev")]]',
+    next: '//input[@class="navbutton" and @value[contains(.,"Next")]]'
   }
+  //,
 ];
 
 /**
@@ -129,6 +142,8 @@ const kFormat = U({
   official: '%title%',
   searching: '%title% (%score%)',
   numbering: '%old% -> %new%',
+  // Tooltip of submit mode of preset.
+  submit: '<FORM> submit',
 
   // Sub items of NaviLink or PageInfo.
   type: '%title%%count%{ (%>1%)}',
@@ -140,17 +155,20 @@ const kFormat = U({
 /**
  * Identifiers.
  */
-const kID = {
-  upper: 'ucjs_navilink_upper',
-  prev: 'ucjs_navilink_prev',
-  next: 'ucjs_navilink_next',
-  naviLink: 'ucjs_navilink_navilink',
-  pageInfo: 'ucjs_navilink_pageInfo',
+const kID = (function() {
+  const prefix = 'ucjs_navilink_';
+  const keys = [
+    'upper', 'prev', 'next', 'naviLink', 'pageInfo',
+    'startSeparator', 'endSeparator', 'pageInfoSeparator'
+  ];
 
-  startSeparator: 'ucjs_navilink_start_sep',
-  pageInfoSeparator: 'ucjs_navilink_pageInfo_sep',
-  endSeparator: 'ucjs_navilink_end_sep'
-};
+  var hash = {prefix: prefix};
+  keys.forEach(function(a) {
+    hash[a] = prefix + a;
+  });
+
+  return hash;
+})();
 
 
 // Handlers.
@@ -165,12 +183,47 @@ var mMenu = (function() {
 
     setSeparators(contextMenu);
 
+    addEvent([contextMenu, 'click', onCommand, false]);
     addEvent([contextMenu, 'popupshowing', onPopupShowing, false]);
   }
 
-  function onPopupShowing(aEvent) {
-    var contextMenu = aEvent.target;
+  function onCommand(aEvent) {
+    aEvent.stopPropagation();
 
+    var item = aEvent.target;
+
+    // checks whether this event comes from an item of NaviLink.
+    var contextMenu = getURLBarContextMenu();
+    var node = item, id = node.id;
+    while (node !== contextMenu && !id) {
+      node = node.parentNode;
+      id = node.id;
+    }
+    if (!id || id.indexOf(kID.prefix) !== 0)
+      return;
+
+    if (aEvent.button === 2)
+      return;
+    if (aEvent.button === 1) {
+      closeMenus(item);
+    }
+
+    var value = item.value;
+    if (!value)
+      return;
+
+    if (/^(?:https?|ftp|file):/.test(item.value)) {
+      let inTab = aEvent.button === 1, inBackground = aEvent.ctrlKey;
+      openURL(item.value, inTab, {inBackground: inBackground, relatedToCurrent: true});
+    } else {
+      submitForm(item.value);
+    }
+  }
+
+  function onPopupShowing(aEvent) {
+    aEvent.stopPropagation();
+
+    var contextMenu = aEvent.target;
     if (contextMenu !== getURLBarContextMenu())
       return;
 
@@ -221,7 +274,7 @@ var mMenu = (function() {
         popup.appendChild($E('menuitem', {
           'crop': 'start',
           'label': URL,
-          'open': URL
+          'value': URL
         }));
       });
     }
@@ -250,11 +303,13 @@ var mMenu = (function() {
     var element;
 
     if (list.length === 1) {
-      let {text, URL} = list[0];
+      let {text, URL, submit} = list[0];
+      let description = submit ? kFormat.submit : URL;
 
       element = $E('menuitem', {
-        'tooltiptext': makeTooltip(getFormedText(text, {'siblingScanType': scanType}), URL),
-        'open': URL
+        'tooltiptext':
+          makeTooltip(getFormedText(text, {'siblingScanType': scanType}), description),
+        'value': URL || submit
       });
     } else {
       let popup = $E('menupopup');
@@ -263,7 +318,7 @@ var mMenu = (function() {
         popup.appendChild($E('menuitem', {
           'label': getFormedText(text, {'siblingScanType': scanType}),
           'tooltiptext': URL,
-          'open': URL
+          'value': URL
         }));
       });
 
@@ -302,7 +357,7 @@ var mMenu = (function() {
 
           child = $E('menuitem', {
             'tooltiptext': makeTooltip(getFormedText(text), URL),
-            'open': URL
+            'value': URL
           });
         } else {
           let childPopup = $E('menupopup');
@@ -314,7 +369,7 @@ var mMenu = (function() {
               'crop': 'center',
               'label': getFormedText(text),
               'tooltiptext': URL,
-              'open': URL
+              'value': URL
             }));
 
             return censored && i >= kPref.maxNaviLinkItemsNum - 1;
@@ -325,12 +380,14 @@ var mMenu = (function() {
 
           itemCount = childPopup.childElementCount;
           if (censored) {
-            tooltip = format(kFormat.tooManyItems, {'count': itemCount, 'total': list[type].length});
+            tooltip = format(kFormat.tooManyItems,
+              {'count': itemCount, 'total': list[type].length});
           }
         }
 
         popup.appendChild($E(child, {
-          'label': format(kFormat.type, {'title': kNaviLink[type] || type, 'count': itemCount}),
+          'label': format(kFormat.type,
+            {'title': kNaviLink[type] || type, 'count': itemCount}),
           'tooltiptext': tooltip
         }));
       }
@@ -366,7 +423,7 @@ var mMenu = (function() {
             'crop': 'center',
             'label': getFormedText(text),
             'tooltiptext': URL,
-            'open': URL
+            'value': URL
           }));
         });
       }
@@ -374,7 +431,8 @@ var mMenu = (function() {
       let child = $E('menu');
       child.appendChild(childPopup);
       popup.appendChild($E(child, {
-        'label': format(kFormat.type, {'title': kPageInfo[type], 'count': childPopup.childElementCount})
+        'label': format(kFormat.type,
+          {'title': kPageInfo[type], 'count': childPopup.childElementCount})
       }));
     }
 
@@ -390,20 +448,25 @@ var mMenu = (function() {
     if ('siblingScanType' in aOption) {
       switch (aOption.siblingScanType) {
         case 'preset':
-          return format(kFormat.preset, {'name': aText[0], 'title': aText[1]});
+          return format(kFormat.preset,
+            {'name': aText[0], 'title': aText[1]});
         case 'official':
-          return format(kFormat.official, {'title': aText[0]});
+          return format(kFormat.official,
+            {'title': aText[0]});
         case 'searching':
-          return format(kFormat.searching, {'title': aText[0], 'score': trimFigures(aText[1])});
+          return format(kFormat.searching,
+            {'title': aText[0], 'score': trimFigures(aText[1])});
         case 'numbering':
-          return format(kFormat.numbering, {'old': aText[0], 'new': aText[1]});
+          return format(kFormat.numbering,
+            {'old': aText[0], 'new': aText[1]});
       }
       return null;
     }
 
     if ('metaContent' in aOption) {
       return format(kFormat.item, {
-        'title': formatAttributes([[aText[0], aOption.metaContent]]), 'attributes': null
+        'title': formatAttributes([[aText[0], aOption.metaContent]]),
+        'attributes': null
       });
     }
 
@@ -414,7 +477,8 @@ var mMenu = (function() {
 
   /**
    * Formats attributes.
-   * @param aAttributes {array} [['name1', 'value1'], ['name2', ['value1', 'value2']]]
+   * @param aAttributes {array}
+   *   [['name1', 'value1'], ['name2', ['value1', 'value2']]]
    * @return {string}
    */
   function formatAttributes(aAttributes) {
@@ -437,7 +501,8 @@ var mMenu = (function() {
     return attributes.join(kAttributesDelimiter);
   }
 
-  function makeTooltip(aText, aURL) (aText && aText !== getLeaf(aURL)) ? aText + '\n' + aURL : aURL;
+  function makeTooltip(aText, aURL)
+    (aText && aText !== getLeaf(aURL)) ? aText + '\n' + aURL : aURL;
 
   return {
     init: init
@@ -470,6 +535,11 @@ var mPresetNavi = (function() {
         return {
           text: [item.name, trim(node.title) || trim(node.textContent) || ''],
           URL: node.href
+        };
+      } else if (item.submit && node && node.value) {
+        return {
+          text: [item.name, trim(node.value)],
+          submit: item[aDirection]
         };
       } else {
         log('Match preset: %name% ->\n%dir%: \'%xpath%\' is not found.'.
@@ -597,7 +667,10 @@ var mNaviLink = (function() {
 
     // Make sure that the meta list is not empty.
     if (!metas.some(function(a) a.httpEquiv && a.httpEquiv.toLowerCase() === 'content-type')) {
-      metas.unshift({httpEquiv: 'Content-Type', content: d.contentType + ';charset=' + d.characterSet});
+      metas.unshift({
+        httpEquiv: 'Content-Type',
+        content: d.contentType + ';charset=' + d.characterSet
+      });
     }
 
     // @note Meta list member, {URL: content}, would be not a URL string.
@@ -680,7 +753,8 @@ var mNaviLink = (function() {
    * @param aIndex {int}
    * @param aNode {Node}
    * @param aType {kNaviLink or kPageInfo}
-   * @param aAttributes {array} [['name1', 'value1'], ['name2', ['value1', 'value2']]]
+   * @param aAttributes {array}
+   *   [['name1', 'value1'], ['name2', ['value1', 'value2']]]
    * @return {hash}
    */
   function newItem(aIndex, aNode, aType, aAttributes) {
@@ -755,7 +829,8 @@ var mSiblingNavi = (function() {
 
     for (link in getSearchLinks()) {
       href = link.href;
-      if (!href || !/^https?:/.test(href) || currentURI.isSamePage(href) || entries.contains(href))
+      if (!href || !/^https?:/.test(href) || currentURI.isSamePage(href) ||
+        entries.contains(href))
         continue;
 
       for (text in getSearchTexts(link)) {
@@ -1037,8 +1112,10 @@ var mSiblingNavi = (function() {
   function guessByNumbering(aDirection) {
     /**
      * Part like page numbers in URL.
-     * @const kNumQuery {RegExp} Query with a numeric value; [?&]page=123 or [?&]123
-     * @const kNumEndPath {RegExp} Path ended with numbers; (abc)123 or (abc)123.jpg or (abc)123/
+     * @const kNumQuery {RegExp}
+     *   Query with a numeric value; [?&]page=123 or [?&]123
+     * @const kNumEndPath {RegExp}
+     *   Path ended with numbers; (abc)123 or (abc)123.jpg or (abc)123/
      */
     const kNumQuery = /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig,
           kNumEndPath = /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
@@ -1198,16 +1275,13 @@ function createURI(aURI, aFlags) {
 }
 
 function $E(aTagOrNode, aAttribute) {
-  var element = (typeof aTagOrNode === 'string') ? document.createElement(aTagOrNode) : aTagOrNode;
+  var element = (typeof aTagOrNode === 'string') ?
+    document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       if (value !== null && typeof value !== 'undefined') {
-        if (name === 'open') {
-          setCommandOpenURL(element, value);
-        } else {
-          element.setAttribute(name, value);
-        }
+        element.setAttribute(name, value);
       }
     }
   }
@@ -1219,9 +1293,17 @@ function isVisible(aNode) {
   if (aNode.hidden)
     return false;
 
-  var style = (aNode.ownerDocument.defaultView || gBrowser.contentWindow).getComputedStyle(aNode, '');
+  var style = (aNode.ownerDocument.defaultView || gBrowser.contentWindow).
+    getComputedStyle(aNode, '');
 
   return style.visibility === 'visible' && style.display !== 'none';
+}
+
+function submitForm(aSubmitInput) {
+  var input = $X1(aSubmitInput);
+  if (input) {
+    input.form.submit();
+  }
 }
 
 /**
@@ -1290,7 +1372,6 @@ function trim(aText) aText ? aText.trim().replace(/\s+/g, ' ') : '';
 
 function trimFigures(aNumber) (+aNumber).toFixed(5);
 
-
 /**
  * Converts 2-byte characters into UTF-16 in order to properly display UI.
  * @param aData {string}|{hash}
@@ -1309,15 +1390,6 @@ function U(aData) {
 
 // Imports.
 
-function setCommandOpenURL(aNode, aURL) {
-  aNode.setAttribute(
-    'onclick',
-    'if(event.button===2)return;' +
-    'if(event.button===1)closeMenus(event.target);' +
-    'ucjsUtil.openURLIn("' + aURL + '",event.button===1,{inBackground:event.ctrlKey,relatedToCurrent:true});'
-  );
-}
-
 function getURLBarContextMenu()
   ucjsUI.URLBar.contextMenu;
 
@@ -1335,6 +1407,9 @@ function unesc(aURL)
 
 function str4ui(aText)
   ucjsUtil.convertForSystem(aText);
+
+function openURL(aURL, aInTab, aOption)
+  ucjsUtil.openURLIn(aURL, aInTab, aOption);
 
 function log(aMsg)
   ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
