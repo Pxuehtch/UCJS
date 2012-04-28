@@ -45,7 +45,7 @@
 (function() {
 
   // @modified chrome://browser/content/browser.js::BrowserSearch::webSearch
-  eval('BrowserSearch.webSearch = ' + BrowserSearch.webSearch.toString().replace(
+  Function('BrowserSearch.webSearch = ' + BrowserSearch.webSearch.toString().replace(
     '} else {',
     '\
       } else if (Services.search.defaultEngine.alias && isElementVisible(gURLBar)) {\
@@ -54,7 +54,7 @@
         gURLBar.inputField.setSelectionRange(gURLBar.value.length, gURLBar.value.length);\
       } else {\
     '
-  ));
+  ))();
 
 })();
 
@@ -113,9 +113,9 @@
 (function() {
 
   // @modified chrome://browser/content/utilityOverlay.js::closeMenus
-  eval('window.closeMenus =' +
+  Function('window.closeMenus =' +
     window.closeMenus.toString().replace(/node\.tagName/g, 'node.localName')
-  );
+  )();
 
 })();
 
@@ -133,7 +133,7 @@
   ');
 
   // @modified chrome://browser/content/tabbrowser.xml::_positionPinnedTabs
-  eval('gBrowser.tabContainer._positionPinnedTabs =' +
+  Function('gBrowser.tabContainer._positionPinnedTabs =' +
     gBrowser.tabContainer._positionPinnedTabs.toString().
     replace(
       'let scrollButtonWidth = this.mTabstrip._scrollButtonDown.scrollWidth;',
@@ -142,7 +142,7 @@
       'width += tab.scrollWidth;',
       'width += tab.scrollWidth + 3;' // add margin of a pinned tab.
     )
-  );
+  )();
 
   // recalc the positions.
   gBrowser.tabContainer._positionPinnedTabs();

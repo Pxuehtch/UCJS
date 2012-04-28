@@ -1255,8 +1255,9 @@ function format(aFormat, aAttribute) {
             let right = true;
 
             if (expression) {
+              let val = (typeof value === 'string') ? '"' + value + '"' : value;
               try {
-                right = eval((typeof value === 'string' ? '"' + value + '"' : value) + expression);
+                right = Function('return ' + val + expression)();
               } catch (e) {
                 right = false;
               }
