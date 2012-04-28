@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name SortList.uc.js
-// @description Sorting function of a listview of the page infomation window.
+// @description Sorting function of a listview of the Page Info window.
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
 
@@ -21,18 +21,18 @@ const kSortDirections = ['ascending', 'descending', 'natural'];
  * Cache of the custom properties of a tree view.
  */
 var mSortState = (function() {
-	var mMap = new WeakMap();
+  var mMap = new WeakMap();
 
-	function get(aTreeView) {
-		if (!mMap.has(aTreeView)) {
-			mMap.set(aTreeView, {});
-		}
-		return mMap.get(aTreeView);
-	}
+  function get(aTreeView) {
+    if (!mMap.has(aTreeView)) {
+      mMap.set(aTreeView, {});
+    }
+    return mMap.get(aTreeView);
+  }
 
-	return {
-		get: get,
-	};
+  return {
+    get: get,
+  };
 })();
 
 
@@ -90,7 +90,7 @@ function sort(aData, aColumnIndex, aAscending) {
 }
 
 
-// Disable default sort functions.
+// Disables the default sort functions.
 // @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
 gMetaView.onPageMediaSort = function() {};
 gImageView.onPageMediaSort = function() {};
