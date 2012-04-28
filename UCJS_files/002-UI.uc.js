@@ -181,11 +181,11 @@ var mStatusField = (function() {
 
 
   // Custom status display.
-  customize();
+  customizeCSS();
+  customizeFunctions();
 
-  function customize() {
-    // Custom styles.
-    setCSS('\
+  function customizeCSS() {
+    var css = '\
       .statuspanel-label{\
         font-weight:bolder!important;\
       }\
@@ -208,11 +208,11 @@ var mStatusField = (function() {
       #statusbar-display[label=""]{\
         display:none!important;\
       }\
-    '
-    .replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
+    ';
+    setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
+  }
 
-
-    // Custom functions.
+  function customizeFunctions() {
     var linkState = null;
 
     // @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink

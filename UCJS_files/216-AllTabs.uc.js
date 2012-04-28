@@ -156,10 +156,9 @@ function initCSS() {
     #%%kID.GROUP_TAG_MENUITEM%%{\
       list-style-image:url("chrome://global/skin/dirListing/folder.png");\
     }\
-  '
-  .replace(/%%(.+?)%%/g, function($0, $1) eval($1));
+  ';
 
-  setCSS(css);
+  setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
 }
 
 function moveAllTabsMenuToTabViewButton() {

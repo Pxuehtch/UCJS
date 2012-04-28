@@ -221,7 +221,7 @@ function makeButtons() {
 
 function setStyleSheet() {
   // @note Suppose the height of toolbar-menubar is 24pt.
-  setCSS('\
+  var css = '\
     #%%kID.CONTAINER_ID%%{\
       margin:3px 0 3px 2px;\
     }\
@@ -254,8 +254,9 @@ function setStyleSheet() {
       border:none;\
       padding:0;\
     }\
-  '
-  .replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
+  ';
+
+  setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
 }
 
 
