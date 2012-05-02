@@ -534,11 +534,13 @@ var mPresetNavi = (function() {
       if (node && node.href) {
         return {
           text: [item.name, trim(node.title) || trim(node.textContent) || ''],
-          URL: node.href
+          URL: node.href,
+          submit: null
         };
       } else if (item.submit && node && node.value) {
         return {
           text: [item.name, trim(node.value)],
+          URL: null,
           submit: item[aDirection]
         };
       } else {
@@ -785,7 +787,7 @@ var mSiblingNavi = (function() {
   function getURL(aDirection) {
     var state = getState(aDirection);
 
-    return state ? state.list[0].URL : '';
+    return (state && state.list[0].URL) || '';
   }
 
   function getState(aDirection) {
