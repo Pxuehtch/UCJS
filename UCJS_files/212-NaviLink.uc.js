@@ -208,8 +208,7 @@ var mMenu = (function() {
       closeMenus(item);
     }
 
-    var value = item.value;
-    if (!value)
+    if (!item.value)
       return;
 
     if (/^(?:https?|ftp|file):/.test(item.value)) {
