@@ -50,6 +50,7 @@ function init() {
     let tree = document.getElementById(kID.linkTree);
     let copyColumnIndex = tree.columns.getNamedColumn(kID.addressColumn).index;
 
+    // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
     gLinkView = new pageInfoTreeView(kID.linkTree, copyColumnIndex);
     tree.view = gLinkView;
   }
@@ -62,7 +63,7 @@ function build() {
     gLinkInfoBuilt = true;
 
     try {
-      // @see chrome://browser/content/pageinfo/pageInfo::goThroughFrames()
+      // @see chrome://browser/content/pageinfo/pageInfo.js::goThroughFrames()
       goThroughFrames(gDocument, gWindow);
     } catch (e) {
       // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]:
@@ -141,6 +142,7 @@ function grabLink(aNode) {
   return NodeFilter.FILTER_ACCEPT;
 }
 
+// @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
 function getText(aNode, aDefault) {
   return (getValueText(aNode) || aNode.title || aDefault || kNote.error).substr(0, 50);
 }
