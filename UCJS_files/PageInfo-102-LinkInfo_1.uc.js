@@ -61,7 +61,14 @@ function build() {
   if (!gLinkInfoBuilt) {
     gLinkInfoBuilt = true;
 
-    goThroughFrames(gDocument, gWindow);
+    try {
+      // @see chrome://browser/content/pageinfo/pageInfo::goThroughFrames()
+      goThroughFrames(gDocument, gWindow);
+    } catch (e) {
+      // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]:
+      // gWindow.frames.length is undefined after closing the target page which have frames.
+      return;
+    }
     LI_processFrames();
   }
 }
