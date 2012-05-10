@@ -696,7 +696,7 @@ function getExecutable(aPath) {
 function execute(aApp, aURL) {
   var exe = getExecutable(aApp.path);
   if (!exe) {
-    log('Registered application:\n"' + aApp.path + '"\nis not available now.');
+    warn('Not executed', 'Registered application is not available now:\n' + aApp.path);
     return;
   }
 
@@ -716,7 +716,7 @@ function saveAndExecute(aApp, aURL) {
 
     target.initWithPath(savePath);
   } catch (e) {
-    log('saveAndExecute() is terminated.');
+    warn('Not downloaded', e.message);
     return;
   }
 
@@ -758,7 +758,7 @@ function getSavePath(aURL) {
   } else if ((match = /^data:image\/(png|jpeg|gif)/.exec(aURL))) {
     leafName = 'data.' + match[1];
   } else {
-    throw log(aURL.substr(0, aURL.indexOf(':')) + ': is unexpected scheme for download.');
+    throw new Error('Unexpected scheme for download:\n' + aURL);
   }
 
   leafName = kFileNameForm.replace('%LEAF%', leafName);
@@ -791,6 +791,15 @@ function getSpecialDirectory(aAlias)
 
 function str4ui(aStr)
   ucjsUtil.convertForSystem(aStr);
+
+function warn(aTitle, aMsg) {
+	var msg = log('Error: ' + aTitle + '\n' + aMsg);
+
+  if (msg.length > 200) {
+    msg = msg.substr(0, 200) + ' ...\n(see console log)';
+  }
+  alert(msg);
+}
 
 function log(aMsg)
   ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
