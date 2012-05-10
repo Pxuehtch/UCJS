@@ -753,7 +753,7 @@ function setPref(aKey, aVal) {
 // Functions for Debug.
 
 function logMessage(aTarget, aMsg) {
-  var msg = convertToUTF16('[' + aTarget + ']' + aMsg, 'UTF-8');
+  var msg = convertToUTF16('[' + aTarget + ']\n' + aMsg, 'UTF-8');
 
   // Error Console.
   Application.console.log(msg);
