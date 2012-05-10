@@ -723,7 +723,7 @@ function saveAndExecute(aApp, aURL) {
   var persist = WebBrowserPersist();
 
   persist.persistFlags =
-    Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES |
+    Ci.nsIWebBrowserPersist.PERSIST_FLAGS_CLEANUP_ON_FAILURE |
     Ci.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
 
   persist.progressListener = {
