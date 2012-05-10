@@ -650,13 +650,18 @@ function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
 function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
 
 // Services.
-const DirectoryService = $S('@mozilla.org/file/directory_service;1', 'nsIProperties');
-const IOService = $S('@mozilla.org/network/io-service;1', 'nsIIOService');
+const DirectoryService =
+  $S('@mozilla.org/file/directory_service;1', 'nsIProperties');
+const IOService =
+  $S('@mozilla.org/network/io-service;1', 'nsIIOService');
 
 // Instances.
-function LocalFile() $I('@mozilla.org/file/local;1', 'nsILocalFile');
-function Process() $I('@mozilla.org/process/util;1', 'nsIProcess');
-function WebBrowserPersist() $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1', 'nsIWebBrowserPersist');
+function LocalFile()
+  $I('@mozilla.org/file/local;1', 'nsILocalFile');
+function Process()
+  $I('@mozilla.org/process/util;1', 'nsIProcess');
+function WebBrowserPersist()
+  $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1', 'nsIWebBrowserPersist');
 
 
 // Functions.
@@ -727,7 +732,6 @@ function saveAndExecute(aApp, aURL) {
     Ci.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
 
   persist.progressListener = {
-
     onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
         let responseStatus = aRequest.QueryInterface(Ci.nsIHttpChannel).responseStatus;
@@ -744,7 +748,6 @@ function saveAndExecute(aApp, aURL) {
     onLocationChange: function() {},
     onStatusChange: function() {},
     onSecurityChange: function() {}
-
   };
 
   persist.saveURI(source, null, null, null, null, target);
