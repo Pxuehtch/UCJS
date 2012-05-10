@@ -730,6 +730,12 @@ function saveAndExecute(aApp, aURL) {
 
     onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
+        let responseStatus = aRequest.QueryInterface(Ci.nsIHttpChannel).responseStatus;
+        if (responseStatus !== 200) {
+          warn('Not downloaded', 'HTTP status: ' + responseStatus + '\n' + aRequest.name);
+          return;
+        }
+
         execute(aApp, savePath);
       }
     },
