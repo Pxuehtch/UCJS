@@ -649,11 +649,6 @@ const {classes: Cc, interfaces: Ci} = Components;
 function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
 function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
 
-// Interfaces.
-const nsIFile = Ci['nsIFile'];
-const nsIWebBrowserPersist = Ci['nsIWebBrowserPersist'];
-const nsIWebProgressListener = Ci['nsIWebProgressListener'];
-
 // Services.
 const DirectoryService = $S('@mozilla.org/file/directory_service;1', 'nsIProperties');
 const IOService = $S('@mozilla.org/network/io-service;1', 'nsIIOService');
@@ -728,13 +723,13 @@ function saveAndExecute(aApp, aURL) {
   var persist = WebBrowserPersist();
 
   persist.persistFlags =
-    nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES |
-    nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
+    Ci.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES |
+    Ci.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
 
   persist.progressListener = {
 
     onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
-      if (aStateFlags & nsIWebProgressListener.STATE_STOP) {
+      if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
         execute(aApp, savePath);
       }
     },
@@ -792,7 +787,7 @@ function getAppArgs(aArgs, aURL) {
 }
 
 function getSpecialDirectory(aAlias)
-  DirectoryService.get(aAlias, nsIFile);
+  DirectoryService.get(aAlias, Ci.nsIFile);
 
 function str4ui(aStr)
   ucjsUtil.convertForSystem(aStr);
