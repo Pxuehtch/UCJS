@@ -805,7 +805,7 @@ function str4ui(aStr)
   ucjsUtil.convertForSystem(aStr);
 
 function warn(aTitle, aMsg) {
-	var msg = log('Error: ' + aTitle + '\n' + aMsg);
+  var msg = log('Error: ' + aTitle + '\n' + aMsg);
 
   if (msg.length > 200) {
     msg = msg.substr(0, 200) + ' ...\n(see console log)';
