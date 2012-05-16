@@ -734,7 +734,10 @@ function saveAndExecute(aApp, aURL) {
   persist.progressListener = {
     onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
-        let responseStatus = aRequest.QueryInterface(Ci.nsIHttpChannel).responseStatus;
+        let responseStatus = null;
+        try {
+          responseStatus = aRequest.QueryInterface(Ci.nsIHttpChannel).responseStatus;
+        } catch (e) {}
         if (responseStatus !== 200) {
           warn('Not downloaded', 'HTTP status: ' + responseStatus + '\n' + aRequest.name);
           return;
