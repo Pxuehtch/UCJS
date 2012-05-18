@@ -737,8 +737,10 @@ function saveAndExecute(aApp, aURL) {
         let responseStatus = null;
         try {
           responseStatus = aRequest.QueryInterface(Ci.nsIHttpChannel).responseStatus;
-        } catch (e) {}
-        if (responseStatus !== 200) {
+        } catch (e) {
+          // @throws NS_NOINTERFACE 'data:image' is requested.
+        }
+        if (responseStatus && responseStatus !== 200) {
           warn('Not downloaded', ['HTTP status ' + responseStatus, aRequest.name]);
           return;
         }
