@@ -701,7 +701,7 @@ function getExecutable(aPath) {
 function execute(aApp, aURL) {
   var exe = getExecutable(aApp.path);
   if (!exe) {
-    warn('Not executed', 'Registered application is not available now:\n' + aApp.path);
+    warn('Not executed', ['Registered application is not available now', aApp.path]);
     return;
   }
 
@@ -721,7 +721,7 @@ function saveAndExecute(aApp, aURL) {
 
     target.initWithPath(savePath);
   } catch (e) {
-    warn('Not downloaded', e.message);
+    warn('Not downloaded', [aURL, e.message]);
     return;
   }
 
@@ -739,7 +739,7 @@ function saveAndExecute(aApp, aURL) {
           responseStatus = aRequest.QueryInterface(Ci.nsIHttpChannel).responseStatus;
         } catch (e) {}
         if (responseStatus !== 200) {
-          warn('Not downloaded', 'HTTP status: ' + responseStatus + '\n' + aRequest.name);
+          warn('Not downloaded', ['HTTP status ' + responseStatus, aRequest.name]);
           return;
         }
 
@@ -770,7 +770,7 @@ function getSavePath(aURL) {
   } else if ((match = /^data:image\/(png|jpeg|gif)/.exec(aURL))) {
     leafName = 'data.' + match[1];
   } else {
-    throw new Error('Unexpected scheme for download:\n' + aURL);
+    throw new Error('Unexpected scheme for download');
   }
 
   leafName = kFileNameForm.replace('%LEAF%', leafName);
@@ -805,7 +805,11 @@ function str4ui(aStr)
   ucjsUtil.convertForSystem(aStr);
 
 function warn(aTitle, aMsg) {
-  var msg = log('Error: ' + aTitle + '\n' + aMsg);
+  if (!Array.isArray(aMsg)) {
+    aMsg = [aMsg];
+  }
+
+  var msg = log('Error: ' + aTitle + '\n' + aMsg.join('\n'));
 
   if (msg.length > 200) {
     msg = msg.substr(0, 200) + ' ...\n(see console log)';
