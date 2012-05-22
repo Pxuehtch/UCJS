@@ -734,13 +734,16 @@ function saveAndExecute(aApp, aURL) {
   persist.progressListener = {
     onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
-        let responseStatus = null;
+        let httpChannel, requestSucceeded, responseStatus;
         try {
-          responseStatus = aRequest.QueryInterface(Ci.nsIHttpChannel).responseStatus;
+          httpChannel = aRequest.QueryInterface(Ci.nsIHttpChannel);
+          requestSucceeded = httpChannel.requestSucceeded;
+          responseStatus = httpChannel.responseStatus;
         } catch (e) {
-          // @throws NS_NOINTERFACE 'data:image' is requested.
+          // @throws NS_ERROR_NOT_AVAILABLE requested invalid URL.
+          // @throws NS_NOINTERFACE requested 'data:image'.
         }
-        if (responseStatus !== null && responseStatus !== 200) {
+        if (httpChannel && !requestSucceeded) {
           warn('Not downloaded', ['HTTP status ' + responseStatus, aRequest.name]);
           return;
         }
