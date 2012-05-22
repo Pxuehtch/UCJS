@@ -721,7 +721,7 @@ function saveAndExecute(aApp, aURL) {
 
     target.initWithPath(savePath);
   } catch (e) {
-    warn('Not downloaded', [aURL, e.message]);
+    warn('Not downloaded', [e.message, aURL]);
     return;
   }
 
