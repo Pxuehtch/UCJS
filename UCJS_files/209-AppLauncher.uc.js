@@ -687,15 +687,13 @@ function getExecutable(aPath) {
     }
   });
 
-  var file = LocalFile();
-
   try {
+    var file = LocalFile();
     file.initWithPath(str4ui(aPath));
-  } catch (e) {
-    return null;
-  }
-
-  return (file && file.exists() && file.isFile() && file.isExecutable()) ? file : null;
+    if (file && file.exists() && file.isFile() && file.isExecutable())
+      return file;
+  } catch (e) {}
+  return null;
 }
 
 function checkFile(aFilePath) {
