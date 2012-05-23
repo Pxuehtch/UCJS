@@ -698,6 +698,15 @@ function getExecutable(aPath) {
   return (file && file.exists() && file.isFile() && file.isExecutable()) ? file : null;
 }
 
+function checkFile(aFilePath) {
+  try {
+    var file = LocalFile();
+    file.initWithPath(aFilePath);
+    return file && file.exists();
+  } catch (e) {}
+  return false;
+}
+
 function execute(aApp, aURL) {
   var exe = getExecutable(aApp.path);
   if (!exe) {
@@ -734,17 +743,25 @@ function saveAndExecute(aApp, aURL) {
   persist.progressListener = {
     onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
-        let httpChannel, requestSucceeded, responseStatus;
-        try {
-          httpChannel = aRequest.QueryInterface(Ci.nsIHttpChannel);
-          requestSucceeded = httpChannel.requestSucceeded;
-          responseStatus = httpChannel.responseStatus;
-        } catch (e) {
-          // @throws NS_ERROR_NOT_AVAILABLE requested invalid URL.
-          // @throws NS_NOINTERFACE requested 'data:image'.
+        if (/^(?:https?|ftp):/.test(aRequest.name)) {
+          let httpChannel, requestSucceeded, responseStatus;
+          try {
+            httpChannel = aRequest.QueryInterface(Ci.nsIHttpChannel);
+            requestSucceeded = httpChannel.requestSucceeded;
+            responseStatus = httpChannel.responseStatus;
+          } catch (e) {
+            // @throws NS_ERROR_NOT_AVAILABLE
+            //   requestSucceeded is called when an invalid URL is requested.
+          }
+
+          if (!requestSucceeded) {
+            warn('Not downloaded', ['HTTP status ' + responseStatus, aRequest.name]);
+            return;
+          }
         }
-        if (httpChannel && !requestSucceeded) {
-          warn('Not downloaded', ['HTTP status ' + responseStatus, aRequest.name]);
+
+        if (!checkFile(savePath)) {
+          warn('Not downloaded', ['Something wrong', aRequest.name]);
           return;
         }
 
