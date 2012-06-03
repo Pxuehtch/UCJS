@@ -757,7 +757,8 @@ function modifySystemSetting() {
     {key: 'browser.tabs.insertRelatedAfterCurrent', value: false},
     {key: 'browser.tabs.selectOwnerOnClose', value: false},
     // No loading of the background tabs in restoring startup.
-    {key: 'browser.sessionstore.max_concurrent_tabs', value: 0}
+    {key: 'browser.sessionstore.restore_on_demand', value: true},
+    {key: 'browser.sessionstore.restore_pinned_tabs_on_demand', value: true}
   ];
 
   prefs.forEach(function(pref) {
