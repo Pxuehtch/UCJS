@@ -60,7 +60,7 @@ var mPreset = {
     get checked() !getMarkupDocumentViewer().authorStyleDisabled,
 
     command: function() {
-      setStyleDisabled(this.checked);
+      getMarkupDocumentViewer().authorStyleDisabled = this.checked;
     }
   },
 
