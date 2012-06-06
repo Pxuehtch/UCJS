@@ -5,8 +5,8 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @note Some about:config preferences are changed. search setPref.
-// @note Some default functions are modified. search @modified.
+// @note Some about:config preferences are changed. see @pref.
+// @note Some default functions are modified. see @modified.
 
 
 (function() {
@@ -181,7 +181,7 @@
 
   // Toggles TAB-key focusing behavor.
 
-  // @note cf. http://kb.mozillazine.org/Accessibility.tabfocus
+  // @pref see http://kb.mozillazine.org/Accessibility.tabfocus
   // 1: Give focus to text fields only.
   // 7: Give focus to focusable text fields, form elements, and links. (default)
   const kPrefTabFocus = 'accessibility.tabfocus';

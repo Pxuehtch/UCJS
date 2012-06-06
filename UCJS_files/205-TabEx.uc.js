@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note Some about:config preferences are changed. see modifySystemSetting().
+// @note Some about:config preferences are changed. see @pref.
 // @note A default function is modified. see mTabOpener.init().
 // @note Some functions are exported. (ucjsTabEx.XXX)
 
@@ -754,9 +754,10 @@ function closeReadTabs(aOption) {
 
 function modifySystemSetting() {
   const prefs = [
+    // @pref Disable the default behavior.
     {key: 'browser.tabs.insertRelatedAfterCurrent', value: false},
     {key: 'browser.tabs.selectOwnerOnClose', value: false},
-    // No loading of the background tabs in restoring startup.
+    // @pref No loading of the background tabs in restoring startup.
     {key: 'browser.sessionstore.restore_on_demand', value: true},
     {key: 'browser.sessionstore.restore_pinned_tabs_on_demand', value: true}
   ];

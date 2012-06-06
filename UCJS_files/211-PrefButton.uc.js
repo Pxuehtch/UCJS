@@ -7,7 +7,7 @@
 // @require Util.uc.js
 // @usage Access to items on the navigation toolbar.
 // @note Buttons is styled as the height of toolbar is 24pt. see setStyleSheet().
-// @note Some about:config preferences are changed. see 'ToggleReferrer'.
+// @note Some about:config preferences are changed. see @pref.
 
 
 (function() {
@@ -69,7 +69,7 @@ var mPreset = {
     label: 'Ref.',
     description: 'Toggle Referrer',
 
-    // @see http://kb.mozillazine.org/Network.http.sendRefererHeader
+    // @pref see http://kb.mozillazine.org/Network.http.sendRefererHeader
     // 0:never send the referrer header.
     // 1:send when clicking on a link.
     // 2:send when clicking on a link or loading an image (Default).

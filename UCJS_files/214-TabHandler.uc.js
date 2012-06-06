@@ -7,8 +7,8 @@
 // @require Util.uc.js
 // @require [in action] Util.uc.js, TabEx.uc.js
 // @note [Additional] Lock tab function. see mTablock.
-// @note Some about:config preferences are changed. see modifyPreferences().
-// @note Some default functions are modified. search @modified.
+// @note Some about:config preferences are changed. see @pref.
+// @note Some default functions are modified. see @modified.
 
 
 (function() {
@@ -217,7 +217,8 @@ var mTabLock = (function() {
 
   function modifyPreferences() {
     const prefs = [
-      // No close buttons on tabs at all.
+      // @pref see http://kb.mozillazine.org/Browser.tabs.closeButtons
+      // 2: Dont display any close buttons
       {key: 'browser.tabs.closeButtons', value: 2}
     ];
 
