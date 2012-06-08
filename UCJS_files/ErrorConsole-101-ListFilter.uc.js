@@ -13,26 +13,19 @@
 "use strict";
 
 
-// Preferences.
+// Preferences
 
 /**
- * Selector for the HIDDEN category in list view.
- * @note Each key is set to a label of UI.
+ * Selector for filtering
+ * @note Each key is set to a label of UI
  */
-const kDeselector = {
-  // Not item of CSS.
+const kSelector = {
   'CSS': '.console-row[category^="CSS"]',
-
-  // Not item in content.
-  'Content': '.console-row:not([category]):not([href^="chrome://"]):not([type="error"]):not([type="message"]),.console-row[category]:not([category~="chrome"]):not([category~="component"]):not([href^="chrome://"])'
-};
-
-const kStyle = {
-  hidden: '{visibility:collapse;-moz-user-focus:ignore;}'
+  'Content': '.console-row[href^="http"]'
 };
 
 
-// Functions.
+// Functions
 
 function makeUI() {
   var toolbar = document.getElementById('ToolbarMode');
@@ -40,7 +33,7 @@ function makeUI() {
   var container = document.createElement('hbox');
   container.id = 'ucjs_listFilter_container';
 
-  for (let key in kDeselector) {
+  for (let key in kSelector) {
     let element = document.createElement('checkbox');
     element.setAttribute('label', key);
     element.setAttribute('checked', true);
@@ -52,49 +45,32 @@ function makeUI() {
   toolbar.appendChild(container);
 }
 
-function uninit(aEvent) {
-  var {hidden} = kStyle;
-
-  for each (let selector in kDeselector) {
-    toggleCSS(selector + hidden, false);
-  }
-}
-
 function toggle(aEvent) {
   var {label, checked} = aEvent.target;
+  var hidden = !checked;
 
-  toggleCSS(kDeselector[label] + kStyle.hidden, !checked);
-}
-
-function toggleCSS(aCSS, aHidden) {
-  if (aHidden) {
-    registerCSS(aCSS);
-  } else {
-    unregisterCSS(aCSS);
-  }
+  Array.forEach($S(kSelector[label], gConsole.mConsoleRowBox), function(a) {
+    a.hidden = hidden;
+  });
 }
 
 
-// Utilities.
+// Utilities
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
 
-function registerCSS(aCSS)
-  ucjsUtil.setGlobalStyleSheet(aCSS);
-
-function unregisterCSS(aCSS)
-  ucjsUtil.removeGlobalStyleSheet(aCSS);
+function $S(aSelector, aContext)
+  ucjsUtil.getNodesBySelector(aSelector, aContext);
 
 function log(aMsg)
   ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
 
 
-// Entry point.
+// Entry point
 
 function ListFilter_init() {
   makeUI();
-  addEvent([window, 'unload', uninit, false]);
 }
 
 ListFilter_init();
