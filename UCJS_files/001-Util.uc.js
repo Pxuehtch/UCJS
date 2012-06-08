@@ -40,6 +40,18 @@ var mXPCOM = (function() {
         $S('@mozilla.org/appshell/window-mediator;1', 'nsIWindowMediator');
     },
 
+    get BrowserGlue() {
+      delete this.BrowserGlue;
+      return this.BrowserGlue =
+        $S('@mozilla.org/browser/browserglue;1', 'nsIBrowserGlue');
+    },
+
+    get ConsoleService() {
+      delete this.ConsoleService;
+      return this.ConsoleService =
+        $S('@mozilla.org/consoleservice;1', 'nsIConsoleService');
+    },
+
     get StyleSheetService() {
       delete this.StyleSheetService;
       return this.StyleSheetService =
@@ -756,11 +768,12 @@ function logMessage(aTarget, aMsg) {
   var msg = convertToUTF16('[' + aTarget + ']\n' + aMsg, 'UTF-8');
 
   // Error Console.
-  Application.console.log(msg);
+  mXPCOM.ConsoleService.logStringMessage(msg);
 
   // Web Console.
-  if (content.console) {
-    content.console.log(msg);
+  var win = mXPCOM.BrowserGlue.getMostRecentBrowserWindow();
+  if (win) {
+    win.content.console.log(msg);
   }
 
   return msg;
