@@ -544,7 +544,9 @@ function loadPage(aURL, aOption) {
   if (isUTF8)
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
 
-  return gBrowser.loadURIWithFlags(URL, flags, referrerURI, charset, postData);
+  gBrowser.loadURIWithFlags(URL, flags, referrerURI, charset, postData);
+
+  return gBrowser.mCurrentTab;
 }
 
 
