@@ -24,6 +24,10 @@ const kSelector = {
   'Content': '.console-row[href^="http"]'
 };
 
+const kStyle = {
+  hidden: '{display:none;}'
+};
+
 
 // Functions
 
@@ -45,23 +49,35 @@ function makeUI() {
   toolbar.appendChild(container);
 }
 
+function uninit(aEvent) {
+  var {hidden} = kStyle;
+
+  for each (let selector in kSelector) {
+    toggleCSS(selector + hidden, false);
+  }
+}
+
 function toggle(aEvent) {
   var {label, checked} = aEvent.target;
-  var hidden = !checked;
+  var {hidden} = kStyle;
 
-  Array.forEach($S(kSelector[label], gConsole.mConsoleRowBox), function(a) {
-    a.hidden = hidden;
-  });
+  toggleCSS(kSelector[label] + hidden, !checked);
 }
 
 
 // Utilities
 
-function addEvent(aData)
+function addEvent(aData) {
   ucjsUtil.setEventListener(aData);
+}
 
-function $S(aSelector, aContext)
-  ucjsUtil.getNodesBySelector(aSelector, aContext);
+function toggleCSS(aCSS, aHidden) {
+  if (aHidden) {
+    ucjsUtil.setGlobalStyleSheet(aCSS);
+  } else {
+    ucjsUtil.removeGlobalStyleSheet(aCSS);
+  }
+}
 
 function log(aMsg)
   ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
@@ -71,6 +87,7 @@ function log(aMsg)
 
 function ListFilter_init() {
   makeUI();
+  addEvent([window, 'unload', uninit, false]);
 }
 
 ListFilter_init();
