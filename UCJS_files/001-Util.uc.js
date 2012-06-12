@@ -484,17 +484,26 @@ function openTabs(aURLs, aOption) {
     return;
 
   aOption = aOption || {};
-  var {ucjsReplace} = aOption;
+  var {ucjsReplace, inBackground} = aOption;
+  var firstTabAdded;
 
   if (ucjsReplace) {
     BrowserOpenTab();
     gBrowser.removeAllTabsBut(gBrowser.mCurrentTab);
-    loadPage(aURLs.shift(), aOption);
+    firstTabAdded = loadPage(aURLs.shift(), aOption);
+  } else {
+    if (!inBackground) {
+      firstTabAdded = openTab(aURLs.shift(), aOption);
+    }
   }
 
   aURLs.forEach(function(url) {
     openTab(url, aOption);
   });
+
+  if (firstTabAdded) {
+    gBrowser.selectedTab = firstTabAdded;
+  }
 }
 
 function openURLIn(aURL, aInTab, aOption) {
