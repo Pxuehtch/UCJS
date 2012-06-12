@@ -252,6 +252,41 @@
 })();
 
 
+// Add 'open new tab' menu in the tab-context-menu.
+(function() {
+
+  var menu, popup;
+
+  menu = $E('menu', {
+    id: 'ucjs_tabcontext_openNewTab',
+    label: U('新しいタブ'),
+    accesskey: 'N'
+  });
+
+  popup = menu.appendChild($E('menupopup', {
+    onpopupshowing: 'event.stopPropagation();'
+  }));
+
+  popup.appendChild($E('menuitem', {
+    label: U('スタートページ'),
+    oncommand: 'ucjsUtil.openHomePages();',
+    accesskey: 'S'
+  }));
+
+  [['about:home', 'H'], ['about:newtab', 'N'], ['about:blank', 'B']].
+  forEach(function([url, accesskey]) {
+    popup.appendChild($E('menuitem', {
+      label: url,
+      oncommand: 'openUILinkIn("' + url + '", "tab");',
+      accesskey: accesskey
+    }));
+  });
+
+  gBrowser.tabContextMenu.insertBefore(menu, $ID('context_undoCloseTab'));
+
+})();
+
+
 // Show status text in URL bar.
 // @note In fullscreen mode, the default statusbar is used.
 // @require UI.uc.js
@@ -354,6 +389,9 @@ function $E(aTag, aAttribute)
 
 function $ANONID(aId, aNode)
   ucjsUtil.getNodeByAnonid(aId, aNode);
+
+function U(aText)
+  ucjsUtil.convertForSystem(aText);
 
 function setChromeCSS(aCSS)
   ucjsUtil.setChromeStyleSheet(aCSS);
