@@ -573,8 +573,7 @@ function convertFromUTF16(aStr, aCharset) {
 
   try {
     return suc.ConvertFromUnicode(aStr);
-  } catch (e) {
-  }
+  } catch (e) {}
   return aStr;
 }
 
@@ -821,14 +820,17 @@ return {
   openTab: openTab,
   loadPage: loadPage,
 
-  convertForSystem: function(aStr) convertToUTF16(aStr, 'UTF-8'),
+  convertForSystem:
+    function(aStr) convertToUTF16(aStr, 'UTF-8'),
   getWindowList: getWindowList,
   focusWindow: focusWindow,
   focusWindowAtIndex: focusWindowAtIndex,
   restartApp: restartApp,
 
-  setGlobalStyleSheet: function(aCSS, aAgent) registerGlobalStyleSheet(aCSS, aAgent, true),
-  removeGlobalStyleSheet: function(aCSS, aAgent) registerGlobalStyleSheet(aCSS, aAgent, false),
+  setGlobalStyleSheet:
+    function(aCSS, aAgent) registerGlobalStyleSheet(aCSS, aAgent, true),
+  removeGlobalStyleSheet:
+    function(aCSS, aAgent) registerGlobalStyleSheet(aCSS, aAgent, false),
   setChromeStyleSheet: registerChromeStyleSheet,
   setContentStyleSheet: registerContentStyleSheet,
 
