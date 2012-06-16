@@ -20,7 +20,7 @@ var ucjsUtil = (function(window, undefined) {
 
 // Generic variables.
 
-var {document, gBrowser} = window;
+var {document, gBrowser, Components} = window;
 var {classes: Cc, interfaces: Ci} = Components;
 
 
@@ -406,7 +406,8 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
 // Functions for URI.
 
 function checkSecurity(aURL) {
-  urlSecurityCheck(
+  // @see chrome://global/content/contentAreaUtils.js::urlSecurityCheck()
+  window.urlSecurityCheck(
     aURL,
     gBrowser.contentPrincipal,
     Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL
@@ -444,7 +445,8 @@ function resolveURL(aURL, aBaseURL) {
 
   var baseURL = aBaseURL || getFocusedDocument().documentURI;
 
-  return makeURLAbsolute(baseURL, aURL);
+  // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
+  return window.makeURLAbsolute(baseURL, aURL);
 }
 
 function openNewWindow(aURL, aOption) {
@@ -457,11 +459,11 @@ function openNewWindow(aURL, aOption) {
 
   checkSecurity(URL);
 
-  var doc = getFocusedDocument();
-  var newWin = openNewWindowWith(URL, doc, null, false);
+  // @see chrome://browser/content/utilityOverlay.js::openNewWindowWith()
+  var newWin = window.openNewWindowWith(URL, getFocusedDocument(), null, false);
 
   if (inBackground) {
-    setTimeout(focus, 0);
+    setTimeout(window.focus, 0);
   }
 
   return newWin;
