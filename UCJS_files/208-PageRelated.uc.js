@@ -46,9 +46,17 @@ const kSiteInfo = {
   'Bookmark': [
     {
       name: 'はてなブックマーク',
+      /*
       URL: function(aPage)
-        //format('http://b.hatena.ne.jp/entry?mode=more&url=%DATA%', encodeURIComponent(aPage.URL))
-        format('http://b.hatena.ne.jp/entry/%DATA%', removeScheme(aPage.URL))
+        format('http://b.hatena.ne.jp/entry?mode=more&url=%DATA%', encodeURIComponent(aPage.URL))
+      */
+      URL: function(aPage) {
+        var entryURL = 'http://b.hatena.ne.jp/entry/';
+        if (/^https:/.test(aPage.URL)) {
+          entryURL += 's/';
+        }
+        return format(entryURL + '%DATA%', removeScheme(aPage.URL));
+      }
     },
     {
       name: 'Livedoor クリップ',

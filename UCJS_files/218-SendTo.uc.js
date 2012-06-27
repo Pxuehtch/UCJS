@@ -38,9 +38,15 @@ const kServices = [
     // @require WebService.uc.js
     disabled: !ucjsWebService,
 
-    //URL: 'http://b.hatena.ne.jp/entry?mode=more&url=%ENC%',
+    /*
+    URL: 'http://b.hatena.ne.jp/entry?mode=more&url=%ENC%',
+    */
     URL: function(aData) {
-      return 'http://b.hatena.ne.jp/entry/%DATA%'.replace('%DATA%', removeScheme(aData));
+      var entryURL = 'http://b.hatena.ne.jp/entry/';
+      if (/^https:/.test(aData)) {
+        entryURL += 's/';
+      }
+      return entryURL + removeScheme(aData);
     },
 
     types: ['PAGE'],
