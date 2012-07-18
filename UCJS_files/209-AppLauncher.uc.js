@@ -657,7 +657,7 @@ const IOService =
 
 // Instances.
 function LocalFile()
-  $I('@mozilla.org/file/local;1', 'nsILocalFile');
+  $I('@mozilla.org/file/local;1', 'nsIFile');
 function Process()
   $I('@mozilla.org/process/util;1', 'nsIProcess');
 function WebBrowserPersist()

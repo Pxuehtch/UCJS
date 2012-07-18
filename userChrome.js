@@ -486,7 +486,7 @@ function Util() {
   function QI(aNode, aIID) aNode.QueryInterface(Ci[aIID]);
 
   function getLastModifiedTime(aFile) {
-    var lf = $I('@mozilla.org/file/local;1', 'nsILocalFile');
+    var lf = $I('@mozilla.org/file/local;1', 'nsIFile');
 
     try {
       lf.initWithPath(aFile.path);
