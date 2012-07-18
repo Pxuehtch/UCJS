@@ -16,6 +16,18 @@
 
 // Preferences.
 
+/**
+ * Preset
+ *
+ * @key {string} category name for menu
+ * @value {hash[]}
+ *   @key disabled {boolean} [optional]
+ *   @key name {string} display name for menuitem
+ *   @key URL {function}
+ *     @param aPage {hash}
+ *       @key URL {string} a page URL
+ *       @key title {string} a page title
+ */
 const kSiteInfo = {
   'Translator': [
     {
