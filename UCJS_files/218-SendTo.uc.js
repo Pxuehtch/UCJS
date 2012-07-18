@@ -90,12 +90,6 @@ const kServices = [
     label: 'を Google Image で検索'
   },
   {
-    disabled: true,
-    URL: 'http://www.tineye.com/search/?url=%ENC%',
-    types: ['IMAGE'],
-    label: 'を TinEye で検索'
-  },
-  {
     URL: 'https://www.pixlr.com/editor/?image=%ENC%',
     types: ['LINK', 'IMAGE'],
     extensions: ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'pxd'],

@@ -64,12 +64,6 @@ const kSiteInfo = {
         format('http://clip.livedoor.com/page/%DATA%', aPage.URL)
     },
     {
-      disabled: true,
-      name: 'delicious',
-      URL: function(aPage)
-        format('http://delicious.com/url/check?url=%DATA%', aPage.URL)
-    },
-    {
       name: 'digg',
       URL: function(aPage)
         format(
