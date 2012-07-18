@@ -72,19 +72,20 @@ const kServices = [
     }
   },
   {
+    // (SSL)https://www.aguse.jp/ has a problem with CSS.
     URL: 'http://www.aguse.jp/?m=w&url=%ENC%',
     types: ['LINK'],
     label: 'を aguse で調査'
   },
   {
-    URL: 'http://docs.google.com/viewer?url=%ENC%',
+    URL: 'https://docs.google.com/viewer?url=%ENC%',
     types: ['LINK'],
     // @see https://docs.google.com/support/bin/answer.py?answer=1189935
     extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages', 'ai', 'psd', 'tif', 'tiff', 'dxf', 'svg', 'eps', 'ps', 'ttf', 'xps', 'zip', 'rar'],
     label: 'を Google Docs Viewer で表示'
   },
   {
-    URL: 'http://www.google.com/searchbyimage?image_url=%ENC%',
+    URL: 'https://www.google.com/searchbyimage?image_url=%ENC%',
     types: ['IMAGE'],
     label: 'を Google Image で検索'
   },
@@ -95,7 +96,7 @@ const kServices = [
     label: 'を TinEye で検索'
   },
   {
-    URL: 'http://www.pixlr.com/editor/?image=%ENC%',
+    URL: 'https://www.pixlr.com/editor/?image=%ENC%',
     types: ['LINK', 'IMAGE'],
     extensions: ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'pxd'],
     label: 'を Pixlr Editor で編集'

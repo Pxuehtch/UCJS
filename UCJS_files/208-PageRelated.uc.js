@@ -34,12 +34,12 @@ const kSiteInfo = {
     {
       name: 'Google cache:',
       URL: function(aPage)
-        format('http://www.google.co.jp/search?q=cache:%DATA%', removeScheme(aPage.URL))
+        format('https://www.google.co.jp/search?q=cache:%DATA%', removeScheme(aPage.URL))
     },
     {
       name: 'WEB 魚拓',
       URL: function(aPage)
-        format('http://www.google.co.jp/search?sitesearch=megalodon.jp&q=%DATA%', removeScheme(aPage.URL))
+        format('https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%DATA%', removeScheme(aPage.URL))
     }
   ],
 
@@ -88,7 +88,7 @@ const kSiteInfo = {
     {
       name: 'Google タイトル',
       URL: function(aPage)
-        format('http://www.google.co.jp/search?q="%DATA%"', aPage.title)
+        format('https://www.google.co.jp/search?q="%DATA%"', aPage.title)
     }
   ]
 };

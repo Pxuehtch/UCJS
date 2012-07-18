@@ -49,7 +49,7 @@ const kPresets = [
   {
     type: 'open',
     name: 'GoogleSearch',
-    URL: 'http://www.google.co.jp/search?q=%ESC%'
+    URL: 'https://www.google.co.jp/search?q=%ESC%'
   },
   {
     type: 'open',
