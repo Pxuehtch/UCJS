@@ -156,7 +156,10 @@ var mHistoryList = (function() {
       }
 
       aPopup.appendChild($E('menuitem', {
-        label: entry.title,
+        label: formatLabel({
+          time: getLastVisitTime(entry.URI),
+          title: entry.title
+        }),
         tooltiptext: entry.URI.spec,
         icon: getFavicon(null, entry.URI),
         class: className.join(' '),
@@ -191,7 +194,10 @@ var mHistoryList = (function() {
       }
 
       aPopup.appendChild($E('menuitem', {
-        label: getTitle(node.title, URL),
+        label: formatLabel({
+          time: toMillisec(node.time),
+          title: getTitle(node.title, URL)
+        }),
         tooltiptext: URL,
         icon: getFavicon(node.icon, URL),
         class: className.join(' '),
@@ -204,16 +210,51 @@ var mHistoryList = (function() {
     return (count > 0);
   }
 
+  function getLastVisitTime(aURI) {
+    const history = PlacesUtils.history;
+
+    var query, options, root;
+    var time;
+
+    if (aURI.schemeIs('about'))
+      return 0;
+
+    query = history.getNewQuery();
+    query.uri = aURI;
+
+    options = history.getNewQueryOptions();
+    options.queryType = 0; // Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY
+    options.sortingMode = 4; // Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING
+    options.maxResults = 1;
+
+    root = history.executeQuery(query, options).root;
+    root.containerOpen = true;
+    try {
+      time = toMillisec(root.getChild(0).time);
+    } catch (e) {}
+    root.containerOpen = false;
+
+    return time || 0;
+  }
+
   function getRecentHistoryPlacesRoot() {
     const history = PlacesUtils.history;
 
-    // @see https://developer.mozilla.org/en/Places_query_URIs
-    var place = 'place:type=0&sort=4&maxResults=' + kMaxListItems;
-    var queries = {}, size = {}, options = {};
+    var query, options;
 
-    history.queryStringToQueries(place, queries, size, options);
+    query = history.getNewQuery();
 
-    return history.executeQueries(queries.value, size.value, options.value).root;
+    options = history.getNewQueryOptions();
+    options.queryType = 0; // Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY
+    options.sortingMode = 4; // Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING
+    options.maxResults = kMaxListItems;
+
+    return history.executeQuery(query, options).root;
+  }
+
+  // convert microseconds into milliseconds
+  function toMillisec(aMicrosec) {
+    return aMicrosec / 1000;
   }
 
   return {
@@ -464,6 +505,24 @@ function makeDisabledMenuItem(aPopup, aLabel) {
 
 function makeMenuSeparator(aPopup) {
   aPopup.appendChild($E('menuseparator'));
+}
+
+function formatLabel(aValue) {
+  var {time, title} = aValue;
+
+  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
+  const kTimeFormat = '%Y-%m-%d %H:%M:%S';
+
+  const kFormTimeTitle = '[%time%] %title%',
+        kFormTitle = '%title%';
+
+  var form = time ? kFormTimeTitle : kFormTitle;
+
+  if (time) {
+    form = form.replace('%time%', (new Date(time)).toLocaleFormat(kTimeFormat));
+  }
+
+  return form.replace('%title%', title);
 }
 
 function getPluralForm(aFormat, aCount, aLabels)
