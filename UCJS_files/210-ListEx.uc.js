@@ -204,6 +204,18 @@ var mHistoryList = (function() {
     return (count > 0);
   }
 
+  function getRecentHistoryPlacesRoot() {
+    const history = PlacesUtils.history;
+
+    // @see https://developer.mozilla.org/en/Places_query_URIs
+    var place = 'place:type=0&sort=4&maxResults=' + kMaxListItems;
+    var queries = {}, size = {}, options = {};
+
+    history.queryStringToQueries(place, queries, size, options);
+
+    return history.executeQueries(queries.value, size.value, options.value).root;
+  }
+
   return {
     build: build
   };
@@ -304,6 +316,14 @@ var mOpenedList = (function() {
     }
   }
 
+  function getWindowEnumerator()
+    Cc['@mozilla.org/appshell/window-mediator;1'].
+    getService(Ci.nsIWindowMediator).
+    getEnumerator(null);
+
+  function isBrowserWindow(aWindow)
+    aWindow.location.href === 'chrome://browser/content/browser.xul';
+
   return {
     build: build
   };
@@ -402,6 +422,10 @@ var mClosedList = (function() {
     return true;
   }
 
+  function getSessionStore()
+    Cc['@mozilla.org/browser/sessionstore;1'].
+    getService(Ci.nsISessionStore);
+
   return {
     build: build
   };
@@ -445,18 +469,6 @@ function makeMenuSeparator(aPopup) {
 function getPluralForm(aFormat, aCount, aLabels)
   aFormat.replace('#1', aCount).replace('#2', aLabels[(aCount < 2) ? 0 : 1]);
 
-function isBrowserWindow(aWindow)
-  aWindow.location.href === 'chrome://browser/content/browser.xul';
-
-function getSessionStore()
-  Cc['@mozilla.org/browser/sessionstore;1'].
-  getService(Ci.nsISessionStore);
-
-function getWindowEnumerator()
-  Cc['@mozilla.org/appshell/window-mediator;1'].
-  getService(Ci.nsIWindowMediator).
-  getEnumerator(null);
-
 function getListRange(aIndex, aCount) {
   var maxNum = kMaxListItems;
   if (maxNum <= 0) {
@@ -471,18 +483,6 @@ function getListRange(aIndex, aCount) {
   }
 
   return [start, end];
-}
-
-function getRecentHistoryPlacesRoot() {
-  const history = PlacesUtils.history;
-
-  // @see https://developer.mozilla.org/en/Places_query_URIs
-  var place = 'place:type=0&sort=4&maxResults=' + kMaxListItems;
-  var queries = {}, size = {}, options = {};
-
-  history.queryStringToQueries(place, queries, size, options);
-
-  return history.executeQueries(queries.value, size.value, options.value).root;
 }
 
 function getTitle(aTitle, aURL) {
