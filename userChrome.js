@@ -25,7 +25,8 @@ const {document} = window;
  * User configurations.
  */
 const kConfig = {
-  // Script sub-folders under your chrome folder.
+  // Script subfolders under your chrome folder.
+  // Required to register at least one subfolder.
   // Adding '/' at the end, scripts are scanned in the descendant directories.
   scriptFolders: ['UCJS_files', 'UCJS_tmp/'],
 
@@ -256,14 +257,27 @@ function ScriptList() {
     mOverlays = [];
 
     var chrome = getChromeDirectory();
-    kConfig.scriptFolders.forEach(function(a) {
-      var segments = a.split('/');
-      if (segments.length < 3 && segments[0] && !segments[1]) {
-        let directory = chrome.clone();
-        directory.append(segments[0]);
-        if (directory.exists()) {
-          scanDirectory(directory, segments[1] === '');
+    kConfig.scriptFolders.forEach(function(folder) {
+      var match, deeper, directory, exists;
+
+      match = /^(.+?)(\/?)$/.exec(folder);
+      if (!match)
+        return;
+
+      deeper = !!match[2];
+      directory = chrome.clone();
+      exists = match[1].split('/').every(function(segment) {
+        if (segment) {
+          try {
+            directory.append(segment);
+            return directory.exists() && directory.isDirectory() && !directory.isHidden();
+          } catch (e) {}
         }
+        return false;
+      });
+
+      if (exists) {
+        scanDirectory(directory, deeper);
       }
     });
 
