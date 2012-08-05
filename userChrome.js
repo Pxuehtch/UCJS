@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name userChrome.js
-// @description User-script loader for userChrome.js extention.
+// @description User-script loader for userChromeJS extention.
 // ==/UserScript==
 
 // @note Extends property in global scope. See kSystem.loaderName
