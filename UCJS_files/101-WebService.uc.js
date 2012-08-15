@@ -17,25 +17,26 @@ var ucjsWebService = (function() {
 // Preferences.
 
 /**
- * Presets of service.
+ * Presets of service
  * @value {hash}
- *   {
- *     type: 'get' - requests values.
- *           'open' - opens tab.
- *     name: 'preset name',
- *     URL: 'URL of service'
- *       When alias %...% is included, aOption.data of get()/open() is required
- *     form: {form: <form> XPath, input: <input> XPath}
- *       (OPTIONAL, Only with type 'open')
- *     parse: function(value, status)
- *       (OPTIONAL, Only with type 'get')
- *       Parses response from HTTP request.
- *   }
+ *   type: {string}
+ *     'get' - requests data
+ *     'open' - opens tab
+ *   name: {string} preset name
+ *   URL: {string} URL of the service
+ *     alias %...% is available (e.g. %ESC% or %NoScheme|ESC%) @see kURLAlias
+ *   form: {hash} [option, Only with type 'open']
+ *     form: {XPath of <form>}
+ *     input: {XPath of <input>}
+ *   parse: {function} [option, Only with type 'get'] parses the response from HTTP request
+ *     @param value {string} response text of request
+ *     @param status {number} response status of request
  */
 const kPresets = [
   {
     type: 'get',
     name: 'HatenaBookmarkCount',
+    // @see http://developer.hatena.ne.jp/ja/documents/bookmark/apis/getcount
     URL: 'http://api.b.st-hatena.com/entry.count?url=%ESC%',
     parse: function(value, status) {
       if (status === 200) {
@@ -123,12 +124,11 @@ var mXHRHandler = (function() {
 // Functions.
 
 /**
- * ucjsWebService.open(aOption);
+ * @usage ucjsWebService.open(aOption);
  * @param aOption {hash}
- *   {
- *     name: 'preset name'
- *     data (OPTIONAL): value or [values sequentially replace alias]
- *   }
+ *   name: {string} preset name
+ *   data: {string|number|[string|number]} [option] passed data
+ *     when URL has multiple aliases, set replaced values in the order in Array[]
  */
 function open(aOption) {
   var result = getResult(aOption, 'open');
@@ -143,13 +143,13 @@ function open(aOption) {
 }
 
 /**
- * ucjsWebService.get(aOption);
+ * @usage ucjsWebService.get(aOption);
  * @param aOption {hash}
- *   {
- *     name: 'preset name'
- *     data (OPTIONAL): value or [values sequentially replace alias]
- *     callback: function(response) Method to get response values.
- *   }
+ *   name: {string} preset name
+ *   data: {string|number|[string|number]} [option] passed data
+ *     when URL has multiple aliases, set replaced values in the order in Array[]
+ *   callback: {function} method to get a response value
+ *     @param response {string} response text of request
  */
 function get(aOption) {
   var result = getResult(aOption, 'get');
