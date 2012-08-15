@@ -21,8 +21,8 @@
  * @key disabled {boolean} [option]
  * @key URL
  *   {URL string}
- *     '%RAW%' is replaced with a passed data itself.
- *     '%ENC%' is replaced with a encoded data.
+ *     alias %...% is available. (e.g. %ESC% or %NoScheme|ESC%)
+ *     @see kURLAlias
  *   {function(aData)}
  *     @param aData {string}
  * @key types {array of 'PAGE'|'LINK'|'IMAGE'|'TEXT'}
@@ -37,27 +37,29 @@ const kServices = [
   {
     // @require WebService.uc.js
     disabled: !ucjsWebService,
+    types: ['PAGE'],
+    label: 'の はてなブックマーク (-)',
 
-    /*
-    URL: 'http://b.hatena.ne.jp/entry?mode=more&url=%ENC%',
-    */
     URL: function(aData) {
       var entryURL = 'http://b.hatena.ne.jp/entry/';
       if (/^https:/.test(aData)) {
         entryURL += 's/';
       }
-      return entryURL + removeScheme(aData);
+      return entryURL + '%NoScheme%';
     },
-
-    types: ['PAGE'],
-    label: 'の はてなブックマーク (-)',
 
     command: function(aOption) {
       function updateLabel(count, menuitem) {
         if (menuitem) {
           let label = menuitem.getAttribute('label').replace('(-)', '(' + count + ')');
-          menuitem.setAttribute('label', U(label));
+          menuitem.setAttribute('label', label);
         }
+      }
+
+      // do not request URL with parameters for security.
+      if (/[?#].*$/.test(aOption.data)) {
+        updateLabel(U('注意：パラメータ付 URL'), aOption.menuitem);
+        return;
       }
 
       ucjsWebService.get({
@@ -73,34 +75,45 @@ const kServices = [
   },
   {
     // (SSL)https://www.aguse.jp/ has a problem with CSS.
-    URL: 'http://www.aguse.jp/?m=w&url=%ENC%',
+    URL: 'http://www.aguse.jp/?m=w&url=%ESC%',
     types: ['LINK'],
     label: 'を aguse で調査'
   },
   {
-    URL: 'https://docs.google.com/viewer?url=%ENC%',
+    URL: 'https://docs.google.com/viewer?url=%ESC%',
     types: ['LINK'],
     // @see https://docs.google.com/support/bin/answer.py?answer=1189935
     extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages', 'ai', 'psd', 'tif', 'tiff', 'dxf', 'svg', 'eps', 'ps', 'ttf', 'xps', 'zip', 'rar'],
     label: 'を Google Docs Viewer で表示'
   },
   {
-    URL: 'https://www.google.com/searchbyimage?image_url=%ENC%',
+    URL: 'https://www.google.com/searchbyimage?image_url=%ESC%',
     types: ['IMAGE'],
     label: 'を Google Image で検索'
   },
   {
-    URL: 'https://www.pixlr.com/editor/?image=%ENC%',
+    URL: 'https://www.pixlr.com/editor/?image=%ESC%',
     types: ['LINK', 'IMAGE'],
     extensions: ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'pxd'],
     label: 'を Pixlr Editor で編集'
   },
   {
-    URL: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%ENC%',
+    URL: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%ESC%',
     types: ['TEXT'],
     label: 'を Yahoo!辞書 で引く'
   }
 ];
+
+/**
+ * Alias for URL of kServices
+ * @note applied in this order.
+ */
+const kURLAlias = {
+  'NoScheme': function(aValue) aValue.replace(/^https?:\/\//, ''),
+  'NoParameter': function(aValue) aValue.replace(/[?#].*$/, ''),
+  'ESC': function(aValue) encodeURIComponent(aValue),
+  'RAW': function(aValue) aValue
+};
 
 const kString = {
   types: {
@@ -195,18 +208,19 @@ function makeItem(aType, aData, aService) {
   var label = kString.types[aType] + aService.label;
   item.setAttribute('label', U(label));
 
-  var URL;
-  if (typeof aService.URL === 'function') {
-    URL = aService.URL(aData);
-  } else {
-    URL = aService.URL.
-      replace('%RAW%', aData).
-      replace('%ENC%', encodeURIComponent(aData));
-  }
+  var URL = (typeof aService.URL === 'function') ? aService.URL(aData) : aService.URL;
+  URL = URL.replace(/%([\w|]+)%/, function($0, $1) {
+    var data = aData;
+    var aliases = $1.split('|');
+    for (let alias in kURLAlias) {
+      if (aliases.indexOf(alias) > -1) {
+        data = kURLAlias[alias](data);
+      }
+    }
+    return data;
+  });
 
-  var tooltip = kString.tooltip.
-    replace('%URL%', URL).
-    replace('%DATA%', aData);
+  var tooltip = kString.tooltip.replace('%URL%', URL).replace('%DATA%', aData);
   item.setAttribute('tooltiptext', tooltip);
 
   setEvent(URL, item)

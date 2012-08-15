@@ -21,11 +21,12 @@
  *
  * @key {string} category name for menu
  * @value {hash[]}
- *   @key disabled {boolean} [optional]
+ *   @key disabled {boolean} [option]
  *   @key name {string} display name for menuitem
  *   @key URL {function}
  *     @param aPage {hash}
  *       @key URL {string} a page URL
+ *         alias %...% is available (e.g. %ESC% or %NoScheme|ESC%) @see kURLAlias
  *       @key title {string} a page title
  */
 const kSiteInfo = {
@@ -33,7 +34,7 @@ const kSiteInfo = {
     {
       name: 'Google 翻訳 EN>JP',
       URL: function(aPage)
-        format('http://translate.google.com/translate?hl=ja&sl=en&u=%DATA%', aPage.URL)
+        formatURL('http://translate.google.com/translate?hl=ja&sl=en&u=%RAW%', aPage.URL)
     }
   ],
 
@@ -41,46 +42,42 @@ const kSiteInfo = {
     {
       name: 'Internet Archive',
       URL: function(aPage)
-        format('http://web.archive.org/*/%DATA%', aPage.URL)
+        formatURL('http://web.archive.org/*/%RAW%', aPage.URL)
     },
     {
       name: 'Google cache:',
       URL: function(aPage)
-        format('https://www.google.co.jp/search?q=cache:%DATA%', removeScheme(aPage.URL))
+        formatURL('https://www.google.co.jp/search?q=cache:%NoScheme%', aPage.URL)
     },
     {
       name: 'WEB 魚拓',
       URL: function(aPage)
-        format('https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%DATA%', removeScheme(aPage.URL))
+        formatURL('https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%NoScheme%', aPage.URL)
     }
   ],
 
   'Bookmark': [
     {
       name: 'はてなブックマーク',
-      /*
-      URL: function(aPage)
-        format('http://b.hatena.ne.jp/entry?mode=more&url=%DATA%', encodeURIComponent(aPage.URL))
-      */
       URL: function(aPage) {
         var entryURL = 'http://b.hatena.ne.jp/entry/';
         if (/^https:/.test(aPage.URL)) {
           entryURL += 's/';
         }
-        return format(entryURL + '%DATA%', removeScheme(aPage.URL));
+        return formatURL(entryURL + '%NoScheme%', aPage.URL);
       }
     },
     {
       name: 'Livedoor クリップ',
       URL: function(aPage)
-        format('http://clip.livedoor.com/page/%DATA%', aPage.URL)
+        formatURL('http://clip.livedoor.com/page/%RAW%', aPage.URL)
     },
     {
       name: 'digg',
       URL: function(aPage)
-        format(
-          'http://digg.com/search?section=all&type=all&area=all&sort=most&s=%DATA%',
-          encodeURIComponent(aPage.title.replace(/\s+/g, '+'))
+        formatURL(
+          'http://digg.com/search?section=all&type=all&area=all&sort=most&s=%ESC%',
+          aPage.title.replace(/\s+/g, '+')
         )
     }
   ],
@@ -89,17 +86,28 @@ const kSiteInfo = {
     {
       name: 'Yahoo! link:',
       URL: function(aPage)
-        format('http://search.yahoo.co.jp/search?p=link:%DATA%', aPage.URL)
+        formatURL('http://search.yahoo.co.jp/search?p=link:%RAW%', aPage.URL)
     },
     {
       name: 'Google タイトル',
       URL: function(aPage)
-        format('https://www.google.co.jp/search?q="%DATA%"', aPage.title)
+        formatURL('https://www.google.co.jp/search?q="%RAW%"', aPage.title)
     }
   ]
 };
 
+/**
+ * Alias for URL of kServices
+ * @note applied in this order.
+ */
+const kURLAlias = {
+  'NoScheme': function(aValue) aValue.replace(/^https?:\/\//, ''),
+  'ESC': function(aValue) encodeURIComponent(aValue),
+  'RAW': function(aValue) aValue
+};
+
 const kString = {
+  warnParameter: '注意：パラメータ付 URL',
   openAll: 'すべて開く'
 };
 
@@ -138,20 +146,39 @@ function showMenu(aEvent) {
   if (!/^https?$/.test(gBrowser.currentURI.scheme))
     return;
 
+  var page = {
+    title: gBrowser.contentTitle,
+    URL: gBrowser.currentURI.spec
+  };
+
+  if (/[?#].*$/.test(page.URL)) {
+    contextMenu.insertBefore($E('menuitem', {
+      label: kString.warnParameter,
+      style: 'font-weight:bold;',
+      tooltiptext: page.URL.replace(/[?#]/, '\n$&'),
+      disabled: true
+    }), eSep);
+  }
+
   for (let type in kSiteInfo) {
     let menu = $E('menu', {label: type});
     let popup = $E('menupopup');
 
-    kSiteInfo[type].forEach(function(info, i) {
-      if (!info.disabled) {
-        let URL = getRelatedURLs(type, i);
-        popup.appendChild($E('menuitem', {label: info.name, open: URL, tooltiptext: URL.toString()}));
-      }
+    let URLs = [];
+
+    kSiteInfo[type].forEach(function(info) {
+      if (info.disabled)
+        return;
+
+      var URL = info.URL(page);
+      URLs.push(URL);
+
+      popup.appendChild($E('menuitem', {label: info.name, open: [URL], tooltiptext: URL}));
     });
 
-    if (popup.childElementCount > 1) {
+    if (URLs.length > 1) {
       popup.appendChild($E('menuseparator'));
-      popup.appendChild($E('menuitem', {label: kString.openAll, open: getRelatedURLs(type)}));
+      popup.appendChild($E('menuitem', {label: kString.openAll, open: URLs}));
     }
 
     menu.appendChild(popup);
@@ -196,30 +223,18 @@ function $E(aTag, aAttribute) {
   return element;
 }
 
-function getRelatedURLs(aType, aIndex) {
-  var page = {
-    title: gBrowser.contentTitle,
-    URL: gBrowser.currentURI.spec
-  };
-
-  var URLs = [];
-
-  if (typeof aIndex !== 'undefined') {
-    URLs[0] = kSiteInfo[aType][aIndex].URL(page);
-  } else {
-    kSiteInfo[aType].forEach(function(info) {
-      if (!info.disabled) {
-        URLs.push(info.URL(page));
+function formatURL(aURL, aData) {
+  return aURL.replace(/%([\w|]+)%/, function($0, $1) {
+    var data = aData;
+    var aliases = $1.split('|');
+    for (let alias in kURLAlias) {
+      if (aliases.indexOf(alias) > -1) {
+        data = kURLAlias[alias](data);
       }
-    });
-  }
-
-  return URLs;
+    }
+    return data;
+  });
 }
-
-function format(aFormat, aData) aFormat.replace('%DATA%', aData);
-
-function removeScheme(aURL) aURL.replace(/^https?:\/\//, '');
 
 
 // Imports.

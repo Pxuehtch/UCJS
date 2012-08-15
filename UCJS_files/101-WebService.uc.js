@@ -24,9 +24,7 @@ var ucjsWebService = (function() {
  *           'open' - opens tab.
  *     name: 'preset name',
  *     URL: 'URL of service'
- *       When alias %...% is included, aOption.data of get()/open() is required;
- *         %ESC% will be replaced with encoded data for URL.
- *         %RAW% with data itself.
+ *       When alias %...% is included, aOption.data of get()/open() is required
  *     form: {form: <form> XPath, input: <input> XPath}
  *       (OPTIONAL, Only with type 'open')
  *     parse: function(value, status)
@@ -74,9 +72,15 @@ const kPresets = [
   }
 ];
 
+/**
+ * Alias for URL of kPresets
+ * @note applied in this order
+ */
 const kURLAlias = {
-  '%ESC%': function(aValue) encodeURIComponent(aValue),
-  '%RAW%': function(aValue) aValue
+  'NoScheme': function(aValue) aValue.replace(/^https?:\/\//, ''),
+  'NoParameter': function(aValue) aValue.replace(/[?#].*$/, ''),
+  'ESC': function(aValue) encodeURIComponent(aValue),
+  'RAW': function(aValue) aValue
 };
 
 
@@ -187,7 +191,9 @@ function evaluate(aOption, aPreset) {
     result[key] = aPreset[key];
   }
   for (let key in aOption) {
-    (key in result) || (result[key] = aOption[key]);
+    if (!(key in result)) {
+      result[key] = aOption[key];
+    }
   }
 
   result.URL = buildURL(result.URL, result.data);
@@ -201,19 +207,23 @@ function buildURL(aURL, aData) {
   if (!aData)
     return aURL;
 
-  var data = (typeof aData === 'string') ? [aData] : aData;
+  var data = !Array.isArray(aData) ? [aData] : aData.concat();
 
-  var split = aURL.split(RegExp('(' + [key for (key in kURLAlias)].join('|') + ')'));
-  if (split.length === 1)
-    return aURL;
-
-  for (let i = 1, len = split.length; i < len; i = i + 2) {
+  return aURL.replace(/%([\w|]+)%/g, function($0, $1) {
     if (!data.length)
-      break;
-    split[i] = kURLAlias[split[i]](data.shift());
-  }
+      return $0;
 
-  return split.join('');
+    var value = data.shift() + '';
+    var aliases = $1.split('|');
+
+    for (let alias in kURLAlias) {
+      if (aliases.indexOf(alias) > -1) {
+        value = kURLAlias[alias](value);
+      }
+    }
+
+    return value;
+  });
 }
 
 function inputAndSubmit(aForm, aData) {
