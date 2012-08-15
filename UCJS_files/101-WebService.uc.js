@@ -85,6 +85,8 @@ const kURLAlias = {
 };
 
 
+// Functions.
+
 /**
  * XMLHttpRequest handler.
  */
@@ -119,9 +121,6 @@ var mXHRHandler = (function() {
     request: request
   };
 })();
-
-
-// Functions.
 
 /**
  * @usage ucjsWebService.open(aOption);

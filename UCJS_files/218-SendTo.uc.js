@@ -250,11 +250,11 @@ function testExtension(aExtensions, aURL) {
 
 // Utilities.
 
-function $ID(aID) document.getElementById(aID);
+function $ID(aID)
+  document.getElementById(aID);
 
-function $E(aTag) document.createElement(aTag);
-
-function removeScheme(aURL) aURL.replace(/^https?:\/\//, '');
+function $E(aTag)
+  document.createElement(aTag);
 
 
 // Imports.

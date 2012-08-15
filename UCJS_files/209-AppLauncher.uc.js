@@ -34,7 +34,7 @@ const kAppList = [
     // @see keys in kTypeAction.
     type: 'browse',
 
-    // Alias of the special folder is avalable.
+    // Alias of the special folder is available.
     // @see kSpecialFolderAliases.
     // %ProgF%: program folder.
     // %LocalAppData%: local application data folder.
