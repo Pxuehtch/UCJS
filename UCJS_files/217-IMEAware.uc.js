@@ -52,7 +52,13 @@ var mIMEAwareHandler = {
 
     this.textbox.addEventListener('keydown', this, false);
     this.textbox.addEventListener('keyup', this, false);
+    // observe events for finalization
+    // when a page changes its location with a shortcut key, 'blur' unfires
     this.textbox.addEventListener('blur', this, false);
+    if (this.textbox.ownerDocument instanceof HTMLDocument) {
+      this.textbox.ownerDocument.defaultView.
+      addEventListener('pagehide', this, false);
+    }
   },
 
   uninit: function() {
@@ -62,6 +68,10 @@ var mIMEAwareHandler = {
     this.textbox.removeEventListener('keydown', this, false);
     this.textbox.removeEventListener('keyup', this, false);
     this.textbox.removeEventListener('blur', this, false);
+    if (this.textbox.ownerDocument instanceof HTMLDocument) {
+      this.textbox.ownerDocument.defaultView.
+      removeEventListener('pagehide', this, false);
+    }
 
     this.restoreStyle();
 
@@ -153,6 +163,7 @@ var mIMEAwareHandler = {
         }
         break;
       case 'blur':
+      case 'pagehide':
         this.uninit();
         break;
     }
