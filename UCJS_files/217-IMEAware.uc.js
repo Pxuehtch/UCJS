@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        IMEAware.uc.js
-// @description Emphasizes the textbox with state of IME.
+// @description Indicates the state of IME in a textbox
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note cf. IME-Colors.uc.js by Griever http://gist.github.com/410093
+// @note cf. https://github.com/Griever/userChromeJS/blob/master/IME-Colors.uc.js
 
 
 (function() {
@@ -15,8 +15,9 @@
 
 
 /**
- * CSS styles of textbox.
- * @note Keys are linked with the return value of mIMEAwareHandler.getIMEState().
+ * CSS styles of a textbox
+ * @note Keys are linked with the return value of
+ *   mIMEAwareHandler.getIMEState()
  */
 const kStyleSet = {
   'DISABLED': {
@@ -37,19 +38,21 @@ const kStyleSet = {
 
 
 /**
- * Main handler.
+ * Main handler
  */
 var mIMEAwareHandler = {
   init: function(aNode) {
     this.uninit();
 
     this.isXBL = aNode.hasAttribute('anonid');
-    this.textbox = this.isXBL ? $X1('ancestor::*[local-name()="textbox"]', aNode) : aNode;
+    this.textbox = this.isXBL ?
+      $X1('ancestor::*[local-name()="textbox"]', aNode) : aNode;
     this.defaultStyle = this.textbox.getAttribute('style');
     this.IMEState = this.getIMEState();
 
     this.setStyle();
 
+    // observe key events of IME keys
     this.textbox.addEventListener('keydown', this, false);
     this.textbox.addEventListener('keyup', this, false);
     // observe events for finalization
@@ -105,7 +108,7 @@ var mIMEAwareHandler = {
     var styleSet = kStyleSet[this.IMEState];
     var style = this.textbox.style;
 
-    if (!('background-image' in styleSet) && ('background-color' in styleSet)) {
+    if (!('background-image' in styleSet) && 'background-color' in styleSet) {
       style.setProperty('background-image', 'none', 'important');
     }
 
@@ -127,16 +130,18 @@ var mIMEAwareHandler = {
   },
 
   /**
-   * Gets the current state of IME.
-   * @return key in kStyleSet.
+   * Gets the current state of IME
+   * @return key in kStyleSet
    */
   getIMEState: function() {
     var win = this.textbox.ownerDocument.defaultView;
     if (win) {
       let imeMode = win.getComputedStyle(this.textbox, null).imeMode;
-      let utils = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+      let utils = win.QueryInterface(Ci.nsIInterfaceRequestor).
+        getInterface(Ci.nsIDOMWindowUtils);
 
-      if (imeMode !== 'disabled' && utils.IMEStatus === utils.IME_STATUS_ENABLED) {
+      if (imeMode !== 'disabled' &&
+          utils.IMEStatus === utils.IME_STATUS_ENABLED) {
         return utils.IMEIsOpen ? 'ON' : 'OFF';
       }
     }
@@ -149,6 +154,7 @@ var mIMEAwareHandler = {
       delete this._delayedUpdateStyleTimer;
     }
 
+    // ensure that IMEStatus is ready
     this._delayedUpdateStyleTimer = setTimeout(this.updateStyle.bind(this), 0);
   },
 
@@ -186,7 +192,7 @@ var mIMEAwareHandler = {
 };
 
 
-// Utilities.
+// Utilities
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
@@ -198,13 +204,14 @@ function log(aMsg)
   ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
 
 
-// Entry point.
+// Entry point
 
 function IMEAware_init() {
   function onFocus(aEvent) {
     var node = aEvent.originalTarget;
     if ((node instanceof HTMLTextAreaElement ||
-        (node instanceof HTMLInputElement && /^(?:text|search)$/.test(node.type))) &&
+        (node instanceof HTMLInputElement &&
+         /^(?:text|search)$/.test(node.type))) &&
         !node.readOnly) {
       mIMEAwareHandler.init(node);
     }
