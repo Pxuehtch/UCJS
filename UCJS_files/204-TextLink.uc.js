@@ -124,7 +124,6 @@ function scanURL(aDoc) {
     let range = aDoc.createRange();
     range.selectNode(aDoc.documentElement);
     URL = pickUpURL(range, sel.getRangeAt(0));
-    range.detach();
 
     if (URL) {
       sel.removeAllRanges();
