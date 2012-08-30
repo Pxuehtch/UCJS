@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name userChrome.js
-// @description User-script loader for userChromeJS extention.
+// @description User-script loader for userChromeJS extention
 // ==/UserScript==
 
-// @note Extends property in global scope. See kSystem.loaderName
+// @note Exposes a property in the global scope. |window[kSystem.loaderName]|
 // @note cf. http://userchromejs.mozdev.org/
 // @note cf. https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
 
@@ -14,29 +14,30 @@
 "use strict";
 
 
-// ***** Generic variables.
+// ***** Generic variables
 
 const {document} = window;
 
 
-// ***** Preferences.
+// ***** Preferences
 
 /**
- * User configurations.
+ * User configurations
  */
 const kConfig = {
-  // Script subfolders under your chrome folder.
-  // Required to register at least one subfolder.
-  // Adding '/' at the end, scripts are scanned in the descendant directories.
+  // Script subfolders under your chrome folder
+  // Required to register at least one subfolder
+  // Adding '/' at the end, scripts are scanned in the descendant directories
   scriptFolders: ['UCJS_files', 'UCJS_tmp/'],
 
-  // File extensions to select which of java-script or xul-overlay the script runs as.
-  // Tests exact match from the first dot(.) of a file name.
+  // File extensions to select which of java-script or xul-overlay
+  // the script runs as
+  // Tests exact match from the first dot(.) of a file name
   jscriptExts: ['.uc.js'],
   overlayExts: ['.uc.xul', '.xul'],
 
-  // URL list of chrome XUL which is blocked to load scripts.
-  // Wildcard '*' is available.
+  // URL list of chrome XUL files which is blocked to load scripts
+  // Wildcard '*' is available
   blockXULs: [
     'chrome://global/content/commonDialog.xul',
     'chrome://browser/content/preferences/*',
@@ -48,43 +49,43 @@ const kConfig = {
 };
 
 /**
- * System configs.
+ * System configs
  */
 const kSystem = {
-  // Required lowest version of Firefox.
+  // Required lowest version of Firefox
   firefoxVersion: '4.0',
 
-  // Global property name in window.
+  // Global property name in the global scope |window|
   loaderName: 'ucjsScriptLoader',
 
-  // ID of <overlay> for overlayed scripts.
+  // ID of <overlay> for overlayed scripts
   overlayContainerID: 'userChrome_js_overlay',
 
   // Timing to validate the modified time of a script
-  // in order to update the startup cache of Firefox.
+  // in order to update the startup cache of Firefox
   // @value {boolean}
-  //   true Always when the script runs.
-  //   false Only when the script is first scanned.
+  //   true: always when the script runs
+  //   false: only when the script is first scanned
   validateScriptAtRun: false
 };
 
 
 
-//***** Entry point.
+//***** Entry point
 
-// Common utility and logging functions.
+// initialize common utility and console logger
 var Util = Util(), Log = Log(false);
 
 ucjsScriptLoader_init();
 
 
-//***** Modules.
+//***** Modules
 
 function ucjsScriptLoader_init() {
   var scriptLoader = ScriptLoader();
 
   if (scriptLoader.init()) {
-    // Extends property in global scope.
+    // expose a property in |window|
     let scriptList = scriptLoader.getScriptList();
     if (scriptList) {
       window[kSystem.loaderName] = {scriptList: scriptList};
@@ -101,7 +102,7 @@ function ucjsScriptLoader_init() {
 
 
 /**
- * ScriptLoader handler.
+ * ScriptLoader handler
  * @return {hash}
  *   @member init {function}
  *   @member uninit {function}
@@ -120,7 +121,8 @@ function ScriptLoader() {
 
     if (!checkVersion(kSystem.firefoxVersion)) {
       Log.list('Not init window', {
-        'Required': 'Firefox %VER% or higher.'.replace('%VER%', kSystem.firefoxVersion)
+        'Required': 'Firefox %VER% or higher.'.
+          replace('%VER%', kSystem.firefoxVersion)
       });
       return false;
     }
@@ -153,7 +155,7 @@ function ScriptLoader() {
     function initSidebar(aEvent) {
       var target = aEvent.originalTarget;
       if (!(target instanceof XULDocument)) {
-        /* noisy, comment out.
+        /* noisy, comment out
         Log.list('Not init sidebar', {
           'Loaded node': target.nodeName
         });
@@ -192,10 +194,11 @@ function ScriptLoader() {
     const {testURL} = Util;
 
     var URL = location.href;
-    return !/^chrome:.+\.xul$/i.test(URL) || kConfig.blockXULs.some(function(s) testURL(s, URL));
+    return !/^chrome:.+\.xul$/i.test(URL) ||
+      kConfig.blockXULs.some(function(s) testURL(s, URL));
   }
 
-  // Exports.
+  // expose
   return {
     init: init,
     uninit: uninit,
@@ -205,7 +208,7 @@ function ScriptLoader() {
 
 
 /**
- * ScriptList handler.
+ * ScriptList handler
  * @return {hash}
  *   @member init {function}
  *   @member uninit {function}
@@ -244,7 +247,7 @@ function ScriptList() {
   }
 
   function copyData(aData) {
-    // Reference copy.
+    // reference copy
     mJscripts = aData.jscripts;
     mOverlays = aData.overlays;
   }
@@ -270,7 +273,8 @@ function ScriptList() {
         if (segment) {
           try {
             directory.append(segment);
-            return directory.exists() && directory.isDirectory() && !directory.isHidden();
+            return directory.exists() && directory.isDirectory() &&
+              !directory.isHidden();
           } catch (e) {}
         }
         return false;
@@ -288,12 +292,12 @@ function ScriptList() {
         if (entry.isHidden())
           continue;
         if (aDeeper && entry.isDirectory()) {
-          // Recursively.
+          // recursively
           scanDirectory(entry, aDeeper);
         } else if (entry.isFile()) {
           ext = checkExt(entry);
           if (ext) {
-            // Don't forget 'new'.
+            // do not forget 'new'
             script = new UserScript(entry);
             if (ext === 'js') {
               mJscripts.push(script);
@@ -320,7 +324,7 @@ function ScriptList() {
   }
 
   function runData(aDocument) {
-    // Ensure that scripts will run at the end of loader.
+    // ensure that scripts will run at the end of loader
     setTimeout(function(doc) {
       setTimeout(runJscripts, 0, doc);
       setTimeout(runOverlays, 0, doc);
@@ -370,7 +374,7 @@ function ScriptList() {
 
 
   /**
-   * UserScript class.
+   * UserScript class
    */
   function UserScript() {
     this.init.apply(this, arguments);
@@ -405,8 +409,8 @@ function ScriptList() {
       case 'IN_CHROME':
         return D(path().slice(chrome().length));
       case 'RUN':
-        return path() + '?' +
-          (kSystem.validateScriptAtRun ? getLastModifiedTime(file) : file.lastModifiedTime);
+        return path() + '?' + (kSystem.validateScriptAtRun ?
+          getLastModifiedTime(file) : file.lastModifiedTime);
     }
     return D(path());
   };
@@ -421,7 +425,7 @@ function ScriptList() {
 
 
   /**
-   * MetaData handlers.
+   * MetaData handlers
    */
   function scanMetaData(aFile) {
     const {readFile} = Util;
@@ -472,13 +476,14 @@ function ScriptList() {
 
     var list = [];
     for (let [key, values] in Iterator(aMetaData)) {
-      list = list.concat(values.map(function(v) kForm.replace('%key%', key).replace('%value%', v)));
+      list = list.concat(values.map(
+        function(value) kForm.replace('%key%', key).replace('%value%', value)));
     }
     return list.length ? list.join('\n') : kNoMetaData;
   }
 
 
-  // Export.
+  // expose
   return {
     init: init,
     uninit: uninit,
@@ -489,8 +494,8 @@ function ScriptList() {
 
 
 /**
- * Common utilitiy function.
- * @return {hash} Functions.
+ * Common utility function
+ * @return {hash}
  */
 function Util() {
   const {classes: Cc, interfaces: Ci} = window.Components;
@@ -510,8 +515,10 @@ function Util() {
   }
 
   function readFile(aFile) {
-    var fis = $I('@mozilla.org/network/file-input-stream;1', 'nsIFileInputStream');
-    var cis = $I('@mozilla.org/intl/converter-input-stream;1', 'nsIConverterInputStream');
+    var fis = $I('@mozilla.org/network/file-input-stream;1',
+      'nsIFileInputStream');
+    var cis = $I('@mozilla.org/intl/converter-input-stream;1',
+      'nsIConverterInputStream');
     var data = {}, size;
 
     try {
@@ -524,18 +531,21 @@ function Util() {
       fis.close();
     }
 
-    // Set line-breaks in LF.
+    // set line-breaks in LF
     return data.value.replace(/\r\n?/g, '\n');
   }
 
   function checkVersion(aVersion) {
-    const xai = $S('@mozilla.org/xre/app-info;1', 'nsIXULAppInfo');
-    const vc = $S('@mozilla.org/xpcom/version-comparator;1', 'nsIVersionComparator');
+    const xai = $S('@mozilla.org/xre/app-info;1',
+      'nsIXULAppInfo');
+    const vc = $S('@mozilla.org/xpcom/version-comparator;1',
+      'nsIVersionComparator');
 
-    return xai.name === 'Firefox' && vc.compare(xai.version, String(aVersion)) >= 0;
+    return xai.name === 'Firefox' &&
+      vc.compare(xai.version, String(aVersion)) >= 0;
   }
 
-  // Your chrome directory.
+  // your chrome directory
   function getChromeDirectory() {
     return $S('@mozilla.org/file/directory_service;1', 'nsIProperties').
       get('UChrm', Ci['nsIFile']);
@@ -575,7 +585,9 @@ function Util() {
   }
 
   function testURL(aSource, aURL) {
-    return RegExp('^' + aSource.replace(/\W/g, '\\$&').replace(/\\\*/g, '.*?') + '$').test(aURL);
+    return RegExp(
+      '^' + aSource.replace(/\W/g, '\\$&').replace(/\\\*/g, '.*?') + '$'
+    ).test(aURL);
   }
 
   function log(aMsg) {
@@ -583,6 +595,7 @@ function Util() {
     logStringMessage('[' + kSystem.loaderName + '] ' + aMsg);
   }
 
+  // expose
   return {
     getLastModifiedTime: getLastModifiedTime,
     readFile: readFile,
@@ -598,14 +611,13 @@ function Util() {
     testURL: testURL,
     log: log
   };
-
 }
 
 
 /**
- * Logging function.
- * @param aEnabled {boolean} Whether logging is enabled or not.
- * @return {hash} Functions.
+ * Logger to the javascript console
+ * @param aEnabled {boolean} output or not
+ * @return {hash}
  */
 function Log(aEnabled) {
   function noop() function(){};
