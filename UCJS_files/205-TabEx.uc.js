@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name        TabEx.uc.js
-// @description Customizes tab functions.
+// @description Customizes tab functions
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note Some about:config preferences are changed. see @pref.
-// @note A default function is modified. see mTabOpener.init().
-// @note Some functions are exported. (ucjsTabEx.XXX)
+// @note Some about:config preferences are changed. see @pref
+// @note A default function is modified. see @modified
+// @note Some functions are exported (ucjsTabEx.XXX)
 
 
 var ucjsTabEx = (function() {

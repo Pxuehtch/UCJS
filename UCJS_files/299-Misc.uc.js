@@ -15,9 +15,9 @@
 "use strict";
 
 
-// Sets margins of Firefox window.
-// @note this setting is for my own windows theme.
-// @BUG sometimes window layout breaks after returning from fullscreen mode.
+// Sets margins of Firefox window
+// @note this setting is for my own windows theme
+// TODO: sometimes window layout breaks after returning from fullscreen mode
 (function() {
 
   var mainWindow = $ID('main-window');
@@ -287,15 +287,16 @@
 })();
 
 
-// Show status text in URL bar.
-// @note In fullscreen mode, the default statusbar is used.
+// Show status text in URL bar
+// @note In fullscreen mode, the default statusbar is used
 // @require UI.uc.js
+// TODO: When the toolbar is customized, the statusfield in the urlbar is lost
 (function() {
-  // Move '#statusbar-display' before 'input.urlbar-input' to control them by CSS.
+  // Move '#statusbar-display' before 'input.urlbar-input' to control them by CSS
   var urlbarTextbox = ucjsUI.URLBar.textBox;
   urlbarTextbox.insertBefore(ucjsUI.StatusField.textBox, urlbarTextbox.firstChild);
 
-  // Set the position of a status display.
+  // Set the position of a status display
   // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
   var $updateStatusField = XULBrowserWindow.updateStatusField;
   XULBrowserWindow.updateStatusField = function() {

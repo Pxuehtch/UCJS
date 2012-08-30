@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name        AllTabs.uc.js
-// @description Unifies alltabs-button and tabview-button.
+// @description Unifies alltabs-button and tabview-button
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
 // @require [option] UI.uc.js
-// @usage Access to a tab view button in tab bar.
-// @note Some default functions are modified. search @modified.
+// @usage Access to the tab view button in the tab bar
+// @note Some default functions are modified. see @modified
 // @note cf. https://github.com/teramako/Pano/blob/master/chrome/content/pano-menu.sub.js
 
 (function() {
