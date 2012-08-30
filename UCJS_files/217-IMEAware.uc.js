@@ -65,15 +65,23 @@ var mIMEAwareHandler = {
     if (!this.textbox)
       return;
 
-    this.textbox.removeEventListener('keydown', this, false);
-    this.textbox.removeEventListener('keyup', this, false);
-    this.textbox.removeEventListener('blur', this, false);
-    if (this.textbox.ownerDocument instanceof HTMLDocument) {
-      this.textbox.ownerDocument.defaultView.
-      removeEventListener('pagehide', this, false);
-    }
+    /**
+     * WORKAROUND: avoid 'TypeError: can't access dead object'
+     * I saw this error once, but not reproducible. so wait and see
+     */
+    try {
+      this.textbox.removeEventListener('keydown', this, false);
+      this.textbox.removeEventListener('keyup', this, false);
+      this.textbox.removeEventListener('blur', this, false);
+      if (this.textbox.ownerDocument instanceof HTMLDocument) {
+        this.textbox.ownerDocument.defaultView.
+        removeEventListener('pagehide', this, false);
+      }
 
-    this.restoreStyle();
+      this.restoreStyle();
+    } catch (e) {
+      log(e.massage);
+    }
 
     delete this.isXBL;
     delete this.textbox;
