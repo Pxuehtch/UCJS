@@ -616,12 +616,12 @@ function Log(aEnabled) {
     }
   }
 
-  function list(aCaption) {
+  function list(aCaption, ...aValues) {
     log(format('%caption% -----', {'caption': aCaption}));
 
-    Array.forEach(arguments, function(a, i) {
-      0 < i && this.msg(a, i);
-    }, this);
+    for (let i = 0, l = aValues.length; i < l; i++) {
+      msg(aValues[i], i + 1);
+    }
   }
 
   function counter(aHeader) {
