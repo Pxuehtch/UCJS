@@ -16,11 +16,18 @@
 
 // Preferences.
 
+/**
+ * Settings for UI
+ * @note U() converts unicode characters into readable string in UI
+ */
 const kBundle = {
   menu: {
     id: 'ucjs_moveTabToWindow_menu',
     label: U('他のウィンドウへ移動'),
     accesskey: 'W'
+  },
+  otherWindow: {
+    label: U('%title% [%tabsNum% tab%s%]')
   },
   hasSame: {
     style: 'color:red;',
@@ -92,8 +99,11 @@ function updateMenu(aEvent) {
   if (wins.length) {
     wins.forEach(function(win) {
       var item = popup.insertBefore($E('menuitem', {
-        label: win.title,
-        value: win.index
+        value: win.index,
+        label: kBundle.otherWindow.label.
+          replace('%title%', win.title).
+          replace('%tabsNum%', win.tabsNum).
+          replace('%s%', win.tabsNum > 1 ? 's' : '')
       }), item_newWindow);
       if (win.hasSame) {
         $E(item, {
@@ -132,15 +142,18 @@ function getWindowsState(aTab) {
     // Skip window which is closed, current, not browser, and popup.
     if (win.closed ||
         win === window ||
-        win.document.documentElement.getAttribute('windowtype') !== 'navigator:browser' ||
+        win.document.documentElement.
+          getAttribute('windowtype') !== 'navigator:browser' ||
         win.document.documentElement.getAttribute('chromehidden'))
       continue;
 
     let tabbrowser = win.gBrowser;
     wins.push({
       index: i,
-      hasSame: tabbrowser.browsers.some(function(b) b.currentURI.spec === tabURL),
-      title: tabbrowser.selectedTab.label
+      hasSame: tabbrowser.browsers.
+        some(function(b) b.currentURI.spec === tabURL),
+      title: tabbrowser.selectedTab.label,
+      tabsNum: tabbrowser.tabs.length
     });
   }
 
@@ -202,7 +215,8 @@ function $ID(aId)
   document.getElementById(aId);
 
 function $E(aTagOrNode, aAttribute) {
-  var element = (typeof aTagOrNode === 'string') ? document.createElement(aTagOrNode) : aTagOrNode;
+  var element = (typeof aTagOrNode === 'string') ?
+    document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
