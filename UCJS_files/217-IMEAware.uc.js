@@ -157,16 +157,23 @@ var mIMEAwareHandler = {
 
     switch (aEvent.type) {
       case 'keydown':
-        // About keys for IME, 'keyup' event is dispatched when the key is down and sometimes unfired.
-        // 'keydown' event is processed properly. (keycode is 229 at any key for IME.)
-        if (aEvent.keyCode === 229) {
-          // Delay for making sure that IME is ready.
+        // When holding down '半角全角' without mod key, 'keyup'->'keydown'
+        // event is dispatched repeatly
+        // And 'keyup' event sometimes unfires but 'keydown' event surely fires
+        // In fx15, keyCode is 0(unidentified) not 229(VK_PROCESSKEY)
+        // It is the same in case of 'カタカナひらがな' key. keyCode is 0
+        if (aEvent.keyCode === 0) {
           this.delayedUpdateStyle();
         }
         break;
       case 'keyup':
-        // Check IME whenever a modifier key is pressed.
-        if (aEvent.keyCode < 33) {
+        // 'Alt+半角全角': keyCode is 25(VK_KANJI) when '半角全角' key is UP
+        // with holding 'Alt' key is DOWN
+        // '変換': 28(VK_CONVERT)
+        // '無変換': 29(VK_NONCONVERT)
+        // In above case, keyCode is 0 on 'keydown' event
+        let keyCode = aEvent.keyCode;
+        if (keyCode === 25 || keyCode === 28 || keyCode === 29) {
           this.delayedUpdateStyle();
         }
         break;
