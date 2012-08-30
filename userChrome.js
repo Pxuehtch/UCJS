@@ -493,7 +493,7 @@ function ScriptList() {
  * @return {hash} Functions.
  */
 function Util() {
-  const {classes: Cc, interfaces: Ci} = Components;
+  const {classes: Cc, interfaces: Ci} = window.Components;
 
   function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
   function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
@@ -578,6 +578,11 @@ function Util() {
     return RegExp('^' + aSource.replace(/\W/g, '\\$&').replace(/\\\*/g, '.*?') + '$').test(aURL);
   }
 
+  function log(aMsg) {
+    $S('@mozilla.org/consoleservice;1', 'nsIConsoleService').
+    logStringMessage('[' + kSystem.loaderName + '] ' + aMsg);
+  }
+
   return {
     getLastModifiedTime: getLastModifiedTime,
     readFile: readFile,
@@ -590,7 +595,8 @@ function Util() {
     loadJscript: loadJscript,
     loadOverlay: loadOverlay,
     getBrowserURL: getBrowserURL,
-    testURL: testURL
+    testURL: testURL,
+    log: log
   };
 
 }
@@ -602,7 +608,27 @@ function Util() {
  * @return {hash} Functions.
  */
 function Log(aEnabled) {
-  function msg(aValue, aDepth) {
+  function noop() function(){};
+
+  var exports = {
+    list: noop,
+    counter: noop
+  };
+
+  if (!aEnabled) {
+    return exports;
+  }
+
+  var format = function(aForm, aAttribute) {
+    for (let [name, value] in Iterator(aAttribute)) {
+      aForm = aForm.replace('%' + name + '%', String(value));
+    }
+    return aForm;
+  };
+
+  var output = function(aValue, aDepth) {
+    const {log} = Util;
+
     var indent = aDepth ? Array(aDepth + 1).join(' ') + '+- ' : '';
 
     if (Array.isArray(aValue)) {
@@ -614,41 +640,26 @@ function Log(aEnabled) {
     } else {
       log(indent + aValue.toString());
     }
-  }
+  };
 
-  function list(aCaption, ...aValues) {
-    log(format('%caption% -----', {'caption': aCaption}));
+  exports.list = function(aCaption, ...aValues) {
+    output(format('%caption% -----', {'caption': aCaption}));
 
     for (let i = 0, l = aValues.length; i < l; i++) {
-      msg(aValues[i], i + 1);
+      output(aValues[i], i + 1);
     }
-  }
+  };
 
-  function counter(aHeader) {
+  exports.counter = function(aHeader) {
     var form = format('%header%: %count%. %value%', {'header': aHeader});
     var count = 0;
 
     return function(aValue) {
-      log(format(form, {'count': ++count, 'value': aValue}));
+      output(format(form, {'count': ++count, 'value': aValue}));
     }
-  }
+  };
 
-  function format(aForm, aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      aForm = aForm.replace('%' + name + '%', String(value));
-    }
-    return aForm;
-  }
-
-  function log(aMsg) {
-    Application.console.log('[' + kSystem.loaderName + '] ' + aMsg);
-  }
-
-  function empty() function(){};
-
-  return aEnabled ?
-    {msg: msg, list: list, counter: counter} :
-    {msg: empty, list: empty, counter: empty};
+  return exports;
 }
 
 
