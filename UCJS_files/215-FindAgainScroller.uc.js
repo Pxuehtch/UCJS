@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        FindAgainScroller.uc.js
-// @description Customizes the scroll style on "Find again".
+// @description Customizes the scroll style on "Find again"
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note A default function is modified. see FindAgainScroller_init.
+// @note A default function is modified. see @modified
 
 
 (function() {
@@ -15,25 +15,25 @@
 
 
 /**
- * Configurations.
+ * Configurations
  */
 const kConfig = {
-  // Align scroll position of the found text.
-  // @see AlignPosition() for detail settings.
+  // Align scroll position of the found text
+  // @see AlignPosition() for detail settings
   alignPosition: true,
 
-  // Scroll to the found text smoothly.
-  // @see SmoothScroll() for detail settings.
+  // Scroll to the found text smoothly
+  // @see SmoothScroll() for detail settings
   smoothScroll: true,
 
-  // Blink the found text.
-  // @see FoundBlink() for detail settings.
+  // Blink the found text
+  // @see FoundBlink() for detail settings
   foundBlink: true
 };
 
 
 /**
- * Wrapper of gFindBar.
+ * Wrapper of gFindBar
  */
 var TextFinder = {
   get text() {
@@ -57,17 +57,17 @@ var TextFinder = {
 
 
 /**
- * Main function.
+ * Main function
  */
 function FindAgainScroller_init() {
   var mScrollObserver = ScrollObserver();
 
-  // Optional functions.
+  // Optional functions
   var mAlignPosition = kConfig.alignPosition && AlignPosition();
   var mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
   var mFoundBlink = kConfig.foundBlink && FoundBlink();
 
-  // Customizes the original function.
+  // Customizes the original function
   // @modified chrome://global/content/bindings/findbar.xml::onFindAgainCommand
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
@@ -76,7 +76,8 @@ function FindAgainScroller_init() {
     $onFindAgainCommand.apply(this, arguments);
 
     if (scrollable) {
-      if (mAlignPosition && (mAlignPosition.alwaysAlign || mScrollObserver.isScrolled())) {
+      if (mAlignPosition &&
+          (mAlignPosition.alwaysAlign || mScrollObserver.isScrolled())) {
         mAlignPosition.align(aFindPrevious);
       }
       if (mSmoothScroll && mScrollObserver.isScrolled()) {
@@ -94,7 +95,12 @@ function FindAgainScroller_init() {
 
 
 /**
- * Observer of the scrollable elements.
+ * Observer of the scrollable elements
+ * @return {hash}
+ *   attach: {function}
+ *   detach: {function}
+ *   isScrolled: {function}
+ *   getScrolled: {function}
  */
 function ScrollObserver() {
   var mScrollable = Scrollable();
@@ -139,7 +145,7 @@ function ScrollObserver() {
       mItems.some(function(item) {
         var now = getScroll(item.node);
         if (now.x !== item.scroll.x || now.y !== item.scroll.y) {
-          // @note mScrolled will be the parameter of SmoothScroll()::start().
+          // @note mScrolled will be the parameter of SmoothScroll()::start()
           // @see SmoothScroll()::start()
           mScrolled = {
             node: item.node,
@@ -177,10 +183,10 @@ function ScrollObserver() {
       });
     }
 
-    // Grab <body> or <frameset>.
+    // Grab <body> or <frameset>
     var doc = aWindow.contentDocument || aWindow.document;
 
-    // Skip XHTML2 document.
+    // Skip XHTML2 document
     var body = doc.body;
     if (!body)
       return;
@@ -190,7 +196,8 @@ function ScrollObserver() {
     }
 
     var text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
-    var xpath = 'descendant-or-self::*[contains(normalize-space(),"' + text + '")]|descendant::textarea';
+    var xpath = 'descendant-or-self::*[contains(normalize-space(),"' + text +
+      '")]|descendant::textarea';
     $X(xpath, body).forEach(function(node) {
       mScrollable.add(testScrollable(node));
     });
@@ -204,9 +211,12 @@ function ScrollObserver() {
       if (aNode instanceof HTMLElement) {
         style = getComputedStyle(aNode, '');
 
-        if ((/^(?:scroll|auto)$/.test(style.overflowX) && aNode.scrollWidth > aNode.clientWidth) ||
-            (/^(?:scroll|auto)$/.test(style.overflowY) && aNode.scrollHeight > aNode.clientHeight) ||
-            (aNode instanceof HTMLTextAreaElement && aNode.scrollHeight > aNode.clientHeight)) {
+        if ((/^(?:scroll|auto)$/.test(style.overflowX) &&
+             aNode.scrollWidth > aNode.clientWidth) ||
+            (/^(?:scroll|auto)$/.test(style.overflowY) &&
+             aNode.scrollHeight > aNode.clientHeight) ||
+            (aNode instanceof HTMLTextAreaElement &&
+             aNode.scrollHeight > aNode.clientHeight)) {
           return aNode;
         }
       }
@@ -235,8 +245,7 @@ function ScrollObserver() {
   }
 
 
-  // Exports.
-
+  // Expose
   return {
     attach: attach,
     detach: mScrollable.detach,
@@ -248,24 +257,28 @@ function ScrollObserver() {
 
 /**
  * Function for alignment of the found text position.
+ * @return {hash}
+ *   alwaysAlign: {boolean}
+ *   align: {function}
  */
 function AlignPosition() {
   const kOption = {
-    // How to align the frame of the found text in percentage.
-    // -1 means move the frame the minimum amount necessary in order for the entire frame to be visible (if possible).
-    vPosition: 50, // (%) 0:top, 50:center, 100:bottom, -1:minimum.
-    hPosition: -1, // (%) 0:left, 50:center, 100:right, -1:minimum.
+    // How to align the frame of the found text in percentage
+    // * -1 means move the frame the minimum amount necessary in order
+    // for the entire frame to be visible (if possible)
+    vPosition: 50, // (%) 0:top, 50:center, 100:bottom, -1:minimum
+    hPosition: -1, // (%) 0:left, 50:center, 100:right, -1:minimum
 
-    // true: Reverse the position on 'Find previous' mode.
+    // true: Reverse the position on 'Find previous' mode
     reversePositionOnFindPrevious: false,
 
-    // true: Try to align when the match text is found into the current view.
-    // false: No scrolling in the same view.
+    // true: Try to align when the match text is found into the current view
+    // false: No scrolling in the same view
     alwaysAlign: false
   };
 
 
-  // Functions.
+  // Functions
 
   function align(aFindPrevious) {
     var selection = getSelection();
@@ -286,7 +299,8 @@ function AlignPosition() {
     var selectionController = TextFinder.selectionController;
 
     return selectionController &&
-      selectionController.getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
+      selectionController.
+      getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
   }
 
   function scrollSelection(aSelection, aVPosition, aHPosition) {
@@ -301,8 +315,7 @@ function AlignPosition() {
   }
 
 
-  // Export.
-
+  // Expose
   return {
     get alwaysAlign() kOption.alwaysAlign,
     align: align
@@ -312,13 +325,17 @@ function AlignPosition() {
 
 /**
  * Function for scrolling the element smoothly.
+ * @return {hash}
+ *   start: {function}
+ *   stop: {function}
  */
 function SmoothScroll() {
   const kOption = {
-    // Pitch of the vertical scroll.
-    // 8 pitches mean approaching to the goal by each remaining distance divided by 8.
-    // far: The goal is out of the current view.
-    // near: The goal is into the view.
+    // Pitch of the vertical scroll
+    // * 8 pitches mean approaching to the goal by each remaining distance
+    // divided by 8
+    // far: The goal is out of the current view
+    // near: The goal is into the view
     pitch: {far: 8, near: 2}
   };
 
@@ -362,7 +379,7 @@ function SmoothScroll() {
   };
 
 
-  // Functions.
+  // Functions
 
   function startScroll(aStart) {
     if (aStart) {
@@ -380,10 +397,12 @@ function SmoothScroll() {
 
     var currentTime = Date.now();
     if (currentTime - mStartTime > 1000 || currentTime - aLastTime > 100) {
+      // it takes too much time. stop stepping and jump to goal
       stopScroll(true);
     } else if (
       (was.position.x === now.position.x || was.inside.x !== now.inside.x) &&
       (was.position.y === now.position.y || was.inside.y !== now.inside.y)) {
+      // goal or go over a bit. stop stepping at here
       stopScroll();
     } else {
       mTimerID = setTimeout(doStep, 0, getStep(now.position), currentTime);
@@ -406,8 +425,10 @@ function SmoothScroll() {
   }
 
   function getStep(aPosition) {
-    var dX = mState.goal.x - aPosition.x, dY = mState.goal.y - aPosition.y;
-    var pitchY = (Math.abs(dY) < mState.node.clientHeight) ? kOption.pitch.far : kOption.pitch.near;
+    var dX = mState.goal.x - aPosition.x,
+        dY = mState.goal.y - aPosition.y;
+    var pitchY = (Math.abs(dY) < mState.node.clientHeight) ?
+      kOption.pitch.far : kOption.pitch.near;
 
     return Position(round(dX / 2), round(dY / pitchY));
   }
@@ -486,8 +507,7 @@ function SmoothScroll() {
   }
 
 
-  // Export.
-
+  // Expose
   return {
     start: function({node, start, goal}) {
       mState.init(node, start, goal);
@@ -500,14 +520,16 @@ function SmoothScroll() {
 
 
 /**
- * Function for blinking the found text.
+ * Function for blinking the found text
+ * @return {hash}
+ *   start: {function}
  */
 function FoundBlink() {
   const kOption = {
-    // Duration of blinking. millisecond.
+    // Duration of blinking (millisecond)
     duration: 2000,
-    // The number of times to blink should be even.
-    // 6 steps mean on->off->on->off->on->off->on.
+    // The number of times to blink should be even
+    // * 6 steps mean on->off->on->off->on->off->on
     steps: 6
   };
 
@@ -515,11 +537,11 @@ function FoundBlink() {
   var mSelectionController;
 
 
-  // Attach a cleaner when the selection is removed by clicking.
+  // Attach a cleaner when the selection is removed by clicking
   addEvent([gBrowser.mPanelContainer, 'mousedown', uninit, false]);
 
 
-  // Functions.
+  // Functions
 
   function init() {
     uninit();
@@ -552,10 +574,10 @@ function FoundBlink() {
     var range = getRange();
 
     mTimerID = setInterval(function() {
-      // Check whether the selection is into the view within trial limits.
+      // Check whether the selection is into the view within trial limits
       if (blinks === 0 && limits-- > 0 && !isRangeIntoView(range))
         return;
-      // Break when blinks end or trial is expired.
+      // Break when blinks end or trial is expired
       if (blinks === steps || limits <= 0) {
         uninit();
         return;
@@ -585,20 +607,20 @@ function FoundBlink() {
         Ci.nsISelectionController.SELECTION_OFF
       );
 
-      mSelectionController.repaintSelection(Ci.nsISelectionController.SELECTION_NORMAL);
+      mSelectionController.
+      repaintSelection(Ci.nsISelectionController.SELECTION_NORMAL);
     } catch (e) {}
   }
 
 
-  // Export.
-
+  // Expose
   return {
     start: start
   };
 }
 
 
-// Imports.
+// Imports
 
 function $X(aXPath, aNode)
   ucjsUtil.getNodesByXPath(aXPath, aNode);
@@ -610,8 +632,7 @@ function log(aMsg)
   ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
 
 
-// Entry point.
-
+// Entry point
 FindAgainScroller_init();
 
 
