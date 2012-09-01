@@ -725,7 +725,12 @@ function GestureManager() {
 
   function updateKey(aEvent) {
     const {shift, ctrl} = kGestureSign;
-    const {type, keyCode, shiftKey, ctrlKey} = aEvent;
+    const {
+      type,
+      keyCode,
+      shiftKey, ctrlKey,
+      DOM_VK_SHIFT, DOM_VK_CONTROL
+    } = aEvent;
 
     function has(aKey) mKey.indexOf(aKey) > -1;
 
@@ -733,18 +738,18 @@ function GestureManager() {
     var pressed = false;
 
     if (type === 'keydown') {
-      if (keyCode === 16 && !has(shift)) {
+      if (keyCode === DOM_VK_SHIFT && !has(shift)) {
         key = shift;
         pressed = true;
-      } else if (keyCode === 17 && !has(ctrl)) {
+      } else if (keyCode === DOM_VK_CONTROL && !has(ctrl)) {
         key = ctrl;
         pressed = true;
       }
     } else if (type === 'keyup') {
-      if (keyCode === 16 && has(shift)) {
+      if (keyCode === DOM_VK_SHIFT && has(shift)) {
         key = shift;
         pressed = false;
-      } else if (keyCode === 17 && has(ctrl)) {
+      } else if (keyCode === DOM_VK_CONTROL && has(ctrl)) {
         key = ctrl;
         pressed = false;
       }
