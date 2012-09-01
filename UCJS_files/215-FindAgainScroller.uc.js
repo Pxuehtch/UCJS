@@ -63,9 +63,9 @@ function FindAgainScroller_init() {
   var mScrollObserver = ScrollObserver();
 
   // Optional functions.
-  var mAlignPosition = AlignPosition(kConfig.alignPosition);
-  var mSmoothScroll = SmoothScroll(kConfig.smoothScroll);
-  var mFoundBlink = FoundBlink(kConfig.foundBlink);
+  var mAlignPosition = kConfig.alignPosition && AlignPosition();
+  var mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
+  var mFoundBlink = kConfig.foundBlink && FoundBlink();
 
   // Customizes the original function.
   // @modified chrome://global/content/bindings/findbar.xml::onFindAgainCommand
@@ -249,7 +249,7 @@ function ScrollObserver() {
 /**
  * Function for alignment of the found text position.
  */
-function AlignPosition(aEnable) {
+function AlignPosition() {
   const kOption = {
     // How to align the frame of the found text in percentage.
     // -1 means move the frame the minimum amount necessary in order for the entire frame to be visible (if possible).
@@ -263,17 +263,6 @@ function AlignPosition(aEnable) {
     // false: No scrolling in the same view.
     alwaysAlign: false
   };
-
-
-  // Export.
-
-  if (aEnable) {
-    return {
-      get alwaysAlign() kOption.alwaysAlign,
-      align: align
-    };
-  }
-  return null;
 
 
   // Functions.
@@ -310,13 +299,21 @@ function AlignPosition(aEnable) {
       aHPosition
     );
   }
+
+
+  // Export.
+
+  return {
+    get alwaysAlign() kOption.alwaysAlign,
+    align: align
+  };
 }
 
 
 /**
  * Function for scrolling the element smoothly.
  */
-function SmoothScroll(aEnable) {
+function SmoothScroll() {
   const kOption = {
     // Pitch of the vertical scroll.
     // 8 pitches mean approaching to the goal by each remaining distance divided by 8.
@@ -363,21 +360,6 @@ function SmoothScroll(aEnable) {
       delete this.goal;
     }
   };
-
-
-  // Export.
-
-  if (aEnable) {
-    return {
-      start: function({node, start, goal}) {
-        mState.init(node, start, goal);
-      },
-      stop: function({forceGoal}) {
-        mState.uninit(forceGoal);
-      }
-    };
-  }
-  return null;
 
 
   // Functions.
@@ -502,13 +484,25 @@ function SmoothScroll(aEnable) {
   function Position(aX, aY) {
     return {x: aX, y: aY};
   }
+
+
+  // Export.
+
+  return {
+    start: function({node, start, goal}) {
+      mState.init(node, start, goal);
+    },
+    stop: function({forceGoal}) {
+      mState.uninit(forceGoal);
+    }
+  };
 }
 
 
 /**
  * Function for blinking the found text.
  */
-function FoundBlink(aEnable) {
+function FoundBlink() {
   const kOption = {
     // Duration of blinking. millisecond.
     duration: 2000,
@@ -521,17 +515,8 @@ function FoundBlink(aEnable) {
   var mSelectionController;
 
 
-  // Export.
-
-  if (aEnable) {
-    // Attach a cleaner when the selection is removed by clicking.
-    addEvent([gBrowser.mPanelContainer, 'mousedown', uninit, false]);
-
-    return {
-      start: start
-    };
-  }
-  return null;
+  // Attach a cleaner when the selection is removed by clicking.
+  addEvent([gBrowser.mPanelContainer, 'mousedown', uninit, false]);
 
 
   // Functions.
@@ -603,6 +588,13 @@ function FoundBlink(aEnable) {
       mSelectionController.repaintSelection(Ci.nsISelectionController.SELECTION_NORMAL);
     } catch (e) {}
   }
+
+
+  // Export.
+
+  return {
+    start: start
+  };
 }
 
 
