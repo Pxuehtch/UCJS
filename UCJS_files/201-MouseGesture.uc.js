@@ -292,8 +292,8 @@ const kGestureSet = [
 
 
 /**
- * Handler of tab info.
- * @WORKAROUND See checkTab().
+ * Handler of information of a tab
+ * @see checkTab()
  */
 var mTabInfo = {
   init: function() {
@@ -311,7 +311,8 @@ var mTabInfo = {
   },
 
   isSameTabButDifferentURL: function() {
-    return this.tab === this.currentTab && this.URL !== this.currentURL;
+    return this.tab === this.currentTab &&
+           this.URL !== this.currentURL;
   },
 
   get currentTab() gBrowser.mCurrentTab,
@@ -356,9 +357,11 @@ function MouseGesture() {
     addEvent([window, 'drop', onDrop, true]);
   }
 
-  // @WORKAROUND Cancel all state when the URL changes in the current tab.
+  // WORKAROUND: Cancel all state when the URL changes in the current tab
   // After loading a new URL in the same tab while holding mouse button down,
-  // any mouse events can not be caught as long as holding it.
+  // any mouse events can not be caught as long as holding it
+  // TODO: maybe this problem was fixed. but I can not find the information.
+  // so wait and see
   function checkTab() {
     if (mState !== kState.READY) {
       if (mTabInfo.isSameTabButDifferentURL()) {
@@ -446,7 +449,7 @@ function MouseGesture() {
     mMouse.update(aEvent);
   }
 
-  // @note Observe 'drag start' here to catch a drag data of textbox.
+  // @note observe 'drag start' here to catch a drag data in a textbox
   function onDragOver(aEvent) {
     if (mCancelDrag)
       return;
@@ -467,7 +470,8 @@ function MouseGesture() {
     }
   }
 
-  // @TODO Prevent drop event when right mouse button is pressed down.
+  // TODO: prevent the drop event when a right mouse button is pressed down
+  // while dragging. now the drop event fires
   function onDrop(aEvent) {
     if (mState !== kState.DRAG)
       return;
