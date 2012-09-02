@@ -84,7 +84,7 @@ var mIMEAwareHandler = {
 
       this.restoreStyle();
     } catch (e) {
-      log(e.massage);
+      log(e.message);
     }
 
     delete this.isXBL;
