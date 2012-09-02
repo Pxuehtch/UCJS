@@ -56,7 +56,8 @@ var mIMEAwareHandler = {
     this.textbox.addEventListener('keydown', this, false);
     this.textbox.addEventListener('keyup', this, false);
     // observe events for finalization
-    // when a page changes its location with a shortcut key, 'blur' unfires
+    // sometimes 'blur' unfires (e.g. when a page changes its location with
+    // a shortcut key)
     this.textbox.addEventListener('blur', this, false);
     if (this.textbox.ownerDocument instanceof HTMLDocument) {
       this.textbox.ownerDocument.defaultView.
@@ -163,21 +164,22 @@ var mIMEAwareHandler = {
 
     switch (aEvent.type) {
       case 'keydown':
-        // When holding down '半角全角' without mod key, 'keyup'->'keydown'
-        // event is dispatched repeatly
-        // And 'keyup' event sometimes unfires but 'keydown' event surely fires
-        // In fx15, keyCode is 0(unidentified) not 229(VK_PROCESSKEY)
-        // It is the same in case of 'カタカナひらがな' key. keyCode is 0
+        // '半角全角', 'カタカナひらがな':
+        // * sometimes 'keyup' event unfires
+        // * keyCode is 0
+        // in detail
+        // * 'keyup' unfires when a key is released
+        // * 'keyup'->'keydown' fire when a key is pressed down
+        // * the first 'keyup' unfires when pressed down just after focusing
+        //   on a textbox
         if (aEvent.keyCode === 0) {
           this.delayedUpdateStyle();
         }
         break;
       case 'keyup':
-        // 'Alt+半角全角': keyCode is 25(VK_KANJI) when '半角全角' key is UP
-        // with holding 'Alt' key is DOWN
+        // 'Alt+半角全角': 25(VK_KANJI)
         // '変換': 28(VK_CONVERT)
         // '無変換': 29(VK_NONCONVERT)
-        // In above case, keyCode is 0 on 'keydown' event
         let keyCode = aEvent.keyCode;
         if (keyCode === 25 || keyCode === 28 || keyCode === 29) {
           this.delayedUpdateStyle();
