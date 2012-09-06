@@ -68,17 +68,9 @@ const kSiteInfo = {
       }
     },
     {
-      name: 'Livedoor クリップ',
+      name: 'reddit',
       URL: function(aPage)
-        formatURL('http://clip.livedoor.com/page/%RAW%', aPage.URL)
-    },
-    {
-      name: 'digg',
-      URL: function(aPage)
-        formatURL(
-          'http://digg.com/search?section=all&type=all&area=all&sort=most&s=%ESC%',
-          aPage.title.replace(/\s+/g, '+')
-        )
+        formatURL('http://www.reddit.com/submit?url=%ESC%', aPage.URL)
     }
   ],
 
