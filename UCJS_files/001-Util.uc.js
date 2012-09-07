@@ -281,14 +281,17 @@ function getFocusedDocument() {
   return win.contentDocument || win.document;
 }
 
-function getNodesByAttribute(aAttributeName, aAttributeValue, aTagName, aContext) {
-  var tag = 'descendant::' + (aTagName || '*');
+function getNodesByAttribute(aAttribute, aContext) {
+  var {name, value, tag} = aAttribute;
+  if (!name)
+    throw 'attribute name is required.';
 
-  var predicate = aAttributeValue ?
-    '[contains(concat(" ",@' + aAttributeName + '," ")," ' + aAttributeValue + ' ")]' :
-    '[@' + aAttributeName + ']';
+  var xpath = 'descendant::' + (tag || '*') +
+    (value ?
+    '[contains(concat(" ",@' + name + '," ")," ' + value + ' ")]' :
+    '[@' + name + ']');
 
-  return getNodesByXPath(tag + predicate, aContext);
+  return getNodesByXPath(xpath, aContext);
 }
 
 function getFirstNodeBySelector(aSelector, aContext) {
