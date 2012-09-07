@@ -267,11 +267,15 @@ function makeCustomFunctions() {
   // @modified chrome://browser/content/tabbrowser.xml::removeTab
   var $removeTab = gBrowser.removeTab;
   gBrowser.removeTab = function(aTab, aParams) {
-    var {ucjsForceClose} = aParams || {};
+    aParams = aParams || {};
+    var {ucjsForceClose} = aParams;
+    delete aParams.ucjsForceClose;
+
     if (!(ucjsForceClose && this.tabs.length > 1)) {
       if (!aTab.hidden && this.visibleTabs.length - this._numPinnedTabs === 1)
         return;
     }
+
     $removeTab.apply(this, arguments);
   };
 

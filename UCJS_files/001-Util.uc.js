@@ -497,7 +497,10 @@ function openTabs(aURLs, aOption) {
     return;
 
   aOption = aOption || {};
-  var {ucjsReplace, inBackground} = aOption;
+  var {inBackground} = aOption;
+  var {ucjsReplace} = aOption;
+  delete aOption.ucjsReplace;
+
   var firstTabAdded;
 
   if (ucjsReplace) {
@@ -532,7 +535,9 @@ function openTab(aURL, aOption) {
     return;
 
   aOption = aOption || {};
-  var {ucjsTrustURL, inBackground} = aOption;
+  var {inBackground} = aOption;
+  var {ucjsTrustURL} = aOption;
+  delete aOption.ucjsTrustURL;
 
   if (!ucjsTrustURL) {
     checkSecurity(URL);
@@ -548,11 +553,13 @@ function loadPage(aURL, aOption) {
   if (!URL)
     return;
 
+  aOption = aOption || {};
   var {
-    ucjsTrustURL,
     referrerURI, charset, postData,
     allowThirdPartyFixup, fromExternal, isUTF8
-  } = aOption || {};
+  } = aOption;
+  var {ucjsTrustURL} = aOption;
+  delete aOption.ucjsTrustURL;
 
   if (!ucjsTrustURL) {
     checkSecurity(URL);
