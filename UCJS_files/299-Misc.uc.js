@@ -91,7 +91,7 @@
 // Shows a long URL text without cropped in tooltip of URL bar.
 (function() {
 
-  // @see chrome://browser/content/browser.xul
+  // @see chrome://browser/content/browser.xul::<tooltip id="urlTooltip">
   $ID('urlTooltip').removeAttribute('crop');
 
   // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
