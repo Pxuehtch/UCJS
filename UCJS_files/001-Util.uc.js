@@ -129,7 +129,8 @@ function setEventListener(aData) {
 }
 
 function getSelectionAtCursor(aOption) {
-  var {event} = aOption || {};
+  const kMaxCharLen = 150;
+  var {event, charLen} = aOption || {};
 
   var targetWindow, rangeParent, rangeOffset;
   if (event) {
@@ -160,14 +161,21 @@ function getSelectionAtCursor(aOption) {
   if (!text)
     return '';
 
-  // Only uses the first important line. 
+  // only use the first important chars
   // @see chrome://browser/content/browser.js::getBrowserSelection()
-  const kMaxCharLen = 150;
-  if (text.length > kMaxCharLen) {
+  charLen = Math.min(charLen || kMaxCharLen, kMaxCharLen);
+  if (text.length > charLen) {
     let match = RegExp('^(?:\\s*.){0,' + kMaxCharLen + '}').exec(text);
-    text = match ? match[0] : '';
+    if (!match)
+      return '';
+    text = match[0];
   }
-  text.split(/\n/).some(function(s) !!(text = s.replace(/\s+/g, ' ').trim()));
+
+  text = text.trim().replace(/\s+/g, ' ');
+
+  if (text.length > charLen) {
+    text = text.substr(0, charLen);
+  }
 
   return text;
 }
