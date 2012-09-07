@@ -165,7 +165,7 @@ function getSelectionAtCursor(aOption) {
   // @see chrome://browser/content/browser.js::getBrowserSelection()
   charLen = Math.min(charLen || kMaxCharLen, kMaxCharLen);
   if (text.length > charLen) {
-    let match = RegExp('^(?:\\s*.){0,' + kMaxCharLen + '}').exec(text);
+    let match = RegExp('^(?:\\s*.){0,' + charLen + '}').exec(text);
     if (!match)
       return '';
     text = match[0];
