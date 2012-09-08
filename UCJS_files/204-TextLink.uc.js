@@ -1,17 +1,19 @@
 // ==UserScript==
 // @name TextLink.uc.js
-// @description Detects the unlinked URL-like text.
+// @description Detects the unlinked URL-like text
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 
 /**
- * @usage When 'double click' on a text like URL, a new tab will open in the detected URL.
- * @note If 'shift or ctrl' has been pressed, the text is selected only by the default behavior.
+ * @usage When 'double-click' on a URL-like text, a new tab will open
+ * in the detected URL
+ * If 'Shift or Ctrl' has been pressed, the text is only selected
+ * by the default behavior
  */
 
-// @note cf. http://www.cozmixng.org/repos/piro/textlink/trunk/content/textlink/globalOverlay.js
+// @note cf. https://github.com/piroor/textlink
 
 
 (function() {
@@ -21,21 +23,26 @@
 
 
 /**
- * Handler of URL string.
+ * URL string handler
  * @return {hash}
- *  @member guess {function}
- *  @member grab {function}
- *  @member map {function}
- *  @member fix {function}
+ *   @member guess {function}
+ *   @member grab {function}
+ *   @member map {function}
+ *   @member fix {function}
  */
 var mURLUtil = (function() {
-  // URI characters.
+  /**
+   * URI characters
+   */
   const kURIC = {
-    basic: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
-    mark:  "-.!~*;/?:@&=+$,%#'()"
+    word: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
+    mark: "-.!~*;/?:@&=+$,%#'()"
   };
 
-  // alias %URIC% has to be contained in [].
+  /**
+   * Converts alias %URIC% into a string for RegExp()
+   * @note %URIC% has to be contained in []
+   */
   var resolve = (function() {
     const re = /%URIC%/g;
     const replacement = '\\w' + kURIC.mark;
@@ -43,13 +50,19 @@ var mURLUtil = (function() {
     return function(aStr) aStr.replace(re, replacement);
   })();
 
+  /**
+   * Converts zennkaku URI chars into hankaku ones
+   */
   var normalize = (function() {
-    const zenURIC = (kURIC.basic + kURIC.mark).replace(/./g, han2zen);
+    const zenURIC = (kURIC.word + kURIC.mark).replace(/./g, han2zen);
     const re = RegExp('[' + zenURIC + ']', 'g');
 
     return function(aStr) aStr.replace(re, zen2han);
   })();
 
+  /**
+   * Tests if a string has only URI chars
+   */
   var isURIC = (function() {
     const exURIC = '[^%URIC%]';
     const re = RegExp(resolve(exURIC));
@@ -57,6 +70,10 @@ var mURLUtil = (function() {
     return function(aStr) !re.test(normalize(aStr));
   })();
 
+  /**
+   * Retrieves array of URL-like strings
+   * @note if no match is found returns null
+   */
   var match = (function() {
     const absolute = '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[%URIC%]*',
           relative = '\\.\\.?\\/[%URIC%]+';
@@ -65,28 +82,40 @@ var mURLUtil = (function() {
     return function(aStr) normalize(aStr).match(re);
   })();
 
+  /**
+   * Tests if a selection text has only URI chars
+   * @return {boolean}
+   */
   function guess(aSelection) {
-    var str = aSelection.toString();
-    if (!str)
-      return false;
-
-    return isURIC(str);
+    return isURIC(aSelection.toString());
   }
 
+  /**
+   * Retrieves array of URL-like strings from a range text
+   * @return {array|null}
+   *   if no match is found returns null
+   */
   function grab(aRange) {
-    var str = encodeToPlain(aRange);
-    return match(str);
+    return match(encodeToPlain(aRange));
   }
 
+  /**
+   * Gets a range string which its zenkaku URIC is converted into hankaku
+   * @return {string}
+   */
   function map(aRange) {
-    var str = aRange.toString();
-    return normalize(str);
+    return normalize(aRange.toString());
   }
 
+  /**
+   * Makes good URL
+   * @return {string}
+   */
   function fix(aStr) {
     return aStr.
       replace(/^[^s:\/]+(s?:\/)/, 'http$1').
       replace(/^www\./, 'http://www.').
+      // we may pick up a separator character unrelated to a URL
       replace(/[()]?[.,:;]?$/, '');
   }
 
@@ -99,7 +128,7 @@ var mURLUtil = (function() {
 })();
 
 
-// Functions.
+// Functions
 
 function TextLink_init() {
   addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
@@ -110,71 +139,72 @@ function handleEvent(aEvent) {
     return;
 
   var doc = aEvent.originalTarget.ownerDocument;
+  if (!isTextDocument(doc))
+    return;
 
-  if (isTextDocument(doc)) {
-    openTab(scanURL(doc));
+  var selection = doc.defaultView.getSelection();
+  var URL = findURL(doc, selection);
+
+  if (URL) {
+    selection.removeAllRanges();
+    openTab(URL);
   }
 }
 
-function scanURL(aDoc) {
+function findURL(aDocument, aSelection) {
   var URL = '';
-  var sel = aDoc.defaultView.getSelection();
 
-  if (mURLUtil.guess(sel)) {
-    let range = aDoc.createRange();
-    range.selectNode(aDoc.documentElement);
-    URL = pickUpURL(range, sel.getRangeAt(0));
+  if (!aSelection || !mURLUtil.guess(aSelection))
+    return URL;
 
-    if (URL) {
-      sel.removeAllRanges();
+  // make a target range with a source selection
+  var range = aDocument.createRange();
+  range.selectNode(aDocument.documentElement);
+  // update the target range and get the position of the source selection
+  // in the target range
+  var position = initRange(range, aSelection.getRangeAt(0));
+
+  // retrieve array of URL-like strings from the target range
+  var URLs = mURLUtil.grab(range);
+  if (!URLs)
+    return URL;
+
+  // scan the position of a URL in the target range
+  var map = mURLUtil.map(range);
+  var start, end = 0;
+  URLs.some(function(url) {
+    start = map.indexOf(url, end);
+    end = start + url.length;
+
+    // if the URL contains the source selection, we got it
+    if (position.start < end && start < position.end) {
+      URL = mURLUtil.fix(url);
+      return true;
     }
-  }
+    return false;
+  });
 
   return URL;
 }
 
-function pickUpURL(aRange, aSrc) {
-  var pos = initRange(aRange, aSrc);
-
-  var URLs = mURLUtil.grab(aRange);
-  if (!URLs)
-    return null;
-
-  var map = mURLUtil.map(aRange);
-  var start, end = 0;
-
-  while (URLs.length) {
-    let URL = URLs.shift();
-    start = map.indexOf(URL, end);
-    end = start + URL.length;
-
-    // check if the URL contains the selection.
-    if (pos.start < end && start < pos.end) {
-      return mURLUtil.fix(URL);
-    }
-  }
-
-  return '';
-}
-
-function initRange(aRange, aSrc) {
-  const kMaxBuf = 256; // max buffer is 256*2 characters.
-
+function initRange(aRange, aSourceRange) {
   function expand(aXPath, aNode, aCount) {
+    const kCharsBuffer = 256;
     var node = aNode;
     var border = node;
     var count = aCount;
+    var text;
 
-    while (count < kMaxBuf) {
+    while (count < kCharsBuffer) {
       node = $X(aXPath, node);
       if (!node)
         break;
       border = node;
 
-      let text = node.textContent;
+      text = node.textContent;
       count += text.length;
 
-      // white-space marks off the URL string.
+      // white-space marks off the URL string
       if (/\s/.test(text))
         break;
     }
@@ -182,24 +212,24 @@ function initRange(aRange, aSrc) {
     return {border: border, count: count};
   }
 
-  // expand range before source selection.
+  // expand range before the source selection
   var result = expand(
     'preceding::text()[1]',
-    aSrc.startContainer,
-    aSrc.startOffset
+    aSourceRange.startContainer,
+    aSourceRange.startOffset
   );
 
   aRange.setStartBefore(result.border);
 
-  // store source position.
+  // store the source position
   var startPos = result.count;
-  var endPos = startPos + aSrc.toString().length;
+  var endPos = startPos + aSourceRange.toString().length;
 
-  // expand range after source selection.
+  // expand range after the source selection
   result = expand(
     'following::text()[1]',
-    aSrc.endContainer,
-    aSrc.endContainer.textContent.length - aSrc.endOffset
+    aSourceRange.endContainer,
+    aSourceRange.endContainer.textContent.length - aSourceRange.endOffset
   );
 
   aRange.setEndAfter(result.border);
@@ -248,10 +278,11 @@ function encodeToPlain(aRange) {
   return encoder.encodeToString();
 }
 
-function isTextDocument(aDoc) aDoc && /^(?:text|application)\/./.test(aDoc.contentType);
+function isTextDocument(aDoc)
+  aDoc && /^(?:text|application)\/./.test(aDoc.contentType);
 
 
-// Imports.
+// Imports
 
 function $X(aXPath, aNode)
   ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
@@ -266,7 +297,7 @@ function log(aMsg)
   ucjsUtil.logMessage('TextLink.uc.js', aMsg);
 
 
-// Entry point.
+// Entry point
 
 TextLink_init();
 
