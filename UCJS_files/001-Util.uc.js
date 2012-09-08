@@ -215,8 +215,6 @@ function getSelectedTextInRange(aRange) {
   encoder.init(
     aRange.startContainer.ownerDocument,
     type,
-    encoder.OutputSelectionOnly |
-    encoder.OutputBodyOnly |
     encoder.OutputLFLineBreak |
     encoder.SkipInvisibleContent
   );

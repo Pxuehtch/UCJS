@@ -239,7 +239,6 @@ function encodeToPlain(aRange) {
   encoder.init(
     aRange.startContainer.ownerDocument,
     'text/plain',
-    encoder.OutputBodyOnly |
     encoder.OutputLFLineBreak |
     encoder.SkipInvisibleContent
   );
