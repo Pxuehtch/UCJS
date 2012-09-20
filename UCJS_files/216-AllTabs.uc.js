@@ -74,7 +74,7 @@ var mTabs = {
   get visibleCount() gBrowser.visibleTabs.length - gBrowser._numPinnedTabs,
 
   selectAt: function(aIndex) {
-    gBrowser.tabContainer.selectedIndex = aIndex;
+    gBrowser.tabContainer.selectedIndex = parseInt(aIndex, 10);
   }
 };
 
@@ -297,7 +297,7 @@ function onCommand(aEvent) {
   if (element.hasAttribute(kID.ATTR_GROUPINDEX)) {
     Array.some(element.menupopup.childNodes, function(item) {
       if (item.selected) {
-        mTabs.selectAt(parseInt(item.getAttribute(kID.ATTR_TABPOS), 10));
+        mTabs.selectAt(item.getAttribute(kID.ATTR_TABPOS));
         closeMenus($(kID.ALLTABS_POPUP));
         return true;
       }
@@ -307,7 +307,7 @@ function onCommand(aEvent) {
 
   // Menuitem of each tab.
   else if (element.hasAttribute(kID.ATTR_TABPOS)) {
-    mTabs.selectAt(parseInt(element.getAttribute(kID.ATTR_TABPOS), 10));
+    mTabs.selectAt(element.getAttribute(kID.ATTR_TABPOS));
   }
 }
 
