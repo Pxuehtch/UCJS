@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @require [option] UI.uc.js
+// @require [optional] UI.uc.js
 // @usage Access to the tab view button in the tab bar
 // @note Some default functions are modified. see @modified
 // @note cf. https://github.com/teramako/Pano/blob/master/chrome/content/pano-menu.sub.js
@@ -16,13 +16,15 @@
 "use strict";
 
 
-// Preferences.
+// Preferences
 
 /**
- * String format for UI.
- * @usage format('%str is %num.', {str: 'foo', num: 3}); -> 'foo is 3.'
+ * String format for UI
+ * @usage format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
  * @note Plural form of numbers is avalable;
- *   '%key{None;A key;%key keys}' -> key=0:'None', key=1:'A key', key=#(>=2):'# keys'
+ *   '%key{None;A key;%key keys}' ->
+ *    key=0:'None', key=1:'A key', key=#(>=2):'# keys'
+ * @see format()
  */
 const kFormat = {
   GROUPS_MENU: 'Groups',
@@ -39,16 +41,16 @@ const kFormat = {
 };
 
 /**
- * Identifiers.
+ * Identifiers
  */
 const kID = {
-  // Default.
+  // Default id
   TABVIEW_BUTTON: 'tabview-button',
   ALLTABS_BUTTON: 'alltabs-button',
   ALLTABS_POPUP: 'alltabs-popup',
   ALLTABS_POPUP_SEPARATOR: 'alltabs-popup-separator',
 
-  // Custom.
+  // Custom id
   TABVIEW_TOOLTIP: 'ucjs_alltabs_tabview_tooltip',
   GROUPS_MENU: 'ucjs_alltabs_groups_menu',
   GROUPS_MENUPOPUP: 'ucjs_alltabs_groups_menupopup',
@@ -60,18 +62,21 @@ const kID = {
 };
 
 
-// Helper objects.
+// Helper objects
 
 /**
- * Wrapper of tabs.
- * @see tabbrowser.xml
+ * Wrapper of tabs
+ * @see chrome://browser/content/tabbrowser.xml
  */
 var mTabs = {
-  get count() gBrowser.tabs.length,
+  get count()
+    gBrowser.tabs.length,
 
-  get pinnedCount() gBrowser._numPinnedTabs,
+  get pinnedCount()
+    gBrowser._numPinnedTabs,
 
-  get visibleCount() gBrowser.visibleTabs.length - gBrowser._numPinnedTabs,
+  get visibleCount()
+    gBrowser.visibleTabs.length - gBrowser._numPinnedTabs,
 
   selectAt: function(aIndex) {
     gBrowser.tabContainer.selectedIndex = parseInt(aIndex, 10);
@@ -79,17 +84,21 @@ var mTabs = {
 };
 
 /**
- * Wrapper of TabView.
- * @see browser.js
+ * Wrapper of TabView
+ * @see chrome://browser/content/browser.js::TabView
  */
 var mTabView = {
-  get GroupItems() TabView.getContentWindow().GroupItems,
+  get GroupItems()
+    TabView.getContentWindow().GroupItems,
 
-  get groupItems() this.GroupItems.groupItems,
+  get groupItems()
+    this.GroupItems.groupItems,
 
-  get activeGroupItem() this.GroupItems.getActiveGroupItem(),
+  get activeGroupItem()
+    this.GroupItems.getActiveGroupItem(),
 
-  get activeGroupName() this.activeGroupItem.getTitle(),
+  get activeGroupName()
+    this.activeGroupItem.getTitle(),
 
   init: function() {
     TabView._initFrame();
@@ -97,12 +106,13 @@ var mTabView = {
 };
 
 /**
- * Handler for tab groups.
+ * Handler for tab groups
  */
 var mTabGroups = {
   groups: [],
 
-  get count() this.groups.length,
+  get count()
+    this.groups.length,
 
   add: function(aGroupItem) {
     var children = aGroupItem.getChildren();
@@ -130,7 +140,7 @@ var mTabGroups = {
 };
 
 
-// Functions.
+// Functions
 
 function AllTabs_init() {
   initCSS();
@@ -162,10 +172,10 @@ function initCSS() {
 }
 
 function moveAllTabsMenuToTabViewButton() {
-  // Hide default alltabs-button.
+  // Hide default alltabs-button
   hideElement($(kID.ALLTABS_BUTTON));
 
-  // Attach alltabs-contextmenu to tabview-button.
+  // Attach alltabs-contextmenu to tabview-button
   var tabview = $(kID.TABVIEW_BUTTON);
   tabview.appendChild($(kID.ALLTABS_POPUP));
   tabview.contextMenu = kID.ALLTABS_POPUP;
@@ -180,7 +190,7 @@ function customizeAllTabsPopupFunction() {
     $_setMenuitemAttributes.apply(this, arguments);
 
     /**
-     * Toggle flag of unread tab.
+     * Toggle flag of unread tab
      * @require UI.uc.js
      */
     ucjsUI && ucjsUI.Menuitem.toggleUnreadTab(aMenuitem, aTab);
@@ -230,7 +240,7 @@ function initAllTabsMenu() {
   var alltabsPopup = $(kID.ALLTABS_POPUP);
   addEvent([alltabsPopup, 'popupshowing', onPopupShowing, true]);
   addEvent([alltabsPopup, 'popuphidden', onPopupHidden, true]);
-  // Disable showing URL on status-bar.
+  // Disable showing URL on status-bar
   addEvent([alltabsPopup, 'DOMMenuItemActive', function(e) e.stopPropagation(), true]);
   addEvent([alltabsPopup, 'DOMMenuItemInactive', function(e) e.stopPropagation(), true]);
 
@@ -315,7 +325,7 @@ function onPopupShowing(aEvent) {
   aEvent.stopPropagation();
   var popup = aEvent.target;
 
-  // Popup of tabview-button tooltip.
+  // Popup of tabview-button tooltip
   if (popup.id === kID.TABVIEW_TOOLTIP) {
     popup.setAttribute('label',
       format(kFormat.TABVIEW_TOOLTIP, {
@@ -326,7 +336,7 @@ function onPopupShowing(aEvent) {
     );
   }
 
-  // Popup of alltabs context-menu.
+  // Popup of alltabs context-menu
   else if (popup.id === kID.ALLTABS_POPUP) {
     if (mTabView.groupItems.length < 2) {
       $(kID.GROUPS_MENU).disabled = true;
@@ -334,7 +344,7 @@ function onPopupShowing(aEvent) {
 
     let refItem = $(kID.ALLTABS_POPUP_SEPARATOR).nextSibling;
 
-    // About pinned tabs.
+    // About pinned tabs
     let pinnedCount = mTabs.pinnedCount;
     if (pinnedCount) {
       let pinnedTabsTag = $E('menuitem', {
@@ -354,7 +364,7 @@ function onPopupShowing(aEvent) {
       });
     }
 
-    // About tabs of the active group.
+    // About tabs of the active group
     let visibleCount = mTabs.visibleCount;
     if (visibleCount) {
       let groupTag = $E('menuitem', {
@@ -369,8 +379,9 @@ function onPopupShowing(aEvent) {
       popup.insertBefore(groupTag, refItem);
 
       /**
-       * @WORKAROUND
-       * Setting a flag, we can find the proper overflowed tab's menuitems.
+       * WORKAROUND(20120222):
+       * Setting a flag, we can find the proper overflowed tab's menuitems
+       * Usage in CSS;
        * #GROUP_TAG_MENUITEM[ATTR_TABOVERFLOWED]~.alltabs-item:not([tabIsVisible])
        */
       if (gBrowser.tabContainer.hasAttribute('overflow')) {
@@ -379,7 +390,7 @@ function onPopupShowing(aEvent) {
     }
   }
 
-  // Popup of groups menu.
+  // Popup of groups menu
   else if (popup.id === kID.GROUPS_MENUPOPUP) {
     if (popup.hasChildNodes())
       return;
@@ -397,12 +408,13 @@ function onPopupShowing(aEvent) {
     });
   }
 
-  // Popup of each group menu.
+  // Popup of each group menu
   else if (popup.parentNode.hasAttribute(kID.ATTR_GROUPINDEX)) {
     if (popup.hasChildNodes())
       return;
 
-    let group = mTabGroups.getAt(popup.parentNode.getAttribute(kID.ATTR_GROUPINDEX));
+    let group = mTabGroups.
+      getAt(popup.parentNode.getAttribute(kID.ATTR_GROUPINDEX));
 
     let topTab = group.topTab;
     group.tabs.forEach(function(tab) {
@@ -419,7 +431,7 @@ function onPopupHidden(aEvent) {
   aEvent.stopPropagation();
   var popup = aEvent.target;
 
-  // Popup of alltabs context-menu.
+  // Popup of alltabs context-menu
   if (popup.id === kID.ALLTABS_POPUP) {
     $(kID.GROUPS_MENU).disabled = false;
 
@@ -454,9 +466,10 @@ function createTabMenuItem(aTab, aPopup, aRefItem) {
 }
 
 
-// Utilities.
+// Utilities
 
-function $(aId) document.getElementById(aId);
+function $(aId)
+  document.getElementById(aId);
 
 function $E(aTagName, aAttribute) {
   var element = document.createElement(aTagName);
@@ -479,6 +492,16 @@ function hideElement(aElement) {
   aElement.setAttribute('style', 'display:none');
 }
 
+/**
+ * String formatter
+ * @usage format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
+ * @note Plural form of numbers is avalable;
+ *   '%key{None;A key;%key keys}' ->
+ *    key=0:'None', key=1:'A key', key=#(>=2):'# keys'
+ * @return {string}
+ * @param aFormat {string}
+ * @param aAttribute {string}
+ */
 function format(aFormat, aAttribute) {
   for (let [name, value] in Iterator(aAttribute)) {
     let plural = aFormat.match(RegExp('%' + name + '\\{(.+?)\\}'));
@@ -486,7 +509,8 @@ function format(aFormat, aAttribute) {
       let num = parseInt(value, 10) || 0;
       let index = (num > 1) ? 2 : num;
       let words = plural[1].split(';');
-      aFormat = aFormat.replace(plural[0], (index < words.length) ? words[index] : words[0]);
+      aFormat = aFormat.replace(plural[0],
+        (index < words.length) ? words[index] : words[0]);
     }
     aFormat = aFormat.replace('%' + name, value);
   }
@@ -494,7 +518,7 @@ function format(aFormat, aAttribute) {
 }
 
 
-// Imports.
+// Imports
 
 function U(aStr)
   ucjsUtil.convertForSystem(aStr);
@@ -509,7 +533,7 @@ function log(aMsg)
   ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
 
 
-// Entry point.
+// Entry point
 
 AllTabs_init();
 
