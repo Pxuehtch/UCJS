@@ -44,6 +44,7 @@ var mIMEAwareHandler = {
   init: function(aNode) {
     this.uninit();
 
+    // define new members
     this.isXBL = aNode.hasAttribute('anonid');
     this.textbox = this.isXBL ?
       $X1('ancestor::*[local-name()="textbox"]', aNode) : aNode;
@@ -56,9 +57,9 @@ var mIMEAwareHandler = {
     this.textbox.addEventListener('keydown', this, false);
     this.textbox.addEventListener('keyup', this, false);
     // observe events for finalization
-    // sometimes 'blur' unfires (e.g. when a page changes its location with
-    // a shortcut key)
     this.textbox.addEventListener('blur', this, false);
+    // watch 'pagehide' of a content window for when 'blur' unfired (e.g.
+    // a page navigation with a shortcut key)
     if (this.textbox.ownerDocument instanceof HTMLDocument) {
       this.textbox.ownerDocument.defaultView.
       addEventListener('pagehide', this, false);
@@ -66,14 +67,7 @@ var mIMEAwareHandler = {
   },
 
   uninit: function() {
-    if (!this.textbox)
-      return;
-
-    /**
-     * WORKAROUND: avoid 'TypeError: can't access dead object'
-     * I saw this error once, but not reproducible. so wait and see
-     */
-    try {
+    if (this.checkValidity()) {
       this.textbox.removeEventListener('keydown', this, false);
       this.textbox.removeEventListener('keyup', this, false);
       this.textbox.removeEventListener('blur', this, false);
@@ -83,8 +77,6 @@ var mIMEAwareHandler = {
       }
 
       this.restoreStyle();
-    } catch (e) {
-      log(e.message);
     }
 
     delete this.isXBL;
@@ -94,15 +86,23 @@ var mIMEAwareHandler = {
   },
 
   updateStyle: function() {
-    if (!this.textbox)
-      return;
+    if (this._delayedUpdateStyleTimer) {
+      clearTimeout(this._delayedUpdateStyleTimer);
+      delete this._delayedUpdateStyleTimer;
+    }
 
-    var ime = this.getIMEState();
-    if (this.IMEState === ime)
-      return;
-    this.IMEState = ime;
+    // delay and ensure that IMEStatus is ready
+    this._delayedUpdateStyleTimer = setTimeout(function() {
+      if (!this.checkValidity())
+        return;
 
-    this.setStyle();
+      var ime = this.getIMEState();
+      if (this.IMEState === ime)
+        return;
+      this.IMEState = ime;
+
+      this.setStyle();
+    }.bind(this), 0);
   },
 
   setStyle: function() {
@@ -131,8 +131,19 @@ var mIMEAwareHandler = {
   },
 
   /**
-   * Gets the current state of IME
-   * @return key in kStyleSet
+   * checks whether a target textbox is alive
+   * @return {boolean}
+   */
+  checkValidity: function() {
+    try {
+      return !!(this.textbox && Cu.getWeakReference(this.textbox).get());
+    } catch (e) {}
+    return false;
+  },
+
+  /**
+   * gets the current state of IME
+   * @return {string} key in kStyleSet
    */
   getIMEState: function() {
     var win = this.textbox.ownerDocument.defaultView;
@@ -149,31 +160,19 @@ var mIMEAwareHandler = {
     return 'DISABLED';
   },
 
-  delayedUpdateStyle: function() {
-    if (this._delayedUpdateStyleTimer) {
-      clearTimeout(this._delayedUpdateStyleTimer);
-      delete this._delayedUpdateStyleTimer;
-    }
-
-    // ensure that IMEStatus is ready
-    this._delayedUpdateStyleTimer = setTimeout(this.updateStyle.bind(this), 0);
-  },
-
   handleEvent: function(aEvent) {
     aEvent.stopPropagation();
 
     switch (aEvent.type) {
       case 'keydown':
         // '半角全角', 'カタカナひらがな':
-        // * sometimes 'keyup' event unfires
-        // * keyCode is 0
-        // in detail
         // * 'keyup' unfires when a key is released
         // * 'keyup'->'keydown' fire when a key is pressed down
         // * the first 'keyup' unfires when pressed down just after focusing
         //   on a textbox
+        // * in fx15: the keycode is not 229(VK_PROCESSKEY) but 0(Unidentified)
         if (aEvent.keyCode === 0) {
-          this.delayedUpdateStyle();
+          this.updateStyle();
         }
         break;
       case 'keyup':
@@ -182,7 +181,7 @@ var mIMEAwareHandler = {
         // '無変換': 29(VK_NONCONVERT)
         let keyCode = aEvent.keyCode;
         if (keyCode === 25 || keyCode === 28 || keyCode === 29) {
-          this.delayedUpdateStyle();
+          this.updateStyle();
         }
         break;
       case 'blur':
