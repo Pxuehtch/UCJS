@@ -337,6 +337,7 @@ function MouseGesture() {
 
   var mState = kState.READY;
   var mCancelDrag = false;
+  var mCustomDragData = null;
   var mMouse = MouseManager();
   var mGesture = GestureManager();
 
@@ -359,6 +360,8 @@ function MouseGesture() {
 
     // Observe D&D event on window to detect tooltip XUL element.
     // Set event into capture mode to suppress default behavior.
+    addEvent([window, 'dragstart', onDragStart, false]);
+    addEvent([window, 'dragend', onDragEnd, false]);
     addEvent([window, 'dragover', onDragOver, true]);
     addEvent([window, 'drop', onDrop, true]);
   }
@@ -388,6 +391,18 @@ function MouseGesture() {
     if (aEvent.button === 0) {
       if (mCancelDrag) {
         mCancelDrag = false;
+      }
+
+      // scan a custom drag element
+      let target = aEvent.target;
+      let element, data;
+      if (target instanceof HTMLCanvasElement) {
+        element = target;
+        data = {type: kGestureSign.image, data: element.toDataURL()};
+      }
+      if (element && !element.draggable) {
+        element.draggable = true;
+        mCustomDragData = data;
       }
     } else if (aEvent.button === 1) {
       if (mState !== kState.READY) {
@@ -447,18 +462,24 @@ function MouseGesture() {
     mMouse.update(aEvent);
   }
 
-  // @note observe 'drag start' here to catch a drag data in a textbox
-  function onDragOver(aEvent) {
-    if (mCancelDrag)
-      return;
-
-    if (mState !== kState.DRAG) {
-      mMouse.update(aEvent);
-      if (inDragArea(aEvent)) {
-        startDrag(aEvent);
-      }
-      return;
+  function onDragStart(aEvent) {
+    if (inGestureArea(aEvent)) {
+      startDrag(aEvent);
     }
+  }
+
+  function onDragEnd(aEvent) {
+    if (mCustomDragData) {
+      aEvent.target.draggable = false;
+      mCustomDragData = null;
+    }
+  }
+
+  // @note Use not 'dragenter' but 'dragover' in order to check the screen
+  // coordinate.
+  function onDragOver(aEvent) {
+    if (mState !== kState.DRAG || mCancelDrag)
+      return;
 
     if (inTooltip(aEvent) || (inGestureArea(aEvent) && !inEditable(aEvent))) {
       suppressDefault(aEvent);
@@ -506,7 +527,7 @@ function MouseGesture() {
 
   function start(aEvent) {
     mTabInfo.init();
-    return mGesture.init(aEvent);
+    return mGesture.init(aEvent, mCustomDragData);
   }
 
   function clear() {
@@ -576,8 +597,6 @@ function MouseManager() {
       } else {
         isElseDown = false;
       }
-    } else if (type === 'dragover') {
-      isElseDown = false;
     } else if (type === 'contextmenu') {
       enableContextMenu(!cancelContext);
       cancelContext = false;
@@ -631,12 +650,12 @@ function GestureManager() {
     return quickShot + mKey + mType + mChain;
   }
 
-  function init(aEvent) {
+  function init(aEvent, aCustomDragData) {
     setOverLink(false);
     mTracer.init(aEvent);
 
-    if (aEvent.type === 'dragover') {
-      let info = getDragInfo(aEvent);
+    if (aEvent.type === 'dragstart') {
+      let info = getDragInfo(aEvent, aCustomDragData);
       if (!info.type || !info.data)
         return false;
 
@@ -646,31 +665,40 @@ function GestureManager() {
     return true;
   }
 
-  function getDragInfo(aEvent) {
+  function getDragInfo(aEvent, aCustomDragData) {
     var type = '', data = '';
+    var node = aEvent.target;
 
-    var text = getSelectionAtCursor({event: aEvent});
-    if (text) {
-      type = kGestureSign.text;
-      data = text;
-    } else {
-      let link = '', image = '';
-
-      let dt = aEvent.dataTransfer;
-      if (dt.types.contains('text/x-moz-url')) {
-        link = dt.getData('text/x-moz-url-data');
-        if (link) {
-          type = kGestureSign.link;
-        }
+    // 1. custom drag
+    if (aCustomDragData) {
+      type = aCustomDragData.type;
+      data = aCustomDragData.data;
+      // set the drag data and a custom dragging is ready
+      aEvent.dataTransfer.setData('text/plain', data);
+    }
+    // 2. selected text
+    if (!type) {
+      let text = getSelectionAtCursor({event: aEvent});
+      if (text || node instanceof Text) {
+        type = kGestureSign.text;
+        data = text || aEvent.dataTransfer.getData('text/plain');
       }
-      if (dt.types.contains('application/x-moz-nativeimage')) {
-        image = dt.getData('application/x-moz-file-promise-url');
-        if (!link || link === image) {
-          type = kGestureSign.image;
-        }
+    }
+    // 3. link
+    if (!type) {
+      let link = getLinkURL(lookupLink(node));
+      if (link) {
+        type = kGestureSign.link;
+        data = /^(?:https?|ftp):/.test(link) && link;
       }
-
-      data = (link && image) ? link : (link || image || '');
+    }
+    // 4. image
+    if (!type) {
+      if (node instanceof HTMLImageElement ||
+          node instanceof SVGImageElement) {
+        type = kGestureSign.image;
+        data = getImageURL(node);
+      }
     }
 
     return {type: type, data: data};
@@ -912,15 +940,6 @@ function inGestureArea(aEvent) {
          margin < y && y < (height - margin);
 }
 
-function inDragArea(aEvent) {
-  var src = Cc['@mozilla.org/widget/dragservice;1'].
-    getService(Ci.nsIDragService).
-    getCurrentSession().sourceDocument.defaultView.top;
-  var dst = aEvent.target.ownerDocument.defaultView.top;
-
-  return src && dst && src === dst && inGestureArea(aEvent);
-}
-
 function inTooltip(aEvent) {
   var node = aEvent.target;
 
@@ -940,19 +959,48 @@ function inEditable(aEvent) {
   );
 }
 
-function inLink(aEvent) {
-  for (let node = aEvent.target; node; node = node.parentNode) {
+function lookupLink(aNode) {
+  for (let node = aNode; node; node = node.parentNode) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node instanceof HTMLAnchorElement ||
           node instanceof HTMLAreaElement ||
           node instanceof HTMLLinkElement ||
-          node.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
-          'simple') {
-        return true;
+          node instanceof SVGAElement) {
+        return node;
       }
     }
   }
-  return false;
+  return null;
+}
+
+function getLinkURL(aNode) {
+  var URL;
+
+  if (!aNode)
+    return URL;
+
+  if (aNode instanceof SVGAElement) {
+    try {
+      URL = makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
+    } catch (e) {}
+  }
+
+  return URL || aNode.href;
+}
+
+function getImageURL(aNode) {
+  var URL;
+
+  if (!aNode)
+    return URL;
+
+  if (aNode instanceof SVGImageElement) {
+    try {
+      URL = makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
+    } catch (e) {}
+  }
+
+  return URL || aNode.src;
 }
 
 function doCmd(aCommand) {
@@ -997,7 +1045,11 @@ function loadPage(aURL) {
 }
 
 function openTab(aURL, aBG) {
-  ucjsUtil.openTab(aURL, {inBackground: aBG, relatedToCurrent: true});
+  ucjsUtil.openTab(aURL, {
+    inBackground: aBG,
+    relatedToCurrent: true,
+    ucjsTrustURL: /^data:image\/png;base64,/.test(aURL)
+  });
 }
 
 function openHomePages(aReplace) {
