@@ -1092,8 +1092,8 @@ var mSiblingNavi = (function() {
 
     function normalizeWeight(aWeights) {
       var total = 0;
-      for each (let value in aWeights) {
-        total += value;
+      for (let key in aWeights) {
+        total += aWeights[key];
       }
 
       for (let key in aWeights) {

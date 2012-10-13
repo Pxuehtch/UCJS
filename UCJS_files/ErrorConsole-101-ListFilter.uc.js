@@ -52,8 +52,8 @@ function makeUI() {
 function uninit(aEvent) {
   var {hidden} = kStyle;
 
-  for each (let selector in kSelector) {
-    toggleCSS(selector + hidden, false);
+  for (let key in kSelector) {
+    toggleCSS(kSelector[key] + hidden, false);
   }
 }
 

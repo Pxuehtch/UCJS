@@ -160,7 +160,7 @@ function PrefButton_init() {
 }
 
 function updateState(aTabMode) {
-  for each (let item in mPreset) {
+  for (let [, item] in Iterator(mPreset)) {
     if (item.disabled || (aTabMode && !item.tabMode))
       continue;
 
@@ -181,7 +181,7 @@ function updateState(aTabMode) {
 function doCommand(aEvent) {
   var id = aEvent.target.id;
 
-  for each (let item in mPreset) {
+  for (let [, item] in Iterator(mPreset)) {
     if (id === item.id) {
       item.command();
     }
