@@ -394,15 +394,18 @@ function MouseGesture() {
       }
 
       // scan a custom drag element
-      let target = aEvent.target;
-      let element, data;
-      if (target instanceof HTMLCanvasElement) {
-        element = target;
-        data = {type: kGestureSign.image, data: element.toDataURL()};
-      }
-      if (element && !element.draggable) {
-        element.draggable = true;
-        mCustomDragData = data;
+      mCustomDragData = null;
+      if (aEvent.shiftKey) {
+        let target = aEvent.target;
+        let element, data;
+        if (target instanceof HTMLCanvasElement) {
+          element = target;
+          data = {type: kGestureSign.image, data: element.toDataURL()};
+        }
+        if (element && !element.draggable) {
+          element.draggable = true;
+          mCustomDragData = data;
+        }
       }
     } else if (aEvent.button === 1) {
       if (mState !== kState.READY) {
