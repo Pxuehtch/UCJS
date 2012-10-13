@@ -122,7 +122,8 @@ const kGestureSet = [
     gestures: ['DL'],
     name: 'タブを複製',
     command: function() {
-      duplicateTabIn(gBrowser.mCurrentTab, 'tab');
+      // @see chrome://browser/content/browser.js::duplicateTabIn
+      window.duplicateTabIn(gBrowser.mCurrentTab, 'tab');
     }
   },
   {
@@ -182,14 +183,16 @@ const kGestureSet = [
     gestures: ['RD'],
     name: '履歴を開閉',
     command: function() {
-      toggleSidebar('viewHistorySidebar');
+      // @see chrome://browser/content/browser.js::toggleSidebar
+      window.toggleSidebar('viewHistorySidebar');
     }
   },
   {
     gestures: ['LD'],
     name: 'ブックマークを開閉',
     command: function() {
-      toggleSidebar('viewBookmarksSidebar');
+      // @see chrome://browser/content/browser.js::toggleSidebar
+      window.toggleSidebar('viewBookmarksSidebar');
     }
   },
   {
@@ -958,7 +961,8 @@ function doCmd(aCommand) {
   if (command) {
     command.doCommand();
   } else {
-    goDoCommand(aCommand);
+    // @see chrome://global/content/globalOverlay.js::goDoCommand
+    window.goDoCommand(aCommand);
   }
 }
 
