@@ -264,7 +264,7 @@ const kSiteList = [
             }\
             .ucjs_sitestyle_weaken *:hover{\
               opacity:1!important;\
-              -moz-transition:opacity .5s!important;\
+              transition:opacity .5s!important;\
             }';
         }
         if (multiColumn) {
@@ -332,7 +332,7 @@ const kSiteList = [
         }\
         .ucjs_sitestyle_weaken *:hover{\
           opacity:1!important;\
-          -moz-transition:opacity .5s!important;\
+          transition:opacity .5s!important;\
         }\
         /* multi-column */\
         #wrapper, .size2of3, #WS2m .w, .dd{\
