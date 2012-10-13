@@ -959,11 +959,10 @@ function inEditable(aEvent) {
 
   return (
     node instanceof HTMLTextAreaElement ||
-    ('mozIsTextField' in node && node.mozIsTextField(false)) ||
-    /^(?:password|search|text|textarea)$/.test(node.type) ||
-    ('isContentEditable' in node && node.isContentEditable) ||
-    node.ownerDocument.designMode.toLowerCase() === 'on' ||
-    node.hasAttribute('dropzone')
+    node instanceof HTMLInputElement ||
+    node.isContentEditable ||
+    node.contentEditable === 'true' ||
+    node.ownerDocument.designMode === 'on'
   );
 }
 
