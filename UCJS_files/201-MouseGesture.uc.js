@@ -355,7 +355,6 @@ function MouseGesture() {
     addEvent([pc, 'DOMMouseScroll', onMouseScroll, false]);
     addEvent([pc, 'keydown', onKeyDown, false]);
     addEvent([pc, 'keyup', onKeyUp, false]);
-    addEvent([pc, 'click', onClick, false]);
     addEvent([pc, 'contextmenu', onContextMenu, true]);
 
     // Observe D&D event on window to detect tooltip XUL element.
@@ -441,14 +440,6 @@ function MouseGesture() {
   function onKeyUp(aEvent) {
     if (mState !== kState.READY) {
       progress(aEvent);
-    }
-  }
-
-  function onClick(aEvent) {
-    if (aEvent.button === 0 && inLink(aEvent)) {
-      if (mState !== kState.READY) {
-        suppressDefault(aEvent);
-      }
     }
   }
 
