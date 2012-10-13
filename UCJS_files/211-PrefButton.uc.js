@@ -262,8 +262,11 @@ function setStyleSheet() {
 
 // Utilities.
 
-function $ID(aId) document.getElementById(aId);
-function $CE(aTag) document.createElement(aTag);
+function $ID(aId)
+  document.getElementById(aId);
+
+function $CE(aTag)
+  document.createElement(aTag);
 
 
 // Imports.

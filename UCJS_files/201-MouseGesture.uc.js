@@ -5,7 +5,8 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @require [for gesture command] Util.uc.js, NaviLink.uc.js, TabEx.uc.js, WebService.uc.js, UI.uc.js
+// @require [for gesture command] Util.uc.js, NaviLink.uc.js, TabEx.uc.js,
+//   WebService.uc.js, UI.uc.js
 
 
 (function() {
@@ -318,9 +319,11 @@ var mTabInfo = {
            this.URL !== this.currentURL;
   },
 
-  get currentTab() gBrowser.mCurrentTab,
+  get currentTab()
+    gBrowser.mCurrentTab,
 
-  get currentURL() gBrowser.currentURI.spec
+  get currentURL()
+    gBrowser.currentURI.spec
 };
 
 
@@ -342,8 +345,10 @@ function MouseGesture() {
   function registerEvents() {
     var pc = gBrowser.mPanelContainer;
 
-    // Set mousedown into capture mode to enable to suppress default wheel click.
-    // Set mouseup into capture mode to ensure to catch the event on gesture makes tab change.
+    // Set mousedown into capture mode to enable to suppress default wheel
+    // click.
+    // Set mouseup into capture mode to ensure to catch the event on gesture
+    // makes tab change.
     addEvent([pc, 'mousedown', onMouseDown, true]);
     addEvent([pc, 'mousemove', onMouseMove, false]);
     addEvent([pc, 'mouseup', onMouseUp, true]);
@@ -359,11 +364,11 @@ function MouseGesture() {
     addEvent([window, 'drop', onDrop, true]);
   }
 
-  // WORKAROUND: Cancel all state when the URL changes in the current tab
+  // WORKAROUND: Cancel all state when the URL changes in the current tab.
   // After loading a new URL in the same tab while holding mouse button down,
-  // any mouse events can not be caught as long as holding it
-  // TODO: maybe this problem was fixed. but I can not find the information.
-  // so wait and see
+  // any mouse events can not be caught as long as holding it.
+  // TODO: Maybe this problem was fixed, but I can not find the information.
+  // So wait and see.
   function checkTab() {
     if (mState !== kState.READY) {
       if (mTabInfo.isSameTabButDifferentURL()) {
@@ -472,8 +477,8 @@ function MouseGesture() {
     }
   }
 
-  // TODO: prevent the drop event when a right mouse button is pressed down
-  // while dragging. now the drop event fires
+  // TODO: Prevent the drop event when a right mouse button is pressed down
+  // while dragging. At present the drop event fires.
   function onDrop(aEvent) {
     if (mState !== kState.DRAG)
       return;
@@ -901,9 +906,10 @@ function GestureTracer() {
 // Utilities.
 
 function inGestureArea(aEvent) {
-  var {width, height, screenX: left, screenY: top} = gBrowser.mPanelContainer.boxObject;
+  var {width, height, screenX: left, screenY: top} =
+    gBrowser.mPanelContainer.boxObject;
   var {screenX: x, screenY: y} = aEvent;
-  // Convert the screen coordinates of cursor to client.
+  // Convert the screen coordinates of cursor to the client coordinates.
   x -= left;
   y -= top;
 
@@ -911,11 +917,13 @@ function inGestureArea(aEvent) {
   // @value Pixels of the width of scrollbar.
   var margin = 16;
 
-  return margin < x && x < (width - margin) && margin < y && y < (height - margin);
+  return margin < x && x < (width - margin) &&
+         margin < y && y < (height - margin);
 }
 
 function inDragArea(aEvent) {
-  var src = Cc['@mozilla.org/widget/dragservice;1'].getService(Ci.nsIDragService).
+  var src = Cc['@mozilla.org/widget/dragservice;1'].
+    getService(Ci.nsIDragService).
     getCurrentSession().sourceDocument.defaultView.top;
   var dst = aEvent.target.ownerDocument.defaultView.top;
 
@@ -947,7 +955,8 @@ function inLink(aEvent) {
       if (node instanceof HTMLAnchorElement ||
           node instanceof HTMLAreaElement ||
           node instanceof HTMLLinkElement ||
-          node.getAttributeNS('http://www.w3.org/1999/xlink', 'type') === 'simple') {
+          node.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
+          'simple') {
         return true;
       }
     }
@@ -992,14 +1001,17 @@ function addEvent(aData)
 function getSelectionAtCursor(aOption)
   ucjsUtil.getSelectionAtCursor(aOption);
 
-function loadPage(aURL)
+function loadPage(aURL) {
   ucjsUtil.loadPage(aURL);
+}
 
-function openTab(aURL, aBG)
+function openTab(aURL, aBG) {
   ucjsUtil.openTab(aURL, {inBackground: aBG, relatedToCurrent: true});
+}
 
-function openHomePages(aReplace)
+function openHomePages(aReplace) {
   ucjsUtil.openHomePages(aReplace);
+}
 
 function log(aMsg)
   ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
