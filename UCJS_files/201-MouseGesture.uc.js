@@ -337,10 +337,9 @@ function MouseGesture() {
   var mMouse = MouseManager();
   var mGesture = GestureManager();
 
-  // Initialization.
-  init();
+  registerEvents();
 
-  function init() {
+  function registerEvents() {
     var pc = gBrowser.mPanelContainer;
 
     // Set mousedown into capture mode to enable to suppress default wheel click.
