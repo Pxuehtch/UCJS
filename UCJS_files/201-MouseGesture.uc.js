@@ -575,33 +575,41 @@ function MouseManager() {
   function update(aEvent) {
     const {type, button} = aEvent;
 
-    if (type === 'mousedown') {
-      if (button === 2) {
-        enableContextMenu(true);
-        cancelContext = false;
-        isRightDown = true;
+    switch (type) {
+      case 'mousedown':
+        if (button === 2) {
+          enableContextMenu(true);
+          cancelContext = false;
 
-        if (isElseDown) {
-          cancelContext = true;
+          isRightDown = true;
+          if (isElseDown) {
+            cancelContext = true;
+          }
+        } else {
+          isElseDown = true;
+          if (isRightDown) {
+            cancelContext = true;
+          }
         }
-      } else {
-        isElseDown = true;
-
+        break;
+      case 'mouseup':
+        if (button === 2) {
+          isRightDown = false;
+        } else {
+          isElseDown = false;
+        }
+        break;
+      case 'mousemove':
+      case 'DOMMouseScroll':
+        // a gesture is in progress
         if (isRightDown) {
           cancelContext = true;
         }
-      }
-    } else if (type === 'mouseup') {
-      if (button === 2) {
-        isRightDown = false;
-      } else {
-        isElseDown = false;
-      }
-    } else if (type === 'contextmenu') {
-      enableContextMenu(!cancelContext);
-      cancelContext = false;
-    } else if (isRightDown) {
-      cancelContext = true;
+        break;
+      case 'contextmenu':
+        enableContextMenu(!cancelContext);
+        cancelContext = false;
+        break;
     }
   }
 
