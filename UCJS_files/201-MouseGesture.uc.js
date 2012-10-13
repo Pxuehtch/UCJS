@@ -603,8 +603,8 @@ function MouseManager() {
  */
 function GestureManager() {
   var mTracer = GestureTracer();
-  var mKey, mType, mChain, mData, mMatchItem, mQuickShot;
-  var mQuickShotTimer = null;
+  var mKey, mType, mChain, mData;
+  var mMatchItem, mQuickShot, mQuickShotTimer;
 
   clear();
 
@@ -624,8 +624,8 @@ function GestureManager() {
 
     if (mQuickShotTimer) {
       clearTimeout(mQuickShotTimer);
-      mQuickShotTimer = null;
     }
+    mQuickShotTimer = null;
 
     showStatus(false);
   }
