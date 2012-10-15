@@ -359,6 +359,7 @@ function MouseGesture() {
     addEvent([pc, 'contextmenu', onContextMenu, true]);
 
     // Set event into capture mode to suppress default behavior.
+    // Use not 'dragenter' but 'dragover' to check the screen coordinate.
     addEvent([pc, 'dragstart', onDragStart, false]);
     addEvent([pc, 'dragend', onDragEnd, false]);
     addEvent([pc, 'dragover', onDragOver, true]);
@@ -374,7 +375,7 @@ function MouseGesture() {
     if (mState !== kState.READY) {
       if (mTabInfo.isSameTabButDifferentURL()) {
         mMouse.clear();
-        cancel();
+        cancelGesture();
       }
     }
   }
@@ -389,7 +390,8 @@ function MouseGesture() {
 
     if (aEvent.button === 0) {
       // scan a custom drag element
-      if (aEvent.shiftKey) {
+      // @note Do with a fail-safe operation (Shift+)
+      if (mState === kState.READY && aEvent.shiftKey) {
         let target = aEvent.target;
         let element, data;
         if (target instanceof HTMLCanvasElement) {
@@ -419,7 +421,7 @@ function MouseGesture() {
       if (inGestureArea(aEvent)) {
         progress(aEvent);
       } else {
-        cancel();
+        cancelGesture();
       }
     }
   }
@@ -431,7 +433,7 @@ function MouseGesture() {
 
     if (aEvent.button === 2) {
       if (mState === kState.GESTURE) {
-        stop();
+        stopGesture();
       }
     }
   }
@@ -472,38 +474,37 @@ function MouseGesture() {
 
     // the user canceled the drag by pressing ESC
     if (aEvent.dataTransfer.mozUserCancelled) {
-      cancel();
+      cancelGesture();
     }
 
     if (mCancelDrag) {
       mCancelDrag = false;
     }
-
     if (mCustomDragData) {
       aEvent.target.draggable = false;
       mCustomDragData = null;
     }
   }
 
-  // @note Use not 'dragenter' but 'dragover' in order to check the screen
-  // coordinate.
   function onDragOver(aEvent) {
-    if (mState !== kState.DRAG || mCancelDrag)
+    if (mState !== kState.DRAG)
       return;
 
     // cancel the gesture drag and the default drag works
     // @note the default drag is also canceled by pressing ESC
     var forceCancel = aEvent.shiftKey && aEvent.altKey;
     if (forceCancel) {
-      cancel();
+      cancelGesture();
       return;
     }
 
-    if (inGestureArea(aEvent) && !inEditable(aEvent)) {
-      suppressDefault(aEvent);
-      progress(aEvent);
-    } else if (!inGestureArea(aEvent)) {
-      cancel();
+    if (inGestureArea(aEvent)) {
+      if (!inEditable(aEvent)) {
+        suppressDefault(aEvent);
+        progress(aEvent);
+      }
+    } else {
+      cancelGesture();
     }
   }
 
@@ -513,11 +514,11 @@ function MouseGesture() {
     if (mState !== kState.DRAG)
       return;
 
-    if (inGestureArea(aEvent) && !inEditable(aEvent)) {
+    if (inEditable(aEvent)) {
+      cancelGesture();
+    } else {
       suppressDefault(aEvent);
-      stop();
-    } else if (inEditable(aEvent)) {
-      cancel();
+      stopGesture();
     }
   }
 
@@ -548,17 +549,11 @@ function MouseGesture() {
     return mGesture.init(aEvent, mCustomDragData);
   }
 
-  function clear() {
-    mState = kState.READY;
-    mGesture.clear();
-    mTabInfo.clear();
-  }
-
   function progress(aEvent) {
     mGesture.update(aEvent);
   }
 
-  function stop(aCancel) {
+  function stopGesture(aCancel) {
     if (mState === kState.DRAG) {
       mCancelDrag = !!aCancel;
     }
@@ -567,11 +562,13 @@ function MouseGesture() {
       mGesture.evaluate();
     }
 
-    clear();
+    mState = kState.READY;
+    mGesture.clear();
+    mTabInfo.clear();
   }
 
-  function cancel() {
-    stop(true);
+  function cancelGesture() {
+    stopGesture(true);
   }
 }
 
