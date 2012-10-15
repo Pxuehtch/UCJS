@@ -702,8 +702,11 @@ function GestureManager() {
     }
     // 2. selected text
     if (!type) {
+      // |getSelectionAtCursor| sometimes misses in <textarea>
       let text = getSelectionAtCursor({event: aEvent});
-      if (text || node instanceof Text) {
+      if (text ||
+          node instanceof Text ||
+          node instanceof HTMLTextAreaElement) {
         type = kGestureSign.text;
         data = text || aEvent.dataTransfer.getData('text/plain');
       }

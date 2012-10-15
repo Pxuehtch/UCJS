@@ -128,6 +128,7 @@ function setEventListener(aData) {
   }, false);
 }
 
+// TODO: sometimes misses selection of rows below the first in <textarea>
 function getSelectionAtCursor(aOption) {
   const kMaxCharLen = 150;
   var {event, charLen} = aOption || {};
