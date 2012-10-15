@@ -471,6 +471,8 @@ function MouseGesture() {
   }
 
   function onDragEnd(aEvent) {
+    mMouse.update(aEvent);
+
     // the user canceled the drag by pressing ESC
     if (aEvent.dataTransfer.mozUserCancelled) {
       cancel();
@@ -608,6 +610,7 @@ function MouseManager() {
         }
         break;
       case 'mouseup':
+      case 'dragend':
         if (button === 2) {
           isRightDown = false;
         } else {
