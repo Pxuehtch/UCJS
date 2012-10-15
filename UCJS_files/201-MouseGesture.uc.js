@@ -388,12 +388,7 @@ function MouseGesture() {
     mMouse.update(aEvent);
 
     if (aEvent.button === 0) {
-      if (mCancelDrag) {
-        mCancelDrag = false;
-      }
-
       // scan a custom drag element
-      mCustomDragData = null;
       if (aEvent.shiftKey) {
         let target = aEvent.target;
         let element, data;
@@ -478,6 +473,10 @@ function MouseGesture() {
     // the user canceled the drag by pressing ESC
     if (aEvent.dataTransfer.mozUserCancelled) {
       cancel();
+    }
+
+    if (mCancelDrag) {
+      mCancelDrag = false;
     }
 
     if (mCustomDragData) {
