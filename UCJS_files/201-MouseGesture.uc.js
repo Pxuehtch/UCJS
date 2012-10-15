@@ -471,6 +471,11 @@ function MouseGesture() {
   }
 
   function onDragEnd(aEvent) {
+    // the user canceled the drag by pressing ESC
+    if (aEvent.dataTransfer.mozUserCancelled) {
+      cancel();
+    }
+
     if (mCustomDragData) {
       aEvent.target.draggable = false;
       mCustomDragData = null;
@@ -482,6 +487,14 @@ function MouseGesture() {
   function onDragOver(aEvent) {
     if (mState !== kState.DRAG || mCancelDrag)
       return;
+
+    // cancel the gesture drag and the default drag works
+    // @note the default drag is also canceled by pressing ESC
+    var forceCancel = aEvent.shiftKey && aEvent.altKey;
+    if (forceCancel) {
+      cancel();
+      return;
+    }
 
     if (inGestureArea(aEvent) && !inEditable(aEvent)) {
       suppressDefault(aEvent);
