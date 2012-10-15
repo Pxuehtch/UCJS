@@ -430,6 +430,8 @@ function MouseGesture() {
   }
 
   function onMouseUp(aEvent) {
+    checkTab();
+
     mMouse.update(aEvent);
 
     if (aEvent.button === 2) {
