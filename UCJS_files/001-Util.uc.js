@@ -182,28 +182,23 @@ function getSelectionAtCursor(aOption) {
 }
 
 function getSelectionController(aWindow) {
-  var selection = (aWindow || getFocusedWindow()).getSelection();
-  if (selection === null)
-    return null;
+  var selection = null;
 
-  if (!selection.toString()) {
-    let node = document.commandDispatcher.focusedElement;
-    if (node &&
-        (('mozIsTextField' in node && node.mozIsTextField(true)) ||
-         /^(?:search|text|textarea)$/.test(node.type))) {
+  var focusedElement = document.commandDispatcher.focusedElement;
+  if (focusedElement) {
+    if ((focusedElement instanceof HTMLInputElement &&
+         focusedElement.mozIsTextField(true)) ||
+        focusedElement instanceof HTMLTextAreaElement) {
       try {
         selection =
-          node.
-          QueryInterface(Ci.nsIDOMNSEditableElement).
-          editor.
-          selection;
-      } catch (e) {
-        selection = null;
-      }
+          focusedElement.QueryInterface(Ci.nsIDOMNSEditableElement).
+          editor.selection;
+      } catch (e) {}
     }
   }
 
-  return selection;
+  return selection ||
+         (aWindow || getFocusedWindow()).getSelection();
 }
 
 function getSelectedTextInRange(aRange) {
