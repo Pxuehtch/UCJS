@@ -358,12 +358,11 @@ function MouseGesture() {
     addEvent([pc, 'keyup', onKeyUp, false]);
     addEvent([pc, 'contextmenu', onContextMenu, true]);
 
-    // Observe D&D event on window to detect tooltip XUL element.
     // Set event into capture mode to suppress default behavior.
-    addEvent([window, 'dragstart', onDragStart, false]);
-    addEvent([window, 'dragend', onDragEnd, false]);
-    addEvent([window, 'dragover', onDragOver, true]);
-    addEvent([window, 'drop', onDrop, true]);
+    addEvent([pc, 'dragstart', onDragStart, false]);
+    addEvent([pc, 'dragend', onDragEnd, false]);
+    addEvent([pc, 'dragover', onDragOver, true]);
+    addEvent([pc, 'drop', onDrop, true]);
   }
 
   // WORKAROUND: Cancel all state when the URL changes in the current tab.
@@ -484,7 +483,7 @@ function MouseGesture() {
     if (mState !== kState.DRAG || mCancelDrag)
       return;
 
-    if (inTooltip(aEvent) || (inGestureArea(aEvent) && !inEditable(aEvent))) {
+    if (inGestureArea(aEvent) && !inEditable(aEvent)) {
       suppressDefault(aEvent);
       progress(aEvent);
     } else if (!inGestureArea(aEvent)) {
@@ -498,7 +497,7 @@ function MouseGesture() {
     if (mState !== kState.DRAG)
       return;
 
-    if (inTooltip(aEvent) || (inGestureArea(aEvent) && !inEditable(aEvent))) {
+    if (inGestureArea(aEvent) && !inEditable(aEvent)) {
       suppressDefault(aEvent);
       stop();
     } else if (inEditable(aEvent)) {
@@ -949,12 +948,6 @@ function inGestureArea(aEvent) {
 
   return margin < x && x < (width - margin) &&
          margin < y && y < (height - margin);
-}
-
-function inTooltip(aEvent) {
-  var node = aEvent.target;
-
-  return node instanceof XULElement && node.id === 'aHTMLTooltip';
 }
 
 function inEditable(aEvent) {
