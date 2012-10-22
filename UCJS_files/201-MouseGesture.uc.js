@@ -770,9 +770,10 @@ function GestureManager() {
     }
 
     if (sign) {
+      // add a new link of chain when the last gesture is not this one
       let gesture = kGestureSign[sign];
       let index = mChain.length - gesture.length;
-      if (index < 0 || mChain.substr(index) !== gesture) {
+      if (index < 0 || mChain.indexOf(gesture, index) === -1) {
         mChain += gesture;
         return true;
       }
