@@ -698,24 +698,19 @@ function GestureManager() {
   }
 
   function update(aEvent) {
+    if (mQuickShotTimer) {
+      clearGesture();
+    }
+
     if (updateChain(aEvent) || updateKey(aEvent)) {
-      let [matchItem, quickShot] = matchGestureSet();
-
-      if (mQuickShotTimer) {
-        if (!quickShot)
-          return;
-        clearGesture();
-      }
-
-      mMatchItem = matchItem;
-      mQuickShot = quickShot;
-
-      showStatus(true);
+      [mMatchItem, mQuickShot] = matchGestureSet();
 
       if (mQuickShot) {
         doAction();
         mQuickShotTimer = setTimeout(clearGesture, 500);
       }
+
+      showStatus(true);
     }
   }
 
