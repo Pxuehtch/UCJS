@@ -308,6 +308,7 @@ function MouseGesture() {
   var mCustomDragData = null;
   var mMouse = MouseManager();
   var mGesture = GestureManager();
+  var mTabInfo = TabInfo();
 
   registerEvents();
 
