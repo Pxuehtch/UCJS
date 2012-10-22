@@ -634,12 +634,6 @@ function GestureManager() {
     showStatus(false);
   }
 
-  function buildGesture() {
-    var quickShot = mQuickShot ? kGestureSign.quickShot : '';
-
-    return quickShot + mKey + mType + mChain;
-  }
-
   function init(aEvent, aCustomDragData) {
     setOverLink(false);
     mTracer.init(aEvent);
@@ -822,34 +816,59 @@ function GestureManager() {
     return [matchItem, quickShot];
   }
 
-  function doAction() {
-    if (mMatchItem) {
-      try {
-        mMatchItem.command({gesture: buildGesture(), data: mData});
-      } catch (e) {
-        setTimeout(function() displayStatus('Gesture: Command error!'), 0);
-        log('Command error: ' + toString() + '\n' + e);
-      }
-    }
-  }
-
   function evaluate() {
     if (!mQuickShot && mChain) {
       doAction();
     }
   }
 
+  function doAction() {
+    if (mMatchItem) {
+      try {
+        mMatchItem.command({gesture: buildGesture(), data: mData});
+      } catch (e) {
+        setTimeout(function() showErrorStatus('Command error!'), 0);
+        log('Command error: ' + toString() + '\n' + e);
+      }
+    }
+  }
+
   function toString() {
-    const kGestureDisplay = ['Gesture: %GESTURE%', ' (%NAME%)'];
+    const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)'];
 
-    var name = mMatchItem ? U(mMatchItem.name) : '';
-    var format = kGestureDisplay[0] + (name ? kGestureDisplay[1] : '');
+    var rv = kFormat[0].replace('%GESTURE%', buildGesture());
 
-    return format.replace('%GESTURE%', buildGesture()).replace('%NAME%', name);
+    if (mMatchItem) {
+      rv += kFormat[1].replace('%NAME%', U(mMatchItem.name));
+    }
+
+    return rv;
+  }
+
+  function toErrorString(aText) {
+    const kFormat = ['Gesture: %ERROR%'];
+
+    var rv = kFormat[0].replace('%ERROR%', aText);
+
+    return rv;
+  }
+
+  function buildGesture() {
+    var gesture = mKey + mType + mChain;
+
+    if (mQuickShot) {
+      gesture = kGestureSign.quickShot + gesture;
+    }
+
+    return gesture;
   }
 
   function showStatus(aShouldShow) {
-    displayStatus(aShouldShow ? toString() : '');
+    updateStatusbarText(aShouldShow ? toString() : '');
+  }
+
+  function showErrorStatus(aText) {
+    updateStatusbarText(toErrorString(aText));
   }
 
   return {
@@ -1046,7 +1065,7 @@ function setOverLink(aEnabled) {
   ucjsUI.StatusField.setOverLink(aEnabled);
 }
 
-function displayStatus(aText) {
+function updateStatusbarText(aText) {
   ucjsUI.StatusField.update(aText);
 }
 
