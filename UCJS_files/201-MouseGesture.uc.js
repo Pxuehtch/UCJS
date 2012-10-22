@@ -38,7 +38,7 @@ const kGestureSign = {
  * @key name {string}
  * @key command {function}
  *   @param aParam {hash}
- *     @key gesture {string}
+ *     @key gesture {string} gesture signs that are built.
  *     @key data {string} Drag data in D&D mode.
  * @key disabled {boolean} [Optional]
  */
@@ -295,10 +295,10 @@ const kGestureSet = [
 ];
 
 
-// Handlers.
+//***** Handlers.
 
 /**
- * Handler of MouseGesture.
+ * Main handler.
  */
 function MouseGesture() {
   const kState = {READY: 0, GESTURE: 1, DRAG: 2};
@@ -347,7 +347,7 @@ function MouseGesture() {
   }
 
 
-  // Event handlers.
+  //***** Events.
 
   function onMouseDown(aEvent) {
     checkTab();
@@ -494,7 +494,7 @@ function MouseGesture() {
   }
 
 
-  // Helper functions.
+  //***** Helpers.
 
   function startGesture(aEvent) {
     mState = kState.GESTURE;
@@ -539,8 +539,10 @@ function MouseGesture() {
 }
 
 /**
- * Handler of MouseManager.
+ * Observes the mouse events and manages the display of the contextmenu.
  * @return {hash}
+ *   @member clear {function}
+ *   @member update {function}
  */
 function MouseManager() {
   var isRightDown, isElseDown, cancelContext;
@@ -602,8 +604,12 @@ function MouseManager() {
 }
 
 /**
- * Handler of GestureManager.
+ * Builds the mouse gestures and performs its command.
  * @return {hash}
+ *   @member clear {function}
+ *   @member init {function}
+ *   @member update {function}
+ *   @member evaluate {function}
  */
 function GestureManager() {
   var mTracer = GestureTracer();
@@ -880,8 +886,11 @@ function GestureManager() {
 }
 
 /**
- * Handler of GestureTracer.
+ * Traces the coordinates of a mouse pointer.
  * @return {hash}
+ *   @member clear {function}
+ *   @member init {function}
+ *   @member update {function}
  */
 function GestureTracer() {
   // The minimum distance of movement for the gesture is detected.
@@ -967,7 +976,7 @@ function TabInfo() {
 }
 
 
-// Utilities.
+//***** Utilities.
 
 function inGestureArea(aEvent) {
   var {width, height, screenX: left, screenY: top} =
@@ -1055,7 +1064,7 @@ function $(aId)
   document.getElementById(aId);
 
 
-// Imports.
+//***** Imports.
 
 function enableContextMenu(aEnable) {
   ucjsUI.ContentArea.contextMenu.hidden = !aEnable;
@@ -1098,7 +1107,7 @@ function log(aMsg)
   ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
 
 
-// Entry point.
+//***** Entry point.
 
 function MouseGesture_init() {
   MouseGesture();
