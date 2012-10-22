@@ -295,38 +295,6 @@ const kGestureSet = [
 ];
 
 
-/**
- * Handler of information of a tab
- * @see checkTab()
- */
-var mTabInfo = {
-  init: function() {
-    this.tab = this.currentTab;
-    this.URL = this.currentURL;
-  },
-
-  clear: function() {
-    delete this.tab;
-    delete this.URL;
-  },
-
-  isTabChanged: function() {
-    return this.tab !== this.currentTab;
-  },
-
-  isSameTabButDifferentURL: function() {
-    return this.tab === this.currentTab &&
-           this.URL !== this.currentURL;
-  },
-
-  get currentTab()
-    gBrowser.mCurrentTab,
-
-  get currentURL()
-    gBrowser.currentURI.spec
-};
-
-
 // Handlers.
 
 /**
@@ -366,11 +334,8 @@ function MouseGesture() {
     addEvent([pc, 'drop', onDrop, true]);
   }
 
-  // WORKAROUND: Cancel all state when the URL changes in the current tab.
-  // After loading a new URL in the same tab while holding mouse button down,
-  // any mouse events can not be caught as long as holding it.
-  // TODO: Maybe this problem was fixed, but I can not find the information.
-  // So wait and see.
+  // Cancel all state when the URL changes in the current tab to avoid
+  // unexpected actions.
   function checkTab() {
     if (mState !== kState.READY) {
       if (mTabInfo.isSameTabButDifferentURL()) {
@@ -946,6 +911,43 @@ function GestureTracer() {
     clear: clear,
     init: init,
     update: update
+  };
+}
+
+/**
+ * Observes the state of the current tab.
+ * @see MouseGesture()::checkTab()
+ * @return {hash}
+ *   @member init {function}
+ *   @member clear {function}
+ *   @member isSameTabButDifferentURL {function}
+ */
+function TabInfo() {
+  var tab, URL;
+
+  function currentTab()
+    gBrowser.mCurrentTab
+
+  function currentURL()
+    gBrowser.currentURI.spec
+
+  function init() {
+    tab = currentTab();
+    URL = currentURL();
+  }
+
+  function clear() {
+    tab = null;
+    URL = null;
+  }
+
+  function isSameTabButDifferentURL()
+    tab === currentTab() && URL !== currentURL();
+
+  return {
+    init: init,
+    clear: clear,
+    isSameTabButDifferentURL: isSameTabButDifferentURL
   };
 }
 
