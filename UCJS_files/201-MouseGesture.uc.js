@@ -59,7 +59,7 @@ const kGestureSet = [
     gestures: ['L'],
     name: '戻る',
     command: function() {
-      gBrowser.goBack();
+      doCmd('Browser:Back');
     }
   },
   {
@@ -73,7 +73,7 @@ const kGestureSet = [
     gestures: ['R'],
     name: '進む',
     command: function() {
-      gBrowser.goForward();
+      doCmd('Browser:Forward');
     }
   },
   {
@@ -105,7 +105,7 @@ const kGestureSet = [
     gestures: ['UD'],
     name: '更新/中止',
     command: function() {
-      doCmd($('stop-button').disabled ? 'Browser:Reload' : 'Browser:Stop');
+      doCmd(XULBrowserWindow.isBusy ? 'Browser:Stop' : 'Browser:Reload');
     }
   },
   {
@@ -200,14 +200,14 @@ const kGestureSet = [
     gestures: ['!W+'],
     name: '前のタブへ',
     command: function() {
-      gBrowser.tabContainer.advanceSelectedTab(-1, true);
+      doCmd('Browser:PrevTab');
     }
   },
   {
     gestures: ['!W-'],
     name: '次のタブへ',
     command: function() {
-      gBrowser.tabContainer.advanceSelectedTab(+1, true);
+      doCmd('Browser:NextTab');
     }
   },
 
