@@ -213,7 +213,8 @@ var mMenu = (function() {
 
     if (/^(?:https?|ftp|file):/.test(item.value)) {
       let inTab = aEvent.button === 1, inBackground = aEvent.ctrlKey;
-      openURL(item.value, inTab, {inBackground: inBackground, relatedToCurrent: true});
+      openURL(item.value, inTab,
+        {inBackground: inBackground, relatedToCurrent: true});
     } else {
       submitForm(item.value);
     }
@@ -252,7 +253,8 @@ var mMenu = (function() {
   }
 
   function setSeparators(aContextMenu) {
-    // @note ucjsUI_manageContextMenuSeparators() manages the visibility of separators.
+    // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+    // separators.
     aContextMenu.appendChild($E('menuseparator', {'id': kID.startSeparator}));
     aContextMenu.appendChild($E('menuseparator', {'id': kID.endSeparator}));
   }
@@ -307,7 +309,8 @@ var mMenu = (function() {
 
       element = $E('menuitem', {
         'tooltiptext':
-          makeTooltip(getFormedText(text, {'siblingScanType': scanType}), description),
+          makeTooltip(getFormedText(text,
+            {'siblingScanType': scanType}), description),
         'value': URL || submit
       });
     } else {
@@ -327,7 +330,8 @@ var mMenu = (function() {
 
     $E(element, {
       'id': kID[aDirection],
-      'label': format(kFormat[aDirection], {'scanType': kSiblingScanType[scanType]})
+      'label': format(kFormat[aDirection],
+        {'scanType': kSiblingScanType[scanType]})
     });
 
     return element;
@@ -335,7 +339,8 @@ var mMenu = (function() {
 
   function buildNaviLink() {
     var naviList = mNaviLink.getNaviList(),
-        subNaviList = kPref.showSubNaviLinks ? mNaviLink.getSubNaviList() : null;
+        subNaviList =
+          kPref.showSubNaviLinks ? mNaviLink.getSubNaviList() : null;
     if (!naviList && !subNaviList)
       return null;
 
@@ -392,7 +397,8 @@ var mMenu = (function() {
       }
     });
 
-    var menu = $E('menu', {'id': kID.naviLink, 'label': format(kFormat.naviLink)});
+    var menu = $E('menu',
+      {'id': kID.naviLink, 'label': format(kFormat.naviLink)});
     menu.appendChild(popup);
 
     return menu;
@@ -435,7 +441,8 @@ var mMenu = (function() {
       }));
     }
 
-    var menu = $E('menu', {'id': kID.pageInfo, 'label': format(kFormat.pageInfo)});
+    var menu = $E('menu',
+      {'id': kID.pageInfo, 'label': format(kFormat.pageInfo)});
     menu.appendChild(popup);
 
     return menu;
@@ -631,8 +638,10 @@ var mNaviLink = (function() {
       // Pick out the order list.
       var order = [i for (i in list.shift())];
       list.sort(order.length ?
-        function(a, b) order.indexOf(a.type) - order.indexOf(b.type) || a.index - b.index :
-        function(a, b) a.type.localeCompare(b.type) || a.index - b.index
+        function(a, b)
+          order.indexOf(a.type) - order.indexOf(b.type) || a.index - b.index :
+        function(a, b)
+          a.type.localeCompare(b.type) || a.index - b.index
       );
 
       var res = {};
@@ -640,7 +649,8 @@ var mNaviLink = (function() {
       list.forEach(function({type, text, URL}) {
         !(type in res) && (res[type] = []);
 
-        if (!res[type].some(function(a) a.text[0] === text[0] && a.URL === URL)) {
+        if (!res[type].
+            some(function(a) a.text[0] === text[0] && a.URL === URL)) {
           res[type].push({text: text, URL: URL});
         }
       });
@@ -667,7 +677,9 @@ var mNaviLink = (function() {
     var metas = Array.slice(d.getElementsByTagName('meta'));
 
     // Make sure that the meta list is not empty.
-    if (!metas.some(function(a) a.httpEquiv && a.httpEquiv.toLowerCase() === 'content-type')) {
+    if (!metas.
+        some(function(a) a.httpEquiv &&
+                         a.httpEquiv.toLowerCase() === 'content-type')) {
       metas.unshift({
         httpEquiv: 'Content-Type',
         content: d.contentType + ';charset=' + d.characterSet
@@ -764,7 +776,8 @@ var mNaviLink = (function() {
     var hasContent = !/^(?:meta|script|link)$/.test(aNode.localName);
     var URL = aNode.href || aNode.src;
     var text = [
-      trim(aNode.title) || (hasContent && trim(aNode.textContent)) || getLeaf(URL) || '',
+      trim(aNode.title) ||
+      (hasContent && trim(aNode.textContent)) || getLeaf(URL) || '',
       aAttributes
     ];
 
@@ -971,7 +984,8 @@ var mSiblingNavi = (function() {
         oppositeWord = RegExp(word[0] + '|' +  word[1], 'i');
 
         word = kNaviWord[aDirection];
-        naviWord = RegExp('(?:^|^.{0,10}[\\s-_])(?:' + word[0] + ')(?:$|[\\s-_.])|^(?:' +  word[1] + ')', 'i');
+        naviWord = RegExp('(?:^|^.{0,10}[\\s-_])(?:' + word[0] +
+          ')(?:$|[\\s-_.])|^(?:' +  word[1] + ')', 'i');
       }
 
       function score(aText) {
@@ -1005,7 +1019,8 @@ var mSiblingNavi = (function() {
         return point;
       }
 
-      function removeMatched(aText, aMatched) aText.replace(aMatched, '').trim();
+      function removeMatched(aText, aMatched)
+        aText.replace(aMatched, '').trim();
 
       return {
         init: init,
@@ -1041,7 +1056,8 @@ var mSiblingNavi = (function() {
       }
 
       function getOverlapPartsRate(aSrc, aDst) {
-        var [sParts, dParts] = [aSrc, aDst].map(function(a) a.split(/[/?&=#;]+/));
+        var [sParts, dParts] =
+          [aSrc, aDst].map(function(a) a.split(/[/?&=#;]+/));
 
         var overlaps = sParts.filter(function(part) {
           if (part) {
@@ -1207,8 +1223,10 @@ var mUpperNavi = (function() {
     try {
       baseDomain = Services.eTLD.getBaseDomainFromHost(host);
     } catch (e) {
-      // @throws NS_ERROR_UNEXPECTED host contains characters disallowed in URIs.
-      // @throws NS_ERROR_HOST_IS_IP_ADDRESS host is a numeric IPv4 or IPv6 address.
+      // @throws NS_ERROR_UNEXPECTED host contains characters disallowed in
+      // URIs.
+      // @throws NS_ERROR_HOST_IS_IP_ADDRESS host is a numeric IPv4 or IPv6
+      // address.
       return '';
     }
 
@@ -1247,7 +1265,8 @@ function createURI(aURI, aFlags) {
     // host of 'file:///C:/...' is ''.
     host = aURI.host;
   } catch (e) {
-    host = aURI.spec.match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
+    host = aURI.spec.
+      match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
   }
 
   var {path, spec} = aURI;
@@ -1330,7 +1349,8 @@ function format(aFormat, aAttribute) {
         value = '';
       }
 
-      let [conditional, condition] = aFormat.match(RegExp(name + '\{(.+?)\}')) || [];
+      let [conditional, condition] =
+        aFormat.match(RegExp(name + '\{(.+?)\}')) || [];
       if (conditional) {
         let result = '';
 
