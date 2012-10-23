@@ -697,7 +697,9 @@ var mNaviLink = (function() {
     var type = '', attributes = [];
 
     if (aRels.feed || (aNode.type && aRels.alternate && !aRels.stylesheet)) {
-      let feedType = isValidFeed(aNode, gBrowser.contentDocument.nodePrincipal, aRels.feed);
+      // @see chrome://browser/content/utilityOverlay.js::isValidFeed
+      let feedType = window.isValidFeed(
+        aNode, gBrowser.contentDocument.nodePrincipal, aRels.feed);
       if (feedType) {
         type = 'feed';
         attributes.push(['type', kFeedType[feedType] || 'RSS']);
