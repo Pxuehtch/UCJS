@@ -335,6 +335,8 @@ function manageContextMenuSeparators() {
   }
 
   function shouldShow(aSeparator, aSibling) {
+    // @see chrome://browser/content/utilityOverlay.js::isElementVisible()
+    var isElementVisible = window.isElementVisible;
     var node = aSeparator;
     do {
       node = node[aSibling];
