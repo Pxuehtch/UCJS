@@ -1028,7 +1028,8 @@ function getLinkURL(aNode) {
 
   if (aNode instanceof SVGAElement) {
     try {
-      URL = makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
+      // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
+      URL = window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
     } catch (e) {}
   }
 
@@ -1043,7 +1044,8 @@ function getImageURL(aNode) {
 
   if (aNode instanceof SVGImageElement) {
     try {
-      URL = makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
+      // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
+      URL = window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
     } catch (e) {}
   }
 
