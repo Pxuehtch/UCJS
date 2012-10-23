@@ -1021,35 +1021,33 @@ function lookupLink(aNode) {
 }
 
 function getLinkURL(aNode) {
-  var URL;
-
   if (!aNode)
-    return URL;
+    return null;
 
   if (aNode instanceof SVGAElement) {
     try {
       // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
-      URL = window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
+      return window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
     } catch (e) {}
+    return null;
   }
 
-  return URL || aNode.href;
+  return aNode.href;
 }
 
 function getImageURL(aNode) {
-  var URL;
-
   if (!aNode)
-    return URL;
+    return null;
 
   if (aNode instanceof SVGImageElement) {
     try {
       // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
-      URL = window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
+      return window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
     } catch (e) {}
+    return null;
   }
 
-  return URL || aNode.src;
+  return aNode.src;
 }
 
 function doCmd(aCommand) {
