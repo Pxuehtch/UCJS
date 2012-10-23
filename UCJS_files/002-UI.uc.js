@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 // @require [optional] TabEx.uc.js
-// @note Some default functions are modified. search @modified.
+// @note Some default functions are modified. see @modified.
 // @usage Access to items through global property (ucjsUI.XXX).
 
 
@@ -181,7 +181,8 @@ var mStatusField = (function() {
     },
 
     setOverLink: function(aEnabled) {
-      // @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
+      // @modified chrome://browser/content/browser.js::
+      //   XULBrowserWindow::setOverLink
       if (!aEnabled) {
         if (!this.$setOverLink) {
           this.$setOverLink = XULBrowserWindow.setOverLink;
@@ -231,7 +232,8 @@ var mStatusField = (function() {
   function customizeFunctions() {
     var linkState = null;
 
-    // @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
+    // @modified chrome://browser/content/browser.js::
+    //   XULBrowserWindow::setOverLink
     var $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink = function(url, anchorElt) {
       var URI = null;
@@ -254,7 +256,8 @@ var mStatusField = (function() {
       this.hideOverLinkImmediately = false;
     };
 
-    // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
+    // @modified chrome://browser/content/browser.js::
+    //   XULBrowserWindow::updateStatusField
     var $updateStatusField = XULBrowserWindow.updateStatusField;
     XULBrowserWindow.updateStatusField = function() {
       var {LINKSTATE, MESSAGE} = kStatusAttribute;
@@ -303,7 +306,7 @@ var mMenuitem = {
 
 // Functions.
 
-// Manages visibility of menu separators in context menu.
+// Manages the visibility of menu separators in the context menu.
 function manageContextMenuSeparators() {
   [mContentArea, mURLBar].forEach(function(aContainer) {
     var contextMenu = aContainer.contextMenu;
