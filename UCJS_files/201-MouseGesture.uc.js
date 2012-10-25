@@ -34,13 +34,13 @@ const kGestureSign = {
 
 /**
  * Gestures setting.
- * @key gesture {string[]} Combination of kGestureSign.
+ * @key gestures {string[]} combination of kGestureSign
  * @key name {string}
  * @key command {function}
  *   @param aParam {hash}
- *     @key gesture {string} gesture signs that are built.
- *     @key data {string} Drag data in D&D mode.
- * @key disabled {boolean} [Optional]
+ *     @key gesture {string} built gesture signs
+ *     @key data {string} drag data on D&D mode
+ * @key disabled {boolean} [optional]
  */
 const kGestureSet = [
   {
@@ -97,10 +97,6 @@ const kGestureSet = [
       doCmd('cmd_scrollBottom');
     }
   },
-
-
-  //***** Reloading.
-
   {
     gestures: ['UD'],
     name: '更新/中止',
@@ -663,7 +659,7 @@ function GestureManager() {
     if (aCustomDragData) {
       type = aCustomDragData.type;
       data = aCustomDragData.data;
-      // set the drag data and a custom dragging is ready
+      // set the drag data and the custom D&D is ready
       aEvent.dataTransfer.setData('text/plain', data);
     }
     // 2. selected text
