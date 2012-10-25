@@ -676,18 +676,18 @@ function GestureManager() {
     }
     // 3. link
     if (!type) {
-      let link = getLinkURL(lookupLink(node));
+      let link = getLinkURL(node);
       if (link) {
         type = kGestureSign.link;
-        data = /^(?:https?|ftp):/.test(link) && link;
+        data = link;
       }
     }
     // 4. image
     if (!type) {
-      if (node instanceof HTMLImageElement ||
-          node instanceof SVGImageElement) {
+      let image = getImageURL(node);
+      if (image) {
         type = kGestureSign.image;
-        data = getImageURL(node);
+        data = image;
       }
     }
 
@@ -1003,48 +1003,42 @@ function inEditable(aEvent) {
   );
 }
 
-function lookupLink(aNode) {
-  for (let node = aNode; node; node = node.parentNode) {
+function getLinkURL(aNode) {
+  var node = aNode;
+  for (/* */; node; node = node.parentNode) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node instanceof HTMLAnchorElement ||
           node instanceof HTMLAreaElement ||
           node instanceof HTMLLinkElement ||
           node instanceof SVGAElement) {
-        return node;
+        break;
       }
+    }
+  }
+
+  if (node) {
+    if (node instanceof SVGAElement) {
+      try {
+        // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
+        return window.makeURLAbsolute(node.baseURI, node.href.baseVal);
+      } catch (e) {}
+    } else {
+      return node.href;
     }
   }
   return null;
 }
 
-function getLinkURL(aNode) {
-  if (!aNode)
-    return null;
-
-  if (aNode instanceof SVGAElement) {
-    try {
-      // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
-      return window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
-    } catch (e) {}
-    return null;
-  }
-
-  return aNode.href;
-}
-
 function getImageURL(aNode) {
-  if (!aNode)
-    return null;
-
   if (aNode instanceof SVGImageElement) {
     try {
       // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
       return window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
     } catch (e) {}
-    return null;
+  } else if (aNode instanceof HTMLImageElement) {
+    return aNode.src;
   }
-
-  return aNode.src;
+  return null;
 }
 
 function doCmd(aCommand) {
@@ -1092,7 +1086,7 @@ function openTab(aURL, aBG) {
   ucjsUtil.openTab(aURL, {
     inBackground: aBG,
     relatedToCurrent: true,
-    ucjsTrustURL: /^data:image\/png;base64,/.test(aURL)
+    ucjsTrustURL: /^data:image\/(?:gif|jpg|png);base64,/.test(aURL)
   });
 }
 
