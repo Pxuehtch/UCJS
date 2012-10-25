@@ -128,30 +128,45 @@ function setEventListener(aData) {
   }, false);
 }
 
-// TODO: sometimes misses selection of rows below the first in <textarea>
+/**
+ * Gets a selected text under the cursor
+ * @param aOption {hash}
+ *   @key event {MouseEvent}
+ *   @key charLen {integer}
+ * @return {string}
+ *
+ * @note At 'event mode' a cursor should be on a selected text.
+ * We can not detect properly that a cursor is not on a selected text because
+ * |event.rangeOffset| sometimes returns wrong value.
+ * e.g. When a cursor is below the first row in <textarea>, it returns the same
+ * value that is as if at the first row.
+ */
 function getSelectionAtCursor(aOption) {
   const kMaxCharLen = 150;
   var {event, charLen} = aOption || {};
 
-  var targetWindow, rangeParent, rangeOffset;
+  var node, rangeParent, rangeOffset;
   if (event) {
-    targetWindow = event.target.ownerDocument.defaultView;
+    // event mode
+    node = event.target;
     rangeParent = event.rangeParent;
-    rangeOffset = event.rangeOffset;
+    rangeOffset = event.rangeOffset; // XXX: may be wrong
   } else if (gContextMenu) {
-    targetWindow = document.popupNode.ownerDocument.defaultView;
+    // contextmenu mode
+    node = document.popupNode;
     rangeParent = document.popupRangeParent;
     rangeOffset = document.popupRangeOffset;
   }
 
-  if (!targetWindow)
-    return '';
+  var selection = getSelectionController(node);
 
-  var selection = getSelectionController(targetWindow);
-  if (!selection || !selection.toString())
-    return '';
+  // no selection object or no selected strings
+  if (!selection)
+    return null;
 
   var text = '';
+
+  // get a selected text in the range under the cursor
   for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
     range = selection.getRangeAt(i);
     if (range.isPointInRange(rangeParent, rangeOffset)) {
@@ -159,46 +174,31 @@ function getSelectionAtCursor(aOption) {
       break;
     }
   }
-  if (!text)
-    return '';
+  // WORKAROUND: At event mode |text| should be not empty.
+  if (event && !text) {
+    text = selection.toString();
+  }
 
   // only use the first important chars
-  // @see chrome://browser/content/browser.js::getBrowserSelection()
-  charLen = Math.min(charLen || kMaxCharLen, kMaxCharLen);
-  if (text.length > charLen) {
-    let match = RegExp('^(?:\\s*.){0,' + charLen + '}').exec(text);
-    if (!match)
-      return '';
-    text = match[0];
-  }
-
-  text = text.trim().replace(/\s+/g, ' ');
-
-  if (text.length > charLen) {
-    text = text.substr(0, charLen);
-  }
+  text = trimText(text, Math.min(charLen || kMaxCharLen, kMaxCharLen));
 
   return text;
 }
 
-function getSelectionController(aWindow) {
-  var selection = null;
-
-  var focusedElement = document.commandDispatcher.focusedElement;
-  if (focusedElement) {
-    if ((focusedElement instanceof HTMLInputElement &&
-         focusedElement.mozIsTextField(true)) ||
-        focusedElement instanceof HTMLTextAreaElement) {
-      try {
-        selection =
-          focusedElement.QueryInterface(Ci.nsIDOMNSEditableElement).
-          editor.selection;
-      } catch (e) {}
-    }
+function getSelectionController(aNode) {
+  // 1. scan selection in a textbox (exclude password)
+  if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
+      aNode instanceof HTMLTextAreaElement) {
+    try {
+      return aNode.QueryInterface(Ci.nsIDOMNSEditableElement).
+        editor.selection;
+    } catch (e) {}
+    return null;
   }
-
-  return selection ||
-         (aWindow || getFocusedWindow()).getSelection();
+  // 2. get a window selection
+  var win = (aNode && aNode.ownerDocument.defaultView) ||
+    getFocusedWindow();
+  return win.getSelection();
 }
 
 function getSelectedTextInRange(aRange) {
@@ -218,6 +218,27 @@ function getSelectedTextInRange(aRange) {
   encoder.setRange(aRange);
 
   return encoder.encodeToString();
+}
+
+// @see chrome://browser/content/browser.js::getBrowserSelection()
+function trimText(aText, aMaxLength) {
+  if (!aText)
+    return '';
+
+  if (aText.length > aMaxLength) {
+    let match = RegExp('^(?:\\s*.){0,' + aMaxLength + '}').exec(aText);
+    if (!match)
+      return '';
+    aText = match[0];
+  }
+
+  aText = aText.trim().replace(/\s+/g, ' ');
+
+  if (aText.length > aMaxLength) {
+    aText = aText.substr(0, aMaxLength);
+  }
+
+  return aText;
 }
 
 function lookupNamespace(aPrefix) {
