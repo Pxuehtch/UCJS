@@ -138,7 +138,7 @@ function setEventListener(aData) {
  * TODO: |event.rangeOffset| sometimes returns wrong value.
  * e.g. When a cursor is below the first row in <textarea>, it returns the same
  * value that is as if at the first row.
- * WORKAROUND: rescan ranges with the client positions instead of the range
+ * WORKAROUND: rescan ranges with the client coordinates instead of the range
  * offset.
  */
 function getSelectionAtCursor(aOption) {
@@ -173,7 +173,7 @@ function getSelectionAtCursor(aOption) {
     }
   }
   // WORKAROUND: When |text| is empty at event mode, it may be that
-  // |event.rangeOffset| is wrong. So rescan ranges with the client positions.
+  // |event.rangeOffset| is wrong. So rescan ranges with the client coordinates.
   if (event && !text) {
     let {clientX: x, clientY: y} = event;
     let rect;
