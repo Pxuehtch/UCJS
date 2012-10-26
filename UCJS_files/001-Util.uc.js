@@ -159,8 +159,6 @@ function getSelectionAtCursor(aOption) {
   }
 
   var selection = getSelectionController(node);
-
-  // no selection object or no selected strings
   if (!selection)
     return null;
 
@@ -186,6 +184,9 @@ function getSelectionAtCursor(aOption) {
 }
 
 function getSelectionController(aNode) {
+  if (!aNode)
+    return null;
+
   // 1. scan selection in a textbox (exclude password)
   if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
       aNode instanceof HTMLTextAreaElement) {
@@ -196,8 +197,7 @@ function getSelectionController(aNode) {
     return null;
   }
   // 2. get a window selection
-  var win = (aNode && aNode.ownerDocument.defaultView) ||
-    getFocusedWindow();
+  var win = aNode.ownerDocument.defaultView || getFocusedWindow();
   return win.getSelection();
 }
 
