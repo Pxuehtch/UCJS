@@ -135,11 +135,11 @@ function setEventListener(aData) {
  *   @key charLen {integer}
  * @return {string}
  *
- * @note At 'event mode' a cursor should be on a selected text.
- * We can not detect properly that a cursor is not on a selected text because
- * |event.rangeOffset| sometimes returns wrong value.
+ * TODO: |event.rangeOffset| sometimes returns wrong value.
  * e.g. When a cursor is below the first row in <textarea>, it returns the same
  * value that is as if at the first row.
+ * WORKAROUND: rescan ranges with the client positions instead of the range
+ * offset.
  */
 function getSelectionAtCursor(aOption) {
   const kMaxCharLen = 150;
@@ -150,7 +150,7 @@ function getSelectionAtCursor(aOption) {
     // event mode
     node = event.target;
     rangeParent = event.rangeParent;
-    rangeOffset = event.rangeOffset; // XXX: may be wrong
+    rangeOffset = event.rangeOffset; // TODO: may be wrong
   } else if (gContextMenu) {
     // contextmenu mode
     node = document.popupNode;
@@ -164,7 +164,7 @@ function getSelectionAtCursor(aOption) {
 
   var text = '';
 
-  // get a selected text in the range under the cursor
+  // scan ranges with the range offset
   for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
     range = selection.getRangeAt(i);
     if (range.isPointInRange(rangeParent, rangeOffset)) {
@@ -172,9 +172,20 @@ function getSelectionAtCursor(aOption) {
       break;
     }
   }
-  // WORKAROUND: At event mode |text| should be not empty.
+  // WORKAROUND: When |text| is empty at event mode, it may be that
+  // |event.rangeOffset| is wrong. So rescan ranges with the client positions.
   if (event && !text) {
-    text = selection.toString();
+    let {clientX: x, clientY: y} = event;
+    let rect;
+    for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
+      range = selection.getRangeAt(i);
+      rect = range.getBoundingClientRect();
+      if (rect.left <= x && x <= rect.right &&
+          rect.top <= y && y <= rect.bottom) {
+        text = getSelectedTextInRange(range);
+        break;
+      }
+    }
   }
 
   // only use the first important chars
