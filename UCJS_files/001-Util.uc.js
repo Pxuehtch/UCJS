@@ -471,6 +471,9 @@ function unescapeURLCharacters(aURL) {
     "3a":":", "3b":";", "3d":"=", "3f":"?", "40":"@", "5f":"_", "7e":"~"
   };
 
+  if (!aURL)
+    return '';
+
   for (let key in kURLChars) {
     aURL = aURL.replace(RegExp('%(?:25)?' + key, 'ig'), kURLChars[key]);
   }
@@ -480,7 +483,7 @@ function unescapeURLCharacters(aURL) {
 
 function unescapeURLForUI(aURL, aCharset) {
   if (!aURL)
-    return null;
+    return '';
 
   var charset = aCharset || getFocusedDocument().characterSet;
 
@@ -489,7 +492,8 @@ function unescapeURLForUI(aURL, aCharset) {
 
 function resolveURL(aURL, aBaseURL) {
   if (!aURL || !/\S/.test(aURL))
-    return null;
+    return '';
+
   if (/^[a-zA-Z]+:/.test(aURL))
     return aURL;
 
