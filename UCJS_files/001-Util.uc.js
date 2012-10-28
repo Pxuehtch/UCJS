@@ -57,7 +57,8 @@ var mXPCOM = (function() {
     get StyleSheetService() {
       delete this.StyleSheetService;
       return this.StyleSheetService =
-        $S('@mozilla.org/content/style-sheet-service;1', 'nsIStyleSheetService');
+        $S('@mozilla.org/content/style-sheet-service;1',
+          'nsIStyleSheetService');
     },
 
     get TextToSubURI() {
@@ -99,11 +100,13 @@ var mXPCOM = (function() {
     // Instances.
 
     DocumentEncoder: function(aType) {
-      return $I('@mozilla.org/layout/documentEncoder;1?type=' + aType, 'nsIDocumentEncoder');
+      return $I('@mozilla.org/layout/documentEncoder;1?type=' + aType,
+        'nsIDocumentEncoder');
     },
 
     ScriptableUnicodeConverter: function() {
-      return $I('@mozilla.org/intl/scriptableunicodeconverter', 'nsIScriptableUnicodeConverter');
+      return $I('@mozilla.org/intl/scriptableunicodeconverter',
+        'nsIScriptableUnicodeConverter');
     },
 
     SupportsPRBool: function() {
@@ -276,7 +279,8 @@ function createNode(aTagOrNode, aAttribute) {
   if (typeof aTagOrNode === 'string') {
     let elementNS = getNamespaceOf(aTagOrNode);
     element = elementNS ?
-      document.createElementNS(elementNS, aTagOrNode) : document.createElement(aTagOrNode);
+      document.createElementNS(elementNS, aTagOrNode) :
+      document.createElement(aTagOrNode);
   } else if (aTagOrNode instanceof Element) {
     element = aTagOrNode;
   }
@@ -401,7 +405,8 @@ function evaluateXPath(aXPath, aContext, aType) {
   if (defaultNS) {
     let tmpPrefix = '__NS__';
     aXPath = fixNamespacePrefixForXPath(aXPath, tmpPrefix);
-    resolver = function(prefix) (prefix === tmpPrefix) ? defaultNS : lookupNamespace(prefix);
+    resolver = function(prefix) (prefix === tmpPrefix) ?
+                                defaultNS : lookupNamespace(prefix);
   } else {
     resolver = function(prefix) lookupNamespace(prefix);
   }
@@ -434,7 +439,8 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
 
   function replacer(token, identifier, suffix, operator) {
     if (suffix) {
-      ready = (suffix === '::' && identifier !== 'attribute' && identifier !== 'namespace') ||
+      ready = (suffix === '::' && identifier !== 'attribute' &&
+              identifier !== 'namespace') ||
               suffix === '(';
     } else if (identifier) {
       if (ready && identifier !== '*') {
@@ -466,7 +472,8 @@ function checkSecurity(aURL) {
 
 function unescapeURLCharacters(aURL) {
   const kURLChars = {
-    "21":"!", "23":"#", "24":"$", "25":"%", "26":"&", "27":"'", "28":"(", "29":")",
+    "21":"!", "23":"#", "24":"$", "25":"%", "26":"&", "27":"'", "28":"(",
+    "29":")",
     "2a":"*", "2b":"+", "2c":",", "2d":"-", "2e":".", "2f":"/",
     "3a":":", "3b":";", "3d":"=", "3f":"?", "40":"@", "5f":"_", "7e":"~"
   };
@@ -719,7 +726,8 @@ function registerGlobalStyleSheet(aCSS, aAgent, aRegister) {
     if (!css)
       return;
 
-    var URI = mXPCOM.IOService.newURI('data:text/css,' + encodeURIComponent(css), null, null);
+    var URI = mXPCOM.IOService.
+      newURI('data:text/css,' + encodeURIComponent(css), null, null);
   } catch (e) {
     return;
   }
@@ -742,10 +750,12 @@ function registerChromeStyleSheet(aCSS) {
 
   var stylesheet = document.createProcessingInstruction(
     'xml-stylesheet',
-    'type="text/css" href="data:text/css,%DATA%"'.replace('%DATA%', encodeURIComponent(css))
+    'type="text/css" href="data:text/css,%DATA%"'.
+    replace('%DATA%', encodeURIComponent(css))
   );
 
-  stylesheet.getAttribute = function(key) document.documentElement.getAttribute(key);
+  stylesheet.getAttribute =
+    function(key) document.documentElement.getAttribute(key);
 
   return document.insertBefore(stylesheet, document.documentElement);
 }
@@ -786,7 +796,8 @@ function normalizeCSS(aCSS) {
 
   return aCSS.
     // remove consecutive white spaces
-    // @note the delimiter of shorthand properties should be a SINGLE white space (margin:1px 2px;)
+    // @note the delimiter of shorthand properties should be a SINGLE white
+    // space (margin:1px 2px;)
     replace(/\s{2,}/g, '').trim().
     // remove comment
     replace(/\s*\/\*.*?\*\/\s*/g, '');
@@ -797,7 +808,8 @@ function loadOverlay(aOverlay) {
     aOverlay = aOverlay.toXMLString();
   }
 
-  var overlay = 'data:application/vnd.mozilla.xul+xml;charset=utf-8,' + encodeURIComponent(aOverlay);
+  var overlay = 'data:application/vnd.mozilla.xul+xml;charset=utf-8,' +
+    encodeURIComponent(aOverlay);
 
   document.loadOverlay(overlay, null);
 }
