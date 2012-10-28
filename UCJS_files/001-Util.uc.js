@@ -281,7 +281,7 @@ function createNode(aTagOrNode, aAttribute) {
     element = aTagOrNode;
   }
   if (!element)
-    throw 'aTagOrNode should be tagname or element. aTagOrNode:' + aTagOrNode;
+    throw 'aTagOrNode should be tagname or element.';
 
   if (!!aAttribute) {
     let attributeNS;
