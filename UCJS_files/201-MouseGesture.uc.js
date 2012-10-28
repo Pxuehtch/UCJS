@@ -324,7 +324,7 @@ function MouseGesture() {
     addEvent([pc, 'contextmenu', onContextMenu, true]);
 
     // Set event into capture mode to suppress default behavior.
-    // Use not 'dragenter' but 'dragover' to check the screen coordinate.
+    // Use not 'dragenter' but 'dragover' to check the coordinate.
     addEvent([pc, 'dragstart', onDragStart, false]);
     addEvent([pc, 'dragend', onDragEnd, false]);
     addEvent([pc, 'dragover', onDragOver, true]);
@@ -972,19 +972,15 @@ function TabInfo() {
 //***** Utilities.
 
 function inGestureArea(aEvent) {
-  var {width, height, screenX: left, screenY: top} =
-    gBrowser.mPanelContainer.boxObject;
-  var {screenX: x, screenY: y} = aEvent;
-  // Convert the screen coordinates of cursor to the client coordinates.
-  x -= left;
-  y -= top;
-
   // Margin of cancelling a gesture.
   // @value Pixels of the width of scrollbar.
-  var margin = 16;
+  const kMargin = 16;
 
-  return margin < x && x < (width - margin) &&
-         margin < y && y < (height - margin);
+  var {clientX: x, clientY: y} = aEvent;
+  var {width, height} = gBrowser.mPanelContainer.boxObject;
+
+  return kMargin < x && x < (width - kMargin) &&
+         kMargin < y && y < (height - kMargin);
 }
 
 function inEditable(aEvent) {
