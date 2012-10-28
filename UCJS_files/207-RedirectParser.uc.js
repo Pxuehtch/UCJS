@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        RedirectParser.uc.js
-// @description Parses link URL by inner URLs.
+// @description Parses a link URL by inner URLs.
 // @include     main
 // ==/UserScript==
 
@@ -16,14 +16,29 @@
 
 // Constances.
 
-// Whether access key of menu item is expressed with underline.
-const kUnderlinedAccesskey = (getPref('intl.menuitems.alwaysappendaccesskeys') === 'false');
+// Whether the access key of a menu item is expressed with underline.
+const kUnderlinedAccesskey =
+  getPref('intl.menuitems.alwaysappendaccesskeys') === 'false';
 
 const kPref = {
   // Show schemes except http://, https:// and ftp://.
   showAllSchemes: true
 };
 
+/**
+ * User preset
+ * @key name {string}
+ *   The name of a preset
+ * @key link {regexp}
+ *   The URL for a target link should run as a preset.
+ *   A capturing parentheses is required. The matches is tested against
+ *   |item.pattern|.
+ * @key item {hash[]}
+ *   @key pattern {regexp}
+ *   @key description {string}
+ *   @key prefix {string} [optional]
+ *     Add |prefix| to matching |pattern|.
+ */
 const kPreset = [
   {
     name: '2ch リダイレクト',
@@ -77,9 +92,9 @@ const kBundle = {
   }
 };
 
-
-// Helper handler.
-
+/**
+ * Handler of the parsed data of a link URL.
+ */
 var mItemData = {
   preset: null,
   URLs: [],
@@ -147,7 +162,8 @@ function initMenu() {
   menu.id = menuPref.id;
   menu.setAttribute('label', U(menuPref.label));
   menu.setAttribute('accesskey', menuPref.accesskey);
-  addEvent([menu.appendChild($E('menupopup')), 'popupshowing', makeMenuItems, false]);
+  addEvent([menu.appendChild($E('menupopup')),
+    'popupshowing', makeMenuItems, false]);
 
   addEvent([context, 'popupshowing', showContextMenu, false]);
   addEvent([context, 'popuphiding', hideContextMenu, false]);
@@ -315,7 +331,8 @@ function sliceScheme(aString) {
     return ['', ''];
 
   // Scan scheme-like characters.
-  // @note Allowable characters for scheme name, "+-.", are excluded because they are ambiguous within queries.
+  // @note Allowable characters for scheme name, "+-.", are excluded because
+  // they are ambiguous within queries.
   const charRe = /[a-z0-9]/i, escapedRe = /%(?:25)?2D/i;
 
   var i = aString.length - 1;
@@ -357,9 +374,11 @@ function trimTrailing(aURL) {
 
 // Utilities.
 
-function $ID(aId) document.getElementById(aId);
+function $ID(aId)
+  document.getElementById(aId);
 
-function $E(aTag) document.createElement(aTag);
+function $E(aTag)
+  document.createElement(aTag);
 
 function chr4key(aIndex) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -383,7 +402,8 @@ function setAction(aNode, aAction, aURL) {
       action = 'ucjsUtil.openTab("' + aURL + '",{inBackground:event.button===1});';
       break;
     case 'copy':
-      action = 'Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper).copyString("' + aURL + '");';
+      action = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
+        'getService(Ci.nsIClipboardHelper).copyString("' + aURL + '");';
       break;
   }
 
