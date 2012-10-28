@@ -218,10 +218,10 @@ function makeMenuItems(aEvent) {
       tooltip += bundle.text + '\n';
     }
 
-    // URL on label is made readable for UI.
-    item.setAttribute('label', U(label + URL));
+    // make the URL of a label readable
+    item.setAttribute('label', U(label) + url4ui(URL));
     item.setAttribute('crop', 'center');
-    // URL on tooltip is not converted to confirm the raw one.
+    // keep the URL of a tooltip as it is to confirm the raw one
     item.setAttribute('tooltiptext', U(tooltip) + URL);
 
     setAction(item, action, URL);
@@ -395,11 +395,14 @@ function setAction(aNode, aAction, aURL) {
   );
 }
 
-function U(aStr)
-  aStr ? ucjsUtil.unescapeURLForUI(ucjsUtil.convertForSystem(aStr)) : '';
-
 function unesc(aStr)
-  aStr ? ucjsUtil.unescapeURLCharacters(aStr) : '';
+  ucjsUtil.unescapeURLCharacters(aStr);
+
+function url4ui(aURL)
+  ucjsUtil.unescapeURLForUI(aURL);
+
+function U(aStr)
+  ucjsUtil.convertForSystem(aStr);
 
 function getPref(aKey)
   ucjsUtil.getPref(aKey);
