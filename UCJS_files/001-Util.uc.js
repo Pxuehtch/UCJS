@@ -10,6 +10,8 @@
 // @include chrome://browser/content/history/history-panel.xul
 
 // @usage Access to items through global functions (ucjsUtil.XXX).
+// @note Note the definitions only in the main window (e.g. gBrowser) when
+// including on the other window.
 
 
 var ucjsUtil = (function(window, undefined) {
@@ -20,7 +22,7 @@ var ucjsUtil = (function(window, undefined) {
 
 // Generic variables.
 
-var {document, gBrowser, Components} = window;
+var {document, Components} = window;
 var {classes: Cc, interfaces: Ci} = Components;
 
 
@@ -303,10 +305,21 @@ function getNodeByAnonid(aId, aContext) {
   return document.getAnonymousElementByAttribute(aContext, 'anonid', aId);
 }
 
+/**
+ * Gets the focused window
+ * @return {Window}
+ *   if in the main browser window, returns a content window (top or frame)
+ */
 function getFocusedWindow() {
   var focusedWindow = document.commandDispatcher.focusedWindow;
 
-  return (!focusedWindow || focusedWindow === window) ? gBrowser.contentWindow : focusedWindow;
+  if (document.documentElement.
+      getAttribute('windowtype') === 'navigator:browser') {
+    if (!focusedWindow || focusedWindow === window) {
+      focusedWindow = gBrowser.contentWindow;
+    }
+  }
+  return focusedWindow || window;
 }
 
 function getFocusedDocument() {
@@ -370,7 +383,7 @@ function getNodesByXPath(aXPath, aContext) {
 function evaluateXPath(aXPath, aContext, aType) {
   var doc, base;
 
-  if (aContext === gBrowser.contentDocument) {
+  if (aContext instanceof Document) {
     doc  = aContext;
     base = doc.documentElement;
   } else {
