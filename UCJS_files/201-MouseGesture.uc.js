@@ -322,7 +322,7 @@ function MouseGesture() {
     addEvent([pc, 'dragstart', onDragStart, false]);
     addEvent([pc, 'dragend', onDragEnd, false]);
     addEvent([pc, 'dragover', onDragOver, false]);
-    addEvent([pc, 'drop', onDrop, false]);
+    addEvent([pc, 'drop', onDrop, falsegit]);
   }
 
   // Cancel all state when the URL changes in the current tab to avoid
@@ -346,6 +346,10 @@ function MouseGesture() {
 
     if (aEvent.button === 2) {
       startGesture(aEvent);
+    } else {
+      if (mState !== kState.READY) {
+        cancelGesture();
+      }
     }
   }
 
