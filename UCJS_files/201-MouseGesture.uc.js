@@ -322,7 +322,7 @@ function MouseGesture() {
     addEvent([pc, 'dragstart', onDragStart, false]);
     addEvent([pc, 'dragend', onDragEnd, false]);
     addEvent([pc, 'dragover', onDragOver, false]);
-    addEvent([pc, 'drop', onDrop, falsegit]);
+    addEvent([pc, 'drop', onDrop, false]);
   }
 
   // Cancel all state when the URL changes in the current tab to avoid
@@ -342,10 +342,12 @@ function MouseGesture() {
   function onMouseDown(aEvent) {
     checkTab();
 
-    mMouse.update(aEvent);
+    var startAllowed = mMouse.update(aEvent);
 
-    if (aEvent.button === 2) {
-      startGesture(aEvent);
+    if (startAllowed) {
+      if (inGestureArea(aEvent)) {
+        startGesture(aEvent);
+      }
     } else {
       if (mState !== kState.READY) {
         cancelGesture();
@@ -370,9 +372,9 @@ function MouseGesture() {
   function onMouseUp(aEvent) {
     checkTab();
 
-    mMouse.update(aEvent);
+    var stopAllowed = mMouse.update(aEvent);
 
-    if (aEvent.button === 2) {
+    if (stopAllowed) {
       if (mState === kState.GESTURE) {
         stopGesture();
       }
@@ -529,10 +531,15 @@ function MouseManager() {
 
   function update(aEvent) {
     const {type, button} = aEvent;
+    var rv;
 
     switch (type) {
       case 'mousedown':
         if (button === 2) {
+          // allow the gesture starts
+          rv = !isElseDown;
+
+          // ready the contextmenu
           enableContextMenu(true);
           cancelContext = false;
 
@@ -548,12 +555,18 @@ function MouseManager() {
         }
         break;
       case 'mouseup':
-      case 'dragend':
         if (button === 2) {
+          // allow the gesture stops
+          rv = !isElseDown;
+
           isRightDown = false;
         } else {
           isElseDown = false;
         }
+        break;
+      case 'dragend':
+        // @note always button===0
+        isElseDown = false;
         break;
       case 'mousemove':
       case 'DOMMouseScroll':
@@ -567,6 +580,8 @@ function MouseManager() {
         cancelContext = false;
         break;
     }
+
+    return rv;
   }
 
   return {
