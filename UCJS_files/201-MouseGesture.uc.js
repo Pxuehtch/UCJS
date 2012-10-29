@@ -519,14 +519,15 @@ function MouseGesture() {
  *   @member update {function}
  */
 function MouseManager() {
-  var isRightDown, isElseDown, cancelContext;
+  var mRightDown, mElseDown;
+  var mCancelContext;
 
   clear();
 
   function clear() {
-    isRightDown = false;
-    isElseDown = false;
-    cancelContext = false;
+    mRightDown = false;
+    mElseDown = false;
+    mCancelContext = false;
   }
 
   function update(aEvent) {
@@ -537,47 +538,47 @@ function MouseManager() {
       case 'mousedown':
         if (button === 2) {
           // allow the gesture starts
-          rv = !isElseDown;
+          rv = !mElseDown;
 
           // ready the contextmenu
           enableContextMenu(true);
-          cancelContext = false;
+          mCancelContext = false;
 
-          isRightDown = true;
-          if (isElseDown) {
-            cancelContext = true;
+          mRightDown = true;
+          if (mElseDown) {
+            mCancelContext = true;
           }
         } else {
-          isElseDown = true;
-          if (isRightDown) {
-            cancelContext = true;
+          mElseDown = true;
+          if (mRightDown) {
+            mCancelContext = true;
           }
         }
         break;
       case 'mouseup':
         if (button === 2) {
           // allow the gesture stops
-          rv = !isElseDown;
+          rv = !mElseDown;
 
-          isRightDown = false;
+          mRightDown = false;
         } else {
-          isElseDown = false;
+          mElseDown = false;
         }
         break;
       case 'dragend':
         // @note always button===0
-        isElseDown = false;
+        mElseDown = false;
         break;
       case 'mousemove':
       case 'DOMMouseScroll':
         // a gesture is in progress
-        if (isRightDown) {
-          cancelContext = true;
+        if (mRightDown) {
+          mCancelContext = true;
         }
         break;
       case 'contextmenu':
-        enableContextMenu(!cancelContext);
-        cancelContext = false;
+        enableContextMenu(!mCancelContext);
+        mCancelContext = false;
         break;
     }
 
@@ -874,35 +875,35 @@ function GestureTracer() {
   // @value Pixels > 0
   const kTolerance = 10;
 
-  var lastX, lastY;
+  var mLastX, mLastY;
 
   clear();
 
   function clear() {
-    lastX = -1;
-    lastY = -1;
+    mLastX = -1;
+    mLastY = -1;
   }
 
   function init(aEvent) {
-    lastX = aEvent.screenX;
-    lastY = aEvent.screenY;
+    mLastX = aEvent.screenX;
+    mLastY = aEvent.screenY;
   }
 
   function update(aEvent) {
     var [x, y] = [aEvent.screenX, aEvent.screenY];
-    var [dx, dy] = [Math.abs(x - lastX), Math.abs(y - lastY)];
+    var [dx, dy] = [Math.abs(x - mLastX), Math.abs(y - mLastY)];
 
     var toward = {x: 0, y: 0};
 
     if (kTolerance < dx || kTolerance < dy) {
       if (dy < dx) {
-        toward.x = (x < lastX) ? -1 : 1;
+        toward.x = (x < mLastX) ? -1 : 1;
       } else {
-        toward.y = (y < lastY) ? -1 : 1;
+        toward.y = (y < mLastY) ? -1 : 1;
       }
 
-      lastX = x;
-      lastY = y;
+      mLastX = x;
+      mLastY = y;
     }
 
     return toward;
@@ -924,7 +925,7 @@ function GestureTracer() {
  *   @member isSameTabButDifferentURL {function}
  */
 function TabInfo() {
-  var tab, URL;
+  var mTab, mURL;
 
   function currentTab()
     gBrowser.mCurrentTab
@@ -933,17 +934,17 @@ function TabInfo() {
     gBrowser.currentURI.spec
 
   function init() {
-    tab = currentTab();
-    URL = currentURL();
+    mTab = currentTab();
+    mURL = currentURL();
   }
 
   function clear() {
-    tab = null;
-    URL = null;
+    mTab = null;
+    mURL = null;
   }
 
   function isSameTabButDifferentURL()
-    tab === currentTab() && URL !== currentURL();
+    mTab === currentTab() && mURL !== currentURL();
 
   return {
     init: init,
