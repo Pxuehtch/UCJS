@@ -417,8 +417,10 @@ function MouseGesture() {
   function onDragEnd(aEvent) {
     mMouse.update(aEvent);
 
-    // the user canceled the drag by pressing ESC
-    if (aEvent.dataTransfer.mozUserCancelled) {
+    // the drag operation is terminated;
+    // 1.cancelled by pressing ESC
+    // 2.dropped in a disallowed area
+    if (mState === kState.DRAG) {
       cancelGesture();
     }
   }
