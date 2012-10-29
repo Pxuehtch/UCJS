@@ -309,23 +309,20 @@ function MouseGesture() {
   function registerEvents() {
     var pc = gBrowser.mPanelContainer;
 
-    // Set mouseup into capture mode to ensure to catch the event on gesture
-    // makes tab change.
     addEvent([pc, 'mousedown', onMouseDown, false]);
     addEvent([pc, 'mousemove', onMouseMove, false]);
-    addEvent([pc, 'mouseup', onMouseUp, true]);
+    addEvent([pc, 'mouseup', onMouseUp, false]);
     addEvent([pc, 'click', onClick, false]);
     addEvent([pc, 'DOMMouseScroll', onMouseScroll, false]);
     addEvent([pc, 'keydown', onKeyDown, false]);
     addEvent([pc, 'keyup', onKeyUp, false]);
-    addEvent([pc, 'contextmenu', onContextMenu, true]);
+    addEvent([pc, 'contextmenu', onContextMenu, false]);
 
-    // Set event into capture mode to suppress default behavior.
     // Use not 'dragenter' but 'dragover' to check the coordinate.
     addEvent([pc, 'dragstart', onDragStart, false]);
     addEvent([pc, 'dragend', onDragEnd, false]);
-    addEvent([pc, 'dragover', onDragOver, true]);
-    addEvent([pc, 'drop', onDrop, true]);
+    addEvent([pc, 'dragover', onDragOver, false]);
+    addEvent([pc, 'drop', onDrop, false]);
   }
 
   // Cancel all state when the URL changes in the current tab to avoid
