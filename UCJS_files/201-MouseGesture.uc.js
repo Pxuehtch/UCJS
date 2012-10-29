@@ -5,8 +5,8 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @require [for gesture command] Util.uc.js, NaviLink.uc.js, TabEx.uc.js,
-//   WebService.uc.js, UI.uc.js
+// @require [for commands] Util.uc.js, NaviLink.uc.js, TabEx.uc.js,
+// WebService.uc.js, UI.uc.js
 
 
 (function() {
@@ -23,9 +23,9 @@ const kGestureSign = {
   shift: 'S&', ctrl: 'C&',
   // Directions.
   left: 'L', right: 'R', up: 'U', down: 'D',
-  // Mouse wheel for Right-down mode.
+  // Mouse wheel for the normal mode.
   wheelUp: 'W+', wheelDown: 'W-',
-  // Target types for D&D mode.
+  // Target types for the D&D mode.
   text: 'TEXT#', link: 'LINK#', image: 'IMAGE#',
   // Do action immediately without mouseup when gesture matches.
   quickShot: '!'
@@ -292,14 +292,16 @@ const kGestureSet = [
 
 
 //***** Handlers.
+// TODO: Cancel the gesture when enters into a window that is overwrapped on
+// the gesture area (always on top).
 
 /**
  * Main handler.
  */
 function MouseGesture() {
   const kState = {READY: 0, GESTURE: 1, DRAG: 2};
-
   var mState = kState.READY;
+
   var mMouse = MouseManager();
   var mGesture = GestureManager();
   var mTabInfo = TabInfo();
@@ -325,7 +327,7 @@ function MouseGesture() {
     addEvent([pc, 'drop', onDrop, false]);
   }
 
-  // Cancel all state when the URL changes in the current tab to avoid
+  // Cancel the gestures when the URL changes in the current tab to avoid
   // unexpected actions.
   function checkTab() {
     if (mState !== kState.READY) {
@@ -438,7 +440,7 @@ function MouseGesture() {
       return;
 
     // cancel the gesture drag and the default drag works
-    // @note the default drag is also canceled by pressing ESC
+    // @note the default drag is also cancelled by pressing ESC
     var forceCancel = aEvent.shiftKey && aEvent.altKey;
     if (forceCancel) {
       cancelGesture();
@@ -517,6 +519,9 @@ function MouseGesture() {
  * @return {hash}
  *   @member clear {function}
  *   @member update {function}
+ *
+ * TODO: Prevent contextmenu popups when a right mouse button is clicked while
+ * dragging.
  */
 function MouseManager() {
   var mRightDown, mElseDown;
@@ -644,10 +649,10 @@ function GestureManager() {
   }
 
   function getDragInfo(aEvent) {
-    var type = '', data = '';
     var node = aEvent.target;
+    var type = '', data = '';
 
-    // 1. selected text
+    // 1.selected text
     if (!type) {
       let text = getSelectionAtCursor({event: aEvent});
       if (text) {
@@ -655,7 +660,7 @@ function GestureManager() {
         data = text;
       }
     }
-    // 2. link
+    // 2.link
     if (!type) {
       let link = getLinkURL(node);
       if (link) {
@@ -663,7 +668,7 @@ function GestureManager() {
         data = link;
       }
     }
-    // 3. image
+    // 3.image
     if (!type) {
       let image = getImageURL(node);
       if (image) {
@@ -782,7 +787,7 @@ function GestureManager() {
           return false;
 
         return item.gestures.some(function(gesture) {
-          var isQuickShot = (gesture.indexOf(kGestureSign.quickShot) > -1);
+          var isQuickShot = gesture.indexOf(kGestureSign.quickShot) > -1;
           if (isQuickShot) {
             gesture = gesture.replace(kGestureSign.quickShot, '');
           }
