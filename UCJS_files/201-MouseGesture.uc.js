@@ -300,7 +300,6 @@ function MouseGesture() {
   const kState = {READY: 0, GESTURE: 1, DRAG: 2};
 
   var mState = kState.READY;
-  var mCancelDrag = false;
   var mCustomDragData = null;
   var mMouse = MouseManager();
   var mGesture = GestureManager();
@@ -439,9 +438,6 @@ function MouseGesture() {
       cancelGesture();
     }
 
-    if (mCancelDrag) {
-      mCancelDrag = false;
-    }
     if (mCustomDragData) {
       aEvent.target.draggable = false;
       mCustomDragData = null;
@@ -500,9 +496,6 @@ function MouseGesture() {
   function startDrag(aEvent) {
     if (start(aEvent)) {
       mState = kState.DRAG;
-      mCancelDrag = false;
-    } else {
-      mCancelDrag = true;
     }
   }
 
@@ -516,10 +509,6 @@ function MouseGesture() {
   }
 
   function stopGesture(aCancel) {
-    if (mState === kState.DRAG) {
-      mCancelDrag = !!aCancel;
-    }
-
     if (!aCancel) {
       mGesture.evaluate();
     }
