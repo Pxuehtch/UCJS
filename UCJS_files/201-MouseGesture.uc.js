@@ -309,13 +309,12 @@ function MouseGesture() {
   function registerEvents() {
     var pc = gBrowser.mPanelContainer;
 
-    // Set mousedown into capture mode to enable to suppress default wheel
-    // click.
     // Set mouseup into capture mode to ensure to catch the event on gesture
     // makes tab change.
-    addEvent([pc, 'mousedown', onMouseDown, true]);
+    addEvent([pc, 'mousedown', onMouseDown, false]);
     addEvent([pc, 'mousemove', onMouseMove, false]);
     addEvent([pc, 'mouseup', onMouseUp, true]);
+    addEvent([pc, 'click', onClick, false]);
     addEvent([pc, 'DOMMouseScroll', onMouseScroll, false]);
     addEvent([pc, 'keydown', onKeyDown, false]);
     addEvent([pc, 'keyup', onKeyUp, false]);
@@ -348,11 +347,7 @@ function MouseGesture() {
 
     mMouse.update(aEvent);
 
-    if (aEvent.button === 1) {
-      if (mState !== kState.READY) {
-        suppressDefault(aEvent);
-      }
-    } else if (aEvent.button === 2) {
+    if (aEvent.button === 2) {
       startGesture(aEvent);
     }
   }
@@ -379,6 +374,16 @@ function MouseGesture() {
     if (aEvent.button === 2) {
       if (mState === kState.GESTURE) {
         stopGesture();
+      }
+    }
+  }
+
+  function onClick(aEvent) {
+    if (aEvent.button === 1) {
+      if (mState !== kState.READY) {
+        // suppress the default action of a wheel click (open a
+        // background tab on a link)
+        suppressDefault(aEvent);
       }
     }
   }
