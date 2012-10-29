@@ -300,7 +300,6 @@ function MouseGesture() {
   const kState = {READY: 0, GESTURE: 1, DRAG: 2};
 
   var mState = kState.READY;
-  var mCustomDragData = null;
   var mMouse = MouseManager();
   var mGesture = GestureManager();
   var mTabInfo = TabInfo();
@@ -349,22 +348,7 @@ function MouseGesture() {
 
     mMouse.update(aEvent);
 
-    if (aEvent.button === 0) {
-      // scan a custom drag element
-      // @note Do with a fail-safe operation (Shift+)
-      if (mState === kState.READY && aEvent.shiftKey) {
-        let target = aEvent.target;
-        let element, data;
-        if (target instanceof HTMLCanvasElement) {
-          element = target;
-          data = {type: kGestureSign.image, data: element.toDataURL()};
-        }
-        if (element && !element.draggable) {
-          element.draggable = true;
-          mCustomDragData = data;
-        }
-      }
-    } else if (aEvent.button === 1) {
+    if (aEvent.button === 1) {
       if (mState !== kState.READY) {
         suppressDefault(aEvent);
       }
@@ -437,11 +421,6 @@ function MouseGesture() {
     if (aEvent.dataTransfer.mozUserCancelled) {
       cancelGesture();
     }
-
-    if (mCustomDragData) {
-      aEvent.target.draggable = false;
-      mCustomDragData = null;
-    }
   }
 
   function onDragOver(aEvent) {
@@ -501,7 +480,7 @@ function MouseGesture() {
 
   function start(aEvent) {
     mTabInfo.init();
-    return mGesture.init(aEvent, mCustomDragData);
+    return mGesture.init(aEvent);
   }
 
   function progress(aEvent) {
@@ -625,12 +604,12 @@ function GestureManager() {
     showStatus(false);
   }
 
-  function init(aEvent, aCustomDragData) {
+  function init(aEvent) {
     setOverLink(false);
     mTracer.init(aEvent);
 
     if (aEvent.type === 'dragstart') {
-      let info = getDragInfo(aEvent, aCustomDragData);
+      let info = getDragInfo(aEvent);
       if (!info.type || !info.data)
         return false;
 
@@ -640,18 +619,11 @@ function GestureManager() {
     return true;
   }
 
-  function getDragInfo(aEvent, aCustomDragData) {
+  function getDragInfo(aEvent) {
     var type = '', data = '';
     var node = aEvent.target;
 
-    // 1. custom drag
-    if (aCustomDragData) {
-      type = aCustomDragData.type;
-      data = aCustomDragData.data;
-      // set the drag data and the custom D&D is ready
-      aEvent.dataTransfer.setData('text/plain', data);
-    }
-    // 2. selected text
+    // 1. selected text
     if (!type) {
       let text = getSelectionAtCursor({event: aEvent});
       if (text) {
@@ -659,7 +631,7 @@ function GestureManager() {
         data = text;
       }
     }
-    // 3. link
+    // 2. link
     if (!type) {
       let link = getLinkURL(node);
       if (link) {
@@ -667,7 +639,7 @@ function GestureManager() {
         data = link;
       }
     }
-    // 4. image
+    // 3. image
     if (!type) {
       let image = getImageURL(node);
       if (image) {
