@@ -16,7 +16,7 @@
  *
  * @note The gestures is only available within the inner frame of the content
  * area. The default width of the frame is 16px. see inGestureArea()
- * @note 'Shift + RightClick' makes status reset in trouble.
+ * @note 'Alt + RightClick' makes status reset in trouble.
  */
 
 
@@ -604,7 +604,7 @@ function MouseManager() {
       case 'click':
         if (button === 2) {
           // force reset in trouble
-          if (aEvent.shiftKey) {
+          if (aEvent.altKey) {
             clear();
           }
         } else {
