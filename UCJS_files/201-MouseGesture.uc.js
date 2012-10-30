@@ -593,7 +593,12 @@ function MouseManager() {
         }
         break;
       case 'click':
-        if (button !== 2) {
+        if (button === 2) {
+          // force reset in trouble
+          if (aEvent.shiftKey) {
+            clear();
+          }
+        } else {
           // @see chrome://browser/content/browser.js::contentAreaClick()
           if (mSuppressClick) {
             aEvent.preventDefault();
