@@ -531,14 +531,14 @@ function MouseGesture() {
  */
 function MouseManager() {
   var mRightDown, mElseDown;
-  var mCancelContext;
+  var mSuppressMenu;
 
   clear();
 
   function clear() {
     mRightDown = false;
     mElseDown = false;
-    mCancelContext = false;
+    mSuppressMenu = false;
   }
 
   function update(aEvent) {
@@ -553,16 +553,16 @@ function MouseManager() {
 
           // ready the contextmenu
           enableContextMenu(true);
-          mCancelContext = false;
+          mSuppressMenu = false;
 
           mRightDown = true;
           if (mElseDown) {
-            mCancelContext = true;
+            mSuppressMenu = true;
           }
         } else {
           mElseDown = true;
           if (mRightDown) {
-            mCancelContext = true;
+            mSuppressMenu = true;
           }
         }
         break;
@@ -584,12 +584,14 @@ function MouseManager() {
       case 'DOMMouseScroll':
         // a gesture is in progress
         if (mRightDown) {
-          mCancelContext = true;
+          mSuppressMenu = true;
         }
         break;
       case 'contextmenu':
-        enableContextMenu(!mCancelContext);
-        mCancelContext = false;
+        enableContextMenu(!mSuppressMenu);
+        if (mSuppressMenu) {
+          mSuppressMenu = false;
+        }
         break;
     }
 
