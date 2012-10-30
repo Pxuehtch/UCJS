@@ -499,18 +499,19 @@ function MouseGesture() {
     mGesture.update(aEvent);
   }
 
-  function stopGesture(aCancel) {
-    if (!aCancel) {
-      mGesture.evaluate();
-    }
-
-    mState = kState.READY;
-    mGesture.clear();
-    mTabInfo.clear();
+  function stopGesture() {
+    mGesture.evaluate();
+    clear();
   }
 
   function cancelGesture() {
-    stopGesture(true);
+    clear();
+  }
+
+  function clear() {
+    mState = kState.READY;
+    mGesture.clear();
+    mTabInfo.clear();
   }
 }
 
