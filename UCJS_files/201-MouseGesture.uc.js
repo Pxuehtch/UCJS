@@ -347,8 +347,12 @@ function MouseGesture() {
     var startAllowed = mMouse.update(aEvent);
 
     if (startAllowed) {
-      if (inGestureArea(aEvent)) {
-        startGesture(aEvent);
+      if (mState === kState.READY) {
+        if (inGestureArea(aEvent)) {
+          startGesture(aEvent);
+        }
+      } else {
+        cancelGesture();
       }
     } else {
       if (mState !== kState.READY) {
@@ -419,8 +423,10 @@ function MouseGesture() {
   }
 
   function onDragStart(aEvent) {
-    if (inGestureArea(aEvent)) {
-      startDrag(aEvent);
+    if (mState === kState.READY) {
+      if (inGestureArea(aEvent)) {
+        startDrag(aEvent);
+      }
     }
   }
 
