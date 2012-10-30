@@ -8,6 +8,17 @@
 // @require [for commands] Util.uc.js, NaviLink.uc.js, TabEx.uc.js,
 // WebService.uc.js, UI.uc.js
 
+/**
+ * @usage
+ * Normal mode: gestures or wheel rotations holding down the right mouse button
+ * Drag&Drop mode: gestures dragging a selected text or a link or an image.
+ * Shift and Ctrl keys are supported.
+ *
+ * @note The gestures is only available within the inner frame of the content
+ * area. The default width of the frame is 16px. see inGestureArea()
+ * @note 'Shift + RightClick' makes status reset in trouble.
+ */
+
 
 (function() {
 
@@ -292,8 +303,8 @@ const kGestureSet = [
 
 
 //***** Handlers.
-// TODO: Cancel the gesture when enters into a window that is overwrapped on
-// the gesture area (always on top).
+// TODO: Cancel the gesture when enters into a window(always on top) that is
+// overwrapped on the gesture area.
 
 /**
  * Main handler.
