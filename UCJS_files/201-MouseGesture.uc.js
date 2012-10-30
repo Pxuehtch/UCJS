@@ -314,11 +314,11 @@ function MouseGesture() {
     addEvent([pc, 'mousedown', onMouseDown, false]);
     addEvent([pc, 'mousemove', onMouseMove, false]);
     addEvent([pc, 'mouseup', onMouseUp, false]);
-    addEvent([pc, 'click', onClick, false]);
     addEvent([pc, 'DOMMouseScroll', onMouseScroll, false]);
     addEvent([pc, 'keydown', onKeyDown, false]);
     addEvent([pc, 'keyup', onKeyUp, false]);
     addEvent([pc, 'contextmenu', onContextMenu, false]);
+    addEvent([pc, 'click', onClick, false]);
 
     // Use not 'dragenter' but 'dragover' to check the coordinate.
     addEvent([pc, 'dragstart', onDragStart, false]);
@@ -386,16 +386,6 @@ function MouseGesture() {
     }
   }
 
-  function onClick(aEvent) {
-    if (aEvent.button === 1) {
-      if (mState !== kState.READY) {
-        // suppress the default action of a wheel click (open a
-        // background tab on a link)
-        suppressDefault(aEvent);
-      }
-    }
-  }
-
   function onMouseScroll(aEvent) {
     mMouse.update(aEvent);
 
@@ -418,6 +408,10 @@ function MouseGesture() {
   }
 
   function onContextMenu(aEvent) {
+    mMouse.update(aEvent);
+  }
+
+  function onClick(aEvent) {
     mMouse.update(aEvent);
   }
 
@@ -521,9 +515,9 @@ function MouseGesture() {
 }
 
 /**
- * Observes the mouse events and manages the display of the contextmenu.
+ * Observes the mouse events.
+ * Manages to suppress the contextmenu popup and the click event.
  * @return {hash}
- *   @member clear {function}
  *   @member update {function}
  *
  * TODO: Prevent contextmenu popups when a right mouse button is clicked while
@@ -531,7 +525,7 @@ function MouseGesture() {
  */
 function MouseManager() {
   var mRightDown, mElseDown;
-  var mSuppressMenu;
+  var mSuppressMenu, mSuppressClick;
 
   clear();
 
@@ -539,6 +533,7 @@ function MouseManager() {
     mRightDown = false;
     mElseDown = false;
     mSuppressMenu = false;
+    mSuppressClick = false;
   }
 
   function update(aEvent) {
@@ -560,9 +555,13 @@ function MouseManager() {
             mSuppressMenu = true;
           }
         } else {
+          // ready the default click event
+          mSuppressClick = false;
+
           mElseDown = true;
           if (mRightDown) {
             mSuppressMenu = true;
+            mSuppressClick = true;
           }
         }
         break;
@@ -591,6 +590,15 @@ function MouseManager() {
         enableContextMenu(!mSuppressMenu);
         if (mSuppressMenu) {
           mSuppressMenu = false;
+        }
+        break;
+      case 'click':
+        if (button !== 2) {
+          // @see chrome://browser/content/browser.js::contentAreaClick()
+          if (mSuppressClick) {
+            aEvent.preventDefault();
+            mSuppressClick = false;
+          }
         }
         break;
     }
