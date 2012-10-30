@@ -343,9 +343,8 @@ function MouseGesture() {
   function onMouseDown(aEvent) {
     checkTab();
 
-    var startAllowed = mMouse.update(aEvent);
-
-    if (startAllowed) {
+    var canStart = mMouse.update(aEvent);
+    if (canStart) {
       if (mState === kState.READY) {
         if (inGestureArea(aEvent)) {
           startGesture(aEvent);
@@ -377,9 +376,8 @@ function MouseGesture() {
   function onMouseUp(aEvent) {
     checkTab();
 
-    var stopAllowed = mMouse.update(aEvent);
-
-    if (stopAllowed) {
+    var canStop = mMouse.update(aEvent);
+    if (canStop) {
       if (mState === kState.GESTURE) {
         stopGesture();
       }
