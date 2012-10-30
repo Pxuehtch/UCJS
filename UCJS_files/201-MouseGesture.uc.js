@@ -332,7 +332,6 @@ function MouseGesture() {
   function checkTab() {
     if (mState !== kState.READY) {
       if (mTabInfo.isSameTabButDifferentURL()) {
-        mMouse.clear();
         cancelGesture();
       }
     }
@@ -598,7 +597,6 @@ function MouseManager() {
   }
 
   return {
-    clear: clear,
     update: update
   };
 }
