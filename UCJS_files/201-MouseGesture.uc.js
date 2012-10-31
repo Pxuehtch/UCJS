@@ -636,11 +636,12 @@ function MouseManager() {
 function GestureManager() {
   var mTracer = GestureTracer();
   var mKey, mType, mChain, mData;
-  var mMatchItem, mQuickShot, mQuickShotTimer;
+  var mMatchItem, mQuickShot;
 
   clear();
 
   function clear() {
+    showStatus(false);
     mTracer.clear();
     clearGesture();
     setOverLink(true);
@@ -653,13 +654,6 @@ function GestureManager() {
     mData = '';
     mMatchItem = null;
     mQuickShot = false;
-
-    if (mQuickShotTimer) {
-      clearTimeout(mQuickShotTimer);
-    }
-    mQuickShotTimer = null;
-
-    showStatus(false);
   }
 
   function init(aEvent) {
@@ -710,19 +704,18 @@ function GestureManager() {
   }
 
   function update(aEvent) {
-    if (mQuickShotTimer) {
+    if (mQuickShot) {
       clearGesture();
     }
 
     if (updateChain(aEvent) || updateKey(aEvent)) {
       [mMatchItem, mQuickShot] = matchGestureSet();
 
+      showStatus(true);
+
       if (mQuickShot) {
         doAction();
-        mQuickShotTimer = setTimeout(clearGesture, 500);
       }
-
-      showStatus(true);
     }
   }
 
