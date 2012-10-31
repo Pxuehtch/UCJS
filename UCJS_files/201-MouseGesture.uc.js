@@ -632,6 +632,8 @@ function MouseManager() {
  *   @member init {function}
  *   @member update {function}
  *   @member evaluate {function}
+ *
+ * TODO: show clearly to the user that a quickshot has fired.
  */
 function GestureManager() {
   var mTracer = GestureTracer();
