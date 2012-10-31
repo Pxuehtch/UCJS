@@ -639,13 +639,14 @@ function GestureManager() {
   var mTracer = GestureTracer();
   var mKey, mType, mChain, mData;
   var mMatchItem, mQuickShot;
+  var mError;
 
   clear();
 
   function clear() {
-    showStatus(false);
-    mTracer.clear();
+    clearStatusText();
     clearGesture();
+    mTracer.clear();
     setOverLink(true);
   }
 
@@ -656,6 +657,7 @@ function GestureManager() {
     mData = '';
     mMatchItem = null;
     mQuickShot = false;
+    mError = null;
   }
 
   function init(aEvent) {
@@ -706,6 +708,9 @@ function GestureManager() {
   }
 
   function update(aEvent) {
+    if (mError)
+      return;
+
     if (mQuickShot) {
       clearGesture();
     }
@@ -713,7 +718,7 @@ function GestureManager() {
     if (updateChain(aEvent) || updateKey(aEvent)) {
       [mMatchItem, mQuickShot] = matchGestureSet();
 
-      showStatus(true);
+      showStatusText();
 
       if (mQuickShot) {
         doAction();
@@ -840,30 +845,10 @@ function GestureManager() {
       try {
         mMatchItem.command({gesture: buildGesture(), data: mData});
       } catch (e) {
-        setTimeout(function() showErrorStatus('Command error!'), 0);
-        log('Command error: ' + toString() + '\n' + e);
+        mError = 'Command error';
+        log(showStatusText() + '\n' + e);
       }
     }
-  }
-
-  function toString() {
-    const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)'];
-
-    var rv = kFormat[0].replace('%GESTURE%', buildGesture());
-
-    if (mMatchItem) {
-      rv += kFormat[1].replace('%NAME%', U(mMatchItem.name));
-    }
-
-    return rv;
-  }
-
-  function toErrorString(aText) {
-    const kFormat = ['Gesture: %ERROR%'];
-
-    var rv = kFormat[0].replace('%ERROR%', aText);
-
-    return rv;
   }
 
   function buildGesture() {
@@ -876,12 +861,36 @@ function GestureManager() {
     return gesture;
   }
 
-  function showStatus(aShouldShow) {
-    updateStatusbarText(aShouldShow ? toString() : '');
+  function showStatusText() {
+    var str = toString();
+
+    if (mError) {
+      // HACK: display the status after its values have been cleared
+      setTimeout(function(s) updateStatusbarText(s), 0, str);
+    } else {
+      updateStatusbarText(str);
+    }
+
+    return str;
   }
 
-  function showErrorStatus(aText) {
-    updateStatusbarText(toErrorString(aText));
+  function clearStatusText() {
+    updateStatusbarText('');
+  }
+
+  function toString() {
+    const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
+
+    var str = kFormat[0].replace('%GESTURE%', buildGesture());
+
+    if (mMatchItem) {
+      str += kFormat[1].replace('%NAME%', U(mMatchItem.name));
+    }
+    if (mError) {
+      str += kFormat[2].replace('%ERROR%', U(mError));
+    }
+
+    return str;
   }
 
   return {
