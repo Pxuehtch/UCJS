@@ -319,7 +319,6 @@ function MouseGesture() {
 
   var mMouse = MouseManager();
   var mGesture = GestureManager();
-  var mTabInfo = TabInfo();
 
   registerEvents();
 
@@ -342,22 +341,10 @@ function MouseGesture() {
     addEvent([pc, 'drop', onDrop, false]);
   }
 
-  // Cancel the gestures when the URL changes in the current tab to avoid
-  // unexpected actions.
-  function checkTab() {
-    if (mState !== kState.READY) {
-      if (mTabInfo.isSameTabButDifferentURL()) {
-        cancelGesture();
-      }
-    }
-  }
-
 
   //***** Events.
 
   function onMouseDown(aEvent) {
-    checkTab();
-
     var canStart = mMouse.update(aEvent);
     if (canStart) {
       if (mState === kState.READY) {
@@ -375,8 +362,6 @@ function MouseGesture() {
   }
 
   function onMouseMove(aEvent) {
-    checkTab();
-
     mMouse.update(aEvent);
 
     if (mState === kState.GESTURE) {
@@ -389,8 +374,6 @@ function MouseGesture() {
   }
 
   function onMouseUp(aEvent) {
-    checkTab();
-
     var canStop = mMouse.update(aEvent);
     if (canStop) {
       if (mState === kState.GESTURE) {
@@ -503,7 +486,6 @@ function MouseGesture() {
   }
 
   function start(aEvent) {
-    mTabInfo.init();
     return mGesture.init(aEvent);
   }
 
@@ -523,7 +505,6 @@ function MouseGesture() {
   function clear() {
     mState = kState.READY;
     mGesture.clear();
-    mTabInfo.clear();
   }
 }
 
@@ -965,43 +946,6 @@ function GestureTracer() {
     clear: clear,
     init: init,
     update: update
-  };
-}
-
-/**
- * Observes the state of the current tab.
- * @see MouseGesture()::checkTab()
- * @return {hash}
- *   @member init {function}
- *   @member clear {function}
- *   @member isSameTabButDifferentURL {function}
- */
-function TabInfo() {
-  var mTab, mURL;
-
-  function currentTab()
-    gBrowser.mCurrentTab
-
-  function currentURL()
-    gBrowser.currentURI.spec
-
-  function init() {
-    mTab = currentTab();
-    mURL = currentURL();
-  }
-
-  function clear() {
-    mTab = null;
-    mURL = null;
-  }
-
-  function isSameTabButDifferentURL()
-    mTab === currentTab() && mURL !== currentURL();
-
-  return {
-    init: init,
-    clear: clear,
-    isSameTabButDifferentURL: isSameTabButDifferentURL
   };
 }
 
