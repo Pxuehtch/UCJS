@@ -58,18 +58,7 @@ const kGestureSign = {
  * @key disabled {boolean} [optional]
  */
 const kGestureSet = [
-  {
-    disabled: true,
-    gestures: ['RL', 'S&RL', 'C&RL', '!RLRL', 'TEXT#RL', 'LINK#RL', 'IMAGE#RL'],
-    name: 'テスト',
-    command: function(aParam) {
-      log('@param:'+aParam.toSource());
-    }
-  },
-
-
-  //***** Navigations.
-
+  //***** Navigations
   {
     gestures: ['L'],
     name: '戻る',
@@ -128,8 +117,7 @@ const kGestureSet = [
   },
 
 
-  //***** Tabs.
-
+  //***** Tabs
   {
     gestures: ['DL'],
     name: 'タブを複製',
@@ -189,8 +177,7 @@ const kGestureSet = [
   },
 
 
-  //***** UI.
-
+  //***** UI
   {
     gestures: ['RD'],
     name: '履歴を開閉',
@@ -223,8 +210,7 @@ const kGestureSet = [
   },
 
 
-  //***** D&D mode.
-
+  //***** D&D mode
   {
     gestures: ['TEXT#L'],
     name: 'Weblio',
