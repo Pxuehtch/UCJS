@@ -530,6 +530,14 @@ function MouseManager() {
     mSuppressClick = false;
   }
 
+  /**
+   * Updates the state
+   * @param aEvent {MouseEvent}
+   * @return {boolean|undefined}
+   *   'mousedown' {boolean} is ready that a normal mode gesture can start
+   *   'mouseup' {boolean} is ready that a normal mode gesture can stop
+   *   otherwise {undefined}
+   */
   function update(aEvent) {
     const {type, button} = aEvent;
     var rv;
