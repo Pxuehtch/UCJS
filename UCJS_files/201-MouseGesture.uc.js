@@ -9,14 +9,18 @@
 // WebService.uc.js, UI.uc.js
 
 /**
- * @usage
- * Normal mode: gestures or wheel rotations holding down the right mouse button
- * Drag&Drop mode: gestures dragging a selected text or a link or an image.
- * Shift and Ctrl keys are supported.
+ * @usage;
+ *  *Normal mode: gestures or wheel rotations holding down the right mouse
+ *   button.
+ *  *Drag&Drop mode: gestures dragging a selected text or a link or an image.
+ *  *Shift and Ctrl keys are supported.
  *
- * @note The gestures is only available within the inner frame of the content
- * area. The default width of the frame is 16px. see inGestureArea()
- * @note 'Alt + RightClick' makes status reset in trouble.
+ * @note;
+ *  *The gestures is only available within the inner frame of the content
+ *   area. The default width of the frame is 16px. see inGestureArea()
+ *  *The max number of signs(directions and wheel rotations) per gesture is 10.
+ *   see GestureManager()
+ *  *'Alt + RightClick' makes status reset in trouble.
  */
 
 
@@ -636,6 +640,13 @@ function MouseManager() {
  * TODO: show clearly to the user that a quickshot has fired.
  */
 function GestureManager() {
+  /**
+   * Max length of the chain of a gesture.
+   * The chain consists of directions and wheel rotations.
+   * @value {integer}
+   */
+  const kMaxChainLength = 10;
+
   var mTracer = GestureTracer();
   var mKey, mType, mChain, mData;
   var mMatchItem, mQuickShot;
@@ -748,6 +759,9 @@ function GestureManager() {
       let index = mChain.length - gesture.length;
       if (index < 0 || mChain.indexOf(gesture, index) === -1) {
         mChain += gesture;
+        if (mChain.length > kMaxChainLength) {
+          mError = 'Too long';
+        }
         return true;
       }
     }
