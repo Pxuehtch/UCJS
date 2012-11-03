@@ -137,8 +137,8 @@ var mStatusField = (function() {
     },
 
     // Gets statusbar text
-    // @note retrieves "label" attribute value because the label getter returns
-    // empty whenever the status field is inactive.
+    // @note Retrieves the raw value from "label" attribute because the label
+    // getter returns an empty string whenever the status field is inactive.
     // @see chrome://browser/content/tabbrowser.xml::
     //   <binding id="statuspanel">::<property name="label">::<getter>
     get text() {
@@ -146,13 +146,14 @@ var mStatusField = (function() {
     },
 
     // Sets statusbar text
-    // @note the label setter sets no value when the empty value is passed, so
-    // make "label" attribute empty.
+    // @note The label setter don't touch "label" attribute when an empty
+    // value is passed. So sets an empty string to "label" attribute to clear
+    // the statusbar.
     // @see chrome://browser/content/tabbrowser.xml::
     //   <binding id="statuspanel">::<property name="label">::<setter>
     set text(aVal) {
       this.textBox.label = aVal;
-      if (!aVal) {
+      if (!aVal && this.text) {
         this.textBox.setAttribute('label', '');
       }
     },
