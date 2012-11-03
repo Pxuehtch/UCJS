@@ -54,7 +54,7 @@ const kGestureSign = {
  * @key command {function}
  *   @param aParam {hash}
  *     @key gesture {string} built gesture signs
- *     @key data {string} drag data on D&D mode
+ *     @key dragData {string} drag data on the D&D mode
  * @key disabled {boolean} [optional]
  */
 const kGestureSet = [
@@ -214,79 +214,79 @@ const kGestureSet = [
   {
     gestures: ['TEXT#L'],
     name: 'Weblio',
-    command: function(aParam) {
-      ucjsWebService.open({name: 'Weblio', data: aParam.data});
+    command: function({dragData}) {
+      ucjsWebService.open({name: 'Weblio', data: dragData});
     }
   },
   {
     gestures: ['S&TEXT#L'],
     name: 'Google翻訳',
-    command: function(aParam) {
-      ucjsWebService.open({name: 'GoogleTranslation', data: aParam.data});
+    command: function({dragData}) {
+      ucjsWebService.open({name: 'GoogleTranslation', data: dragData});
     }
   },
   {
     gestures: ['TEXT#R'],
     name: 'Google検索',
-    command: function(aParam) {
-      ucjsWebService.open({name: 'GoogleSearch', data: aParam.data});
+    command: function({dragData}) {
+      ucjsWebService.open({name: 'GoogleSearch', data: dragData});
     }
   },
   {
     gestures: ['S&TEXT#R'],
     name: 'Google検索 site:',
-    command: function(aParam) {
-      var data = aParam.data + ' site:' + gBrowser.currentURI.spec;
+    command: function({dragData}) {
+      var data = dragData + ' site:' + gBrowser.currentURI.spec;
       ucjsWebService.open({name: 'GoogleSearch', data: data});
     }
   },
   {
     gestures: ['TEXT#D'],
     name: 'ページ内検索',
-    command: function(aParam) {
-      ucjsUI.FindBar.findWith(aParam.data, true);
+    command: function({dragData}) {
+      ucjsUI.FindBar.findWith(dragData, true);
     }
   },
   {
     gestures: ['TEXT#UR'],
     name: '加えて再検索 (Focus)',
-    command: function(aParam) {
-      ucjsWebService.reSubmitMore(aParam.data);
+    command: function({dragData}) {
+      ucjsWebService.reSubmitMore(dragData);
     }
   },
   {
     gestures: ['S&TEXT#UR'],
     name: '加えて再検索 (Submit)',
-    command: function(aParam) {
-      ucjsWebService.reSubmitMore(aParam.data, true);
+    command: function({dragData}) {
+      ucjsWebService.reSubmitMore(dragData, true);
     }
   },
   {
     gestures: ['TEXT#DR'],
     name: '除いて再検索 (Focus)',
-    command: function(aParam) {
-      ucjsWebService.reSubmitLess(aParam.data);
+    command: function({dragData}) {
+      ucjsWebService.reSubmitLess(dragData);
     }
   },
   {
     gestures: ['S&TEXT#DR'],
     name: '除いて再検索 (Submit)',
-    command: function(aParam) {
-      ucjsWebService.reSubmitLess(aParam.data, true);
+    command: function({dragData}) {
+      ucjsWebService.reSubmitLess(dragData, true);
     }
   },
   {
     gestures: ['LINK#U', 'IMAGE#U'],
     name: '新タブに開く',
-    command: function(aParam) {
-      openTab(aParam.data, false);
+    command: function({dragData}) {
+      openTab(dragData, false);
     }
   },
   {
     gestures: ['LINK#D', 'IMAGE#D'],
     name: '裏タブで開く',
-    command: function(aParam) {
-      openTab(aParam.data, true);
+    command: function({dragData}) {
+      openTab(dragData, true);
     }
   }
 ];
@@ -623,7 +623,8 @@ function GestureManager() {
   const kMaxChainLength = 10;
 
   var mTracer = GestureTracer();
-  var mKey, mType, mChain, mData;
+  var mKey, mChain;
+  var mDragType, mDragData;
   var mMatchItem, mQuickShot;
   var mError;
 
@@ -638,9 +639,9 @@ function GestureManager() {
 
   function clearGesture() {
     mKey = '';
-    mType = '';
     mChain = '';
-    mData = '';
+    mDragType = '';
+    mDragData = '';
     mMatchItem = null;
     mQuickShot = false;
     mError = null;
@@ -655,8 +656,8 @@ function GestureManager() {
       if (!info.type || !info.data)
         return false;
 
-      mType = info.type;
-      mData = info.data;
+      mDragType = info.type;
+      mDragData = info.data;
     }
     return true;
   }
@@ -832,7 +833,10 @@ function GestureManager() {
   function doAction() {
     if (mMatchItem) {
       try {
-        mMatchItem.command({gesture: buildGesture(), data: mData});
+        mMatchItem.command({
+          gesture: buildGesture(),
+          dragData: mDragData
+        });
       } catch (e) {
         mError = 'Command error';
         log(showStatusText() + '\n' + e);
@@ -841,7 +845,7 @@ function GestureManager() {
   }
 
   function buildGesture() {
-    var gesture = mKey + mType + mChain;
+    var gesture = mKey + mDragType + mChain;
 
     if (mQuickShot) {
       gesture = kGestureSign.quickShot + gesture;
