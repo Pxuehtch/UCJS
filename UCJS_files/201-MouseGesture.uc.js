@@ -52,7 +52,8 @@ const kGestureSign = {
  * @key gestures {string[]} combination of kGestureSign
  * @key name {string}
  * @key command {function}
- *   @param aParam {hash}
+ *   @param {hash}
+ *     @key event {MouseEvent} mouse event at when the gesture ends
  *     @key gesture {string} built gesture signs
  *     @key dragData {string} drag data on the D&D mode
  * @key disabled {boolean} [optional]
@@ -85,6 +86,14 @@ const kGestureSet = [
     name: '次のページへ',
     command: function() {
       loadPage(ucjsNaviLink.getNext());
+    }
+  },
+  {
+    gestures: ['LW-', 'LW+', 'RW-', 'RW+'],
+    name: 'ページの履歴',
+    command: function({event}) {
+      $('backForwardMenu').
+      openPopupAtScreen(event.screenX, event.screenY, false);
     }
   },
   {
@@ -363,7 +372,7 @@ function MouseGesture() {
     var canStop = mMouse.update(aEvent);
     if (canStop) {
       if (mState === kState.GESTURE) {
-        stopGesture();
+        stopGesture(aEvent);
       }
     }
   }
@@ -448,7 +457,7 @@ function MouseGesture() {
       cancelGesture();
     } else {
       suppressDefault(aEvent);
-      stopGesture();
+      stopGesture(aEvent);
     }
   }
 
@@ -479,8 +488,8 @@ function MouseGesture() {
     mGesture.update(aEvent);
   }
 
-  function stopGesture() {
-    mGesture.evaluate();
+  function stopGesture(aEvent) {
+    mGesture.evaluate(aEvent);
     clear();
   }
 
@@ -708,7 +717,7 @@ function GestureManager() {
       showStatusText();
 
       if (mQuickShot) {
-        doAction();
+        doAction(aEvent);
       }
     }
   }
@@ -824,16 +833,17 @@ function GestureManager() {
     return [matchItem, quickShot];
   }
 
-  function evaluate() {
+  function evaluate(aEvent) {
     if (!mQuickShot && mChain) {
-      doAction();
+      doAction(aEvent);
     }
   }
 
-  function doAction() {
+  function doAction(aEvent) {
     if (mMatchItem) {
       try {
         mMatchItem.command({
+          event: aEvent,
           gesture: buildGesture(),
           dragData: mDragData
         });
