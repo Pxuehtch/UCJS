@@ -808,8 +808,8 @@ function GestureManager() {
     var matchItem = null;
     var quickShot = false;
 
-    var target = mChain.length && buildGesture();
-    if (target) {
+    var currentGesture = mChain.length && buildGesture();
+    if (currentGesture) {
       kGestureSet.some(function(item) {
         if (item.disabled)
           return false;
@@ -820,7 +820,7 @@ function GestureManager() {
             gesture = gesture.replace(kGestureSign.quickShot, '');
           }
 
-          if (target === gesture) {
+          if (currentGesture === gesture) {
             matchItem = item;
             quickShot = isQuickShot;
             return true;
