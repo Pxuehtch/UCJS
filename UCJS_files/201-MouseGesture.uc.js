@@ -647,8 +647,8 @@ function GestureManager() {
   }
 
   function clearGesture() {
-    mKey = '';
-    mChain = '';
+    mKey = [];
+    mChain = [];
     mDragType = '';
     mDragData = '';
     mMatchItem = null;
@@ -741,10 +741,10 @@ function GestureManager() {
     if (sign) {
       // add a new link of chain when the last gesture is not this one
       let gesture = kGestureSign[sign];
-      let index = mChain.length - gesture.length;
-      if (index < 0 || mChain.indexOf(gesture, index) === -1) {
-        mChain += gesture;
-        if (mChain.length > kMaxChainLength) {
+      let length = mChain.length;
+      if (!length || mChain[length - 1] !== gesture) {
+        mChain.push(gesture);
+        if (length + 1 > kMaxChainLength) {
           mError = 'Too long';
         }
         return true;
@@ -795,9 +795,9 @@ function GestureManager() {
 
     if (key) {
       if (pressed) {
-        mKey += key;
+        mKey.push(key);
       } else {
-        mKey = mKey.replace(key, '');
+        mKey.splice(mKey.indexOf(key), 1);
       }
       return true;
     }
@@ -808,7 +808,7 @@ function GestureManager() {
     var matchItem = null;
     var quickShot = false;
 
-    var target = mChain && buildGesture();
+    var target = mChain.length && buildGesture();
     if (target) {
       kGestureSet.some(function(item) {
         if (item.disabled)
@@ -834,7 +834,7 @@ function GestureManager() {
   }
 
   function evaluate(aEvent) {
-    if (!mQuickShot && mChain) {
+    if (!mQuickShot && mChain.length) {
       doAction(aEvent);
     }
   }
@@ -855,7 +855,7 @@ function GestureManager() {
   }
 
   function buildGesture() {
-    var gesture = mKey + mDragType + mChain;
+    var gesture = mKey.join('') + mDragType + mChain.join('');
 
     if (mQuickShot) {
       gesture = kGestureSign.quickShot + gesture;
