@@ -16,8 +16,9 @@
 
 
 // Sets margins of Firefox window
-// @note this setting is for my own windows theme
-// TODO: sometimes window layout breaks after returning from fullscreen mode
+// @note This setting is for my own windows theme.
+// TODO: |chromemargin| is reset after returning from the print-preview.
+// TODO: A window layout sometimes breaks after returning from the fullscreen.
 (function() {
 
   var mainWindow = $ID('main-window');
