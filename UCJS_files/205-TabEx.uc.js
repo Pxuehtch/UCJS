@@ -653,8 +653,10 @@ function getRelatedTabAfter(aTab, aOption) {
   return (pos !== tabPos) ? tabs[pos] : null;
 }
 
-function focusOpenerTab(aTab, aUndoClose) {
-  var tab = getAncestorTab(aTab, {undoClose: aUndoClose});
+function focusOpenerTab(aTab, aOption) {
+  var {undoClose} = aOption || {};
+
+  var tab = getAncestorTab(aTab, {undoClose: undoClose});
   if (tab) {
     gBrowser.selectedTab = tab;
     return tab;

@@ -152,8 +152,8 @@ var mTabBarClickEvent = {
     // click on a selected tab.
     else if (isLC && onTab) {
       if (shiftKey) {
-        // Focus opener tab.
-        ucjsTabEx.focusOpenerTab(target);
+        // Focus/reopen the opener tab.
+        ucjsTabEx.focusOpenerTab(target, {undoClose: true});
       } else {
         // Focus prev-selected tab.
         ucjsTabEx.focusPrevSelectedTab(target);
