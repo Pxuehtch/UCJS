@@ -86,7 +86,7 @@ var mTabBarClickEvent = {
     if (aVal === true) {
       this.mouseUpTimer = setTimeout(function() {
         this.idledMouseUp = false;
-        this.performEvent();
+        this.doAction();
         this.handled = false;
       }.bind(this), 200);
     } else if (aVal === false) {
@@ -128,52 +128,53 @@ var mTabBarClickEvent = {
     this.idledMouseUp = true;
   },
 
-  performEvent: function() {
-    var {target, button, ctrlKey, altKey, shiftKey, clicks, area} = this.state;
-    // LeftClick, LeftDoubleClick, MiddleClick.
-    var isLC = button === 0 && clicks === 1,
-        isLDC = button === 0 && clicks === 2,
-        isMC = button === 1 && clicks === 1;
+  doAction: function() {
+    var {target, button, ctrlKey, altKey, shiftKey, clicks, area} =
+      this.state;
+
+    // Left-Click / Left-Double-Click / Middle-Click
+    var LC  = button === 0 && clicks === 1,
+        LDC = button === 0 && clicks === 2,
+        MC  = button === 1 && clicks === 1;
+
     // selected tab / background tab / not tabs area
     var foreTab = area === 'foreTab',
         backTab = area === 'backTab',
         notTabs = area === 'notTabs';
 
-    // double-click on tab-bar.
-    if (isLDC && notTabs) {
-      // Open home pages.
-      // shift: The opened pages will be closed.
-      // ctrl: If multiple homepages, the first is chosen.
-      ucjsUtil.openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
-    }
-    // middle-click on tab-bar.
-    else if (isMC && notTabs) {
-      // Reopen prev-closed tab.
-      undoCloseTab();
-    }
-    // click on a selected tab.
-    else if (isLC && foreTab) {
-      if (shiftKey) {
-        // Focus/reopen the opener tab.
-        ucjsTabEx.focusOpenerTab(target, {undoClose: true});
-      } else {
-        // Focus prev-selected tab.
-        ucjsTabEx.focusPrevSelectedTab(target);
-      }
-    }
-    // double-click on a selected tab.
-    else if (isLDC && foreTab) {
-      // pin/unpin a tab
-      if (!target.pinned) {
-        gBrowser.pinTab(target);
-      } else {
-        gBrowser.unpinTab(target);
-      }
-    }
-    // middle-click on the selected tab.
-    else if (isMC && (foreTab || backTab)) {
-      // Close tab.
-      ucjsUtil.removeTab(target, {ucjsCustomBlock: true});
+    switch (true) {
+      case (LDC && notTabs):
+        // open home pages
+        // Shift: The current opened tabs are closed.
+        // Ctrl: Only the first of the multiple homepages is opened.
+        ucjsUtil.openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
+        break;
+      case (MC && notTabs):
+        // reopen the prev-closed tab
+        // @see chrome://browser/content/browser.js::undoCloseTab
+        window.undoCloseTab();
+        break;
+      case (LC && foreTab):
+        if (shiftKey) {
+          // focus/reopen the opener tab
+          ucjsTabEx.focusOpenerTab(target, {undoClose: true});
+        } else {
+          // focus the prev-selected tab
+          ucjsTabEx.focusPrevSelectedTab(target);
+        }
+        break;
+      case (LDC && foreTab):
+        // pin/unpin a tab
+        if (!target.pinned) {
+          gBrowser.pinTab(target);
+        } else {
+          gBrowser.unpinTab(target);
+        }
+        break;
+      case (MC && (foreTab || backTab)):
+        // close a tab
+        ucjsUtil.removeTab(target, {ucjsCustomBlock: true});
+        break;
     }
   },
 
