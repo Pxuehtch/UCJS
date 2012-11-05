@@ -530,14 +530,17 @@ function openNewWindow(aURL, aOption) {
   return newWin;
 }
 
-function openHomePages(aReplace, aFirstPage) {
+function openHomePages(aOption) {
+  aOption = aOption || {};
+  var {doReplace, onlyFirstPage} = aOption;
+
   // @see chrome://browser/content/browser.js::gHomeButton
   var homePages = window.gHomeButton.getHomePage().split('|');
-  if (aFirstPage) {
+  if (onlyFirstPage) {
     homePages = homePages[0];
   }
 
-  openTabs(homePages, {ucjsReplace: aReplace, ucjsTrustURL: true});
+  openTabs(homePages, {ucjsReplace: doReplace, ucjsTrustURL: true});
 }
 
 function openTabs(aURLs, aOption) {

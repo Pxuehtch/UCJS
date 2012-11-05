@@ -63,7 +63,7 @@
 
   <key id="ucjs_key_CloseTabsButHome"
     keycode="VK_F12"
-    oncommand="ucjsUtil.openHomePages(true, true);"/>
+    oncommand="ucjsUtil.openHomePages({doReplace:true,onlyFirstPage:true});"/>
 </keyset>
 
 

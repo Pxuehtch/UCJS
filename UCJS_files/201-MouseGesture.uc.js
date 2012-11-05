@@ -174,14 +174,14 @@ const kGestureSet = [
     gestures: ['S&DRUL'],
     name: 'ホームだけにする',
     command: function() {
-      openHomePages(true);
+      ucjsUtil.openHomePages({doReplace: true});
     }
   },
   {
     gestures: ['DURD'], // shape of 'h'.
     name: 'ホームを開く',
     command: function() {
-      openHomePages(false);
+      ucjsUtil.openHomePages();
     }
   },
 
@@ -1069,10 +1069,6 @@ function openTab(aURL, aBG) {
     relatedToCurrent: true,
     ucjsTrustURL: /^data:image\/(?:gif|jpg|png);base64,/.test(aURL)
   });
-}
-
-function openHomePages(aReplace) {
-  ucjsUtil.openHomePages(aReplace);
 }
 
 function log(aMsg)

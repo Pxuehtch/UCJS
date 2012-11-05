@@ -142,7 +142,7 @@ var mTabBarClickEvent = {
       // Open home pages.
       // shift: The opened pages will be closed.
       // ctrl: If multiple homepages, the first is chosen.
-      ucjsUtil.openHomePages(shiftKey, ctrlKey);
+      ucjsUtil.openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
     }
     // middle-click on tab-bar.
     else if (isMC && onTabbar) {
