@@ -27,13 +27,6 @@
 }
 
 
-/* [TabHandler.uc.js] locked tab */
-.tabbrowser-tab[ucjs_tablock] .tab-background {
-  margin-top:-3px!important;
-  border-top:3px solid red!important;
-}
-
-
 /* [AllTabs.uc.js] all tabs menupopup - menuitem about an overflowed tab on tabstrip */
 .alltabs-item[tabIsVisible] {
   box-shadow:none!important;
