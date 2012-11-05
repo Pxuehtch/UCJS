@@ -116,7 +116,7 @@ var mSessionStore = {
   },
 
   getClosedTabList: function() {
-    if (this.Store.getClosedTabCount(window) > 0) {
+    if (this.SessionStore.getClosedTabCount(window) > 0) {
       return JSON.parse(this.SessionStore.getClosedTabData(window));
     }
     return null;
