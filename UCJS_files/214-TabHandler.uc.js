@@ -204,12 +204,6 @@ function makeCustomFunctions() {
 
 // Imports.
 
-function getPref(aKey)
-  ucjsUtil.getPref(aKey);
-
-function setPref(aKey, aVal)
-  ucjsUtil.setPref(aKey, aVal);
-
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
 
