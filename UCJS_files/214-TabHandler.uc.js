@@ -1,13 +1,12 @@
 // ==UserScript==
 // @name TabHandler.uc.js
-// @description Functions on a tab or tab-bar.
+// @description Custom handling on the tab bar
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @require [in action] Util.uc.js, TabEx.uc.js
-// @note Some about:config preferences are changed. see @pref.
-// @note Some default functions are modified. see @modified.
+// @require [for action] Util.uc.js, TabEx.uc.js
+// @note The default function is modified. see @modified
 
 
 (function() {
@@ -17,7 +16,7 @@
 
 
 /**
- * Handler of click event on a tab or tab-bar.
+ * Handler of the click event on the tab bar
  */
 var mTabBarClickEvent = {
   clearState: function() {
@@ -43,7 +42,10 @@ var mTabBarClickEvent = {
   },
 
   handleEvent: function(aEvent) {
-    if (aEvent.button === 2 || !this.checkTargetArea(aEvent))
+    // 1.show the default contextmenu
+    // 2.skip an UI element(button/menu) on the tab bar
+    if (aEvent.button === 2 ||
+        !this.checkTargetArea(aEvent))
       return;
 
     switch (aEvent.type) {
@@ -98,13 +100,15 @@ var mTabBarClickEvent = {
   onMouseDown: function(aEvent) {
     this.handled = true;
 
-    if (this.state.target && !this.idledMouseUp) {
+    if (this.state.target &&
+        !this.idledMouseUp) {
       this.clearState();
     }
 
     this.idledMouseUp = false;
 
-    if (this.state.target !== aEvent.target || this.state.button !== aEvent.button) {
+    if (this.state.target !== aEvent.target ||
+        this.state.button !== aEvent.button) {
       this.state.target   = aEvent.target;
       this.state.button   = aEvent.button;
       this.state.ctrlKey  = aEvent.ctrlKey;
@@ -118,7 +122,8 @@ var mTabBarClickEvent = {
   },
 
   onMouseUp: function(aEvent) {
-    if (this.state.target !== aEvent.target || !this.idledMouseDown) {
+    if (this.state.target !== aEvent.target ||
+        !this.idledMouseDown) {
       this.handled = false;
       return;
     }
@@ -201,18 +206,19 @@ var mTabBarClickEvent = {
 
 
 /**
- * Miscellaneous customization.
+ * Miscellaneous customization
  */
 function makeCustomFunctions() {
-  // Cycled-focus tab with mouse-scroll on tab or tab strip.
+  // cycle-focus tabs with the wheel scroll on a tab or tabbar
   addEvent([gBrowser.tabContainer, 'DOMMouseScroll', function(aEvent) {
-    gBrowser.tabContainer.advanceSelectedTab((aEvent.detail < 0) ? -1 : 1, true);
+    gBrowser.tabContainer.
+    advanceSelectedTab((aEvent.detail < 0) ? -1 : 1, true);
     aEvent.stopPropagation();
   }, true]);
 }
 
 
-// Imports.
+// Imports
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
@@ -221,7 +227,7 @@ function log(aMsg)
   ucjsUtil.logMessage('Misc.uc.js', aMsg);
 
 
-// Entry point.
+// Entry point
 
 function TabHandler_init() {
   mTabBarClickEvent.init();
