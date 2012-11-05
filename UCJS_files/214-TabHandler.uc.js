@@ -16,6 +16,17 @@
 
 
 /**
+ * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
+ * click
+ * @value {integer} millisecond
+ *
+ * @note The default click is deactivated at 'mouseup' in time, otherwise it
+ * is activated.
+ */
+const kClickThresholdTimer = 200;
+
+
+/**
  * Handler of the click event on the tab bar
  */
 var mTabBarClickEvent = {
@@ -73,7 +84,7 @@ var mTabBarClickEvent = {
     if (aVal === true) {
       this.mouseDownTimer = setTimeout(function() {
         this.idledMouseDown = false;
-      }.bind(this), 200);
+      }.bind(this), kClickThresholdTimer);
     } else if (aVal === false) {
       clearTimeout(this.mouseDownTimer);
       delete this.mouseDownTimer;
@@ -90,7 +101,7 @@ var mTabBarClickEvent = {
         this.idledMouseUp = false;
         this.doAction();
         this.handled = false;
-      }.bind(this), 200);
+      }.bind(this), kClickThresholdTimer);
     } else if (aVal === false) {
       clearTimeout(this.mouseUpTimer);
       delete this.mouseUpTimer;
