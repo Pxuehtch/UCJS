@@ -16,10 +16,8 @@ var ucjsTabEx = (function() {
 "use strict";
 
 
-// Constances.
-
 /**
- * Identifier.
+ * Identifier
  */
 const kID = {
   OPEN: 'ucjs_tabex_open',
@@ -32,7 +30,7 @@ const kID = {
 };
 
 /**
- * Position of a tab which is opened or focused.
+ * Position of a tab which is opened or focused
  */
 const kPosType = {
   DEFAULT:           1,
@@ -47,7 +45,7 @@ const kPosType = {
 };
 
 /**
- * User preference.
+ * User preference
  */
 const kPref = {
   // where new tab is opened.
@@ -74,10 +72,8 @@ const kPref = {
 };
 
 
-// Handlers.
-
 /**
- * Handler of the state of a tab.
+ * Handles the state of a tab
  */
 var mTabState = {
   isUnread: function(aTab) !aTab.hasAttribute(kID.READ)
@@ -85,11 +81,13 @@ var mTabState = {
 
 
 /**
- * Handler of session store.
+ * Handles the session store
  */
 var mSessionStore = {
   init: function() {
-    this.SessionStore = Cc['@mozilla.org/browser/sessionstore;1'].getService(Ci.nsISessionStore);
+    this.SessionStore =
+      Cc['@mozilla.org/browser/sessionstore;1'].
+      getService(Ci.nsISessionStore);
 
     [
       kID.OPEN,
@@ -98,7 +96,9 @@ var mSessionStore = {
       kID.ANCESTORS,
       kID.OPENQUERY,
       kID.FROMVISIT
-    ].forEach(function(key) mSessionStore.SessionStore.persistTabAttribute(key));
+    ].forEach(function(key) {
+      mSessionStore.SessionStore.persistTabAttribute(key);
+    });
 
     addEvent([window, 'SSWindowStateBusy', this, false]);
     addEvent([window, 'SSWindowStateReady', this, false]);
@@ -125,18 +125,26 @@ var mSessionStore = {
 
 
 /**
- * Handler to open a tab.
+ * Handles to open a tab
  */
 var mTabOpener = {
   init: function() {
     // @modified chrome://browser/content/tabbrowser.xml::addTab
     var $addTab = gBrowser.addTab;
-    gBrowser.addTab = function(aURI, aReferrerURI, aCharset, aPostData, aOwner, aAllowThirdPartyFixup) {
+    gBrowser.addTab = function(
+      aURI,
+      aReferrerURI,
+      aCharset,
+      aPostData,
+      aOwner,
+      aAllowThirdPartyFixup
+    ) {
       var newTab = $addTab.apply(this, arguments);
 
       var aRelatedToCurrent, aFromExternal, aIsUTF8;
       if (arguments.length === 2 &&
-          typeof arguments[1] === 'object' && !(arguments[1] instanceof Ci.nsIURI)) {
+          typeof arguments[1] === 'object' &&
+          !(arguments[1] instanceof Ci.nsIURI)) {
         let params = arguments[1];
         aReferrerURI          = params.referrerURI;
         aCharset              = params.charset;
@@ -226,11 +234,12 @@ var mTabOpener = {
 };
 
 /**
- * Handler of referrer of a tab.
+ * Handles the referrer of a tab
  */
 var mReferrer = {
   getURL: function(aTab)
-    mTabOpener.parseQuery(aTab, 'referrerURI') || aTab.getAttribute(kID.FROMVISIT),
+    mTabOpener.parseQuery(aTab, 'referrerURI') ||
+    aTab.getAttribute(kID.FROMVISIT),
 
   getTitle: function(aTab)
     getPageTitle(this.getURL(aTab)),
@@ -242,7 +251,7 @@ var mReferrer = {
     if (!isHTTP(aURI))
       return null;
 
-    // @note cf. http://www.forensicswiki.org/wiki/Mozilla_Firefox_3_History_File_Format
+    // @see http://www.forensicswiki.org/wiki/Mozilla_Firefox_3_History_File_Format
     const sql =
       "SELECT p1.url " +
       "FROM moz_places p1 " +
@@ -277,12 +286,13 @@ var mReferrer = {
 };
 
 /**
- * Handler to select a tab.
+ * Handles to select a tab
  */
 var mTabSelector = {
   set: function(aTab) {
     this.clear();
-    this.timer = setInterval(function(tab) mTabSelector.select(tab), 1000, aTab);
+    this.timer =
+      setInterval(function(tab) mTabSelector.select(tab), 1000, aTab);
   },
 
   clear: function() {
@@ -322,13 +332,14 @@ var mTabSelector = {
 };
 
 /**
- * Handler to suspend the loading of a tab.
+ * Handles to suspend the loading of a tab
  */
 var mTabSuspender = {
   timers: {},
 
   set: function(aTab, aDelay) {
-    var timer = setTimeout(function(tab) mTabSuspender.stop(tab), aDelay || 0, aTab);
+    var timer =
+      setTimeout(function(tab) mTabSuspender.stop(tab), aDelay || 0, aTab);
 
     // The opened time of each tab is unique value.
     this.timers[aTab.getAttribute(kID.OPEN)] = timer;
@@ -351,7 +362,8 @@ var mTabSuspender = {
 
     var browser = gBrowser.getBrowserForTab(aTab);
 
-    var isBlank = (browser.currentURI && browser.currentURI.spec === 'about:blank');
+    var isBlank = browser.currentURI &&
+      browser.currentURI.spec === 'about:blank';
     var isBusy = aTab.hasAttribute('busy');
 
     // In restoring startup, a background tab has a 'pending' attribute.
@@ -403,7 +415,7 @@ var mTabSuspender = {
 };
 
 /**
- * Handler of startup.
+ * Handles the startup session
  */
 var mStartup = {
   init: function() {
@@ -427,7 +439,7 @@ var mStartup = {
 };
 
 /**
- * Handler of event of a tab.
+ * Handles the events of tabs
  */
 var mTabEvent = {
   init: function() {
@@ -516,13 +528,16 @@ var mTabEvent = {
 };
 
 
-// Helper functions.
+// Helper functions
 
 function isDuplicatedTab(aTab) {
   var tabs = getVisibleTabs(gBrowser.tabs);
   var openTime = aTab.getAttribute(kID.OPEN);
 
-  return tabs.some(function(tab) tab !== aTab && tab.getAttribute(kID.OPEN) === openTime);
+  return tabs.some(function(tab) {
+    return tab !== aTab &&
+           tab.getAttribute(kID.OPEN) === openTime;
+  });
 }
 
 function moveTabTo(aTab, aPosType, aBaseTab) {
@@ -540,7 +555,9 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
       pos = 0;
       break;
     case kPosType.PREV_ADJACENT:
-      pos = (0 < basePos) ? ((tabPos < basePos) ? basePos - 1 : basePos) : 0;
+      pos = (0 < basePos) ?
+        ((tabPos < basePos) ? basePos - 1 : basePos) :
+        0;
       break;
     case kPosType.LAST_END:
       pos = tabsNum - 1;
@@ -550,7 +567,9 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
       break;
     case kPosType.RELATED_INCREMENT:
       pos = getRelatedPosAfter(baseTab);
-      pos = (-1 < pos) ? ((pos < tabsNum - 1) ? pos + 1 : tabsNum - 1) : basePos + 1;
+      pos = (-1 < pos) ?
+        ((pos < tabsNum - 1) ? pos + 1 : tabsNum - 1) :
+        basePos + 1;
       break;
     default:
       throw 'kPosType is invalid for OPENPOS.';
@@ -625,7 +644,8 @@ function getRelatedTabAfter(aTab, aOption) {
   function isRelated(_tab) {
     if (_tab.hasAttribute(kID.ANCESTORS)) {
       let ancs = _tab.getAttribute(kID.ANCESTORS);
-      return ancs.indexOf(tabId) > -1 || (parentId && ancs.indexOf(parentId) === 0);
+      return ancs.indexOf(tabId) > -1 ||
+        (parentId && ancs.indexOf(parentId) === 0);
     }
     return false;
   }
@@ -724,9 +744,9 @@ function getPrevSelectedTab(aTab) {
       let time = parseInt(tab.getAttribute(kID.SELECT), 10);
       if (time > last) {
         last = time;
-         pos = i;
-       }
-     }
+        pos = i;
+      }
+    }
   }
 
   return (pos > -1) ? tabs[pos] : null;
@@ -752,7 +772,7 @@ function closeReadTabs(aOption) {
 }
 
 
-// Patches for system.
+// Patches for the default
 
 function modifySystemSetting() {
   const prefs = [
@@ -774,7 +794,7 @@ function modifySystemSetting() {
 }
 
 
-// Utilities.
+// Utilities
 
 var getTime = (function() {
   // Make sure to be a unique value.
@@ -805,7 +825,7 @@ function getVisibleTabs(aTabs)
   Array.filter(aTabs, function(tab) !tab.hidden);
 
 
-// Imports.
+// Imports
 
 function getPref(aKey)
   ucjsUtil.getPref(aKey);
@@ -826,7 +846,7 @@ function log(aMsg)
   ucjsUtil.logMessage('TabEx.uc.js', aMsg);
 
 
-// Entry point.
+// Entry point
 
 function TabEx_init() {
   modifySystemSetting();
@@ -840,7 +860,7 @@ function TabEx_init() {
 TabEx_init();
 
 
-// Export.
+// Export
 
 return {
   tabState: mTabState,
