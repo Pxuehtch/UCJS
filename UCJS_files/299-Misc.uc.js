@@ -136,11 +136,12 @@
   Function('gBrowser.tabContainer._positionPinnedTabs =' +
     gBrowser.tabContainer._positionPinnedTabs.toString().
     replace(
-      'let scrollButtonWidth = this.mTabstrip._scrollButtonDown.scrollWidth;',
+      'let scrollButtonWidth = this.mTabstrip._scrollButtonDown.getBoundingClientRect().width;',
       'let scrollButtonWidth = 0;'
     ).replace(
-      'width += tab.scrollWidth;',
-      'width += tab.scrollWidth + 3;' // add margin of a pinned tab.
+      'width += tab.getBoundingClientRect().width;',
+      // add margin of a pinned tab.
+      'width += tab.getBoundingClientRect().width + 3;'
     )
   )();
 
