@@ -6,7 +6,6 @@
 
 // @require Util.uc.js
 // @require [in action] Util.uc.js, TabEx.uc.js
-// @note [Additional] Lock tab function. see mTablock.
 // @note Some about:config preferences are changed. see @pref.
 // @note Some default functions are modified. see @modified.
 
@@ -161,8 +160,12 @@ var mTabBarClickEvent = {
     }
     // double-click on a selected tab.
     else if (isLDC && onTab) {
-      // Lock tab.
-      mTabLock.toggle(target);
+      // pin/unpin a tab
+      if (!target.pinned) {
+        gBrowser.pinTab(target);
+      } else {
+        gBrowser.unpinTab(target);
+      }
     }
     // middle-click on the selected tab.
     else if (isMC && onTab) {
@@ -185,78 +188,6 @@ var mTabBarClickEvent = {
     return '';
   }
 };
-
-
-/**
- * Function of lock tab.
- * @return {hash}
- *   @member init {function}
- *   @member toggle {function}
- */
-var mTabLock = (function() {
-  const kATTR_TABLOCK = 'ucjs_tablock';
-
-  function init() {
-    modifyPreferences();
-    modifyFunctions();
-
-    const ss = Cc['@mozilla.org/browser/sessionstore;1'].getService(Ci.nsISessionStore);
-    ss.persistTabAttribute(kATTR_TABLOCK);
-  }
-
-  function toggle(aTab) {
-    if (aTab.pinned)
-      return;
-
-    if (aTab.hasAttribute(kATTR_TABLOCK)) {
-      aTab.removeAttribute(kATTR_TABLOCK);
-    } else {
-      aTab.setAttribute(kATTR_TABLOCK, true);
-    }
-  }
-
-  function modifyPreferences() {
-    const prefs = [
-      // @pref see http://kb.mozillazine.org/Browser.tabs.closeButtons
-      // 2: Dont display any close buttons
-      {key: 'browser.tabs.closeButtons', value: 2}
-    ];
-
-    prefs.forEach(function(pref) {
-      var value = getPref(pref.key);
-      if (value !== pref.value) {
-        setPref(pref.key, pref.value);
-        addEvent([window, 'unload', function() setPref(pref.key, value), false]);
-      }
-    });
-  }
-
-  function modifyFunctions() {
-    // Do not close a locked tab.
-    // @modified chrome://browser/content/tabbrowser.xml::removeTab
-    var $removeTab = gBrowser.removeTab;
-    gBrowser.removeTab = function(aTab, aParams) {
-      if (aTab.hasAttribute(kATTR_TABLOCK))
-        return;
-      $removeTab.apply(this, arguments);
-    };
-
-    // Unlock before a tab is pinned.
-    // @modified chrome://browser/content/tabbrowser.xml::pinTab
-    var $pinTab = gBrowser.pinTab;
-    gBrowser.pinTab = function(aTab) {
-      if (aTab.hasAttribute(kATTR_TABLOCK)) {
-        aTab.removeAttribute(kATTR_TABLOCK);
-      }
-      $pinTab.apply(this, arguments);
-    };
-  }
-
-  return {
-    init: init,
-    toggle: toggle
-  };
-})();
 
 
 /**
@@ -290,7 +221,6 @@ function log(aMsg)
 
 function TabHandler_init() {
   mTabBarClickEvent.init();
-  mTabLock.init();
   makeCustomFunctions();
 }
 
