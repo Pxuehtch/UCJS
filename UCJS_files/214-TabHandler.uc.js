@@ -27,6 +27,24 @@ const kClickThresholdTimer = 200;
 
 
 /**
+ * Disable the default click action on the tab bar
+ * @value {boolean}
+ *   true: disabled completely
+ *   false: disabled by fast clicking, enebled by slow clicking
+ *
+ * @note the default actions;
+ *  middle-click on a tab: close a tab
+ *  double-click on a tabbar: open a new tab
+ *  middle-click on a tabbar: open a new tab
+ *  @see chrome://browser/content/tabbrowser.xml::
+ *    <binding id="tabbrowser-tabs">::
+ *    <handler event="dblclick">
+ *    <handler event="click">
+ */
+const kDisableDefaultClick = true;
+
+
+/**
  * Handler of the click event on the tab bar
  */
 var mTabBarClickEvent = {
@@ -68,7 +86,8 @@ var mTabBarClickEvent = {
         break;
       case 'click':
       case 'dblclick':
-        if (this.handled) {
+        if (kDisableDefaultClick ||
+            this.handled) {
           aEvent.preventDefault();
           aEvent.stopPropagation();
         }
