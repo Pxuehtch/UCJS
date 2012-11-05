@@ -128,6 +128,26 @@ var mTabBarClickEvent = {
     this.idledMouseUp = true;
   },
 
+  checkTargetArea: function(aEvent) {
+    var {target, originalTarget} = aEvent;
+
+    // skip an UI element on the tab bar
+    // TODO: There may be more items.
+    if (/^(?:menu|toolbar)/.test(originalTarget.localName))
+      return null;
+
+    // on a tab
+    if (target.localName === 'tab')
+      return target.selected ? 'foreTab' : 'backTab';
+
+    // on the margin where has no tabs in the tab strip
+    if (target.localName === 'tabs')
+      return 'notTabs';
+
+    // unknown case
+    return null;
+  },
+
   doAction: function() {
     var {target, button, ctrlKey, altKey, shiftKey, clicks, area} =
       this.state;
@@ -176,26 +196,6 @@ var mTabBarClickEvent = {
         ucjsUtil.removeTab(target, {ucjsCustomBlock: true});
         break;
     }
-  },
-
-  checkTargetArea: function(aEvent) {
-    var {target, originalTarget} = aEvent;
-
-    // skip an UI element on the tab bar
-    // TODO: There may be more items.
-    if (/^(?:menu|toolbar)/.test(originalTarget.localName))
-      return null;
-
-    // on a tab
-    if (target.localName === 'tab')
-      return target.selected ? 'foreTab' : 'backTab';
-
-    // on the margin where has no tabs in the tab strip
-    if (target.localName === 'tabs')
-      return 'notTabs';
-
-    // unknown case
-    return null;
   }
 };
 
