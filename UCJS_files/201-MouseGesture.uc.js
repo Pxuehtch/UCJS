@@ -71,7 +71,7 @@ const kGestureSet = [
     gestures: ['S&L'],
     name: '前のページへ',
     command: function() {
-      loadPage(ucjsNaviLink.getPrev());
+      ucjsUtil.loadPage(ucjsNaviLink.getPrev());
     }
   },
   {
@@ -85,7 +85,7 @@ const kGestureSet = [
     gestures: ['S&R'],
     name: '次のページへ',
     command: function() {
-      loadPage(ucjsNaviLink.getNext());
+      ucjsUtil.loadPage(ucjsNaviLink.getNext());
     }
   },
   {
@@ -1058,10 +1058,6 @@ function addEvent(aData)
 
 function getSelectionAtCursor(aOption)
   ucjsUtil.getSelectionAtCursor(aOption);
-
-function loadPage(aURL) {
-  ucjsUtil.loadPage(aURL);
-}
 
 function openTab(aURL, aBG) {
   ucjsUtil.openTab(aURL, {
