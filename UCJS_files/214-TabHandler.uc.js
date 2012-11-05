@@ -6,7 +6,6 @@
 
 // @require Util.uc.js
 // @require [for action] Util.uc.js, TabEx.uc.js
-// @note The default function is modified. see @modified
 
 
 (function() {
@@ -72,7 +71,7 @@ var mTabBarClickEvent = {
 
   handleEvent: function(aEvent) {
     // 1.show the default contextmenu
-    // 2.skip an UI element(button/menu) on the tab bar
+    // 2.do not handle an UI element(button/menu) on the tab bar
     if (aEvent.button === 2 ||
         !this.checkTargetArea(aEvent))
       return;
@@ -166,8 +165,9 @@ var mTabBarClickEvent = {
   checkTargetArea: function(aEvent) {
     var {target, originalTarget} = aEvent;
 
-    // skip an UI element on the tab bar
-    // TODO: There may be more items.
+    // skip UI elements on the tab bar
+    // TODO: probable 'menu*|toolbar*' are examined. More other items may be
+    // needed.
     if (/^(?:menu|toolbar)/.test(originalTarget.localName))
       return null;
 
@@ -175,11 +175,11 @@ var mTabBarClickEvent = {
     if (target.localName === 'tab')
       return target.selected ? 'foreTab' : 'backTab';
 
-    // on the margin where has no tabs in the tab strip
+    // on the margin where has no tabs in the tab bar
     if (target.localName === 'tabs')
       return 'notTabs';
 
-    // unknown case
+    // WORKAROUND: unknown case
     return null;
   },
 
