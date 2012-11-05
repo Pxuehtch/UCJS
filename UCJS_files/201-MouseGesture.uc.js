@@ -146,14 +146,14 @@ const kGestureSet = [
     gestures: ['DR'],
     name: 'タブを閉じる',
     command: function() {
-      gBrowser.removeCurrentTab();
+      ucjsUtil.removeTab(gBrowser.mCurrentTab, {ucjsCustomBlock: true});
     }
   },
   {
     gestures: ['DRDR'],
     name: '強制的にタブを閉じる',
     command: function() {
-      gBrowser.removeCurrentTab({ucjsForceClose: true});
+      ucjsUtil.removeTab(gBrowser.mCurrentTab);
     }
   },
   {

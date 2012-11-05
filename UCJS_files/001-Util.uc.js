@@ -633,6 +633,24 @@ function loadPage(aURL, aOption) {
   return gBrowser.mCurrentTab;
 }
 
+function removeTab(aTab, aParams) {
+  aParams = aParams || {};
+  var {ucjsCustomBlock} = aParams;
+  delete aParams.ucjsCustomBlock;
+
+  if (ucjsCustomBlock) {
+    // do not close;
+    // 1.pinned tab
+    // 2.only one unpinned tab
+    if (aTab.pinned ||
+        gBrowser.visibleTabs.length - gBrowser._numPinnedTabs <= 1) {
+      return;
+    }
+  }
+
+  gBrowser.removeTab(aTab, aParams);
+}
+
 
 // Misc. functions.
 
@@ -897,6 +915,7 @@ return {
   openURLIn: openURLIn,
   openTab: openTab,
   loadPage: loadPage,
+  removeTab: removeTab,
 
   convertForSystem:
     function(aStr) convertToUTF16(aStr, 'UTF-8'),

@@ -167,7 +167,7 @@ var mTabBarClickEvent = {
     // middle-click on the selected tab.
     else if (isMC && onTab) {
       // Close tab.
-      gBrowser.removeCurrentTab();
+      ucjsUtil.removeTab(target, {ucjsCustomBlock: true});
     }
   },
 
@@ -263,22 +263,6 @@ var mTabLock = (function() {
  * Miscellaneous customization.
  */
 function makeCustomFunctions() {
-  // Do not close the last normal tab.
-  // @modified chrome://browser/content/tabbrowser.xml::removeTab
-  var $removeTab = gBrowser.removeTab;
-  gBrowser.removeTab = function(aTab, aParams) {
-    aParams = aParams || {};
-    var {ucjsForceClose} = aParams;
-    delete aParams.ucjsForceClose;
-
-    if (!(ucjsForceClose && this.tabs.length > 1)) {
-      if (!aTab.hidden && this.visibleTabs.length - this._numPinnedTabs === 1)
-        return;
-    }
-
-    $removeTab.apply(this, arguments);
-  };
-
   // Cycled-focus tab with mouse-scroll on tab or tab strip.
   addEvent([gBrowser.tabContainer, 'DOMMouseScroll', function(aEvent) {
     gBrowser.tabContainer.advanceSelectedTab((aEvent.detail < 0) ? -1 : 1, true);

@@ -744,7 +744,7 @@ function closeReadTabs(aOption) {
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
     if (tab.hasAttribute(kID.READ)) {
-      gBrowser.removeTab(tab);
+      removeTab(tab, {ucjsCustomBlock: true});
     }
   }
 }
@@ -816,6 +816,9 @@ function addEvent(aData)
 
 function openTab(aURL)
   ucjsUtil.openTab(aURL);
+
+function removeTab(aTab, aParam)
+  ucjsUtil.removeTab(aTab, aParam);
 
 function log(aMsg)
   ucjsUtil.logMessage('TabEx.uc.js', aMsg);
