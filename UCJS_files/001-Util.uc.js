@@ -531,7 +531,8 @@ function openNewWindow(aURL, aOption) {
 }
 
 function openHomePages(aReplace, aFirstPage) {
-  var homePages = gHomeButton.getHomePage().split('|');
+  // @see chrome://browser/content/browser.js::gHomeButton
+  var homePages = window.gHomeButton.getHomePage().split('|');
   if (aFirstPage) {
     homePages = homePages[0];
   }
@@ -554,7 +555,8 @@ function openTabs(aURLs, aOption) {
   var firstTabAdded;
 
   if (ucjsReplace) {
-    BrowserOpenTab();
+    // @see chrome://browser/content/browser.js::BrowserOpenTab
+    window.BrowserOpenTab();
     gBrowser.removeAllTabsBut(gBrowser.mCurrentTab);
     firstTabAdded = loadPage(aURLs.shift(), aOption);
   } else {
