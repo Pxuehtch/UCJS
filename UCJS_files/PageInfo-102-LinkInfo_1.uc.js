@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name LinkInfo.uc.js
-// @description Link information for a pageinfo dialogue.
+// @description Add the information of links to the pageinfo window.
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
 
@@ -40,7 +40,7 @@ const kNote = {
 };
 
 
-// Handlers.
+// Handlers
 
 var gLinkView = null;
 var gLinkInfoBuilt = false;
@@ -48,7 +48,8 @@ var gLinkInfoBuilt = false;
 function init() {
   if (!gLinkView) {
     let tree = document.getElementById(kID.linkTree);
-    let copyColumnIndex = tree.columns.getNamedColumn(kID.addressColumn).index;
+    let copyColumnIndex =
+      tree.columns.getNamedColumn(kID.addressColumn).index;
 
     // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
     gLinkView = new pageInfoTreeView(kID.linkTree, copyColumnIndex);
@@ -67,7 +68,8 @@ function build() {
       goThroughFrames(gDocument, gWindow);
     } catch (e) {
       // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]:
-      // gWindow.frames.length is undefined after closing the target page which have frames.
+      // gWindow.frames.length is undefined after closing the target page
+      // which have frames.
       return;
     }
     LI_processFrames();
@@ -77,7 +79,8 @@ function build() {
 function LI_processFrames() {
   if (gFrameList.length) {
     let doc = gFrameList[0];
-    let iterator = doc.createTreeWalker(doc, NodeFilter.SHOW_ELEMENT, grabLink, true);
+    let iterator = doc.createTreeWalker(
+      doc, NodeFilter.SHOW_ELEMENT, grabLink, true);
 
     gFrameList.shift();
 
@@ -106,7 +109,8 @@ function grabLink(aNode) {
   } else if (aNode instanceof HTMLLinkElement && aNode.href) {
     let target = aNode.rel || aNode.rev || '';
     addLink([getText(aNode, target), aNode.href, kType.link, target]);
-  } else if ((aNode instanceof HTMLInputElement || aNode instanceof HTMLButtonElement) && aNode.type) {
+  } else if ((aNode instanceof HTMLInputElement ||
+              aNode instanceof HTMLButtonElement) && aNode.type) {
     let name = '', address = '', target = '';
     switch (aNode.type.toLowerCase()) {
       case 'image':
@@ -123,7 +127,8 @@ function grabLink(aNode) {
     }
   } else if (aNode instanceof HTMLAreaElement && aNode.href) {
     addLink([getText(aNode), aNode.href, kType.area, aNode.target]);
-  } else if ((aNode instanceof HTMLQuoteElement || aNode instanceof HTMLModElement) && aNode.cite) {
+  } else if ((aNode instanceof HTMLQuoteElement ||
+              aNode instanceof HTMLModElement) && aNode.cite) {
     addLink([getText(aNode), aNode.cite, kType[aNode.localName]]);
   } else if (aNode.hasAttributeNS(XLinkNS, 'href')) {
     let address = '',
@@ -144,7 +149,8 @@ function grabLink(aNode) {
 
 // @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
 function getText(aNode, aDefault) {
-  return (getValueText(aNode) || aNode.title || aDefault || kNote.error).substr(0, 50);
+  return (getValueText(aNode) || aNode.title || aDefault || kNote.error).
+    substr(0, 50);
 }
 
 function addLink(aValueArray) {
@@ -152,7 +158,7 @@ function addLink(aValueArray) {
 }
 
 /**
- * Open URL of a clicked row.
+ * Opens URL of a clicked row
  */
 function openLink(aEvent) {
   if (aEvent.originalTarget.localName != 'treechildren')
