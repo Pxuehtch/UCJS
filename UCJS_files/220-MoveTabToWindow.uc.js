@@ -78,23 +78,27 @@ function updateMenu(aEvent) {
     return;
 
   var menu = $ID(kBundle.menu.id);
-  var tabs = gBrowser.tabs;
-  var wins = getWindowsState(getContextTab());
 
-  if (tabs.length === 1 && wins.length === 0) {
+  var contextTab = getContextTab();
+  var tabsNum = gBrowser.tabs.length;
+  var wins = getWindowsState(contextTab);
+
+  // 1.disable on a pinned tab
+  // 2.meaningless at one tab window and no other window
+  if (contextTab.pinned || (tabsNum <= 1 && !wins.length)) {
     menu.disabled = true;
     return;
   }
   menu.disabled = false;
 
+  var item_newWindow = $ID(kBundle.newWindow.id);
+  item_newWindow.disabled = tabsNum <= 1;
+
   var popup = menu.menupopup;
 
-  var item_newWindow = $ID(kBundle.newWindow.id);
   while (popup.firstChild && popup.firstChild !== item_newWindow) {
     popup.removeChild(popup.firstChild);
   }
-
-  item_newWindow.disabled = tabs.length === 1;
 
   if (wins.length) {
     wins.forEach(function(win) {
