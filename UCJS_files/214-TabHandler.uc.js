@@ -134,22 +134,25 @@ var mTabBarClickEvent = {
     var isLC = button === 0 && clicks === 1,
         isLDC = button === 0 && clicks === 2,
         isMC = button === 1 && clicks === 1;
-    var onTab = area === 'tab', onTabbar = area === 'tabbar';
+    // selected tab / background tab / not tabs area
+    var foreTab = area === 'foreTab',
+        backTab = area === 'backTab',
+        notTabs = area === 'notTabs';
 
     // double-click on tab-bar.
-    if (isLDC && onTabbar) {
+    if (isLDC && notTabs) {
       // Open home pages.
       // shift: The opened pages will be closed.
       // ctrl: If multiple homepages, the first is chosen.
       ucjsUtil.openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
     }
     // middle-click on tab-bar.
-    else if (isMC && onTabbar) {
+    else if (isMC && notTabs) {
       // Reopen prev-closed tab.
       undoCloseTab();
     }
     // click on a selected tab.
-    else if (isLC && onTab) {
+    else if (isLC && foreTab) {
       if (shiftKey) {
         // Focus/reopen the opener tab.
         ucjsTabEx.focusOpenerTab(target, {undoClose: true});
@@ -159,7 +162,7 @@ var mTabBarClickEvent = {
       }
     }
     // double-click on a selected tab.
-    else if (isLDC && onTab) {
+    else if (isLDC && foreTab) {
       // pin/unpin a tab
       if (!target.pinned) {
         gBrowser.pinTab(target);
@@ -168,7 +171,7 @@ var mTabBarClickEvent = {
       }
     }
     // middle-click on the selected tab.
-    else if (isMC && onTab) {
+    else if (isMC && (foreTab || backTab)) {
       // Close tab.
       ucjsUtil.removeTab(target, {ucjsCustomBlock: true});
     }
@@ -177,15 +180,21 @@ var mTabBarClickEvent = {
   checkTargetArea: function(aEvent) {
     var {target, originalTarget} = aEvent;
 
-    // On a selected tab.
-    if (target.localName === 'tab' && target.selected) {
-      return 'tab';
-    }
-    // On the margin of a tab strip.
-    if (target.localName !== 'tab' && !/^(?:menu|toolbutton)/.test(originalTarget.localName)) {
-      return 'tabbar';
-    }
-    return '';
+    // skip an UI element on the tab bar
+    // TODO: There may be more items.
+    if (/^(?:menu|toolbar)/.test(originalTarget.localName))
+      return null;
+
+    // on a tab
+    if (target.localName === 'tab')
+      return target.selected ? 'foreTab' : 'backTab';
+
+    // on the margin where has no tabs in the tab strip
+    if (target.localName === 'tabs')
+      return 'notTabs';
+
+    // unknown case
+    return null;
   }
 };
 
