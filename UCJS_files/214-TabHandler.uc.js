@@ -166,8 +166,8 @@ var mTabBarClickEvent = {
     var {target, originalTarget} = aEvent;
 
     // skip UI elements on the tab bar
-    // TODO: probable 'menu*|toolbar*' are examined. More other items may be
-    // needed.
+    // TODO: The probable elements 'menu*|toolbar*' are examined. More other
+    // items may be needed.
     if (/^(?:menu|toolbar)/.test(originalTarget.localName))
       return null;
 

@@ -177,8 +177,8 @@ function getSelectionAtCursor(aOption) {
       break;
     }
   }
-  // WORKAROUND: When |text| is empty at event mode, it may be that
-  // |event.rangeOffset| is wrong. So rescan ranges with the client coordinates.
+  // WORKAROUND: |event.rangeOffset| may be wrong when |text| is empty at the
+  // event mode. So rescan the ranges with the client coordinates.
   if (event && !text) {
     let {clientX: x, clientY: y} = event;
     let rect;

@@ -341,7 +341,7 @@ var mTabSuspender = {
     var timer =
       setTimeout(function(tab) mTabSuspender.stop(tab), aDelay || 0, aTab);
 
-    // The opened time of each tab is unique value.
+    // The opened time of each tab is an unique value.
     this.timers[aTab.getAttribute(kID.OPEN)] = timer;
   },
 
@@ -798,7 +798,7 @@ function modifySystemSetting() {
 // Utilities
 
 var getTime = (function() {
-  // Make sure to be a unique value.
+  // Make sure to be an unique value.
   var time = 0;
 
   return function() {
