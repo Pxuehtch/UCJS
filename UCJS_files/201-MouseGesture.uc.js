@@ -167,7 +167,7 @@ const kGestureSet = [
     gestures: ['S&DRU'],
     name: '他のタブを閉じる',
     command: function() {
-      gBrowser.removeAllTabsBut(gBrowser.selectedTab);
+      ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
     }
   },
   {

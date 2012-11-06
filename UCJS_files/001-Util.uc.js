@@ -560,7 +560,7 @@ function openTabs(aURLs, aOption) {
   if (ucjsReplace) {
     // @see chrome://browser/content/browser.js::BrowserOpenTab
     window.BrowserOpenTab();
-    gBrowser.removeAllTabsBut(gBrowser.selectedTab);
+    removeAllTabsBut(gBrowser.selectedTab);
     firstTabAdded = loadPage(aURLs.shift(), aOption);
   } else {
     if (!inBackground) {
@@ -652,6 +652,31 @@ function removeTab(aTab, aOption) {
   }
 
   gBrowser.removeTab(aTab);
+}
+
+/**
+ * Alternative |gBrowser.removeAllTabsBut|
+ * 1.does not warn against closing multiple tabs
+ * 2.does not close blocked tabs
+ *
+ * @see chrome://browser/content/tabbrowser.xml::removeAllTabsBut
+ */
+function removeAllTabsBut(aTab) {
+  if (aTab.pinned)
+    return;
+
+  if (!aTab.hidden && aTab !== gBrowser.selectedTab) {
+    gBrowser.selectedTab = aTab;
+  }
+
+  var tabs = gBrowser.visibleTabs;
+
+  for (let i = tabs.length - 1, tab; i >= 0; i--) {
+    tab = tabs[i];
+    if (tab !== aTab && !tab.pinned) {
+      removeTab(tab, {safeBlock: true});
+    }
+  }
 }
 
 
@@ -919,6 +944,7 @@ return {
   openTab: openTab,
   loadPage: loadPage,
   removeTab: removeTab,
+  removeAllTabsBut: removeAllTabsBut,
 
   convertForSystem:
     function(aStr) convertToUTF16(aStr, 'UTF-8'),
