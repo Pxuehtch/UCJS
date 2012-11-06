@@ -89,7 +89,7 @@ const kGestureSet = [
     }
   },
   {
-    gestures: ['LW-', 'LW+', 'RW-', 'RW+'],
+    gestures: ['!LW-', '!RW-'],
     name: 'ページの履歴',
     command: function({event}) {
       $('backForwardMenu').
@@ -157,21 +157,21 @@ const kGestureSet = [
     }
   },
   {
-    gestures: ['S&DRL'],
+    gestures: ['S&DRL', 'DRLW+', 'DRLW-'],
     name: '既読のタブを閉じる',
     command: function() {
       ucjsTabEx.closeReadTabs();
     }
   },
   {
-    gestures: ['S&DRU'],
+    gestures: ['S&DRU', 'DRUW+', 'DRUW-'],
     name: '他のタブを閉じる',
     command: function() {
       ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
     }
   },
   {
-    gestures: ['S&DRUL'],
+    gestures: ['S&DRUL', 'DRULW+', 'DRULW-'],
     name: 'ホームだけにする',
     command: function() {
       ucjsUtil.openHomePages({doReplace: true});
