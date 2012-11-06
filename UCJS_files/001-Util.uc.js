@@ -633,12 +633,15 @@ function loadPage(aURL, aOption) {
   return gBrowser.selectedTab;
 }
 
-function removeTab(aTab, aParams) {
-  aParams = aParams || {};
-  var {ucjsCustomBlock} = aParams;
-  delete aParams.ucjsCustomBlock;
+/**
+ * Alternative |gBrowser.removeTab|
+ * @see chrome://browser/content/tabbrowser.xml::removeTab
+ */
+function removeTab(aTab, aOption) {
+  aOption = aOption || {};
+  var {safeBlock} = aOption;
 
-  if (ucjsCustomBlock) {
+  if (safeBlock) {
     // do not close;
     // 1.pinned tab
     // 2.only one unpinned tab
@@ -648,7 +651,7 @@ function removeTab(aTab, aParams) {
     }
   }
 
-  gBrowser.removeTab(aTab, aParams);
+  gBrowser.removeTab(aTab);
 }
 
 

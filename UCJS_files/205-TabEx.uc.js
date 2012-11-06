@@ -766,7 +766,7 @@ function closeReadTabs(aOption) {
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
     if (tab.hasAttribute(kID.READ)) {
-      removeTab(tab, {ucjsCustomBlock: true});
+      removeTab(tab, {safeBlock: true});
     }
   }
 }

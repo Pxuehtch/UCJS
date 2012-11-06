@@ -228,7 +228,7 @@ var mTabBarClickEvent = {
         break;
       case (MC && (foreTab || backTab)):
         // close a tab
-        ucjsUtil.removeTab(target, {ucjsCustomBlock: true});
+        ucjsUtil.removeTab(target, {safeBlock: true});
         break;
     }
   }
