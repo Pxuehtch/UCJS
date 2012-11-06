@@ -760,9 +760,10 @@ function getNextTab(aTab) {
 }
 
 function closeReadTabs(aOption) {
-  var {wholeScan} = aOption || {};
+  var {allTabs} = aOption || {};
 
-  var tabs = wholeScan ? gBrowser.tabs : gBrowser.visibleTabs;
+  var tabs = allTabs ? gBrowser.tabs : gBrowser.visibleTabs;
+
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
     if (tab.hasAttribute(kID.READ)) {
