@@ -531,7 +531,7 @@ var mTabEvent = {
 // Helper functions
 
 function isDuplicatedTab(aTab) {
-  var tabs = getVisibleTabs(gBrowser.tabs);
+  var tabs = gBrowser.visibleTabs;
   var openTime = aTab.getAttribute(kID.OPEN);
 
   return tabs.some(function(tab) {
@@ -541,7 +541,7 @@ function isDuplicatedTab(aTab) {
 }
 
 function moveTabTo(aTab, aPosType, aBaseTab) {
-  var tabs = getVisibleTabs(gBrowser.tabs);
+  var tabs = gBrowser.visibleTabs;
   var tabsNum = tabs.length;
   var baseTab = aBaseTab || gBrowser.selectedTab;
   var basePos = Array.indexOf(tabs, baseTab);
@@ -650,7 +650,7 @@ function getRelatedTabAfter(aTab, aOption) {
     return false;
   }
 
-  var tabs = getVisibleTabs(gBrowser.tabs);
+  var tabs = gBrowser.visibleTabs;
   var tabPos = Array.indexOf(tabs, aTab);
   if (tabPos === -1)
     return null;
@@ -694,7 +694,7 @@ function getAncestorTab(aTab, aOption) {
   var ancs = baseTab.getAttribute(kID.ANCESTORS).split(' ');
   var traceLen = traceBack ? ancs.length : 1;
 
-  var tabs = getVisibleTabs(gBrowser.tabs);
+  var tabs = gBrowser.visibleTabs;
   var undoList = undoClose && mSessionStore.getClosedTabList();
 
   for (let i = 0, anc; i < traceLen; i++) {
@@ -734,7 +734,7 @@ function focusPrevSelectedTab(aTab) {
 }
 
 function getPrevSelectedTab(aTab) {
-  var tabs = getVisibleTabs(gBrowser.tabs);
+  var tabs = gBrowser.visibleTabs;
   var baseTab = aTab || gBrowser.selectedTab;
   var pos = -1;
 
@@ -753,7 +753,7 @@ function getPrevSelectedTab(aTab) {
 }
 
 function getNextTab(aTab) {
-  var tabs = getVisibleTabs(gBrowser.tabs);
+  var tabs = gBrowser.visibleTabs;
   var pos = Array.indexOf(tabs, aTab);
 
   return (-1 < pos && pos < tabs.length - 1) ? tabs[pos + 1] : null;
@@ -762,7 +762,7 @@ function getNextTab(aTab) {
 function closeReadTabs(aOption) {
   var {wholeScan} = aOption || {};
 
-  var tabs = wholeScan ? gBrowser.tabs : getVisibleTabs(gBrowser.tabs);
+  var tabs = wholeScan ? gBrowser.tabs : gBrowser.visibleTabs;
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
     if (tab.hasAttribute(kID.READ)) {
@@ -820,9 +820,6 @@ function getURLStr(aVal)
 
 function isHTTP(aVal)
   /^https?:/.test(getURLStr(aVal));
-
-function getVisibleTabs(aTabs)
-  Array.filter(aTabs, function(tab) !tab.hidden);
 
 
 // Imports
