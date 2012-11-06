@@ -204,7 +204,7 @@ var mTabOpener = {
     // A new opened tab.
     } else if (!aTab.hasAttribute(kID.OPEN)) {
       if (mReferrer.exists(aTab)) {
-        let parent = gBrowser.mCurrentTab;
+        let parent = gBrowser.selectedTab;
         let ancs = parent.getAttribute(kID.OPEN);
         if (parent.hasAttribute(kID.ANCESTORS)) {
           ancs += ' ' + parent.getAttribute(kID.ANCESTORS);
@@ -434,7 +434,7 @@ var mStartup = {
       }
     });
 
-    mTabSelector.update(gBrowser.mCurrentTab);
+    mTabSelector.update(gBrowser.selectedTab);
   }
 };
 
@@ -543,7 +543,7 @@ function isDuplicatedTab(aTab) {
 function moveTabTo(aTab, aPosType, aBaseTab) {
   var tabs = getVisibleTabs(gBrowser.tabs);
   var tabsNum = tabs.length;
-  var baseTab = aBaseTab || gBrowser.mCurrentTab;
+  var baseTab = aBaseTab || gBrowser.selectedTab;
   var basePos = Array.indexOf(tabs, baseTab);
   var tabPos = Array.indexOf(tabs, aTab);
   var pos = -1;
@@ -687,7 +687,7 @@ function focusOpenerTab(aTab, aOption) {
 function getAncestorTab(aTab, aOption) {
   var {traceBack, undoClose} = aOption || {};
 
-  var baseTab = aTab || gBrowser.mCurrentTab;
+  var baseTab = aTab || gBrowser.selectedTab;
   if (!baseTab.hasAttribute(kID.ANCESTORS))
     return null;
 
@@ -735,7 +735,7 @@ function focusPrevSelectedTab(aTab) {
 
 function getPrevSelectedTab(aTab) {
   var tabs = getVisibleTabs(gBrowser.tabs);
-  var baseTab = aTab || gBrowser.mCurrentTab;
+  var baseTab = aTab || gBrowser.selectedTab;
   var pos = -1;
 
   for (let i = 0, tab, last = 0; i < tabs.length; i++) {

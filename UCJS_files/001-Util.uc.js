@@ -560,7 +560,7 @@ function openTabs(aURLs, aOption) {
   if (ucjsReplace) {
     // @see chrome://browser/content/browser.js::BrowserOpenTab
     window.BrowserOpenTab();
-    gBrowser.removeAllTabsBut(gBrowser.mCurrentTab);
+    gBrowser.removeAllTabsBut(gBrowser.selectedTab);
     firstTabAdded = loadPage(aURLs.shift(), aOption);
   } else {
     if (!inBackground) {
@@ -630,7 +630,7 @@ function loadPage(aURL, aOption) {
 
   gBrowser.loadURIWithFlags(URL, flags, referrerURI, charset, postData);
 
-  return gBrowser.mCurrentTab;
+  return gBrowser.selectedTab;
 }
 
 function removeTab(aTab, aParams) {

@@ -132,7 +132,7 @@ const kGestureSet = [
     name: 'タブを複製',
     command: function() {
       // @see chrome://browser/content/browser.js::duplicateTabIn
-      window.duplicateTabIn(gBrowser.mCurrentTab, 'tab');
+      window.duplicateTabIn(gBrowser.selectedTab, 'tab');
     }
   },
   {
@@ -146,14 +146,14 @@ const kGestureSet = [
     gestures: ['DR'],
     name: 'タブを閉じる',
     command: function() {
-      ucjsUtil.removeTab(gBrowser.mCurrentTab, {ucjsCustomBlock: true});
+      ucjsUtil.removeTab(gBrowser.selectedTab, {ucjsCustomBlock: true});
     }
   },
   {
     gestures: ['DRDR'],
     name: '強制的にタブを閉じる',
     command: function() {
-      ucjsUtil.removeTab(gBrowser.mCurrentTab);
+      ucjsUtil.removeTab(gBrowser.selectedTab);
     }
   },
   {
@@ -167,7 +167,7 @@ const kGestureSet = [
     gestures: ['S&DRU'],
     name: '他のタブを閉じる',
     command: function() {
-      gBrowser.removeAllTabsBut(gBrowser.mCurrentTab);
+      gBrowser.removeAllTabsBut(gBrowser.selectedTab);
     }
   },
   {

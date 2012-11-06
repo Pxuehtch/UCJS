@@ -162,13 +162,13 @@ var mReferrer = {
   },
 
   exists: function()
-    this.ref && this.ref.exists(gBrowser.mCurrentTab),
+    this.ref && this.ref.exists(gBrowser.selectedTab),
 
   getURL: function()
-    this.ref && this.ref.getURL(gBrowser.mCurrentTab),
+    this.ref && this.ref.getURL(gBrowser.selectedTab),
 
   getTitle: function()
-    this.ref && this.ref.getTitle(gBrowser.mCurrentTab)
+    this.ref && this.ref.getTitle(gBrowser.selectedTab)
 };
 
 
@@ -335,7 +335,7 @@ var mHistory = {
       return;
 
     if (aEvent.button === 1) {
-      gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.mCurrentTab);
+      gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
     }
     gBrowser.webNavigation.gotoIndex(idx);
   },
