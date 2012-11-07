@@ -531,7 +531,7 @@ var mTabEvent = {
 // Helper functions
 
 function isDuplicatedTab(aTab) {
-  var tabs = gBrowser.visibleTabs;
+  var tabs = getVisibleTabs();
   var openTime = aTab.getAttribute(kID.OPEN);
 
   return tabs.some(function(tab) {
@@ -541,7 +541,7 @@ function isDuplicatedTab(aTab) {
 }
 
 function moveTabTo(aTab, aPosType, aBaseTab) {
-  var tabs = gBrowser.visibleTabs;
+  var tabs = getVisibleTabs();
   var tabsNum = tabs.length;
   var baseTab = aBaseTab || gBrowser.selectedTab;
   var basePos = Array.indexOf(tabs, baseTab);
@@ -650,7 +650,7 @@ function getRelatedTabAfter(aTab, aOption) {
     return false;
   }
 
-  var tabs = gBrowser.visibleTabs;
+  var tabs = getVisibleTabs();
   var tabPos = Array.indexOf(tabs, aTab);
   if (tabPos === -1)
     return null;
@@ -694,7 +694,7 @@ function getAncestorTab(aTab, aOption) {
   var ancs = baseTab.getAttribute(kID.ANCESTORS).split(' ');
   var traceLen = traceBack ? ancs.length : 1;
 
-  var tabs = gBrowser.visibleTabs;
+  var tabs = getVisibleTabs();
   var undoList = undoClose && mSessionStore.getClosedTabList();
 
   for (let i = 0, anc; i < traceLen; i++) {
@@ -734,7 +734,7 @@ function focusPrevSelectedTab(aTab) {
 }
 
 function getPrevSelectedTab(aTab) {
-  var tabs = gBrowser.visibleTabs;
+  var tabs = getVisibleTabs();
   var baseTab = aTab || gBrowser.selectedTab;
   var pos = -1;
 
@@ -753,7 +753,7 @@ function getPrevSelectedTab(aTab) {
 }
 
 function getNextTab(aTab) {
-  var tabs = gBrowser.visibleTabs;
+  var tabs = getVisibleTabs();
   var pos = Array.indexOf(tabs, aTab);
 
   return (-1 < pos && pos < tabs.length - 1) ? tabs[pos + 1] : null;
@@ -762,7 +762,7 @@ function getNextTab(aTab) {
 function closeReadTabs(aOption) {
   var {allTabs} = aOption || {};
 
-  var tabs = allTabs ? gBrowser.tabs : gBrowser.visibleTabs;
+  var tabs = allTabs ? gBrowser.tabs : getVisibleTabs();
 
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
@@ -770,6 +770,15 @@ function closeReadTabs(aOption) {
       removeTab(tab, {safeBlock: true});
     }
   }
+}
+
+/*
+ * Gets pinned tabs and tabs in the active group
+ * @note Include a closing tab to handle it on |TabClose| event.
+ * Alternative |gBrowser.visibleTabs| which has no closing tabs.
+ */
+function getVisibleTabs() {
+  return Array.filter(gBrowser.tabs, function(tab) !tab.hidden);
 }
 
 
