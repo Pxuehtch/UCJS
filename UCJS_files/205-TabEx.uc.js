@@ -533,8 +533,6 @@ var mStartup = {
   },
 
   isRestored: function(aTab) {
-      (this.restoredTabs && this.restoredTabs.length));
-
     // |restoredTabs| is created only in the restore startup and it is deleted
     // when all startup restored tabs is passed here
     if (!this.restoredTabs)
