@@ -1253,46 +1253,57 @@ var mUpperNavi = (function() {
 /**
  * Wrapper of URI object.
  */
-function getCurrentURI(aFlags) createURI(gBrowser.currentURI, aFlags);
+function getCurrentURI(aFlags)
+  createURI(gBrowser.currentURI, aFlags);
 
 function createURI(aURI, aFlags) {
   if (!(aURI instanceof Ci.nsIURI)) {
-    aURI = makeURI(aURI, null, null);
+    // @see chrome://global/content/contentAreaUtils.js::makeURI
+    aURI = window.makeURI(aURI, null, null);
   }
 
-  var host;
+  var mHost;
+  var {scheme: mScheme, prePath: mPrePath, path: mPath, spec: mSpec} = aURI;
+
   try {
-    // host of 'file:///C:/...' is ''.
-    host = aURI.host;
+    // returns an empty string for the host of 'file:///C:/...'
+    mHost = aURI.host;
   } catch (e) {
-    host = aURI.spec.
+    mHost = aURI.spec.
       match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
   }
 
-  var {path, spec} = aURI;
   switch (aFlags) {
     case 'NO_QUERY':
-      path = removeQuery(path);
-      spec = removeQuery(spec);
+      mPath = removeQuery(mPath);
+      mSpec = removeQuery(mSpec);
       // Fall through.
-
     case 'NO_REF':
-      path = removeRef(path);
-      spec = removeRef(spec);
+      mPath = removeRef(mPath);
+      mSpec = removeRef(mSpec);
       break;
   }
 
-  function removeQuery(a) a.replace(/\?.*$/, '');
-  function removeRef(a) a.replace(/#.*$/, '');
+  function removeQuery(URL)
+    URL.replace(/\?.*$/, '');
+
+  function removeRef(URL)
+    URL.replace(/#.*$/, '');
+
+  function hasPath()
+    mPath !== '/';
+
+  function isSamePage(URL)
+    removeRef(URL) === removeRef(mSpec);
 
   return {
-    scheme: aURI.scheme,
-    host: host,
-    prePath: aURI.prePath,
-    path: path,
-    spec: spec,
-    hasPath: function() path !== '/',
-    isSamePage: function(aTestURL) removeRef(aTestURL) === removeRef(spec)
+    scheme: mScheme,
+    host: mHost,
+    prePath: mPrePath,
+    path: mPath,
+    spec: mSpec,
+    hasPath: hasPath,
+    isSamePage: isSamePage
   };
 }
 
