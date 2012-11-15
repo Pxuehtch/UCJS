@@ -211,11 +211,11 @@ var mTabBarClickEvent = {
         break;
       case (LC && foreTab):
         if (shiftKey) {
-          // focus/reopen the opener tab
-          ucjsTabEx.focusOpenerTab(target, {undoClose: true});
+          // select/reopen the opener tab
+          ucjsTabEx.selectOpenerTab(target, {undoClose: true});
         } else {
-          // focus the prev-selected tab
-          ucjsTabEx.focusPrevSelectedTab(target);
+          // select/reopen the previous selected tab
+          ucjsTabEx.selectPrevSelectedTab(target, {undoClose: true});
         }
         break;
       case (LDC && foreTab):
