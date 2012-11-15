@@ -240,6 +240,8 @@ function initAllTabsMenu() {
   var alltabsPopup = $(kID.ALLTABS_POPUP);
   addEvent([alltabsPopup, 'popupshowing', onPopupShowing, true]);
   addEvent([alltabsPopup, 'popuphidden', onPopupHidden, true]);
+  // WORKAROUND: See onCommand()
+  addEvent([alltabsPopup, 'click', onCommand, false]);
 
   var groupsMenu = alltabsPopup.insertBefore(
     $E('menu', {
@@ -315,6 +317,18 @@ function onCommand(aEvent) {
   // Menuitem of each tab.
   else if (element.hasAttribute(kID.ATTR_TABPOS)) {
     mTabs.selectAt(element.getAttribute(kID.ATTR_TABPOS));
+  }
+
+  // Menuitem of a tab in the alltabs menu
+  // WORKAROUND: An *unselected* tab will be selected by the command of the
+  // menuitem with a tab of the active group. But nothing happens for a
+  // *selected* tab. It is especially wrong that a selected tab which is
+  // scrolled out stays invisible. So ensures to make a selected tab visible.
+  // @see chrome://browser/content/tabbrowser.xml::
+  // <binding id="tabbrowser-alltabs-popup">::<handler event="command">
+  else if (element.parentNode.id === kID.ALLTABS_POPUP &&
+           element.tab && element.tab.selected) {
+    gBrowser.tabContainer.mTabstrip.ensureElementIsVisible(element.tab);
   }
 }
 
