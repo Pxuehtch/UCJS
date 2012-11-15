@@ -19,8 +19,8 @@
  * click
  * @value {integer} millisecond
  *
- * @note The default click is deactivated at 'mouseup' in time, otherwise it
- * is activated.
+ * @note The default click is deactivated at 'mouseup' in time, otherwise
+ * activated.
  */
 const kClickThresholdTimer = 200;
 
@@ -29,16 +29,16 @@ const kClickThresholdTimer = 200;
  * Disable the default click action on the tab bar
  * @value {boolean}
  *   true: disabled completely
- *   false: disabled by fast clicking, enebled by slow clicking
+ *   false: disabled when the custom click is recognized, otherwise enabled
  *
  * @note the default actions;
- *  middle-click on a tab: close a tab
- *  double-click on a tabbar: open a new tab
- *  middle-click on a tabbar: open a new tab
- *  @see chrome://browser/content/tabbrowser.xml::
- *    <binding id="tabbrowser-tabs">::
- *    <handler event="dblclick">
- *    <handler event="click">
+ *   middle-click on a tab: closes a tab
+ *   double-click on a tabbar: opens a new tab
+ *   middle-click on a tabbar: opens a new tab
+ *   @see chrome://browser/content/tabbrowser.xml::
+ *     <binding id="tabbrowser-tabs">::
+ *     <handler event="dblclick">
+ *     <handler event="click">
  */
 const kDisableDefaultClick = true;
 
@@ -239,7 +239,7 @@ var mTabBarClickEvent = {
  * Miscellaneous customization
  */
 function makeCustomFunctions() {
-  // cycle-focus tabs with the wheel scroll on a tab or tabbar
+  // cycle-select tabs with the wheel scroll on a tab or tabbar
   addEvent([gBrowser.tabContainer, 'DOMMouseScroll', function(aEvent) {
     gBrowser.tabContainer.
     advanceSelectedTab((aEvent.detail < 0) ? -1 : 1, true);

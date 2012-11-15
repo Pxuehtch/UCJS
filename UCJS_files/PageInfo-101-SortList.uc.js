@@ -71,7 +71,7 @@ pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
     sort(this.data, aColumn.index, direction === 'ascending');
   }
 
-  // Focus the first row.
+  // Give focus on the first row.
   this.selection.clearSelection();
   this.selection.select(0);
   this.invalidate();

@@ -106,7 +106,7 @@ var mTabView = {
 };
 
 /**
- * Handler for tab groups
+ * Tab groups handler
  */
 var mTabGroups = {
   groups: [],
@@ -273,7 +273,9 @@ function makeGroupMenu(aGroupItem, aOption) {
       title: title || kFormat.UNTITLED_GROUP
     }),
     disabled: current || count === 0 || null,
-    tooltiptext: current ? kFormat.CURRENT_GROUP : (count === 0 ? kFormat.EMPTY_GROUP : null),
+    tooltiptext: current ?
+      kFormat.CURRENT_GROUP :
+      (count === 0 ? kFormat.EMPTY_GROUP : null),
     user: [kID.ATTR_GROUPINDEX, index]
   });
 
@@ -302,7 +304,7 @@ function onCommand(aEvent) {
 
   var element = aEvent.target;
 
-  // Menu of each group.
+  // Menu of a group in the groups menu
   if (element.hasAttribute(kID.ATTR_GROUPINDEX)) {
     Array.some(element.menupopup.childNodes, function(item) {
       if (item.selected) {
@@ -314,7 +316,7 @@ function onCommand(aEvent) {
     });
   }
 
-  // Menuitem of each tab.
+  // Menuitem of a tab in the group menu in the groups menu
   else if (element.hasAttribute(kID.ATTR_TABPOS)) {
     mTabs.selectAt(element.getAttribute(kID.ATTR_TABPOS));
   }
@@ -336,7 +338,7 @@ function onPopupShowing(aEvent) {
   aEvent.stopPropagation();
   var popup = aEvent.target;
 
-  // Popup of tabview-button tooltip
+  // Popup of the tabview-button tooltip
   if (popup.id === kID.TABVIEW_TOOLTIP) {
     popup.setAttribute('label',
       format(kFormat.TABVIEW_TOOLTIP, {
@@ -347,7 +349,7 @@ function onPopupShowing(aEvent) {
     );
   }
 
-  // Popup of alltabs context-menu
+  // Popup of the alltabs menu
   else if (popup.id === kID.ALLTABS_POPUP) {
     if (mTabView.groupItems.length < 2) {
       $(kID.GROUPS_MENU).disabled = true;
@@ -389,19 +391,16 @@ function onPopupShowing(aEvent) {
       });
       popup.insertBefore(groupTag, refItem);
 
-      /**
-       * WORKAROUND(20120222):
-       * Setting a flag, we can find the proper overflowed tab's menuitems
-       * Usage in CSS;
-       * #GROUP_TAG_MENUITEM[ATTR_TABOVERFLOWED]~.alltabs-item:not([tabIsVisible])
-       */
+      // WORKAROUND: We can find menuitems with the proper overflowed tabs.
+      // @usage in CSS
+      // #GROUP_TAG_MENUITEM[ATTR_TABOVERFLOWED]~.alltabs-item:not([tabIsVisible])
       if (gBrowser.tabContainer.hasAttribute('overflow')) {
         groupTag.setAttribute(kID.ATTR_TABOVERFLOWED, true);
       }
     }
   }
 
-  // Popup of groups menu
+  // Popup of the groups menu
   else if (popup.id === kID.GROUPS_MENUPOPUP) {
     if (popup.hasChildNodes())
       return;
@@ -419,7 +418,7 @@ function onPopupShowing(aEvent) {
     });
   }
 
-  // Popup of each group menu
+  // Popup of a group menu in the groups menu
   else if (popup.parentNode.hasAttribute(kID.ATTR_GROUPINDEX)) {
     if (popup.hasChildNodes())
       return;
@@ -442,7 +441,7 @@ function onPopupHidden(aEvent) {
   aEvent.stopPropagation();
   var popup = aEvent.target;
 
-  // Popup of alltabs context-menu
+  // Popup of the alltabs menu
   if (popup.id === kID.ALLTABS_POPUP) {
     $(kID.GROUPS_MENU).disabled = false;
 

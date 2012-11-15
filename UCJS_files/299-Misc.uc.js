@@ -63,7 +63,8 @@
 // Modify a title of bookmark and history item.
 (function() {
 
-  // @modified resource://gre/modules/PlacesUIUtils.jsm::PlacesUIUtils::getBestTitle
+  // @modified resource://modules/PlacesUIUtils.jsm::
+  // PlacesUIUtils::getBestTitle
   var $getBestTitle = PlacesUIUtils.getBestTitle;
 
   PlacesUIUtils.getBestTitle = function(aNode, aDoNotCutTitle) {
@@ -207,7 +208,7 @@
     oncommand: command
   }));
 
-  // Focuses in content area.
+  // Gives focus on the content area.
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_focusInContentArea',
     key: 'q',
