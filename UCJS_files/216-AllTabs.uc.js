@@ -240,9 +240,6 @@ function initAllTabsMenu() {
   var alltabsPopup = $(kID.ALLTABS_POPUP);
   addEvent([alltabsPopup, 'popupshowing', onPopupShowing, true]);
   addEvent([alltabsPopup, 'popuphidden', onPopupHidden, true]);
-  // Disable showing URL on status-bar
-  addEvent([alltabsPopup, 'DOMMenuItemActive', function(e) e.stopPropagation(), true]);
-  addEvent([alltabsPopup, 'DOMMenuItemInactive', function(e) e.stopPropagation(), true]);
 
   var groupsMenu = alltabsPopup.insertBefore(
     $E('menu', {
