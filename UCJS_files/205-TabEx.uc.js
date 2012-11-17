@@ -873,8 +873,19 @@ function getOpenerTab(aBaseTab, aOption) {
   var baseTab = aBaseTab || gBrowser.selectedTab;
 
   // no ancestors and no parent
-  if (!baseTab.hasAttribute(kID.ANCESTORS))
+  if (!baseTab.hasAttribute(kID.ANCESTORS)) {
+    if (undoClose) {
+      // has referrer (e.g. opened from bookmark)
+      // @note A tab that has no opener tab is independent. So its referred URL
+      // should be newly opened even if it exists in the current tabs.
+      let referrerURL = mReferrer.getURL(baseTab);
+      if (referrerURL) {
+        // TODO: opens in foreground or background?
+        return openTab(referrerURL);
+      }
+    }
     return null;
+  }
 
   var parentId = (baseTab.getAttribute(kID.ANCESTORS).split(' '))[0];
 
@@ -898,11 +909,6 @@ function getOpenerTab(aBaseTab, aOption) {
           return window.undoCloseTab(i);
         }
       }
-    }
-    // has no parent but referrer (e.g. opened from bookmark)
-    let referrerURL = mReferrer.getURL(baseTab);
-    if (referrerURL) {
-      return openTab(referrerURL, {inBackground: true});
     }
   }
 
