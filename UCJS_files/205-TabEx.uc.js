@@ -252,37 +252,37 @@ var mTabOpener = {
     };
   },
 
-  set: function(aTab) {
-    // a booted startup tab
-    // @note Not initialize a restored startup tab because it is already done.
-    // @see |mStartup.initStartingTabs|
-    if (!aTab.hasAttribute(kID.OPENQUERY)) {
-      let browser = gBrowser.getBrowserForTab(aTab);
-      let URL = browser.userTypedValue || browser.currentURI.spec;
-      let query = JSON.stringify({
-        URI: URL,
-        flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
-      });
-      aTab.setAttribute(kID.OPENQUERY, query);
-
-    // a new opened tab
-    } else if (!aTab.hasAttribute(kID.OPEN)) {
-      if (mReferrer.isRelatedToCurrent(aTab)) {
-        let parent = gBrowser.selectedTab;
-        let ancs = parent.getAttribute(kID.OPEN);
-        if (parent.hasAttribute(kID.ANCESTORS)) {
-          ancs += ' ' + parent.getAttribute(kID.ANCESTORS);
+  set: function(aTab, aType) {
+    switch (aType) {
+      case 'BootedStartupTab': {
+        let browser = gBrowser.getBrowserForTab(aTab);
+        let URL = browser.userTypedValue || browser.currentURI.spec;
+        let query = JSON.stringify({
+          URI: URL,
+          flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
+        });
+        aTab.setAttribute(kID.OPENQUERY, query);
+        break;
+      }
+      case 'NewTab': {
+        if (mReferrer.isRelatedToCurrent(aTab)) {
+          let parent = gBrowser.selectedTab;
+          let ancs = parent.getAttribute(kID.OPEN);
+          if (parent.hasAttribute(kID.ANCESTORS)) {
+            ancs += ' ' + parent.getAttribute(kID.ANCESTORS);
+          }
+          aTab.setAttribute(kID.ANCESTORS, ancs);
+        }
+        break;
+      }
+      case 'DuprecatedTab': {
+        let ancs = aTab.getAttribute(kID.OPEN);
+        if (aTab.hasAttribute(kID.ANCESTORS)) {
+          ancs += ' ' + aTab.getAttribute(kID.ANCESTORS);
         }
         aTab.setAttribute(kID.ANCESTORS, ancs);
+        break;
       }
-
-    // a duplicated tab
-    } else {
-      let ancs = aTab.getAttribute(kID.OPEN);
-      if (aTab.hasAttribute(kID.ANCESTORS)) {
-        ancs += ' ' + aTab.getAttribute(kID.ANCESTORS);
-      }
-      aTab.setAttribute(kID.ANCESTORS, ancs);
     }
 
     aTab.setAttribute(kID.OPEN, getTime());
@@ -513,7 +513,7 @@ var mStartup = {
     Array.forEach(gBrowser.tabs, function(tab) {
       // initialize a booted startup tab
       if (!tab.hasAttribute(kID.OPENQUERY)) {
-        mTabOpener.set(tab);
+        mTabOpener.set(tab, 'BootedStartupTab');
       }
 
       if (!tab.selected) {
@@ -602,7 +602,7 @@ var mTabEvent = {
     if (mSessionStore.isRestoring)
       return;
 
-    mTabOpener.set(aTab)
+    mTabOpener.set(aTab, 'NewTab')
 
     if (kPref.SUSPEND_LOADING) {
       mTabSuspender.set(aTab, kPref.SUSPEND_DELAY);
@@ -650,7 +650,7 @@ var mTabEvent = {
 
     var originalTab = getOriginalTabOfDuplicated(aTab);
     if (originalTab) {
-      mTabOpener.set(aTab);
+      mTabOpener.set(aTab, 'DuprecatedTab');
 
       if (aTab.selected) {
         mTabSelector.update(aTab, {read: true});
