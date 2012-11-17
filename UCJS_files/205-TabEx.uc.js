@@ -267,7 +267,7 @@ var mTabOpener = {
 
     // a new opened tab
     } else if (!aTab.hasAttribute(kID.OPEN)) {
-      if (mReferrer.exists(aTab)) {
+      if (mReferrer.isRelatedToCurrent(aTab)) {
         let parent = gBrowser.selectedTab;
         let ancs = parent.getAttribute(kID.OPEN);
         if (parent.hasAttribute(kID.ANCESTORS)) {
