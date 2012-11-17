@@ -63,7 +63,7 @@ const kPosType = {
   // the parent tab of the closed tab
   // @note may be no match
   ANYWHERE_OPENER: 9,
-  // tab that has been selected before the closed tab
+  // tab that has been selected most recently before the closed tab
   // @note may be no match
   ANYWHERE_PREV_SELECTED: 10
 };
@@ -91,7 +91,8 @@ const kPref = {
     kPosType.NEXT_ADJACENT_EXTENDED_DESCENDANT,
     kPosType.PREV_ADJACENT_ANCESTOR,
     kPosType.NEXT_ADJACENT,
-    kPosType.ANYWHERE_OPENER
+    kPosType.ANYWHERE_OPENER,
+    kPosType.ANYWHERE_PREV_SELECTED
     // if no matches, may be the same as PREV_ADJACENT
   ],
   // for closing a selected pinned tab
@@ -756,7 +757,7 @@ function selectTabAt(aBaseTab, aPosTypes) {
       case kPosType.ANYWHERE_OPENER:
         return !!selectOpenerTab(aBaseTab);
       case kPosType.ANYWHERE_PREV_SELECTED:
-        return !!selectPrevSelectedTab(aBaseTab);
+        return !!selectPrevSelectedTab(aBaseTab, {traceBack: true});
       default:
         throw 'Unknown kPosType for SELECTPOS.';
     }
