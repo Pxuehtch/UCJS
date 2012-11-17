@@ -513,6 +513,7 @@ var mStartup = {
 
       // collect a restored tab
       if (this.restoredTabs) {
+        // skip the selected tab when it has been already restored
         if (!this.firstTabRestored || !tab.selected) {
           this.restoredTabs.push(tab.getAttribute(kID.OPEN));
         }
@@ -532,7 +533,7 @@ var mStartup = {
 
     // @note The startup restored tab that is selected and *unpending* is sure
     // to come first here through |SSTabRestored|. This first tab sometimes
-    // comes before |initStartingTabs| that is waiting by the timer. Then
+    // comes here before |initStartingTabs| that is waiting by the timer. Then
     // |restoredTabs| excludes the first tab.
     // TODO: Do not make an exception of the first tab.
     if (this.firstTabRestored === false) {
@@ -654,7 +655,7 @@ var mTabEvent = {
     } else {
       openPos = kPref.OPENPOS_UNDOCLOSE;
       // sets the previous selected tab to the base tab for moving a reopened
-      // tab that has been force-selected
+      // tab that has been forcibly selected
       baseTab = getPrevSelectedTab();
     }
 
@@ -673,8 +674,9 @@ function getOriginalTabOfDuplicated(aTab) {
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
     tab = tabs[i];
     if (tab !== aTab &&
-        tab.getAttribute(kID.OPEN) === openTime)
+        tab.getAttribute(kID.OPEN) === openTime) {
       return tab;
+    }
   }
   return null;
 }
@@ -716,7 +718,7 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
         basePos + 1;
       break;
     default:
-      throw 'Unknown kPosType for OPENPOS.';
+      throw 'unknown kPosType for OPENPOS';
   }
 
   if (-1 < pos && pos !== tabPos) {
@@ -750,7 +752,7 @@ function selectTabAt(aBaseTab, aPosTypes) {
       case kPosType.ANYWHERE_PREV_SELECTED:
         return !!selectPrevSelectedTab(aBaseTab, {traceBack: true});
       default:
-        throw 'Unknown kPosType for SELECTPOS.';
+        throw 'unknown kPosType for SELECTPOS';
     }
     // never reached, but avoid warning
     return true;
@@ -898,6 +900,7 @@ function getOpenerTab(aBaseTab, aOption) {
       for (let i = 0, l = undoList.length; i < l; i++) {
         if (undoList[i].state.attributes[kID.OPEN] === parentId) {
           // @see chrome://browser/content/browser.js::undoCloseTab
+          // @note |undoCloseTab| opens a tab and forcibly selects it.
           return window.undoCloseTab(i);
         }
       }
@@ -951,6 +954,7 @@ function getPrevSelectedTab(aBaseTab, aOption) {
         if (undoList[i].state.attributes[kID.SELECT] ===
             mTabSelector.prevSelectedTime + '') {
           // @see chrome://browser/content/browser.js::undoCloseTab
+          // @note |undoCloseTab| opens a tab and forcibly selects it.
           return window.undoCloseTab(i);
         }
       }
@@ -1138,9 +1142,9 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 
     if (aSupportedStatements &&
         aSupportedStatements.indexOf(statement) < 0) {
-      log('aStatement: "' + aStatement + '" is invalid\n' +
+      log('aStatement: "' + aStatement + '" is unsupported\n' +
           'supported values;\n' + aSupportedStatements.join('\n'));
-      throw 'Unsupported aStatement is given';
+      throw new TypeError('unsupported aStatement');
     }
 
     mKeys = statement.split(aDelimiter);
