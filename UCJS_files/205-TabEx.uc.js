@@ -503,7 +503,7 @@ var mStartup = {
   initStartingTabs: function() {
     Array.forEach(gBrowser.tabs, function(tab) {
       // initialize a booted startup tab
-      if (!tab.hasAttribute(kID.OPENQUERY)) {
+      if (!this.restoredTabs) {
         mTabOpener.set(tab, 'BootedStartupTab');
       }
 
