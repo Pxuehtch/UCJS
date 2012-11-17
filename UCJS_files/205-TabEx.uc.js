@@ -437,23 +437,16 @@ var mTabSuspender = {
 
     var browser = gBrowser.getBrowserForTab(aTab);
 
-    var isBlank = browser.currentURI &&
-      browser.currentURI.spec === 'about:blank';
-    var isBusy = aTab.hasAttribute('busy');
+    // |userTypedValue| holds the URL till a document successfully loads
+    var loadingURL = browser.userTypedValue;
+    if (loadingURL) {
+      aTab.setAttribute(kID.SUSPENDED, true);
 
-    // 3.a background tab in the restore startup has a 'pending' attribute
-    if (isBlank || isBusy || aTab.hasAttribute('pending')) {
-      let URL = mTabOpener.parseQuery(aTab, 'URI');
-      URL = (URL && URL !== 'about:blank') ? URL : browser.userTypedValue;
-      if (URL) {
-        aTab.setAttribute(kID.SUSPENDED, true);
-
-        if (isBusy) {
-          browser.stop();
-        }
-        if (isBlank) {
-          aTab.label = getPageTitle(URL);
-        }
+      if (aTab.hasAttribute('busy')) {
+        browser.stop();
+      }
+      if (browser.currentURI.spec === 'about:blank') {
+        aTab.label = getPageTitle(loadingURL);
       }
     }
   },
@@ -469,24 +462,22 @@ var mTabSuspender = {
 
     var browser = gBrowser.getBrowserForTab(aTab);
 
-    // |userTypedValue| holds the URL with which a suspended new tab was
-    // opened to load, till the document successfully loads.
-    var URL = browser.userTypedValue;
-    if (URL) {
+    // |userTypedValue| holds the URL till a document successfully loads
+    var loadingURL = browser.userTypedValue;
+    if (loadingURL) {
+      // a tab has no query when it bypassed our hooked |gBrowser.addTab|
       let query = mTabOpener.parseQuery(aTab);
       if (query) {
         browser.loadURIWithFlags(
-          URL,
+          loadingURL, // === query.URI
           query.flags,
           window.makeURI(query.referrerURI),
           query.charset,
           query.postData
         );
       } else {
-        browser.loadURI(URL);
+        browser.loadURI(loadingURL);
       }
-    } else {
-      browser.reload();
     }
   }
 };
