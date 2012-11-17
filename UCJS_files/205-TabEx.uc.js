@@ -10,7 +10,7 @@
 // @note Some functions are exported (ucjsTabEx.XXX)
 
 
-var ucjsTabEx = (function() {
+var ucjsTabEx = (function(window, undefined) {
 
 
 "use strict";
@@ -1231,4 +1231,4 @@ return {
 };
 
 
-})();
+})(this);
