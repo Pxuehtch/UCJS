@@ -104,11 +104,10 @@ const kPref = {
   // @value {boolean}
   //   false: the same as the default 'tabs on demand' behavior
   //   true: stops the loading of the tab after SUSPEND_DELAY passes
-  // @note This function works after the default process is done. So even if
-  // setting SUSPEND_DELAY to 0, it takes time a little.
   SUSPEND_LOADING: true,
   // the delay time until the loading is suspended
   // @value {integer} millisecond
+  //   0: immediately stop loading
   SUSPEND_DELAY: 0,
   // auto-reloads the suspended tab that is next adjacent of a selected tab
   // @value {boolean}
@@ -256,6 +255,8 @@ var mTabOpener = {
     switch (aType) {
       case 'BootedStartupTab':
         let browser = gBrowser.getBrowserForTab(aTab);
+        // |userTypedValue| holds the URL of a document till it successfully
+        // loads.
         let URL = browser.userTypedValue || browser.currentURI.spec;
         let query = JSON.stringify({
           URI: URL,
@@ -265,6 +266,7 @@ var mTabOpener = {
         break;
       case 'NewTab':
         if (mReferrer.isRelatedToCurrent(aTab)) {
+          // inherit the ancestors so that the opener tab becomes the parent
           let parent = gBrowser.selectedTab;
           let ancs = parent.getAttribute(kID.OPEN);
           if (parent.hasAttribute(kID.ANCESTORS)) {
@@ -274,6 +276,8 @@ var mTabOpener = {
         }
         break;
       case 'DuplicatedTab':
+        // this duplicated tab has the same data of its original tab
+        // renew the ancestors so that the original tab becomes the parent
         let ancs = aTab.getAttribute(kID.OPEN);
         if (aTab.hasAttribute(kID.ANCESTORS)) {
           ancs += ' ' + aTab.getAttribute(kID.ANCESTORS);
