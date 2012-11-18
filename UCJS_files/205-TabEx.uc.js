@@ -1110,11 +1110,18 @@ function getPageTitle(aURL) {
   try {
     // @see resource://modules/PlacesUIUtils.jsm::
     // PlacesUIUtils::getBestTitle
-    // @see chrome://global/content/contentAreaUtils.js::makeURI
-    title = PlacesUtils.history.getPageTitle(window.makeURI(aURL));
+    title = PlacesUtils.history.getPageTitle(makeURI(aURL));
   } catch (e) {}
 
   return title || aURL;
+}
+
+function makeURI(aURL) {
+  try{
+    // @see chrome://global/content/contentAreaUtils.js::makeURI
+    return window.makeURI(aURL);
+  } catch (e) {}
+  return null;
 }
 
 function scanHistoryDatabase(aSQL, aParams, aColumnName) {
