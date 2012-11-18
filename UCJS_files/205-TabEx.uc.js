@@ -1022,17 +1022,17 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
       (aDirection === +1 && basePos === tabs.length - 1))
     return;
 
-  var start, end;
-  // closing from end to first
+  var top, last;
+  // closing from the last tab
   if (aDirection === -1) {
-    first = basePos - 1;
-    end = 0;
+    top = 0;
+    last = basePos - 1;
   } else {
-    first = tabs.length - 1;
-    end = basePos + 1;
+    top = basePos + 1;
+    last = tabs.length - 1;
   }
 
-  for (let i = end; i >= first ; i--) {
+  for (let i = last; i >= top ; i--) {
     removeTab(tabs[i], {safeBlock: true});
   }
 }
