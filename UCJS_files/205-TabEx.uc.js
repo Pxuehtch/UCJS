@@ -515,26 +515,29 @@ var mStartup = {
 
     // TODO: Ensure to execute it just after all tabs open.
     // @note This unstable timer causes an exception of the first restored tab.
-    setTimeout(this.initStartingTabs.bind(this), 1000);
+    setTimeout(this.setupTabs.bind(this), 1000);
   },
 
-  initStartingTabs: function() {
+  setupTabs: function() {
     Array.forEach(gBrowser.tabs, function(tab) {
-      // initialize a booted startup tab
-      if (!this.restoredTabs) {
-        mTabOpener.set(tab, 'BootedStartupTab');
-      }
-
-      if (!tab.selected) {
-        mTabSuspender.set(tab);
-      }
-
-      // collect a restored tab
+      // a restored startup tab
       if (this.restoredTabs) {
+        // collect a restored tab
         // skip the selected tab when it has been already restored
         if (!this.firstTabRestored || !tab.selected) {
           this.restoredTabs.push(tab.getAttribute(kID.OPEN));
         }
+
+      // a booted startup tab
+      } else {
+        mTabOpener.set(tab, 'BootedStartupTab');
+      }
+
+      if (tab.selected) {
+        mTabSelector.update(tab);
+      } else {
+        // immediately stop a background tab
+        mTabSuspender.stop(tab);
       }
     }, this);
 
@@ -551,7 +554,7 @@ var mStartup = {
 
     // @note The startup restored tab that is selected and *unpending* is sure
     // to come first here through |SSTabRestored|. This first tab sometimes
-    // comes here before |initStartingTabs| that is waiting by the timer. Then
+    // comes here before |setupTabs| that is waiting by the timer. Then
     // |restoredTabs| excludes the first tab.
     // TODO: Do not make an exception of the first tab.
     if (this.firstTabRestored === false) {
