@@ -409,7 +409,7 @@ var mTabSuspender = {
     // a background tab
     var timer = setTimeout(function(tab) {
       this.stop(tab);
-    }.bind(this), aDelay || 0, aTab);
+    }.bind(this), aDelay, aTab);
 
     // the opened time of each tab is an unique value
     this.timers[aTab.getAttribute(kID.OPEN)] = timer;
@@ -435,13 +435,10 @@ var mTabSuspender = {
     var [browser, loadingURL] = this.getBrowserForTab(aTab);
     var isBusy = aTab.hasAttribute('busy');
     var isBlank = browser.currentURI.spec === 'about:blank';
-    var isRestoredPending = aTab.hasAttribute('pending');
 
     // 1.a document in loading
     // 2.a blank page when the default 'tabs on demand' works
-    // 3.a background tab on the restored startup
-    if (loadingURL &&
-        (isBusy || isBlank || isRestoredPending)) {
+    if (loadingURL && (isBusy || isBlank)) {
       aTab.setAttribute(kID.SUSPENDED, true);
 
       if (isBusy) {
@@ -482,8 +479,15 @@ var mTabSuspender = {
   getBrowserForTab: function(aTab) {
     var browser = gBrowser.getBrowserForTab(aTab);
     var loadingURL;
+		var query;
 
-    // 1.a tab has no query when it bypassed our hooked |gBrowser.addTab|
+		// TODO: Use a certain detection
+		var isNewTab = !browser.canGoBack;
+		if (isNewTab) {
+			query = mTabOpener.parseQuery(aTab);
+		}
+
+    // 1.a new tab has no query when it bypassed our hooked |gBrowser.addTab|
     // 2.|userTypedValue| holds the URL of a document till it successfully
     // loads
     var query = mTabOpener.parseQuery(aTab);
