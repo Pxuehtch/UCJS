@@ -432,17 +432,22 @@ var mTabSuspender = {
     if (!aTab || aTab.selected)
       return;
 
-    var browser = gBrowser.getBrowserForTab(aTab);
+    var [browser, loadingURL] = this.getBrowserForTab(aTab);
+    var isBusy = aTab.hasAttribute('busy');
+    var isBlank = browser.currentURI.spec === 'about:blank';
+    var isRestoredPending = aTab.hasAttribute('pending');
 
-    // |userTypedValue| holds the URL till a document successfully loads
-    var loadingURL = browser.userTypedValue;
-    if (loadingURL) {
+    // 1.a document in loading
+    // 2.a blank page when the default 'tabs on demand' works
+    // 3.a background tab on the restored startup
+    if (loadingURL &&
+        (isBusy || isBlank || isRestoredPending)) {
       aTab.setAttribute(kID.SUSPENDED, true);
 
-      if (aTab.hasAttribute('busy')) {
+      if (isBusy) {
         browser.stop();
       }
-      if (browser.currentURI.spec === 'about:blank') {
+      if (isBlank) {
         aTab.label = getPageTitle(loadingURL);
       }
     }
@@ -451,24 +456,20 @@ var mTabSuspender = {
   reload: function(aTab) {
     this.clear(aTab);
 
+    // pass only the visible and suspended tab
     if (!aTab || aTab.hidden || aTab.closing ||
         !aTab.hasAttribute(kID.SUSPENDED))
       return;
 
     aTab.removeAttribute(kID.SUSPENDED);
 
-    var browser = gBrowser.getBrowserForTab(aTab);
-
-    // |userTypedValue| holds the URL till a document successfully loads
-    var loadingURL = browser.userTypedValue;
+    var [browser, loadingURL, query] = this.getBrowserForTab(aTab);
     if (loadingURL) {
-      // a tab has no query when it bypassed our hooked |gBrowser.addTab|
-      let query = mTabOpener.parseQuery(aTab);
       if (query) {
         browser.loadURIWithFlags(
-          loadingURL, // === query.URI
+          query.URI,
           query.flags,
-          window.makeURI(query.referrerURI),
+          makeURI(query.referrerURI),
           query.charset,
           query.postData
         );
@@ -476,6 +477,23 @@ var mTabSuspender = {
         browser.loadURI(loadingURL);
       }
     }
+  },
+
+  getBrowserForTab: function(aTab) {
+    var browser = gBrowser.getBrowserForTab(aTab);
+    var loadingURL;
+
+    // 1.a tab has no query when it bypassed our hooked |gBrowser.addTab|
+    // 2.|userTypedValue| holds the URL of a document till it successfully
+    // loads
+    var query = mTabOpener.parseQuery(aTab);
+    if (query && query.URI !== 'about:blank') {
+      loadingURL = query.URI;
+    } else {
+      loadingURL = browser.userTypedValue;
+    }
+
+    return [browser, loadingURL, query];
   }
 };
 
