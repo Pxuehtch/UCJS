@@ -546,8 +546,6 @@ var mStartup = {
     }, this);
 
     delete this.firstTabRestored;
-
-    mTabSelector.update(gBrowser.selectedTab);
   },
 
   isRestored: function(aTab) {
