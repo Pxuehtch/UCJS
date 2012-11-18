@@ -134,7 +134,6 @@ var mTabState = {
   }
 };
 
-
 /**
  * Session store handler
  */
@@ -232,9 +231,9 @@ var mTabOpener = {
         flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
 
       var query = JSON.stringify({
-        URI: aURI,
+        URL: aURI,
         flags: flags,
-        referrerURI: aReferrerURI || undefined,
+        referrerURL: aReferrerURI || undefined,
         charset: aCharset || undefined,
         postData: aPostData || undefined,
         relatedToCurrent: aRelatedToCurrent || undefined,
@@ -259,7 +258,7 @@ var mTabOpener = {
         // loads.
         let URL = browser.userTypedValue || browser.currentURI.spec;
         let query = JSON.stringify({
-          URI: URL,
+          URL: URL,
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         });
         aTab.setAttribute(kID.OPENQUERY, query);
@@ -307,7 +306,7 @@ var mReferrer = {
     if (!query)
       return null;
 
-    return query.referrerURI || query.fromVisit;
+    return query.referrerURL || query.fromVisit;
   },
 
   getTitle: function(aTab) {
@@ -323,7 +322,7 @@ var mReferrer = {
     if (!query)
       return null;
 
-    return !!(query.referrerURI ||
+    return !!(query.referrerURL ||
       (query.relatedToCurrent && query.fromVisit));
   },
 
@@ -468,9 +467,9 @@ var mTabSuspender = {
     if (loadingURL) {
       if (query) {
         browser.loadURIWithFlags(
-          query.URI,
+          query.URL,
           query.flags,
-          makeURI(query.referrerURI),
+          makeURI(query.referrerURL),
           query.charset,
           query.postData
         );
@@ -494,8 +493,8 @@ var mTabSuspender = {
     // 1.a new tab has no query when it bypassed our hooked |gBrowser.addTab|
     // 2.|userTypedValue| holds the URL of a document till it successfully
     // loads
-    if (query && query.URI !== 'about:blank') {
-      loadingURL = query.URI;
+    if (query && query.URL !== 'about:blank') {
+      loadingURL = query.URL;
     } else {
       loadingURL = browser.userTypedValue;
     }
