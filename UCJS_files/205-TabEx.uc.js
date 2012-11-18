@@ -1003,6 +1003,10 @@ function getAdjacentTab(aBaseTab, aDirection) {
   return tabs[pos + aDirection];
 }
 
+function closeLeftTabs(aBaseTab) {
+  closeTabsFromAdjacentToEnd(aBaseTab, -1);
+}
+
 function closeRightTabs(aBaseTab) {
   closeTabsFromAdjacentToEnd(aBaseTab, +1);
 }
@@ -1261,6 +1265,7 @@ return {
   referrer: mReferrer,
   selectOpenerTab: selectOpenerTab,
   selectPrevSelectedTab: selectPrevSelectedTab,
+  closeLeftTabs: closeLeftTabs,
   closeRightTabs: closeRightTabs,
   closeReadTabs: closeReadTabs
 };
