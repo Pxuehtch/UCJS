@@ -296,7 +296,7 @@ var mMenuitem = {
 
     const ATTR_UNREADTAB = 'ucjs_ui_menuitem_unreadTab';
 
-    if (ucjsTabEx.tabState.isUnread(aTab)) {
+    if (!ucjsTabEx.tabState.read(aTab)) {
       aMenuitem.classList.add(ATTR_UNREADTAB);
     } else {
       aMenuitem.classList.remove(ATTR_UNREADTAB);
