@@ -1011,10 +1011,11 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
   if (aDirection !== -1 && aDirection !== +1)
     throw new TypeError('aDirection should be -1 or +1');
 
+  var baseTab = aBaseTab || gBrowser.selectedTab;
   // excluding pinned tabs
   var tabs = getTabs('active');
 
-  var basePos = getTabPos(tabs, aBaseTab);
+  var basePos = getTabPos(tabs, baseTab);
   // 1.the base tab is not active
   // 2.no tabs in the direction
   if (basePos < 0 ||
