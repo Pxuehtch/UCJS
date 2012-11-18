@@ -490,7 +490,6 @@ var mTabSuspender = {
     // 1.a new tab has no query when it bypassed our hooked |gBrowser.addTab|
     // 2.|userTypedValue| holds the URL of a document till it successfully
     // loads
-    var query = mTabOpener.parseQuery(aTab);
     if (query && query.URI !== 'about:blank') {
       loadingURL = query.URI;
     } else {
