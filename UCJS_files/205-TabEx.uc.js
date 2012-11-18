@@ -1106,7 +1106,7 @@ var getTime = (function() {
 })();
 
 function getPageTitle(aURL) {
-  var title = '';
+  var title;
   try {
     // @see resource://modules/PlacesUIUtils.jsm::
     // PlacesUIUtils::getBestTitle
