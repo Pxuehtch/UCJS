@@ -254,7 +254,7 @@ var mTabOpener = {
 
   set: function(aTab, aType) {
     switch (aType) {
-      case 'BootedStartupTab': {
+      case 'BootedStartupTab':
         let browser = gBrowser.getBrowserForTab(aTab);
         let URL = browser.userTypedValue || browser.currentURI.spec;
         let query = JSON.stringify({
@@ -263,8 +263,7 @@ var mTabOpener = {
         });
         aTab.setAttribute(kID.OPENQUERY, query);
         break;
-      }
-      case 'NewTab': {
+      case 'NewTab':
         if (mReferrer.isRelatedToCurrent(aTab)) {
           let parent = gBrowser.selectedTab;
           let ancs = parent.getAttribute(kID.OPEN);
@@ -274,15 +273,13 @@ var mTabOpener = {
           aTab.setAttribute(kID.ANCESTORS, ancs);
         }
         break;
-      }
-      case 'DuprecatedTab': {
+      case 'DuprecatedTab':
         let ancs = aTab.getAttribute(kID.OPEN);
         if (aTab.hasAttribute(kID.ANCESTORS)) {
           ancs += ' ' + aTab.getAttribute(kID.ANCESTORS);
         }
         aTab.setAttribute(kID.ANCESTORS, ancs);
         break;
-      }
     }
 
     aTab.setAttribute(kID.OPEN, getTime());
