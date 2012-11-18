@@ -273,7 +273,7 @@ var mTabOpener = {
           aTab.setAttribute(kID.ANCESTORS, ancs);
         }
         break;
-      case 'DuprecatedTab':
+      case 'DuplicatedTab':
         let ancs = aTab.getAttribute(kID.OPEN);
         if (aTab.hasAttribute(kID.ANCESTORS)) {
           ancs += ' ' + aTab.getAttribute(kID.ANCESTORS);
@@ -639,7 +639,7 @@ var mTabEvent = {
 
     var originalTab = getOriginalTabOfDuplicated(aTab);
     if (originalTab) {
-      mTabOpener.set(aTab, 'DuprecatedTab');
+      mTabOpener.set(aTab, 'DuplicatedTab');
 
       if (aTab.selected) {
         mTabSelector.update(aTab, {read: true});
