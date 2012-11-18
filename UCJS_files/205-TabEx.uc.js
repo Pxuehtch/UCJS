@@ -483,13 +483,13 @@ var mTabSuspender = {
   getBrowserForTab: function(aTab) {
     var browser = gBrowser.getBrowserForTab(aTab);
     var loadingURL;
-		var query;
+    var query;
 
-		// TODO: Use a certain detection
-		var isNewTab = !browser.canGoBack;
-		if (isNewTab) {
-			query = mTabOpener.parseQuery(aTab);
-		}
+    // TODO: Use a certain detection
+    var isNewTab = !browser.canGoBack;
+    if (isNewTab) {
+      query = mTabOpener.parseQuery(aTab);
+    }
 
     // 1.a new tab has no query when it bypassed our hooked |gBrowser.addTab|
     // 2.|userTypedValue| holds the URL of a document till it successfully
@@ -1061,8 +1061,8 @@ function closeReadTabs() {
  *   forces to include this tab regardless of aStatement
  * @return {Array}
  *
- * TODO: |aForcedTab| needs for a closing tab on |TabClose| event. How should
- * handle a closing tab?
+ * TODO: |aForcedTab| is used only for a closing tab on |TabClose| event.
+ * Make a smart handling.
  */
 function getTabs(aStatement, aForcedTab) {
   var statement = StatementParser(aStatement, ',');
