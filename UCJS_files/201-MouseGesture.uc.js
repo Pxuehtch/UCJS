@@ -150,7 +150,7 @@ const kGestureSet = [
     }
   },
   {
-    gestures: ['DRDR'],
+    gestures: ['S&C&DR'],
     name: '強制的にタブを閉じる',
     command: function() {
       ucjsUtil.removeTab(gBrowser.selectedTab);
@@ -161,6 +161,20 @@ const kGestureSet = [
     name: '既読のタブを閉じる',
     command: function() {
       ucjsTabEx.closeReadTabs();
+    }
+  },
+  {
+    gestures: ['S&DRDL', 'DRDLW+', 'DRDLW-'],
+    name: '左側のタブを閉じる',
+    command: function() {
+      ucjsTabEx.closeLeftTabs();
+    }
+  },
+  {
+    gestures: ['S&DRDR', 'DRDRW+', 'DRDRW-'],
+    name: '右側のタブを閉じる',
+    command: function() {
+      ucjsTabEx.closeRightTabs();
     }
   },
   {
