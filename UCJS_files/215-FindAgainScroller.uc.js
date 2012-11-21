@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        FindAgainScroller.uc.js
-// @description Customizes the scroll style on "Find again"
+// @description Customizes the scroll style on "Find again" command
 // @include     main
 // ==/UserScript==
 
@@ -21,26 +21,29 @@ const kConfig = {
   // Skip a found result that a user can not see (e.g. a text in a popup menu
   // that does not poped up)
   // @note If a document has only invisible results, they will be selected.
-  // @note WORKAROUND for Fx default behavior. 
+  // @note WORKAROUND for Fx default behavior.
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
   skipInvisible: true,
 
-  // Align scroll position of the found text
-  // @see AlignPosition() for detail settings
+  // Align the scroll position of a found text
+  // AlignPosition() has the detail setting
+  // @note The result is scrolled at the center as Fx default.
+  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=171237
   alignPosition: true,
 
-  // Scroll to the found text smoothly
-  // @see SmoothScroll() for detail settings
+  // Scroll smoothly to a found text
+  // SmoothScroll() has the detail setting
   smoothScroll: true,
 
-  // Blink the found text
-  // @see FoundBlink() for detail settings
+  // Blink a found text
+  // FoundBlink() has the detail setting
   foundBlink: true
 };
 
 
 /**
  * Wrapper of gFindBar
+ * @see chrome://global/content/bindings/findbar.xml
  */
 var TextFinder = {
   get text() {
@@ -83,8 +86,8 @@ function FindAgainScroller_init() {
   var mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
   var mFoundBlink = kConfig.foundBlink && FoundBlink();
 
-  // Customizes the original function
-  // @modified chrome://global/content/bindings/findbar.xml::onFindAgainCommand
+  // @modified chrome://global/content/bindings/findbar.xml::
+  // onFindAgainCommand
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
     var scrollable = mScrollObserver.attach(TextFinder.text);
@@ -390,7 +393,7 @@ function SkipInvisible() {
 
 
 /**
- * Function for alignment of the found text position.
+ * Handler for the alignment of the position of a found text
  * @return {hash}
  *   alwaysAlign: {boolean}
  *   align: {function}
@@ -458,7 +461,7 @@ function AlignPosition() {
 
 
 /**
- * Function for scrolling the element smoothly.
+ * Handler for scrolling an element smoothly
  * @return {hash}
  *   start: {function}
  *   stop: {function}
@@ -654,7 +657,7 @@ function SmoothScroll() {
 
 
 /**
- * Function for blinking the found text
+ * Handler for blinking a found text
  * @return {hash}
  *   start: {function}
  */
