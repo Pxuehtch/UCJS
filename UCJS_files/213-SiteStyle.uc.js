@@ -237,6 +237,7 @@ const kSiteList = [
             float:left!important;\
             width:auto!important;\
           }\
+          /* sub contents items */\
           .nrgt,.nrgt *,.r~div{\
             width:auto!important;\
             margin-top:0!important;\
@@ -246,6 +247,11 @@ const kSiteList = [
           }\
           .nrgt .l{\
             font-size:small!important;\
+          }\
+          /* footer navi */\
+          #foot{\
+            width:auto!important;\
+            margin:0!important;\
           }';
 
         if (custom) {
@@ -269,7 +275,7 @@ const kSiteList = [
         }
         if (multiColumn) {
           css += '\
-            /* hidden right pane */\
+            /* hide right pane */\
             #rhs,#rhscol{\
               display:none!important;\
             }\
@@ -281,7 +287,7 @@ const kSiteList = [
             }\
             #center_col{\
               width:auto!important;\
-              margin-right:0!important;\
+              margin:0 2em!important;\
             }\
             h2.hd+div>ol,#mn #ires>ol{\
               -moz-column-count:2;\
