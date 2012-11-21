@@ -51,7 +51,11 @@ var TextFinder = {
       } catch (e) {}
       return null;
     }
-    return gFindBar._getSelectionController(gFindBar._currentWindow);
+
+    if (gFindBar._currentWindow) {
+      return gFindBar._getSelectionController(gFindBar._currentWindow);
+    }
+    return null;
   }
 };
 
