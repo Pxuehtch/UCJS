@@ -18,6 +18,13 @@
  * Configurations
  */
 const kConfig = {
+  // Skip a found result that a user can not see (e.g. a text in a popup menu
+  // that does not poped up)
+  // @note If a document has only invisible results, they will be selected.
+  // @note WORKAROUND for Fx default behavior. 
+  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
+  skipInvisible: true,
+
   // Align scroll position of the found text
   // @see AlignPosition() for detail settings
   alignPosition: true,
@@ -71,6 +78,7 @@ function FindAgainScroller_init() {
   var mScrollObserver = ScrollObserver();
 
   // Optional functions
+  var mSkipInvisible = kConfig.skipInvisible && SkipInvisible();
   var mAlignPosition = kConfig.alignPosition && AlignPosition();
   var mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
   var mFoundBlink = kConfig.foundBlink && FoundBlink();
@@ -81,7 +89,9 @@ function FindAgainScroller_init() {
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
     var scrollable = mScrollObserver.attach(TextFinder.text);
 
-    $onFindAgainCommand.apply(this, arguments);
+    do {
+      $onFindAgainCommand.apply(this, arguments);
+    } while (mSkipInvisible && mSkipInvisible.test());
 
     if (TextFinder.isResultFound) {
       if (scrollable) {
@@ -273,6 +283,108 @@ function ScrollObserver() {
     detach: detach,
     isScrolled: mScrollable.isScrolled,
     getScrolledState: mScrollable.getScrolledState
+  };
+}
+
+
+/**
+ * Handler for skipping a found result that a user can not see
+ * @return {hash}
+ *   test: {function}
+ *
+ * @note |test| is called as the loop condition in |onFindAgainCommand|.
+ */
+function SkipInvisible() {
+  // WORKAROUND: A fail-safe option to avoiding an infinite loop. This is for
+  // when a document has only invisible results and then the comparing check
+  // of nodes does not work.
+  const kMaxTestingCount = 50;
+
+  var mTestingCount = 0;
+  var mFirstInvisible = null;
+
+
+  // Functions
+
+  function test() {
+    // WORKAROUND: force to exit from a loop of testing
+    if (++mTestingCount > kMaxTestingCount) {
+      mTestingCount = 0;
+      mFirstInvisible = null;
+      return false;
+    }
+
+    var invisible = getInvisibleResult();
+
+    if (invisible) {
+      // the first test passed
+      if (!mFirstInvisible) {
+        mFirstInvisible = invisible;
+        return true;
+      }
+
+      // got a result that is tested at the first time
+      if (mFirstInvisible !== invisible) {
+        return true;
+      }
+    }
+
+    // not found
+    // 1.no invisible result is found
+    // 2.an invisible result is found but it has been tested ever
+    mTestingCount = 0;
+    mFirstInvisible = null;
+    return false;
+  }
+
+  function getInvisibleResult() {
+    var selectionController = TextFinder.selectionController;
+    // no result is found or error something
+    if (!selectionController) {
+      return null;
+    }
+
+    var result = selectionController.
+      getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
+      getRangeAt(0).
+      commonAncestorContainer;
+
+    // a visible result is found
+    if (isVisible(result)) {
+      return null;
+    }
+
+    // found an invisible result
+    return result;
+  }
+
+  function isVisible(aNode) {
+    var win = aNode.ownerDocument.defaultView;
+    var getComputedStyle = win.getComputedStyle;
+    var style;
+
+    while (!(aNode instanceof HTMLHtmlElement)) {
+      if (aNode instanceof HTMLElement) {
+        if (aNode.hidden) {
+          return false;
+        }
+
+        style = getComputedStyle(aNode, '');
+
+        if (style.visibility !== 'visible' || style.display === 'none' ||
+            (style.position === 'absolute' && parseInt(style.left, 10) < 0)) {
+          return false;
+        }
+      }
+      aNode = aNode.parentElement;
+    }
+    return true;
+  }
+
+
+  // Expose
+  return {
+    test: test
   };
 }
 
