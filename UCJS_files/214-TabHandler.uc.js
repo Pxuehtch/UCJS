@@ -240,9 +240,9 @@ var mTabBarClickEvent = {
  */
 function makeCustomFunctions() {
   // cycle-select tabs with the wheel scroll on a tab or tabbar
-  addEvent([gBrowser.tabContainer, 'DOMMouseScroll', function(aEvent) {
+  addEvent([gBrowser.tabContainer, 'wheel', function(aEvent) {
     gBrowser.tabContainer.
-    advanceSelectedTab((aEvent.detail < 0) ? -1 : 1, true);
+    advanceSelectedTab((aEvent.deltaY < 0) ? -1 : 1, true);
     aEvent.stopPropagation();
   }, true]);
 }

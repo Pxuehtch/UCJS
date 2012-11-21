@@ -337,7 +337,7 @@ function MouseGesture() {
     addEvent([pc, 'mousedown', onMouseDown, false]);
     addEvent([pc, 'mousemove', onMouseMove, false]);
     addEvent([pc, 'mouseup', onMouseUp, false]);
-    addEvent([pc, 'DOMMouseScroll', onMouseScroll, false]);
+    addEvent([pc, 'wheel', onMouseWheel, false]);
     addEvent([pc, 'keydown', onKeyDown, false]);
     addEvent([pc, 'keyup', onKeyUp, false]);
     addEvent([pc, 'contextmenu', onContextMenu, false]);
@@ -391,7 +391,7 @@ function MouseGesture() {
     }
   }
 
-  function onMouseScroll(aEvent) {
+  function onMouseWheel(aEvent) {
     mMouse.update(aEvent);
 
     if (mState === kState.GESTURE) {
@@ -591,7 +591,7 @@ function MouseManager() {
         mElseDown = false;
         break;
       case 'mousemove':
-      case 'DOMMouseScroll':
+      case 'wheel':
         // a gesture is in progress
         if (mRightDown) {
           mSuppressMenu = true;
@@ -737,7 +737,7 @@ function GestureManager() {
   }
 
   function updateChain(aEvent) {
-    const {type, detail} = aEvent;
+    const {type, deltaY} = aEvent;
 
     var sign = '';
 
@@ -748,8 +748,8 @@ function GestureManager() {
       } else if (y !== 0) {
         sign = (y < 0) ? 'up' : 'down';
       }
-    } else if (type === 'DOMMouseScroll') {
-      sign = (detail < 0) ? 'wheelUp' : 'wheelDown';
+    } else if (type === 'wheel') {
+      sign = (deltaY < 0) ? 'wheelUp' : 'wheelDown';
     }
 
     if (sign) {
