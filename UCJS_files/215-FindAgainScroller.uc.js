@@ -81,7 +81,7 @@ function FindAgainScroller_init() {
         mAlignPosition.align(aFindPrevious);
       }
       if (mSmoothScroll && mScrollObserver.isScrolled()) {
-        mSmoothScroll.start(mScrollObserver.getScrolled());
+        mSmoothScroll.start(mScrollObserver.getScrolledState());
       }
     }
 
@@ -100,16 +100,16 @@ function FindAgainScroller_init() {
  *   attach: {function}
  *   detach: {function}
  *   isScrolled: {function}
- *   getScrolled: {function}
+ *   getScrolledState: {function}
  */
 function ScrollObserver() {
   var mScrollable = Scrollable();
 
   function Scrollable() {
     var mItems = [];
-    var mScrolled = null;
+    var mScrolledState = null;
 
-    function detach() {
+    function cleanup() {
       if (mItems.length) {
         mItems.forEach(function(item) {
           item.node = null;
@@ -118,16 +118,17 @@ function ScrollObserver() {
         mItems.length = 0;
       }
 
-      if (mScrolled !== null) {
-        mScrolled.node = null;
-        mScrolled.start = null;
-        mScrolled.goal = null;
-        mScrolled = null;
+      if (mScrolledState !== null) {
+        mScrolledState.node = null;
+        mScrolledState.start = null;
+        mScrolledState.goal = null;
+        mScrolledState = null;
       }
     }
 
-    function add(aNode) {
-      if (aNode && mItems.every(function(item) item.node !== aNode)) {
+    function addItem(aNode) {
+      if (aNode &&
+          mItems.every(function(item) item.node !== aNode)) {
         mItems.push({
           node: aNode,
           scroll: getScroll(aNode)
@@ -135,19 +136,26 @@ function ScrollObserver() {
       }
     }
 
-    function getScrolled(aUpdate) {
-      if (!aUpdate && mScrolled !== null) {
-        return mScrolled;
-      }
+    function isScrolled() {
+      updateScrolledState();
+      return !!mScrolledState;
+    }
 
-      mScrolled = null;
+    function getScrolledState() {
+      if (!mScrolledState) {
+        updateScrolledState();
+      }
+      return mScrolledState;
+    }
+
+    function updateScrolledState() {
+      mScrolledState = null;
 
       mItems.some(function(item) {
         var now = getScroll(item.node);
         if (now.x !== item.scroll.x || now.y !== item.scroll.y) {
-          // @note mScrolled will be the parameter of SmoothScroll()::start()
-          // @see SmoothScroll()::start()
-          mScrolled = {
+          // @note Used as the parameters of |SmoothScroll::start|.
+          mScrolledState = {
             node: item.node,
             start: item.scroll,
             goal: now
@@ -156,15 +164,14 @@ function ScrollObserver() {
         }
         return false;
       });
-
-      return mScrolled;
     }
 
     return {
       get count() mItems.length,
-      detach: detach,
-      add: add,
-      getScrolled: getScrolled
+      cleanup: cleanup,
+      addItem: addItem,
+      isScrolled: isScrolled,
+      getScrolledState: getScrolledState
     };
   }
 
@@ -174,6 +181,10 @@ function ScrollObserver() {
       return mScrollable.count > 0;
     }
     return false;
+  }
+
+  function detach() {
+    mScrollable.cleanup();
   }
 
   function scanScrollables(aWindow, aFindText) {
@@ -192,14 +203,14 @@ function ScrollObserver() {
       return;
 
     if (aWindow.scrollMaxX || aWindow.scrollMaxY) {
-      mScrollable.add(body);
+      mScrollable.addItem(body);
     }
 
     var text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
     var xpath = 'descendant-or-self::*[contains(normalize-space(),"' + text +
       '")]|descendant::textarea';
     $X(xpath, body).forEach(function(node) {
-      mScrollable.add(testScrollable(node));
+      mScrollable.addItem(testScrollable(node));
     });
   }
 
@@ -220,7 +231,7 @@ function ScrollObserver() {
           return aNode;
         }
       }
-      aNode = aNode.parentNode;
+      aNode = aNode.parentElement;
     }
     return null;
   }
@@ -248,9 +259,9 @@ function ScrollObserver() {
   // Expose
   return {
     attach: attach,
-    detach: mScrollable.detach,
-    isScrolled: function() !!mScrollable.getScrolled(true),
-    getScrolled: function() mScrollable.getScrolled(false)
+    detach: detach,
+    isScrolled: mScrollable.isScrolled,
+    getScrolledState: mScrollable.getScrolledState
   };
 }
 
