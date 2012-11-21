@@ -40,6 +40,10 @@ var TextFinder = {
     return gFindBar._findField.value;
   },
 
+  get isResultFound() {
+    return gFindBar._foundEditable || gFindBar._currentWindow;
+  },
+
   get selectionController() {
     var editable = gFindBar._foundEditable;
     if (editable) {
@@ -79,21 +83,24 @@ function FindAgainScroller_init() {
 
     $onFindAgainCommand.apply(this, arguments);
 
-    if (scrollable) {
-      if (mAlignPosition &&
-          (mAlignPosition.alwaysAlign || mScrollObserver.isScrolled())) {
-        mAlignPosition.align(aFindPrevious);
+    if (TextFinder.isResultFound) {
+      if (scrollable) {
+        let isScrolled = mScrollObserver.isScrolled();
+
+        if (mAlignPosition && (mAlignPosition.alwaysAlign || isScrolled)) {
+          mAlignPosition.align(aFindPrevious);
+        }
+        if (mSmoothScroll && isScrolled) {
+          mSmoothScroll.start(mScrollObserver.getScrolledState());
+        }
       }
-      if (mSmoothScroll && mScrollObserver.isScrolled()) {
-        mSmoothScroll.start(mScrollObserver.getScrolledState());
+
+      if (mFoundBlink) {
+        mFoundBlink.start();
       }
     }
 
     mScrollObserver.detach();
-
-    if (mFoundBlink) {
-      mFoundBlink.start();
-    }
   };
 }
 
