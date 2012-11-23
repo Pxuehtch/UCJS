@@ -573,8 +573,12 @@ var gFileType = {
 function inImagePage()
   (gContextMenu.target.ownerDocument instanceof ImageDocument);
 
-function inTextPage()
-  /^(?:text|application)\//.test(gContextMenu.target.ownerDocument.contentType);
+function inTextPage() {
+  var mimeType = gContextMenu.target.ownerDocument.contentType;
+  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
+  return window.mimeTypeIsTextBased(mimeType);
+}
+
 
 function $(aId)
   document.getElementById(aId);

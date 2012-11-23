@@ -278,8 +278,10 @@ function encodeToPlain(aRange) {
   return encoder.encodeToString();
 }
 
-function isTextDocument(aDoc)
-  aDoc && /^(?:text|application)\/./.test(aDoc.contentType);
+function isTextDocument(aDoc) {
+  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
+  return aDoc && window.mimeTypeIsTextBased(aDoc.contentType);
+}
 
 
 // Imports

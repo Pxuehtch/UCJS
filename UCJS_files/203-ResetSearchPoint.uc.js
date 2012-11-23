@@ -93,7 +93,9 @@ function getClickManager(aElement) {
     return null;
   }
 
-  function isTextDocument(doc) doc && /^(?:text|application)\/./.test(doc.contentType);
+  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
+  function isTextDocument(doc)
+    doc && window.mimeTypeIsTextBased(doc.contentType);
 
   function isContentWindow(win) win && win.top === window.content;
 
