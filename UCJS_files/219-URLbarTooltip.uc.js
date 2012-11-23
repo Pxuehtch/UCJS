@@ -157,6 +157,7 @@ function getShortcutData() {
     }
   } finally {
     statement.reset();
+    statement.finalize();
   }
 
   [seData, bmData].forEach(function(a) {
