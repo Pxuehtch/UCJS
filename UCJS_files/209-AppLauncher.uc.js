@@ -279,7 +279,9 @@ function makeAppMenu(aPopup, aAppInfo) {
   popup.setAttribute('onpopupshowing', 'event.stopPropagation();');
   popup.setAttribute('onpopuphiding', 'event.stopPropagation();');
 
-  aAppInfo.forEach(function(app) addMenuItem(popup, 'launchTool', app, true));
+  aAppInfo.forEach(function(app) {
+    addMenuItem(popup, 'launchTool', app, true);
+  });
 
   menu.appendChild(popup);
   aPopup.appendChild(menu);
@@ -305,11 +307,15 @@ function makeActionItems(aPopup, aAppInfo) {
       gFileType.setFileExt(exts);
 
       actions = actions.reduce(function(a, b) {
-        return a.concat(exts.map(function(ext) gFileType.makeFileAction(b, ext)));
+        return a.concat(exts.map(function(ext) {
+          return gFileType.makeFileAction(b, ext);
+        }));
       }, []);
     }
 
-    actions.forEach(function(action) addMenuItem(aPopup, action, app));
+    actions.forEach(function(action) {
+      addMenuItem(aPopup, action, app);
+    });
   });
 
   addSeparator(aPopup);
@@ -337,7 +343,9 @@ function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
   item.setAttribute(kBundle.ID.actionKey, aAction);
 
   if (aApp) {
-    addEvent([item, 'command', function() doAction(aApp, aAction), false]);
+    addEvent([item, 'command', function() {
+      doAction(aApp, aAction);
+    }, false]);
   } else {
     item.setAttribute('disabled', true);
   }
@@ -360,7 +368,9 @@ function doBrowse(aEvent) {
   // Hide all menu items and show the others.
   Array.forEach(popup.childNodes, function(node) {
     var hidden = node.localName === 'menuitem';
-    node.hidden !== hidden && (node.hidden = hidden);
+    if (node.hidden !== hidden) {
+      node.hidden = hidden;
+    }
   });
 
   // Show menu items with available actions.
@@ -570,15 +580,15 @@ var gFileType = {
 };
 
 
-function inImagePage()
-  (gContextMenu.target.ownerDocument instanceof ImageDocument);
+function inImagePage() {
+  return gContextMenu.target.ownerDocument instanceof ImageDocument;
+}
 
 function inTextPage() {
   var mimeType = gContextMenu.target.ownerDocument.contentType;
   // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
   return window.mimeTypeIsTextBased(mimeType);
 }
-
 
 function $(aId)
   document.getElementById(aId);
@@ -589,8 +599,9 @@ function $E(aTag)
 function addSeparator(aPopup)
   aPopup.appendChild($E('menuseparator'));
 
-function setLabel(aNode, aStr)
+function setLabel(aNode, aStr) {
   aNode.setAttribute('label', Util.str4ui(aStr));
+}
 
 
 function getContextMenu()
@@ -819,7 +830,9 @@ function getAppArgs(aArgs, aURL) {
     replace(/".+?"/g, function($0) $0.replace(/ /g, '%SPC%')).
     split(' ');
 
-  return args.map(function(arg) arg.replace(/%SPC%/g, ' ').replace(/%URL%/g, aURL));
+  return args.map(function(arg) {
+    return arg.replace(/%SPC%/g, ' ').replace(/%URL%/g, aURL);
+  });
 }
 
 function getSpecialDirectory(aAlias)
