@@ -46,15 +46,19 @@
 (function() {
 
   // @modified chrome://browser/content/browser.js::BrowserSearch::webSearch
-  Function('BrowserSearch.webSearch = ' + BrowserSearch.webSearch.toString().replace(
-    '} else {',
-    '\
-      } else if (Services.search.defaultEngine.alias && isElementVisible(gURLBar)) {\
+  Function('BrowserSearch.webSearch = ' +
+    BrowserSearch.webSearch.toString().replace(
+      '} else {',
+      '\
+      } else if (isElementVisible(gURLBar) &&\
+                 Services.search.defaultEngine.alias) {\
         gURLBar.value = Services.search.defaultEngine.alias + " ";\
         gURLBar.focus();\
-        gURLBar.inputField.setSelectionRange(gURLBar.value.length, gURLBar.value.length);\
+        let len = gURLBar.value.length;\
+        gURLBar.inputField.setSelectionRange(len, len);\
       } else {\
-    '
+      '.
+      replace(/\s+/g, ' ')
   ))();
 
 })();
@@ -196,9 +200,11 @@
     (function(){\
       var state = ucjsUtil.getPref("%kPrefTabFocus%") !== 1 ? 1 : 7;\
       ucjsUtil.setPref("%kPrefTabFocus%", state);\
-      ucjsUI.StatusField.update("TAB focus: " + (state === 1 ? "text fields only." : "text fields, form elements, and links."));\
+      ucjsUI.StatusField.update("TAB focus: " + (state === 1 ?\
+      "text fields only." : "text fields, form elements, and links."));\
     })();\
   '
+  .replace(/\s+/g, ' ')
   .replace(/%kPrefTabFocus%/g, kPrefTabFocus);
 
   $ID('mainKeyset').appendChild($E('key', {
