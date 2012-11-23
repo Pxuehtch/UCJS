@@ -237,7 +237,7 @@ var mStatusField = (function() {
     //   XULBrowserWindow::setOverLink
     var $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink = function(url, anchorElt) {
-      var URI = null;
+      var URI;
       try {
         URI = PlacesUtils._uri(url);
       } catch (e) {}
