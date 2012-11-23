@@ -52,6 +52,9 @@ const kConfig = {
  * System configs
  */
 const kSystem = {
+  // Log the activity of this script to the error console
+  logging: false,
+
   // Required lowest version of Firefox
   firefoxVersion: '4.0',
 
@@ -74,7 +77,7 @@ const kSystem = {
 //***** Entry point
 
 // initialize common utility and console logger
-var Util = Util(), Log = Log(false);
+var Util = Util(), Log = Log(kSystem.logging);
 
 ucjsScriptLoader_init();
 
