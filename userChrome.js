@@ -460,7 +460,8 @@ function ScriptList() {
 
     var browserURL = getBrowserURL();
 
-    function test(s) testURL(s.replace(/^main$/i, browserURL), aURL);
+    var test = function(str)
+      testURL(str.replace(/^main$/i, browserURL), aURL);
 
     var exclude = aMetaData.exclude;
     if (exclude.length && exclude.some(test))
@@ -479,8 +480,9 @@ function ScriptList() {
 
     var list = [];
     for (let [key, values] in Iterator(aMetaData)) {
-      list = list.concat(values.map(
-        function(value) kForm.replace('%key%', key).replace('%value%', value)));
+      list = list.concat(values.map(function(value) {
+        return kForm.replace('%key%', key).replace('%value%', value);
+      }));
     }
     return list.length ? list.join('\n') : kNoMetaData;
   }
