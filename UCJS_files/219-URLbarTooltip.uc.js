@@ -128,30 +128,38 @@ function getRestrictData() {
 }
 
 function getShortcutData() {
-  var seData = [], bmData = [];
+  var searchEnginesData = [], bookmarksData = [];
 
   Services.search.getEngines().forEach(function(a) {
     if (a.alias) {
-      seData.push({keyword: a.alias, name: a.description || a.name});
+      searchEnginesData.
+      push({keyword: a.alias, name: a.description || a.name});
     }
   });
 
-  try {
-    var id, uri;
-    var bms = PlacesUtils.bookmarks;
-    var statement =
-      Cc['@mozilla.org/browser/nav-history-service;1'].
-      getService(Ci.nsPIPlacesDatabase).
-      DBConnection.
-      createStatement('SELECT b.id FROM moz_bookmarks b JOIN moz_keywords k ON k.id=b.keyword_id');
+  var sql =
+    'SELECT b.id ' +
+    'FROM moz_bookmarks b ' +
+    'JOIN moz_keywords k ON k.id = b.keyword_id';
 
+  var statement =
+    Cc['@mozilla.org/browser/nav-history-service;1'].
+    getService(Ci.nsPIPlacesDatabase).
+    DBConnection.
+    createStatement(sql);
+
+  // @see resource:///modules/PlacesUtils.jsm
+  var bookmarkService = PlacesUtils.bookmarks;
+  var id, uri;
+
+  try {
     while (statement.executeStep()) {
       id = statement.row.id;
-      uri = bms.getBookmarkURI(id);
+      uri = bookmarkService.getBookmarkURI(id);
       if (uri) {
-        bmData.push({
-          keyword: bms.getKeywordForBookmark(id),
-          name: bms.getItemTitle(id) || uri.prePath
+        bookmarksData.push({
+          keyword: bookmarkService.getKeywordForBookmark(id),
+          name: bookmarkService.getItemTitle(id) || uri.prePath
         });
       }
     }
@@ -160,11 +168,11 @@ function getShortcutData() {
     statement.finalize();
   }
 
-  [seData, bmData].forEach(function(a) {
+  [searchEnginesData, bookmarksData].forEach(function(a) {
     a.sort(function(x, y) x.keyword.localeCompare(y.keyword));
   });
 
-  return seData.concat({separator: true}, bmData);
+  return searchEnginesData.concat({separator: true}, bookmarksData);
 }
 
 function setStyles() {
