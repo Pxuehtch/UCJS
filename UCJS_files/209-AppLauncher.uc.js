@@ -711,6 +711,10 @@ function getExecutable(aPath) {
   return null;
 }
 
+function isExecutable(aPath) {
+  return !!getExecutable(aPath);
+}
+
 function checkFile(aFilePath) {
   try {
     var file = LocalFile();
@@ -838,9 +842,6 @@ function getAppArgs(aArgs, aURL) {
 function getSpecialDirectory(aAlias)
   DirectoryService.get(aAlias, Ci.nsIFile);
 
-function str4ui(aStr)
-  ucjsUtil.convertForSystem(aStr);
-
 function warn(aTitle, aMsg) {
   if (!Array.isArray(aMsg)) {
     aMsg = [aMsg];
@@ -854,6 +855,21 @@ function warn(aTitle, aMsg) {
   alert(msg);
 }
 
+
+// Import.
+
+function getContextMenu()
+  ucjsUI.ContentArea.contextMenu;
+
+function getNodesByXPath(aXPath, aNode)
+  ucjsUtil.getNodesByXPath(aXPath, aNode);
+
+function addEvent(aData)
+  ucjsUtil.setEventListener(aData);
+
+function str4ui(aStr)
+  ucjsUtil.convertForSystem(aStr);
+
 function log(aMsg)
   ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
 
@@ -861,11 +877,11 @@ function log(aMsg)
 // Export.
 
 return {
-  getContextMenu: function() ucjsUI.ContentArea.contextMenu,
-  isExecutable: function(aPath) !!getExecutable(aPath),
+  getContextMenu: getContextMenu,
+  isExecutable: isExecutable,
   runApp: runApp,
-  getNodesByXPath: ucjsUtil.getNodesByXPath,
-  addEvent: ucjsUtil.setEventListener,
+  getNodesByXPath: getNodesByXPath,
+  addEvent: addEvent,
   str4ui: str4ui,
   log: log
 };
