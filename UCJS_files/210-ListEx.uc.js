@@ -547,7 +547,8 @@ function getListRange(aIndex, aCount) {
 function getTitle(aTitle, aURL) {
   if (!aTitle && aURL) {
     try {
-      makeURI(aURL, null, null);
+      // @see chrome://global/content/contentAreaUtils.js::makeURI
+      window.makeURI(aURL, null, null);
       aTitle = aURL;
     } catch (e) {
       // Clip non-standard URL. (e.g. data:, javascript:)
@@ -562,7 +563,8 @@ function getFavicon(aIcon, aPageURI) {
   if (!aIcon) {
     if (typeof aPageURI === 'string') {
       try {
-        aPageURI = makeURI(aPageURI, null, null);
+        // @see chrome://global/content/contentAreaUtils.js::makeURI
+        aPageURI = window.makeURI(aPageURI, null, null);
       } catch (e) {
         aPageURI = null;
       }

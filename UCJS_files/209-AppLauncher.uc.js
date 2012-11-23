@@ -560,8 +560,8 @@ var gFileType = {
   getExt: function(aURL) {
     if (aURL) {
       try {
-        let URI = makeURI(aURL, null, null);
-
+        // @see chrome://global/content/contentAreaUtils.js::makeURI
+        let URI = window.makeURI(aURL, null, null);
         return URI ? URI.QueryInterface(Ci.nsIURL).fileExtension : '';
       } catch (e) {}
     }
