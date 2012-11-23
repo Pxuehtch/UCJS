@@ -14,12 +14,12 @@
 "use strict";
 
 
-// ***** Generic variables
+//********** Generic variables
 
 const {document} = window;
 
 
-// ***** Preferences
+//********** Preferences
 
 /**
  * User configurations
@@ -58,7 +58,7 @@ const kSystem = {
   // Required lowest version of Firefox
   firefoxVersion: '4.0',
 
-  // Global property name in the global scope |window|
+  // Exposed property name in the global scope |window|
   loaderName: 'ucjsScriptLoader',
 
   // ID of <overlay> for overlayed scripts
@@ -74,15 +74,16 @@ const kSystem = {
 
 
 
-//***** Entry point
+//********** Entry point
 
-// initialize common utility and console logger
-var Util = Util(), Log = Log(kSystem.logging);
+// initialize the common utility and the console logger
+var Util = Util(),
+    Log = Log(kSystem.logging);
 
 ucjsScriptLoader_init();
 
 
-//***** Modules
+//********** Modules
 
 function ucjsScriptLoader_init() {
   var scriptLoader = ScriptLoader();
@@ -266,6 +267,8 @@ function ScriptList() {
     kConfig.scriptFolders.forEach(function(folder) {
       var match, deeper, directory, exists;
 
+      // 'dir1/dir2' -> match[1]='dir1/dir2', match[2]=''
+      // 'dir1/dir2/' -> match[1]='dir1/dir2', match[2]='/'
       match = /^(.+?)(\/?)$/.exec(folder);
       if (!match)
         return;
@@ -620,8 +623,8 @@ function Util() {
 
 
 /**
- * Logger to the javascript console
- * @param aEnabled {boolean} output or not
+ * Logger to the error console
+ * @param aEnabled {boolean} whether output or not
  * @return {hash}
  */
 function Log(aEnabled) {
