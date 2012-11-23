@@ -14,10 +14,10 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
- * Identifiers.
+ * Identifiers
  * @note Key for stylings, STYLE_XXX, must be also defined in kStyle.
  */
 const kID = {
@@ -48,13 +48,15 @@ const kString = {
 };
 
 
-// Functions.
+//********** Functions
 
 function getURLbar() $ID('urlbar');
 function getPanel() $ID(kID.panel);
 
 function URLbarTooltip_init() {
-  $ID('mainPopupSet').appendChild($E('panel', {id: kID.panel, backdrag: true}));
+  $ID('mainPopupSet').
+  appendChild($E('panel', {id: kID.panel, backdrag: true}));
+
   addEvent([getURLbar(), 'mousemove', showPanel, false]);
 }
 
@@ -73,7 +75,8 @@ function buildContent() {
   panel.firstChild && panel.removeChild(panel.firstChild);
 
   var box = $E('vbox');
-  box.appendChild($E('label', {value: kString.title, class: kID.STYLE_HEADER}));
+  box.appendChild($E('label',
+    {value: kString.title, class: kID.STYLE_HEADER}));
   box.appendChild(makeGroup(getRestrictData(), kString.restrictGroup));
   box.appendChild(makeGroup(getShortcutData(), kString.shortcutGroup));
   panel.appendChild(box);
@@ -187,13 +190,13 @@ function setStyles() {
 }
 
 
-// Utilities.
+//********** Utilities
 
 function $ID(aId)
   document.getElementById(aId);
 
 
-// Imports.
+//********** Imports
 
 function $E(aTagOrNode, aAttribute)
   ucjsUtil.createNode(aTagOrNode, aAttribute);
@@ -208,7 +211,7 @@ function log(aMsg)
   ucjsUtil.logMessage('URLbarTooltip.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 URLbarTooltip_init();
 

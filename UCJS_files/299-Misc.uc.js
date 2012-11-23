@@ -40,9 +40,11 @@
 })();
 
 
-// Calling the WebSearch command at the search bar hidden puts a quick alias in the address bar.
-// Alias is set as a keyword of the default engine at a search engines manager.
-// @note cf. http://d.hatena.ne.jp/Griever/20110603/1307109954
+// Calling the WebSearch command at the search bar hidden puts a quick alias
+// in the address bar.
+// @note Alias is set as a keyword of the default engine at a search engines
+// manager.
+// @see http://d.hatena.ne.jp/Griever/20110603/1307109954
 (function() {
 
   // @modified chrome://browser/content/browser.js::BrowserSearch::webSearch
@@ -67,7 +69,7 @@
 // Modify a title of bookmark and history item.
 (function() {
 
-  // @modified resource://modules/PlacesUIUtils.jsm::
+  // @modified resource:///modules/PlacesUIUtils.jsm::
   // PlacesUIUtils::getBestTitle
   var $getBestTitle = PlacesUIUtils.getBestTitle;
 
@@ -190,11 +192,14 @@
 
   // @pref see http://kb.mozillazine.org/Accessibility.tabfocus
   // 1: Give focus to text fields only.
-  // 7: Give focus to focusable text fields, form elements, and links. (default)
+  // 7: Give focus to focusable text fields, form elements, and links.
+  // (default)
   const kPrefTabFocus = 'accessibility.tabfocus';
 
   var defaultTabFocus = getPref(kPrefTabFocus);
-  addEvent([window, 'unload', function(e) {setPref(kPrefTabFocus, defaultTabFocus);}, false]);
+  addEvent([window, 'unload', function(e) {
+    setPref(kPrefTabFocus, defaultTabFocus);
+  }, false]);
 
   var command = '\
     (function(){\
@@ -225,7 +230,8 @@
 })();
 
 
-// Disables function with alt+click on link. (default function: download of the link)
+// Disables function with alt+click on link. (default function: download of
+// the link)
 (function() {
 
   addEvent([gBrowser.mPanelContainer, 'click', function(event) {
@@ -301,12 +307,15 @@
 // @require UI.uc.js
 // TODO: When the toolbar is customized, the statusfield in the urlbar is lost
 (function() {
-  // Move '#statusbar-display' before 'input.urlbar-input' to control them by CSS
+  // Move '#statusbar-display' before 'input.urlbar-input' to control them by
+  // CSS
   var urlbarTextbox = ucjsUI.URLBar.textBox;
-  urlbarTextbox.insertBefore(ucjsUI.StatusField.textBox, urlbarTextbox.firstChild);
+  urlbarTextbox.insertBefore(ucjsUI.StatusField.textBox,
+    urlbarTextbox.firstChild);
 
   // Set the position of a status display
-  // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
+  // @modified chrome://browser/content/browser.js::
+  // XULBrowserWindow::updateStatusField
   var $updateStatusField = XULBrowserWindow.updateStatusField;
   XULBrowserWindow.updateStatusField = function() {
     // style of #statusbar-display
@@ -379,7 +388,8 @@ function getLink(aNode) {
     if (aNode.nodeType === Node.ELEMENT_NODE &&
          (aNode instanceof HTMLAnchorElement ||
           aNode instanceof HTMLAreaElement ||
-          aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') === 'simple'))
+          aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
+          'simple'))
       break;
 
     aNode = aNode.parentNode;

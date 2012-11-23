@@ -1239,8 +1239,7 @@ var getTime = (function() {
 function getPageTitle(aURL) {
   var title;
   try {
-    // @see resource://modules/PlacesUIUtils.jsm::
-    // PlacesUIUtils::getBestTitle
+    // @see resource:///modules/PlacesUtils.jsm
     title = PlacesUtils.history.getPageTitle(makeURI(aURL));
   } catch (e) {}
 

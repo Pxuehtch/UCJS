@@ -17,7 +17,7 @@ var ucjsUI = (function() {
 
 
 /**
- * Context area.
+ * Context area
  */
 var mContentArea = {
   get contextMenu() {
@@ -28,7 +28,7 @@ var mContentArea = {
 
 
 /**
- * Location bar.
+ * Location bar
  */
 var mURLBar = {
   get textBox() {
@@ -44,7 +44,7 @@ var mURLBar = {
 
 
 /**
- * Find bar.
+ * Find bar
  */
 var mFindBar = {
   get textBox() {
@@ -120,7 +120,7 @@ var mFindBar = {
 
 
 /**
- * Status bar.
+ * Status bar
  */
 var mStatusField = (function() {
   const kStatusAttribute = {
@@ -129,7 +129,7 @@ var mStatusField = (function() {
   };
 
 
-  // Exported object.
+  // Exported object
   var _mStatusField = {
     get textBox() {
       delete this.textBox;
@@ -140,7 +140,7 @@ var mStatusField = (function() {
     // @note Retrieves the raw value from "label" attribute because the label
     // getter returns an empty string whenever the status field is inactive.
     // @see chrome://browser/content/tabbrowser.xml::
-    //   <binding id="statuspanel">::<property name="label">::<getter>
+    // <binding id="statuspanel">::<property name="label">::<getter>
     get text() {
       return this.textBox.getAttribute('label');
     },
@@ -150,7 +150,7 @@ var mStatusField = (function() {
     // value is passed. So sets an empty string to "label" attribute to clear
     // the statusbar.
     // @see chrome://browser/content/tabbrowser.xml::
-    //   <binding id="statuspanel">::<property name="label">::<setter>
+    // <binding id="statuspanel">::<property name="label">::<setter>
     set text(aVal) {
       this.textBox.label = aVal;
       if (!aVal && this.text) {
@@ -183,7 +183,7 @@ var mStatusField = (function() {
 
     setOverLink: function(aEnabled) {
       // @modified chrome://browser/content/browser.js::
-      //   XULBrowserWindow::setOverLink
+      // XULBrowserWindow::setOverLink
       if (!aEnabled) {
         if (!this.$setOverLink) {
           this.$setOverLink = XULBrowserWindow.setOverLink;
@@ -198,7 +198,7 @@ var mStatusField = (function() {
   };
 
 
-  // Custom status display.
+  // Custom status display
   customizeCSS();
   customizeFunctions();
 
@@ -234,9 +234,10 @@ var mStatusField = (function() {
     var linkState = null;
 
     // @modified chrome://browser/content/browser.js::
-    //   XULBrowserWindow::setOverLink
+    // XULBrowserWindow::setOverLink
     var $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink = function(url, anchorElt) {
+      // @see resource:///modules/PlacesUtils.jsm
       var URI;
       try {
         URI = PlacesUtils._uri(url);
@@ -258,7 +259,7 @@ var mStatusField = (function() {
     };
 
     // @modified chrome://browser/content/browser.js::
-    //   XULBrowserWindow::updateStatusField
+    // XULBrowserWindow::updateStatusField
     var $updateStatusField = XULBrowserWindow.updateStatusField;
     XULBrowserWindow.updateStatusField = function() {
       var {LINKSTATE, MESSAGE} = kStatusAttribute;
@@ -280,13 +281,13 @@ var mStatusField = (function() {
   }
 
 
-  // Exports.
+  // Exports
   return _mStatusField;
 })();
 
 
 /**
- * Menuitem of popup menu.
+ * Menuitems of a popup menu
  * @require TabEx.uc.js
  */
 var mMenuitem = {
@@ -305,9 +306,11 @@ var mMenuitem = {
 };
 
 
-// Functions.
+//********** Functions
 
-// Manages the visibility of menu separators in the context menu.
+/**
+ * Manages the visibility of menu separators in the context menu
+ */
 function manageContextMenuSeparators() {
   [mContentArea, mURLBar].forEach(function(aContainer) {
     var contextMenu = aContainer.contextMenu;
@@ -351,7 +354,7 @@ function manageContextMenuSeparators() {
 }
 
 
-// Utilities.
+//********** Utilities
 
 function $ID(aId)
   document.getElementById(aId);
@@ -372,7 +375,7 @@ function log(aMsg)
   ucjsUtil.logMessage('UI.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 function UI_init() {
   manageContextMenuSeparators();
@@ -381,7 +384,7 @@ function UI_init() {
 UI_init();
 
 
-// Exports.
+//********** Exports
 
 return {
   ContentArea: mContentArea,

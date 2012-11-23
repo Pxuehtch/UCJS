@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name ResetSearchPoint.uc.js
-// @description Resets the start point to "Find again" between frames/textboxes.
+// @description Resets the start point to "Find again" between frames/textboxes
 // @include main
 // ==/UserScript==
 
@@ -8,7 +8,8 @@
 
 /**
  * @usage Next find again will start from the point with "double-click".
- * @note In the same frame/textbox, the point is reset with "single-click" by default behavior.
+ * @note In the same frame/textbox, the point is reset with "single-click" by
+ * default behavior.
  */
 
 
@@ -72,7 +73,7 @@ function setSelection(aElement, aWindow) {
   }
 
   range.selectNode(aElement);
-  // collapses to its start.
+  // collapses to its start
   range.collapse(true);
 }
 
@@ -86,6 +87,11 @@ function setFastFindFor(aWindow) {
   getFastFind().setDocShell(docShell);
 }
 
+/**
+ * Filters the useful state from a clicked element
+ * @param {Element}
+ * @return {hash|null}
+ */
 function getClickManager(aElement) {
   if (!aElement ||
       !isTextDocument(aElement.ownerDocument) ||
@@ -97,7 +103,8 @@ function getClickManager(aElement) {
   function isTextDocument(doc)
     doc && window.mimeTypeIsTextBased(doc.contentType);
 
-  function isContentWindow(win) win && win.top === window.content;
+  function isContentWindow(win)
+    win && win.top === window.content;
 
   var isEditable =
     aElement instanceof Ci.nsIDOMNSEditableElement &&
@@ -113,7 +120,8 @@ function getClickManager(aElement) {
         if (node instanceof HTMLAnchorElement ||
             node instanceof HTMLAreaElement ||
             node instanceof HTMLLinkElement ||
-            node.getAttributeNS('http://www.w3.org/1999/xlink', 'type') === 'simple') {
+            node.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
+            'simple') {
           return true;
         }
       }
@@ -124,15 +132,21 @@ function getClickManager(aElement) {
 
   return {
     clickedWindow: aElement.ownerDocument.defaultView,
-    // We handle <img> too, because clicking it is not reset the start point by default.
+    // We handle <img> too, because clicking it is not reset the start point
+    // by default.
     clickedElement: (isEditable || isImage) && !isLinked ? aElement : null
   };
 }
 
-function getFastFind() gBrowser.fastFind;
+/**
+ * Gets nsITypeAheadFind of the current browser
+ */
+function getFastFind() {
+  return gBrowser.fastFind;
+}
 
 
-// Imports.
+//********** Imports
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
@@ -141,7 +155,7 @@ function log(aMsg)
   ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 ResetSearchPoint_init();
 

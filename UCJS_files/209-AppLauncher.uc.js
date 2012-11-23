@@ -1,19 +1,19 @@
 // ==UserScript==
 // @name        AppLauncher.uc.js
-// @description Application launcher.
+// @description Application launcher
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
 // @usage Access to items in the main context menu.
 
-// @note A resource file that is passed to the application will be saved in your temporary folder.
-//   see doAction() and Util::getSavePath().
+// @note A resource file that is passed to the application will be saved in
+// your temporary folder. See doAction(), Util::getSavePath()
 
 
 /**
- * Main function.
- * @param Util {hash} Utility functions.
+ * Main function
+ * @param Util {hash} utility functions
  */
 (function(Util) {
 
@@ -21,36 +21,36 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
- * List of user applications.
+ * List of user applications
  */
 const kAppList = [
   {
-    // Displayed name.
+    // Displayed name
     name: 'IE',
 
-    // @see keys in kTypeAction.
+    // @see keys in kTypeAction
     type: 'browse',
 
-    // Alias of the special folder is available.
-    // @see kSpecialFolderAliases.
-    // %ProgF%: program folder.
-    // %LocalAppData%: local application data folder.
+    // Alias of the special folder is available
+    // @see kSpecialFolderAliases
+    // %ProgF%: program files folder
+    // %LocalAppData%: local application data folder
     path: '%ProgF%\\Internet Explorer\\iexplore.exe',
 
-    // [OPTIONAL] Commandline arguments.
+    // [optional] Commandline arguments
     // %URL% is replaced with suitable URL for each action.
     // When omitted or empty, equal to args:'%URL%'.
     args: '-new %URL%',
 
-    // [OPTIONAL] This item is disabled.
+    // [optional] This item is disabled
     disabled: true
   },
   {
     name: 'WMP',
-    // Open a link of the specific file extension.
+    // Open a link of the specific file extension
     type: 'file=asx|wax|wvx',
     path: '%ProgF%\\Windows Media Player\\wmplayer.exe',
     args: '/prefetch:1 %URL%'
@@ -129,7 +129,7 @@ const kAppList = [
 ];
 
 /**
- * Actions for each types.
+ * Actions for each types
  */
 const kTypeAction = {
   tool:     ['launchTool'],
@@ -140,22 +140,23 @@ const kTypeAction = {
   news:     ['readNews'],
   media:    ['openLinkMedia', 'openMedia'],
   image:    ['viewLinkImage', 'viewImage', 'viewBGImage'],
-  download: ['downloadLink', 'downloadMedia', 'downloadImage', 'downloadBGImage'],
+  download: ['downloadLink', 'downloadMedia', 'downloadImage',
+             'downloadBGImage'],
   ftp:      ['openFTP']
 };
 
 /**
- * File extensions for each actions.
+ * File extensions for each actions
  */
 const kLinkExt = {
-  file:  '', // [RESERVED] Put a empty string.
+  file:  '', // [reserved] Put a empty string
   text:  'css|js|txt|xml',
   media: 'asf|asx|avi|flv|mid|mov|mp3|mp4|mpg|ogg|ogv|pls|ra|ram|rm|wav|wax|webm|wma|wmv|wvx',
   image: 'bmp|gif|jpg|png'
 };
 
 /**
- * Bundle strings for UI.
+ * UI bundle strings
  */
 const kBundle = {
   type: {
@@ -210,7 +211,7 @@ const kBundle = {
 };
 
 
-// Functions.
+//********** Functions
 
 function AppLauncher_init() {
   var appInfo = initAppInfo();
@@ -242,7 +243,8 @@ function initAppInfo() {
 
   var order = [i for (i in kTypeAction)];
   apps.sort(function(a, b) {
-    return order.indexOf(a.type) - order.indexOf(b.type) || a.name.localeCompare(b.name);
+    return order.indexOf(a.type) - order.indexOf(b.type) ||
+           a.name.localeCompare(b.name);
   });
 
   return apps.length ? apps : null;
@@ -268,7 +270,8 @@ function makeMainMenu(aAppInfo) {
   addSeparator(context).id = ID.startSeparator;
   context.appendChild(menu);
   addSeparator(context).id = ID.endSeparator;
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of separators.
+  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+  // separators.
 }
 
 function makeAppMenu(aPopup, aAppInfo) {
@@ -329,7 +332,8 @@ function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
   if (aInAppMenu) {
     label = kBundle.type[aApp.type];
     if (aApp.type === 'file') {
-      label = label.replace('%1', gFileType.getExtArray(aApp.extensions).join(','));
+      label = label.replace('%1',
+        gFileType.getExtArray(aApp.extensions).join(','));
     }
     label += ': ' + aApp.name;
   } else {
@@ -354,18 +358,20 @@ function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
 }
 
 function doBrowse(aEvent) {
-  // XPath for useless separator that has no visible siblings or visible separator neighbor.
+  // XPath for useless separator that has no visible siblings or visible
+  // separator neighbor.
   const uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
 
   function availableItem(actions) {
     var actionKey = '@' + kBundle.ID.actionKey + '="';
-    return 'xul:menuitem[' + actionKey + actions.join('" or ' + actionKey) + '"]';
+    return 'xul:menuitem[' +
+      actionKey + actions.join('" or ' + actionKey) + '"]';
   }
 
   aEvent.stopPropagation();
   var popup = aEvent.target;
 
-  // Hide all menu items and show the others.
+  // Hide all menu items and show the others
   Array.forEach(popup.childNodes, function(node) {
     var hidden = node.localName === 'menuitem';
     if (node.hidden !== hidden) {
@@ -373,13 +379,15 @@ function doBrowse(aEvent) {
     }
   });
 
-  // Show menu items with available actions.
-  $X(availableItem(getAvailableActions()), popup).forEach(function(node) {
+  // Show menu items with available actions
+  $X(availableItem(getAvailableActions()), popup).
+  forEach(function(node) {
     node.hidden = false;
   });
 
-  // Hide useless separators.
-  $X(uselessSeparator, popup).forEach(function(node) {
+  // Hide useless separators
+  $X(uselessSeparator, popup).
+  forEach(function(node) {
     node.hidden = true;
   });
 }
@@ -527,10 +535,10 @@ function doAction(aApp, aAction) {
 }
 
 
-// Utilities.
+//********** Utilities
 
 /**
- * Handler for file extensions.
+ * File extensions handler
  * @see kLinkExt
  */
 var gFileType = {
@@ -561,8 +569,9 @@ var gFileType = {
   matchExt: function(aURL, aType) {
     var ext = this.getExt(aURL);
 
-    if (ext && this.getExtArray(kLinkExt[aType]).indexOf(ext) > -1) {
-        return ext;
+    if (ext &&
+        this.getExtArray(kLinkExt[aType]).indexOf(ext) > -1) {
+      return ext;
     }
     return '';
   },
@@ -604,6 +613,9 @@ function setLabel(aNode, aStr) {
 }
 
 
+/**
+ * Import from |Util| parameter
+ */
 function getContextMenu()
   Util.getContextMenu();
 
@@ -623,7 +635,7 @@ function log(aMsg)
   Util.log(aMsg);
 
 
-// Entry Point.
+//********** Entry Point
 
 AppLauncher_init();
 
@@ -632,8 +644,8 @@ AppLauncher_init();
 
 
 /**
- * Arguments of main function.
- * @return Util {hash} Utility functions.
+ * Arguments of the main function
+ * @return Util {hash} utility functions
  */
 ((function() {
 
@@ -641,45 +653,51 @@ AppLauncher_init();
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
- * Aliases for local special folders.
- * @note cf. http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h
+ * Aliases for local special folders
+ * @see http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h
  */
 const kSpecialFolderAliases = [
-  // Program files.
-  // Usually "C:\Program Files".
+  // Windows "Program files" folder
+  // C:/Program Files/
   '%ProgF%',
 
-  // Local application data.
-  // Usually "C:\Documents and Settings\(USERNAME)\Local Settings\Application Data".
+  // Windows "Local application data" folder
+  // C:/Documents and Settings/{username}/Local Settings/Application Data/
+  // C:/Users/{username}/AppData/Local/
   '%LocalAppData%'
 ];
 
 
-// Settings for XPCOM.
+//********** XPCOM settings
 
 const {classes: Cc, interfaces: Ci} = Components;
 function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
 function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
 
-// Services.
+/**
+ * Services
+ */
 const DirectoryService =
   $S('@mozilla.org/file/directory_service;1', 'nsIProperties');
 const IOService =
   $S('@mozilla.org/network/io-service;1', 'nsIIOService');
 
-// Instances.
+/**
+ * Instances
+ */
 function LocalFile()
   $I('@mozilla.org/file/local;1', 'nsIFile');
 function Process()
   $I('@mozilla.org/process/util;1', 'nsIProcess');
 function WebBrowserPersist()
-  $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1', 'nsIWebBrowserPersist');
+  $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1',
+    'nsIWebBrowserPersist');
 
 
-// Functions.
+//********** Functions
 
 function runApp(aApp, aURL, aSave) {
   if (aSave) {
@@ -697,7 +715,8 @@ function getExecutable(aPath) {
     if (aPath.indexOf(alias) > -1) {
       aPath = aPath.replace(
         RegExp(alias, 'g'),
-        getSpecialDirectory(alias.replace(/%/g, '')).path.replace(/\\/g, '\\\\')
+        getSpecialDirectory(alias.replace(/%/g, '')).
+        path.replace(/\\/g, '\\\\')
       );
     }
   });
@@ -727,7 +746,8 @@ function checkFile(aFilePath) {
 function execute(aApp, aURL) {
   var exe = getExecutable(aApp.path);
   if (!exe) {
-    warn('Not executed', ['Registered application is not available now', aApp.path]);
+    warn('Not executed',
+      ['Registered application is not available now', aApp.path]);
     return;
   }
 
@@ -767,12 +787,13 @@ function saveAndExecute(aApp, aURL) {
             requestSucceeded = httpChannel.requestSucceeded;
             responseStatus = httpChannel.responseStatus;
           } catch (e) {
-            // @throws NS_ERROR_NOT_AVAILABLE
-            //   requestSucceeded is called when an invalid URL is requested.
+            // @throws NS_ERROR_NOT_AVAILABLE;
+            // |requestSucceeded| throws when an invalid URL is requested.
           }
 
           if (!requestSucceeded) {
-            warn('Not downloaded', ['HTTP status ' + responseStatus, aRequest.name]);
+            warn('Not downloaded',
+              ['HTTP status ' + responseStatus, aRequest.name]);
             return;
           }
         }
@@ -856,7 +877,7 @@ function warn(aTitle, aMsg) {
 }
 
 
-// Import.
+//********** Import
 
 function getContextMenu()
   ucjsUI.ContentArea.contextMenu;
@@ -874,7 +895,7 @@ function log(aMsg)
   ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
 
 
-// Export.
+//********** Export
 
 return {
   getContextMenu: getContextMenu,

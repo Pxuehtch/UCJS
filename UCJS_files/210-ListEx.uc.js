@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        ListEx.uc.js
-// @description Makes list of tabs, windows and history.
+// @description Makes lists of tabs, windows and history.
 // @include     main
 // ==/UserScript==
 
@@ -14,16 +14,17 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
- * Numbers of the listed items.
- * @value {int} If value is 0, unlimited all items will be listed. (maybe too long)
+ * Numbers of the listed items
+ * @value {Integer} If set to 0, all *unlimited* items will be listed.
+ * *WARNING* It may be too long.
  */
 const kMaxListItems = 10;
 
 /**
- * Identifiers.
+ * Identifiers
  */
 const kID = {
   historyMenu: 'ucjs_listex_history_menu',
@@ -34,11 +35,11 @@ const kID = {
 };
 
 
-// Components.
+//********** Components
 
 /**
- * Menu settings.
- * @member init() {function}
+ * Menu settings
+ * @member init {function}
  */
 var mMenu = (function() {
 
@@ -56,7 +57,8 @@ var mMenu = (function() {
         label: label,
         accesskey: accesskey
       }), refItem);
-      addEvent([menu.appendChild($E('menupopup')), 'popupshowing', build, false]);
+      addEvent([menu.appendChild($E('menupopup')),
+        'popupshowing', build, false]);
     }
 
     addSeparator(kID.startSeparator);
@@ -69,13 +71,19 @@ var mMenu = (function() {
     addEvent([context, 'popuphiding', hideContextMenu, false]);
   }
 
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of separators.
+  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+  // separators.
   function showContextMenu(aEvent) {
     if (aEvent.target !== getContextMenu())
       return;
 
-    var hidden = gContextMenu.onLink || gContextMenu.onTextInput || gContextMenu.isTextSelected;
-    [kID.historyMenu, kID.openedMenu, kID.closedMenu].forEach(function(id) {
+    var hidden =
+      gContextMenu.onLink ||
+      gContextMenu.onTextInput ||
+      gContextMenu.isTextSelected;
+
+    [kID.historyMenu, kID.openedMenu, kID.closedMenu].
+    forEach(function(id) {
       gContextMenu.showItem(id, !hidden);
     });
   }
@@ -84,7 +92,8 @@ var mMenu = (function() {
     if (aEvent.target !== getContextMenu())
       return;
 
-    [kID.historyMenu, kID.openedMenu, kID.closedMenu].forEach(function(id) {
+    [kID.historyMenu, kID.openedMenu, kID.closedMenu].
+    forEach(function(id) {
       var menu = $ID(id);
       while (menu.itemCount) {
         menu.removeItemAt(0);
@@ -99,8 +108,8 @@ var mMenu = (function() {
 })();
 
 /**
- * List of tab/recent history.
- * @member build() {function}
+ * List of the tab/recent history
+ * @member build {function}
  */
 var mHistoryList = (function() {
 
@@ -151,7 +160,8 @@ var mHistoryList = (function() {
       if (i === index) {
         className.push('unified-nav-current');
       } else {
-        className.push((i < index) ? 'unified-nav-back' : 'unified-nav-forward');
+        className.push((i < index) ?
+          'unified-nav-back' : 'unified-nav-forward');
         action = 'gotoHistoryIndex(event);';
       }
 
@@ -189,7 +199,10 @@ var mHistoryList = (function() {
       if (currentURL === URL) {
         className.push('unified-nav-current');
       } else {
-        action = 'PlacesUIUtils.markPageAsTyped("%URL%");openUILink("%URL%",event);'.
+        // @see resource:///modules/PlacesUIUtils.jsm
+        action =
+          ('PlacesUIUtils.markPageAsTyped("%URL%");' +
+           'openUILink("%URL%",event);').
           replace(/%URL%/g, URL);
       }
 
@@ -211,6 +224,7 @@ var mHistoryList = (function() {
   }
 
   function getLastVisitTime(aURI) {
+    // @see resource:///modules/PlacesUtils.jsm
     const history = PlacesUtils.history;
 
     var query, options, root;
@@ -240,6 +254,7 @@ var mHistoryList = (function() {
   }
 
   function getRecentHistoryPlacesRoot() {
+    // @see resource:///modules/PlacesUtils.jsm
     const history = PlacesUtils.history;
 
     var query, options;
@@ -268,8 +283,8 @@ var mHistoryList = (function() {
 })();
 
 /**
- * List of opened tab/window.
- * @member build() {function}
+ * List of the opened tabs/windows
+ * @member build {function}
  */
 var mOpenedList = (function() {
 
@@ -325,8 +340,10 @@ var mOpenedList = (function() {
       if (isBrowserWindow(win)) {
         let b = win.gBrowser;
 
-        let tabs = [getPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])];
-        let [start, end] = getListRange(b.mTabContainer.selectedIndex, b.mTabs.length);
+        let tabs =
+          [getPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])];
+        let [start, end] =
+          getListRange(b.mTabContainer.selectedIndex, b.mTabs.length);
         for (let j = start; j < end; j++) {
           tabs.push((j + 1) + '. ' + b.mTabs[j].label);
         }
@@ -376,8 +393,8 @@ var mOpenedList = (function() {
 })();
 
 /**
- * List of closed tab/window.
- * @member build() {function}
+ * List of the closed tabs/windows
+ * @member build {function}
  */
 var mClosedList = (function() {
 
@@ -410,7 +427,9 @@ var mClosedList = (function() {
     for (let i = 0; i < undoData.length; i++) {
       data = undoData[i];
       entries = data.state.entries
-      history = [getPluralForm('[#1 History #2]', entries.length, ['entry', 'entries'])];
+      history =
+        [getPluralForm('[#1 History #2]',
+        entries.length, ['entry', 'entries'])];
 
       let [start, end] = getListRange(data.state.index, entries.length);
       for (let j = end - 1; j >= start; j--) {
@@ -478,9 +497,10 @@ var mClosedList = (function() {
 })();
 
 
-// Utilities.
+//********** Utilities
 
-function $ID(aID) document.getElementById(aID);
+function $ID(aID)
+  document.getElementById(aID);
 
 function $E(aTagName, aAttribute) {
   var element = document.createElement(aTagName);
@@ -523,7 +543,8 @@ function formatLabel(aValue) {
   var form = time ? kFormTimeTitle : kFormTitle;
 
   if (time) {
-    form = form.replace('%time%', (new Date(time)).toLocaleFormat(kTimeFormat));
+    form = form.replace('%time%',
+      (new Date(time)).toLocaleFormat(kTimeFormat));
   }
 
   return form.replace('%title%', title);
@@ -560,6 +581,7 @@ function getTitle(aTitle, aURL) {
     }
   }
 
+  // @see resource:///modules/PlacesUIUtils.jsm
   return aTitle || PlacesUIUtils.getString('noTitle');
 }
 
@@ -576,6 +598,7 @@ function getFavicon(aIcon, aPageURI) {
 
     if (aPageURI) {
       try {
+        // @see resource:///modules/PlacesUtils.jsm
         aIcon = PlacesUtils.favicons.getFaviconForPage(aPageURI).spec;
       } catch (e) {}
 
@@ -592,6 +615,7 @@ function getFavicon(aIcon, aPageURI) {
     }
 
     if (!aIcon) {
+      // @see resource:///modules/PlacesUtils.jsm
       aIcon = PlacesUtils.favicons.defaultFavicon.spec;
     }
   }
@@ -600,7 +624,7 @@ function getFavicon(aIcon, aPageURI) {
 }
 
 
-// Imports.
+//********** Imports
 
 function getContextMenu()
   ucjsUI.ContentArea.contextMenu;
@@ -615,7 +639,7 @@ function log(aMsg)
   ucjsUtil.logMessage('ListEx.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 function ListEx_init() {
   mMenu.init();
