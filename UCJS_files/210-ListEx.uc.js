@@ -223,8 +223,10 @@ var mHistoryList = (function() {
     query.uri = aURI;
 
     options = history.getNewQueryOptions();
-    options.queryType = 0; // Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY
-    options.sortingMode = 4; // Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING
+    options.queryType =
+      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY; // 0
+    options.sortingMode =
+      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING; // 4
     options.maxResults = 1;
 
     root = history.executeQuery(query, options).root;
@@ -245,8 +247,10 @@ var mHistoryList = (function() {
     query = history.getNewQuery();
 
     options = history.getNewQueryOptions();
-    options.queryType = 0; // Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY
-    options.sortingMode = 4; // Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING
+    options.queryType =
+      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY; // 0
+    options.sortingMode =
+      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING; // 4
     options.maxResults = kMaxListItems;
 
     return history.executeQuery(query, options).root;
