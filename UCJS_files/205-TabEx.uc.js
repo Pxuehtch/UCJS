@@ -638,13 +638,18 @@ var mStartup = {
       getService(Ci.nsISessionStartup);
 
     if (SessionStartup.doRestore()) {
+      this.waitingFirstRestoredTab = true;
       this.restoredTabs = [];
-      this.firstTabRestored = false;
     }
 
-    // TODO: Ensure to execute it just after all tabs open.
-    // @note This unstable timer causes an exception of the first restored tab.
-    setTimeout(this.setupTabs.bind(this), 1000);
+    // execute |setupTabs| just after all tabs open
+    // TODO: Is this observer certain?
+    Services.obs.addObserver(this, 'domwindowopened', false);
+  },
+
+  observe: function(aSubject, aTopic, aData) {
+    Services.obs.removeObserver(this, 'domwindowopened');
+    this.setupTabs();
   },
 
   setupTabs: function() {
@@ -652,8 +657,8 @@ var mStartup = {
       // a restored startup tab
       if (this.restoredTabs) {
         // collect a restored tab
-        // skip the selected tab when it has been already restored
-        if (!this.firstTabRestored || !tab.selected) {
+        // skip the first selected tab that has been already restored
+        if (!tab.selected) {
           this.restoredTabs.push(mTab.data(tab, 'open'));
         }
 
@@ -669,8 +674,6 @@ var mStartup = {
         mTabSuspender.stop(tab);
       }
     }, this);
-
-    delete this.firstTabRestored;
   },
 
   isRestored: function(aTab) {
@@ -679,13 +682,11 @@ var mStartup = {
     if (!this.restoredTabs)
       return false;
 
-    // @note The startup restored tab that is selected and *unpending* is sure
-    // to come first here through |SSTabRestored|. This first tab sometimes
-    // comes here before |setupTabs| that is waiting by the timer. Then
-    // |restoredTabs| excludes the first tab.
-    // TODO: Do not make an exception of the first tab.
-    if (this.firstTabRestored === false) {
-      this.firstTabRestored = true;
+    // The first selected tab of startup restored tabs comes here through
+    // |SSTabRestored| before |setupTabs|. So |restoredTabs| excludes this
+    // first restored tab.
+    if (this.waitingFirstRestoredTab) {
+      delete this.waitingFirstRestoredTab;
       return true;
     }
 
