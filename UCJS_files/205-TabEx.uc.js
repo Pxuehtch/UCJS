@@ -132,9 +132,8 @@ var mTab = (function () {
    * @param aValue {} [optional] a value to set
    *   null: *remove* a data
    * @return {}
-   *   get: a value that is requested
-   *   set: a value that is set
-   *   remove: always null
+   *   get: a value that is requested if exists, null otherwise.
+   *   set: a value that is set, null if removed.
    */
   function data(aTab, aKey, aValue) {
     var id, getter, setter;
@@ -281,7 +280,8 @@ var mSessionStore = {
   isRestoring: false,
 
   init: function() {
-    this.SessionStore = Cc['@mozilla.org/browser/sessionstore;1'].
+    this.SessionStore =
+      Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
 
     [
@@ -630,11 +630,12 @@ var mTabSuspender = {
 };
 
 /**
- * Startup session handler
+ * Startup tabs handler
  */
 var mStartup = {
   init: function() {
-    var SessionStartup = Cc["@mozilla.org/browser/sessionstartup;1"].
+    var SessionStartup =
+      Cc["@mozilla.org/browser/sessionstartup;1"].
       getService(Ci.nsISessionStartup);
 
     if (SessionStartup.doRestore()) {
@@ -670,7 +671,7 @@ var mStartup = {
       if (tab.selected) {
         mTabSelector.update(tab);
       } else {
-        // immediately stop a background tab
+        // immediately stop the loading of a background tab
         mTabSuspender.stop(tab);
       }
     }, this);
