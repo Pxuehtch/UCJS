@@ -743,7 +743,7 @@ var mTabEvent = {
     if (mSessionStore.isRestoring)
       return;
 
-    mTabOpener.set(aTab, 'NewTab')
+    mTabOpener.set(aTab, 'NewTab');
 
     if (kPref.SUSPEND_LOADING) {
       mTabSuspender.set(aTab, kPref.SUSPEND_DELAY);
