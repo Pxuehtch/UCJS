@@ -390,7 +390,7 @@ var mTabOpener = {
 
   set: function(aTab, aType) {
     switch (aType) {
-      case 'BootedStartupTab':
+      case 'StartupTab':
         let browser = gBrowser.getBrowserForTab(aTab);
         // |userTypedValue| holds the URL of a document till it successfully
         // loads.
@@ -664,7 +664,7 @@ var mStartup = {
 
       // a booted startup tab
       } else {
-        mTabOpener.set(tab, 'BootedStartupTab');
+        mTabOpener.set(tab, 'StartupTab');
       }
 
       if (tab.selected) {
