@@ -1074,6 +1074,7 @@ function getPrevSelectedTab(aBaseTab, aOption) {
   var tabs = getTabs('active, pinned', baseTab);
 
   var time, recentTime = 0;
+  var prevSelectedTime = mTabSelector.prevSelectedTime;
   var pos = -1;
 
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
@@ -1090,7 +1091,7 @@ function getPrevSelectedTab(aBaseTab, aOption) {
   if (-1 < pos) {
     // found regardless of the selected time
     if (traceBack ||
-        recentTime === mTabSelector.prevSelectedTime) {
+        recentTime === prevSelectedTime) {
       return tabs[pos];
     }
   }
@@ -1099,7 +1100,6 @@ function getPrevSelectedTab(aBaseTab, aOption) {
   if (undoClose) {
     let undoList = mSessionStore.getClosedTabList();
     if (undoList) {
-      let prevSelectedTime = mTabSelector.prevSelectedTime;
       for (let i = 0, l = undoList.length; i < l; i++) {
         if (mTab.SSdata(undoList[i], 'select') === prevSelectedTime) {
           // @see chrome://browser/content/browser.js::undoCloseTab
