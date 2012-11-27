@@ -733,13 +733,13 @@ var mTabEvent = {
         this.onTabClose(tab);
         break;
       case 'SSTabRestored':
-        this.onTabRestored(tab);
+        this.onSSTabRestored(tab);
         break;
     }
   },
 
   onTabOpen: function(aTab) {
-    // handle a restored tab in |onTabRestored|
+    // handle a restored tab in |onSSTabRestored|
     if (mSessionStore.isRestoring)
       return;
 
@@ -782,7 +782,7 @@ var mTabEvent = {
     }
   },
 
-  onTabRestored: function(aTab) {
+  onSSTabRestored: function(aTab) {
     // do not handle a startup restored tab
     if (mStartup.isRestored(aTab))
       return;
