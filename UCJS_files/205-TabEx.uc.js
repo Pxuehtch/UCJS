@@ -276,7 +276,7 @@ var mTab = (function () {
  * Session store handler
  */
 var mSessionStore = {
-  // whether a tab is in restoring (dupricated or undo-closed)
+  // whether a tab is in restoring (duplicated/undo-closed tab)
   isRestoring: false,
 
   init: function() {
