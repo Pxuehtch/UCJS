@@ -341,7 +341,6 @@ var mTabOpener = {
         let params = arguments[1];
         aReferrerURI          = params.referrerURI;
         aCharset              = params.charset;
-        aPostData             = params.postData;
         aAllowThirdPartyFixup = params.allowThirdPartyFixup;
         aFromExternal         = params.fromExternal;
         aRelatedToCurrent     = params.relatedToCurrent;
@@ -369,12 +368,13 @@ var mTabOpener = {
       if (aIsUTF8)
         flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
 
+      // TODO: POST data handling. |aPostData| is a |nsIInputStream| object
+      // that JSON does not support.
       var query = {
         URL: aURI,
         flags: flags,
         referrerURL: aReferrerURI || undefined,
         charset: aCharset || undefined,
-        postData: aPostData || undefined,
         relatedToCurrent: aRelatedToCurrent || undefined,
         fromVisit: fromVisit || undefined
       };
@@ -592,12 +592,13 @@ var mTabSuspender = {
     var [browser, loadingURL, query] = this.getBrowserForTab(aTab);
     if (loadingURL) {
       if (query) {
+        // TODO: POST data handling.
         browser.loadURIWithFlags(
           query.URL,
           query.flags,
           makeURI(query.referrerURL),
           query.charset,
-          query.postData
+          null
         );
       } else {
         browser.loadURI(loadingURL);
