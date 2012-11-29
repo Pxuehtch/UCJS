@@ -634,14 +634,7 @@ var mTabSuspender = {
  */
 var mStartup = {
   init: function() {
-    var SessionStartup =
-      Cc["@mozilla.org/browser/sessionstartup;1"].
-      getService(Ci.nsISessionStartup);
-
-    if (SessionStartup.doRestore()) {
-      this.waitingFirstRestoredTab = true;
-      this.restoredTabs = [];
-    }
+    this.restoredTabs = [];
 
     // execute |setupTabs| just after all tabs open
     // TODO: Is this observer certain?
@@ -655,15 +648,15 @@ var mStartup = {
 
   setupTabs: function() {
     Array.forEach(gBrowser.tabs, function(tab) {
-      // a restored startup tab
-      if (this.restoredTabs) {
+      var open = mTab.data(tab, 'open');
+      // 1.a tab in the restored startup
+      // 2.a pinned tab in the booted startup
+      if (open) {
         // collect a restored tab
-        // skip the first selected tab that has been already restored
+        // skip the first selected tab that has would been already restored
         if (!tab.selected) {
-          this.restoredTabs.push(mTab.data(tab, 'open'));
+          this.restoredTabs.push(open);
         }
-
-      // a booted startup tab
       } else {
         mTabOpener.set(tab, 'StartupTab');
       }
@@ -675,26 +668,27 @@ var mStartup = {
         mTabSuspender.stop(tab);
       }
     }, this);
+
+    // no restored tabs in background
+    if (!this.restoredTabs.length) {
+      delete this.restoredTabs;
+    }
   },
 
   isRestored: function(aTab) {
-    // |restoredTabs| is created only in the restore startup and it is deleted
-    // when all startup restored tabs is passed here
+    // |restoredTabs| is deleted when all restored startup tabs pass here
     if (!this.restoredTabs)
       return false;
 
-    // The first selected tab of startup restored tabs comes here through
-    // |SSTabRestored| before |setupTabs|. So |restoredTabs| excludes this
-    // first restored tab.
-    if (this.waitingFirstRestoredTab) {
-      delete this.waitingFirstRestoredTab;
+    // The first selected tab of restored startup tabs comes here through
+    // |SSTabRestored| before |setupTabs|. Then |restoredTabs| has no members.
+    if (!this.restoredTabs.length)
       return true;
-    }
 
     var open = mTab.data(aTab, 'open');
     var index = this.restoredTabs.indexOf(open);
 
-    // 1.a startup restored tab matches, return true
+    // 1.a restored startup tab matches, return true
     // 2.a duplicated or undo-closed tab does not match, return false
     if (index > -1) {
       this.restoredTabs.splice(index, 1);
@@ -784,7 +778,7 @@ var mTabEvent = {
   },
 
   onSSTabRestored: function(aTab) {
-    // do not handle a startup restored tab
+    // do not handle a restored startup tab
     if (mStartup.isRestored(aTab))
       return;
 
