@@ -637,14 +637,9 @@ var mStartup = {
   init: function() {
     this.restoredTabs = [];
 
-    // execute |setupTabs| just after all tabs open
-    // TODO: Is this observer certain?
-    Services.obs.addObserver(this, 'domwindowopened', false);
-  },
-
-  observe: function(aSubject, aTopic, aData) {
-    Services.obs.removeObserver(this, 'domwindowopened');
-    this.setupTabs();
+		// execute |setupTabs| just after all tabs open
+		// TODO: Use a certain observer.
+		setTimeout(this.setupTabs.bind(this), 1000);
   },
 
   setupTabs: function() {
