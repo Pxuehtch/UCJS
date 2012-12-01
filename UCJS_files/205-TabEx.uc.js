@@ -143,10 +143,10 @@ var mTab = (function () {
       case 'query': // {hash}
         id = kID.OPENQUERY;
         getter = function(aValue) {
-          return JSON.parse(aValue);
+          return JSON.parse(htmlUnescape(aValue));
         };
         setter = function(aValue) {
-          return JSON.stringify(aValue);
+          return htmlEscape(JSON.stringify(aValue));
         };
         break;
       case 'open': // {integer}
@@ -1226,6 +1226,24 @@ var getTime = (function() {
     return time = (time === now ? ++now : now);
   };
 })();
+
+function htmlEscape(aString) {
+  return aString.
+    replace(/&/g, '&amp;'). // must escape at first
+    replace(/>/g, '&gt;').
+    replace(/</g, '&lt;').
+    replace(/"/g, '&quot;').
+    replace(/'/g, '&apos;');
+}
+
+function htmlUnescape(aString) {
+  return aString.
+    replace(/&amp;/g, '&').
+    replace(/&gt;/g, '>').
+    replace(/&lt;/g, '<').
+    replace(/&quot;/g, '"').
+    replace(/&apos;/g, "'");
+}
 
 function getPageTitle(aURL) {
   var title;
