@@ -25,7 +25,8 @@ const kID = {
   SELECT: 'ucjs_tabex_select',
   ANCESTORS: 'ucjs_tabex_ancestors',
   OPENQUERY: 'ucjs_tabex_openquery',
-  SUSPENDED: 'ucjs_tabex_suspended'
+  SUSPENDED: 'ucjs_tabex_suspended',
+  RESTORING: 'ucjs_tabex_restoring'
 };
 
 /**
@@ -249,6 +250,11 @@ var mTab = (function () {
     // whether the loading of a tab is suspended or not
     suspended: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.SUSPENDED, aValue);
+    },
+
+    // duplicated/undo-closed is opening
+    restoring: function(aTab, aValue) {
+      return manageFlagAttribute(aTab, kID.RESTORING, aValue);
     }
   };
 
@@ -333,6 +339,12 @@ var mTabOpener = {
       aAllowThirdPartyFixup
     ) {
       var newTab = $addTab.apply(this, arguments);
+
+      // when a tab is duplicated or undo-closed, its tab data is restored.
+      if (mSessionStore.isRestoring) {
+        mTab.state.restoring(newTab, true);
+        return newTab;
+      }
 
       var aRelatedToCurrent, aFromExternal, aIsUTF8;
       if (arguments.length === 2 &&
@@ -635,25 +647,15 @@ var mTabSuspender = {
  */
 var mStartup = {
   init: function() {
-    this.restoredTabs = [];
-
-		// execute |setupTabs| just after all tabs open
-		// TODO: Use a certain observer.
-		setTimeout(this.setupTabs.bind(this), 1000);
+    // execute |setupTabs| just after all tabs open
+    // TODO: Use a certain observer.
+    setTimeout(this.setupTabs.bind(this), 1000);
   },
 
   setupTabs: function() {
     Array.forEach(gBrowser.tabs, function(tab) {
-      var open = mTab.data(tab, 'open');
-      // 1.a tab in the restored startup
-      // 2.a pinned tab in the booted startup
-      if (open) {
-        // collect a restored tab
-        // skip the first selected tab that has would been already restored
-        if (!tab.selected) {
-          this.restoredTabs.push(open);
-        }
-      } else {
+      // a boot startup tab (e.g. homepage)
+      if (!mTab.data(tab, 'open')) {
         mTabOpener.set(tab, 'StartupTab');
       }
 
@@ -664,36 +666,6 @@ var mStartup = {
         mTabSuspender.stop(tab);
       }
     }, this);
-
-    // no restored tabs in background
-    if (!this.restoredTabs.length) {
-      delete this.restoredTabs;
-    }
-  },
-
-  isRestored: function(aTab) {
-    // |restoredTabs| is deleted when all restored startup tabs pass here
-    if (!this.restoredTabs)
-      return false;
-
-    // The first selected tab of restored startup tabs comes here through
-    // |SSTabRestored| before |setupTabs|. Then |restoredTabs| has no members.
-    if (!this.restoredTabs.length)
-      return true;
-
-    var open = mTab.data(aTab, 'open');
-    var index = this.restoredTabs.indexOf(open);
-
-    // 1.a restored startup tab matches, return true
-    // 2.a duplicated or undo-closed tab does not match, return false
-    if (index > -1) {
-      this.restoredTabs.splice(index, 1);
-      if (!this.restoredTabs.length) {
-        delete this.restoredTabs;
-      }
-      return true;
-    }
-    return false;
   }
 };
 
@@ -730,10 +702,6 @@ var mTabEvent = {
   },
 
   onTabOpen: function(aTab) {
-    // handle a restored tab in |onSSTabRestored|
-    if (mSessionStore.isRestoring)
-      return;
-
     mTabOpener.set(aTab, 'NewTab');
 
     if (kPref.SUSPEND_LOADING) {
@@ -774,8 +742,9 @@ var mTabEvent = {
   },
 
   onSSTabRestored: function(aTab) {
-    // do not handle a restored startup tab
-    if (mStartup.isRestored(aTab))
+    // handle a duplicated/undo-closed tab
+    // do not pass a restored startup tab
+    if (!mTab.state.restoring(aTab))
       return;
 
     var openPos, baseTab;
