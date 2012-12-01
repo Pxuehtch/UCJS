@@ -376,37 +376,46 @@ var mTabOpener = {
         aIsUTF8               = params.isUTF8;
       }
 
-      aReferrerURI = aReferrerURI && aReferrerURI.spec;
+      var query;
+      if (!aURI || aURI === 'about:blank') {
+        query = {
+          URL: 'about:blank',
+          flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
+        };
+      } else {
+        // to URL string
+        aReferrerURI = aReferrerURI && aReferrerURI.spec;
 
-      var fromVisit;
-      if (!aReferrerURI) {
-        if (aRelatedToCurrent) {
-          fromVisit = /^https?:/.test(gBrowser.currentURI.spec) &&
-            gBrowser.currentURI.spec;
-        } else {
-          fromVisit = /^https?:/.test(aURI) &&
-            mReferrer.getFromVisit(aURI);
+        let fromVisit;
+        if (!aReferrerURI) {
+          if (aRelatedToCurrent) {
+            fromVisit = /^https?:/.test(gBrowser.currentURI.spec) &&
+              gBrowser.currentURI.spec;
+          } else {
+            fromVisit = /^https?:/.test(aURI) &&
+              mReferrer.getFromVisit(aURI);
+          }
         }
+
+        let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
+        if (aAllowThirdPartyFixup)
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
+        if (aFromExternal)
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
+        if (aIsUTF8)
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
+
+        // TODO: POST data handling. |aPostData| is a |nsIInputStream| object
+        // that JSON does not support.
+        query = {
+          URL: aURI,
+          flags: flags,
+          referrerURL: aReferrerURI || undefined,
+          charset: aCharset || undefined,
+          relatedToCurrent: aRelatedToCurrent || undefined,
+          fromVisit: fromVisit || undefined
+        };
       }
-
-      var flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
-      if (aAllowThirdPartyFixup)
-        flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
-      if (aFromExternal)
-        flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-      if (aIsUTF8)
-        flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
-
-      // TODO: POST data handling. |aPostData| is a |nsIInputStream| object
-      // that JSON does not support.
-      var query = {
-        URL: aURI,
-        flags: flags,
-        referrerURL: aReferrerURI || undefined,
-        charset: aCharset || undefined,
-        relatedToCurrent: aRelatedToCurrent || undefined,
-        fromVisit: fromVisit || undefined
-      };
       mTab.data(newTab, 'query', query);
 
       var event = document.createEvent('Events');
