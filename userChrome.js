@@ -649,16 +649,29 @@ function Log(aEnabled) {
   var output = function(aValue, aDepth) {
     const {log} = Util;
 
+    var str = '<something>';
     var indent = aDepth ? Array(aDepth + 1).join(' ') + '+- ' : '';
 
-    if (Array.isArray(aValue)) {
-      log(indent + aValue.toSource());
-    } else if (typeof aValue === 'object') {
-      for (let key in aValue) {
-        log(indent + key + ': ' + aValue[key]);
+    if (typeof aValue === 'string') {
+      str = aValue;
+    } else if (aValue === undefined) {
+      str = '<undefined>';
+    } else if (aValue === null) {
+      str = '<null>';
+    } else {
+      try {
+        str = JSON.stringify(aValue);
+      } catch (e) {}
+    }
+
+    // iterates over the properties of an object
+    if (/^{.+}$/.test(str)) {
+      str = JSON.parse(str);
+      for (let key in str) {
+        log(indent + key + ': ' + str[key]);
       }
     } else {
-      log(indent + aValue.toString());
+      log(indent + str);
     }
   };
 
