@@ -138,6 +138,8 @@ var mTab = (function () {
    *   set: a value that is set, null if removed.
    */
   function data(aTab, aKey, aValue) {
+    function getInt(aValue) parseInt(aValue, 10);
+
     var id, getter, setter;
     switch (aKey) {
       case 'query': // {hash}
@@ -151,35 +153,20 @@ var mTab = (function () {
         break;
       case 'open': // {integer}
         id = kID.OPENTIME;
-        getter = function(aValue) {
-          return parseInt(aValue, 10);
-        };
-        setter = function(aValue) {
-          return aValue;
-        };
+        getter = getInt;
         break;
       case 'select': // {integer}
         id = kID.SELECTTIME;
-        getter = function(aValue) {
-          return parseInt(aValue, 10);
-        };
-        setter = function(aValue) {
-          return aValue;
-        };
+        getter = getInt;
         break;
       case 'read': // {integer}
         id = kID.READTIME;
-        getter = function(aValue) {
-          return parseInt(aValue, 10);
-        };
-        setter = function(aValue) {
-          return aValue;
-        };
+        getter = getInt;
         break;
       case 'ancestors': // {integer[]}
         id = kID.ANCESTORS;
         getter = function(aValue) {
-          return aValue.split(' ').map(function(value) parseInt(value, 10));
+          return aValue.split(' ').map(getInt);
         };
         setter = function(aValue) {
           return aValue.join(' ');
@@ -203,7 +190,8 @@ var mTab = (function () {
         aTab.removeAttribute(id);
       }
     } else {
-      aTab.setAttribute(id, setter(aValue));
+      let value = setter ? setter(aValue) : aValue;
+      aTab.setAttribute(id, value);
     }
     return aValue;
   }
