@@ -747,6 +747,8 @@ var mTabEvent = {
     if (!mTab.state.restoring(aTab))
       return;
 
+    mTab.state.restoring(aTab, false);
+
     var openPos, baseTab;
 
     var originalTab = getOriginalTabOfDuplicated(aTab);
