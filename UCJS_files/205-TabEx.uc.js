@@ -20,12 +20,13 @@ var ucjsTabEx = (function(window, undefined) {
  * Identifier
  */
 const kID = {
-  OPEN: 'ucjs_tabex_open',
-  READ: 'ucjs_tabex_read',
-  SELECT: 'ucjs_tabex_select',
+  OPENTIME: 'ucjs_tabex_opentime',
+  READTIME: 'ucjs_tabex_readtime',
+  SELECTTIME: 'ucjs_tabex_selecttime',
   ANCESTORS: 'ucjs_tabex_ancestors',
   OPENQUERY: 'ucjs_tabex_openquery',
   SUSPENDED: 'ucjs_tabex_suspended',
+  READ: 'ucjs_tabex_read',
   RESTORING: 'ucjs_tabex_restoring'
 };
 
@@ -149,7 +150,7 @@ var mTab = (function () {
         };
         break;
       case 'open': // {integer}
-        id = kID.OPEN;
+        id = kID.OPENTIME;
         getter = function(aValue) {
           return parseInt(aValue, 10);
         };
@@ -158,7 +159,7 @@ var mTab = (function () {
         };
         break;
       case 'select': // {integer}
-        id = kID.SELECT;
+        id = kID.SELECTTIME;
         getter = function(aValue) {
           return parseInt(aValue, 10);
         };
@@ -167,7 +168,7 @@ var mTab = (function () {
         };
         break;
       case 'read': // {integer}
-        id = kID.READ;
+        id = kID.READTIME;
         getter = function(aValue) {
           return parseInt(aValue, 10);
         };
@@ -220,13 +221,13 @@ var mTab = (function () {
     var id, getter;
     switch (aKey) {
       case 'open': // {integer}
-        id = kID.OPEN;
+        id = kID.OPENTIME;
         getter = function(aValue) {
           return parseInt(aValue, 10);
         };
         break;
       case 'select': // {integer}
-        id = kID.SELECT;
+        id = kID.SELECTTIME;
         getter = function(aValue) {
           return parseInt(aValue, 10);
         };
@@ -239,15 +240,15 @@ var mTab = (function () {
   }
 
   /**
-   * State of a tab
+   * Gets/Sets the state of a tab
    */
   var state = {
-    // whether a user read a tab or not
+    // a user read a tab
     read: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.READ, aValue);
     },
 
-    // whether the loading of a tab is suspended or not
+    // the loading of a tab is suspended
     suspended: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.SUSPENDED, aValue);
     },
@@ -255,6 +256,21 @@ var mTab = (function () {
     // duplicated/undo-closed is opening
     restoring: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.RESTORING, aValue);
+    }
+  };
+
+  /**
+   * Tests the state of a tab
+   */
+  var stateTest = {
+    // whether a user read a tab or not
+    read: function(aTab) {
+      return manageFlagAttribute(aTab, kID.READ);
+    },
+
+    // whether the loading of a tab is suspended or not
+    suspended: function(aTab) {
+      return manageFlagAttribute(aTab, kID.SUSPENDED);
     }
   };
 
@@ -274,7 +290,8 @@ var mTab = (function () {
   return {
     data: data,
     SSdata: SSdata,
-    state: state
+    state: state,
+    stateTest: stateTest
   };
 })();
 
@@ -291,9 +308,9 @@ var mSessionStore = {
       getService(Ci.nsISessionStore);
 
     [
-      kID.OPEN,
-      kID.READ,
-      kID.SELECT,
+      kID.OPENTIME,
+      kID.READTIME,
+      kID.SELECTTIME,
       kID.ANCESTORS,
       kID.OPENQUERY
     ].forEach(function(key) {
@@ -525,6 +542,7 @@ var mTabSelector = {
     if (reset) {
       mTab.data(aTab, 'select', null);
       mTab.data(aTab, 'read', null);
+      mTab.state.read(aTab, false);
       return;
     }
 
@@ -532,6 +550,7 @@ var mTabSelector = {
     mTab.data(aTab, 'select', time);
     if (read || !mTab.state.read(aTab)) {
       mTab.data(aTab, 'read', time);
+      mTab.state.read(aTab, true);
     }
 
     this.prevSelectedTime = this.currentSelectedTime;
@@ -1347,7 +1366,7 @@ TabEx_init();
 //********** Export
 
 return {
-  tabState: mTab.state,
+  tabState: mTab.stateTest,
   referrer: mReferrer,
   selectOpenerTab: selectOpenerTab,
   selectPrevSelectedTab: selectPrevSelectedTab,
