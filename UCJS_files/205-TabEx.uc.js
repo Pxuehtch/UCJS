@@ -251,12 +251,12 @@ var mTab = (function () {
    * Tests the state of a tab
    */
   var stateTest = {
-    // whether a user read a tab or not
+    // whether a user read a tab
     read: function(aTab) {
       return manageFlagAttribute(aTab, kID.READ);
     },
 
-    // whether the loading of a tab is suspended or not
+    // whether the loading of a tab is suspended
     suspended: function(aTab) {
       return manageFlagAttribute(aTab, kID.SUSPENDED);
     }
@@ -345,7 +345,7 @@ var mTabOpener = {
     ) {
       var newTab = $addTab.apply(this, arguments);
 
-      // when a tab is duplicated or undo-closed, its tab data is restored.
+      // when a tab is duplicated or undo-closed, its data will be restored
       if (mSessionStore.isRestoring) {
         mTab.state.restoring(newTab, true);
         return newTab;
