@@ -1359,9 +1359,6 @@ function modifySystemSetting() {
     var value = getPref(pref.key);
     if (value !== pref.value) {
       setPref(pref.key, pref.value);
-      addEvent([window, 'unload', function() {
-        setPref(pref.key, value);
-      }, false]);
     }
   });
 }
