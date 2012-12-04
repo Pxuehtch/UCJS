@@ -568,7 +568,7 @@ var mTabSuspender = {
       this.stop(tab);
     }.bind(this), aDelay, aTab);
 
-    // the opened time of each tab is an unique value
+    // the opened time of a tab is a unique value
     this.timers[mTab.data(aTab, 'open')] = timer;
   },
 
@@ -660,6 +660,9 @@ var mTabSuspender = {
 
 /**
  * Startup tabs handler
+ * The boot startup opens the startup tabs (e.g. homepages). Some pinned tabs
+ * may be restored too.
+ * The resume startup restores tabs.
  */
 var mStartup = {
   init: function() {
@@ -689,6 +692,7 @@ var mStartup = {
       }
 
       if (tab.selected) {
+        // update |select|, and set |read| if first selected
         mTabSelector.update(tab);
       } else {
         // immediately stop the loading of a background tab
@@ -777,7 +781,7 @@ var mTabEvent = {
 
   onSSTabRestored: function(aTab) {
     // handle a duplicated/undo-closed tab
-    // do not pass a restored startup tab
+    // do not pass a startup restored tab
     if (!mTab.state.restoring(aTab))
       return;
 
@@ -787,23 +791,33 @@ var mTabEvent = {
 
     var originalTab = getOriginalTabOfDuplicated(aTab);
     if (originalTab) {
+      // @note A duplicated tab has the same data as its original tab and we
+      // update some data to be as a new opened tab.
+
+      // update |open| and |ancestors|
       mTabOpener.set(aTab, 'DuplicatedTab');
 
       if (aTab.selected) {
+        // force to update |read|
         mTabSelector.update(aTab, {read: true});
       } else {
+        // remove |select| and |read|
         mTabSelector.update(aTab, {reset: true});
       }
 
       openPos = kPref.OPENPOS_DUPLICATE;
       baseTab = originalTab;
     } else {
+      // @note A undoclosed tab has the restored data.
+      // @note |window.undoCloseTab| opens a tab and forcibly selects it.
+
       // update |select|, and set |read| if first selected
       mTabSelector.update(aTab);
 
       openPos = kPref.OPENPOS_UNDOCLOSE;
-      // sets the previous selected tab to the base tab for moving a reopened
-      // tab that has been forcibly selected
+      // sets the previous selected tab to the base tab for moving this tab.
+      // the previous selected tab surely exists because it was selected then
+      // this undoclosed tab has been opened and selected.
       baseTab = getPrevSelectedTab();
     }
 
