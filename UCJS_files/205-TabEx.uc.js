@@ -665,7 +665,20 @@ var mStartup = {
   init: function() {
     // execute |setupTabs| just after all tabs open
     // TODO: Use a certain observer.
-    setTimeout(this.setupTabs.bind(this), 1000);
+    // The first |DOMContentLoaded| fires on the document for a selected tab.
+    // It seems enough after all tabs open.
+    // XXX: All tabs may be opened before this user script runs. But I am not
+    // sure.
+    window.addEventListener('DOMContentLoaded', this, false);
+  },
+
+  uninit: function() {
+    window.removeEventListener('DOMContentLoaded', this, false);
+  },
+
+  handleEvent: function(aEvent) {
+    this.uninit();
+    this.setupTabs();
   },
 
   setupTabs: function() {
