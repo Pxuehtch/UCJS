@@ -744,6 +744,11 @@ var mTabEvent = {
   },
 
   onTabSelect: function(aTab) {
+    // handle a duplicated/undo-closed tab in |onSSTabRestored|
+    // pass a startup restored tab
+    if (mTab.state.restoring(aTab))
+      return;
+
     mTabSelector.set(aTab);
 
     if (kPref.SUSPEND_LOADING) {
@@ -793,6 +798,9 @@ var mTabEvent = {
       openPos = kPref.OPENPOS_DUPLICATE;
       baseTab = originalTab;
     } else {
+      // update |select|, and set |read| if first selected
+      mTabSelector.update(aTab);
+
       openPos = kPref.OPENPOS_UNDOCLOSE;
       // sets the previous selected tab to the base tab for moving a reopened
       // tab that has been forcibly selected
