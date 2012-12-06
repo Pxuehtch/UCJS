@@ -210,12 +210,14 @@ var mTabBarClickEvent = {
         window.undoCloseTab();
         break;
       case (LC && foreTab):
-        if (shiftKey) {
+        if (ctrlKey) {
           // select/reopen the opener tab
           ucjsTabEx.selectOpenerTab(target, {undoClose: true});
         } else {
-          // select/reopen the previous selected tab
-          ucjsTabEx.selectPrevSelectedTab(target, {undoClose: true});
+          // select the previous selected tab
+          // Shift: select/reopen the *exact* previous selected tab
+          let option = shiftKey ? {undoClose: true} : {traceBack: true};
+          ucjsTabEx.selectPrevSelectedTab(target, option);
         }
         break;
       case (LDC && foreTab):
