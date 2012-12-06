@@ -912,23 +912,61 @@ function setPref(aKey, aVal) {
 
 // Functions for Debug.
 
-function logMessage(aTarget, aMsg) {
-  var msg = convertToUTF16('[' + aTarget + ']\n' + aMsg, 'UTF-8');
+function logMessage(aTarget, aMessage) {
+  const kMessageFormat = '[%target%]\n%msg%';
 
-  // Error Console.
-  mXPCOM.ConsoleService.logStringMessage(msg);
+  function U(str)
+    convertForSystem(str);
 
-  // Web Console.
+  let formatMessage = U(kMessageFormat.
+    replace('%target%', aTarget).replace('%msg%', aMessage));
+  let formatDate = U(getFormatDate());
+
+  // for the error console
+  mXPCOM.ConsoleService.logStringMessage(
+    [formatDate, formatMessage].join('\n'));
+
+  // for the web console
   var win = mXPCOM.BrowserGlue.getMostRecentBrowserWindow();
   if (win) {
-    win.content.console.log(msg);
+    win.content.console.log(formatMessage);
   }
 
-  return msg;
+  return formatMessage;
 }
 
-function log(aMsg)
-  logMessage('Util.uc.js', aMsg);
+function getFormatDate(aOption) {
+  const kStandardFormat = '%04Y/%02M/%02D %02h:%02m:%02s.%03ms';
+
+  let {format, time} = aOption || {};
+  format = format || kStandardFormat;
+
+  let date = time ? new Date(time) : new Date();
+  let map = {
+    'Y': date.getFullYear(),
+    'M': date.getMonth() + 1,
+    'D': date.getDate(),
+    'h': date.getHours(),
+    'm': date.getMinutes(),
+    's': date.getSeconds(),
+    'ms': date.getMilliseconds()
+  };
+
+  return format.replace(/%(0)?(\d+)?(ms|[YMDhms])/g,
+    function(match, pad, width, type) {
+      let value = String(map[type]);
+      width = width && parseInt(width);
+      if (width && value.length < width) {
+        return (Array(width).join(!!pad ? '0' : ' ') + value).substr(-width);
+      }
+      return value;
+    }
+  );
+}
+
+function log(aMessage) {
+  return logMessage('Util.uc.js', aMessage);
+}
 
 
 // Export to global.
