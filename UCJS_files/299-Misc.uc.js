@@ -381,6 +381,41 @@
 })();
 
 
+/**
+ * Clear scrollbar
+ * @note This setting is for my own windows theme.
+ */
+(function() {
+
+  // @note Firefox allows to style scrollbars only to the styles applied with
+  // agent-style-sheets.
+  // @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
+  setGlobalAgentCSS('\
+    scrollbar {\
+      -moz-appearance:none!important;\
+      background-image:\
+        linear-gradient(to bottom,hsl(0,0%,80%),hsl(0,0%,90%))!important;\
+    }\
+    scrollbar[orient="vertical"] {\
+      -moz-appearance:none!important;\
+      background-image:\
+        linear-gradient(to right,hsl(0,0%,80%),hsl(0,0%,90%))!important;\
+    }\
+    thumb {\
+      -moz-appearance:none!important;\
+      background-image:\
+        linear-gradient(to bottom,hsl(0,0%,60%),hsl(0,0%,90%))!important;\
+    }\
+    thumb[orient="vertical"] {\
+      -moz-appearance:none!important;\
+      background-image:\
+        linear-gradient(to right,hsl(0,0%,60%),hsl(0,0%,90%))!important;\
+    }\
+  ');
+
+})();
+
+
 // Utilities.
 
 function getLink(aNode) {
@@ -415,6 +450,9 @@ function U(aText)
 
 function setChromeCSS(aCSS)
   ucjsUtil.setChromeStyleSheet(aCSS);
+
+function setGlobalAgentCSS(aCSS)
+  ucjsUtil.setGlobalStyleSheet(aCSS, true);
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
