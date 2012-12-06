@@ -707,6 +707,10 @@ function convertToUTF16(aStr, aCharset) {
   return aStr;
 }
 
+function convertForSystem(aStr) {
+  return convertToUTF16(aStr, 'UTF-8');
+}
+
 function getWindowList(aType) {
   if (aType !== null) {
     aType = aType || 'navigator:browser';
@@ -769,6 +773,14 @@ function canQuitApp() {
       return false;
   }
   return true;
+}
+
+function setGlobalStyleSheet(aCSS, aAgent) {
+  return registerGlobalStyleSheet(aCSS, aAgent, true);
+}
+
+function removeGlobalStyleSheet(aCSS, aAgent) {
+  return registerGlobalStyleSheet(aCSS, aAgent, false);
 }
 
 function registerGlobalStyleSheet(aCSS, aAgent, aRegister) {
@@ -946,17 +958,14 @@ return {
   removeTab: removeTab,
   removeAllTabsBut: removeAllTabsBut,
 
-  convertForSystem:
-    function(aStr) convertToUTF16(aStr, 'UTF-8'),
+  convertForSystem: convertForSystem,
   getWindowList: getWindowList,
   focusWindow: focusWindow,
   focusWindowAtIndex: focusWindowAtIndex,
   restartApp: restartApp,
 
-  setGlobalStyleSheet:
-    function(aCSS, aAgent) registerGlobalStyleSheet(aCSS, aAgent, true),
-  removeGlobalStyleSheet:
-    function(aCSS, aAgent) registerGlobalStyleSheet(aCSS, aAgent, false),
+  setGlobalStyleSheet: setGlobalStyleSheet,
+  removeGlobalStyleSheet: removeGlobalStyleSheet,
   setChromeStyleSheet: registerChromeStyleSheet,
   setContentStyleSheet: registerContentStyleSheet,
 
