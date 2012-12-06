@@ -20,13 +20,13 @@ var ucjsUtil = (function(window, undefined) {
 "use strict";
 
 
-// Generic variables.
+//********** Generic variables
 
 var {document, Components} = window;
 var {classes: Cc, interfaces: Ci} = Components;
 
 
-// Handler for XPCOM.
+//********** XPCOM handler
 
 var mXPCOM = (function() {
 
@@ -117,7 +117,7 @@ var mXPCOM = (function() {
 })();
 
 
-// Functions for DOM.
+//********** DOM functions
 
 function setEventListener(aData) {
   var [target, type, listener, capture] = aData;
@@ -459,7 +459,7 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
 }
 
 
-// Functions for URI.
+//********** Page/Tab/Window function
 
 function checkSecurity(aURL) {
   // @see chrome://global/content/contentAreaUtils.js::urlSecurityCheck()
@@ -680,7 +680,7 @@ function removeAllTabsBut(aTab) {
 }
 
 
-// Misc. functions.
+//********** Miscellaneous function
 
 function convertFromUTF16(aStr, aCharset) {
   if (!aCharset)
@@ -910,7 +910,7 @@ function setPref(aKey, aVal) {
 }
 
 
-// Functions for Debug.
+//********** Log function
 
 function logMessage(aTarget, aMessage) {
   const kMessageFormat = '[%target%]\n%msg%';
@@ -969,7 +969,7 @@ function log(aMessage) {
 }
 
 
-// Export to global.
+//********** Export
 
 return {
   setEventListener: setEventListener,
