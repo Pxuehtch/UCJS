@@ -15,10 +15,12 @@
 "use strict";
 
 
-// Sets margins of Firefox window
-// @note This setting is for my own windows theme.
-// TODO: |chromemargin| is reset after returning from the print-preview.
-// TODO: A window layout sometimes breaks after returning from the fullscreen.
+/**
+ * Sets margins of Firefox window
+ * @note This setting is for my own windows theme.
+ * TODO: |chromemargin| is reset after returning from the print-preview.
+ * TODO: A window layout sometimes breaks after returning from the fullscreen.
+ */
 (function() {
 
   var mainWindow = $ID('main-window');
@@ -28,7 +30,9 @@
 })();
 
 
-// Closes all windows when browser window is shutdown.
+/**
+ * Closes all windows when the browser window shutdowns
+ */
 (function() {
 
   addEvent([window, 'unload', function() {
@@ -40,14 +44,17 @@
 })();
 
 
-// Calling the WebSearch command at the search bar hidden puts a quick alias
-// in the address bar.
-// @note Alias is set as a keyword of the default engine at a search engines
-// manager.
-// @see http://d.hatena.ne.jp/Griever/20110603/1307109954
+/**
+ * Calling the WebSearch command at the hidden search bar puts a quick alias
+ * in the address bar
+ * @note Alias is set as a keyword of the default engine at a search engines
+ * manager.
+ * @see http://d.hatena.ne.jp/Griever/20110603/1307109954
+ */
 (function() {
 
-  // @modified chrome://browser/content/browser.js::BrowserSearch::webSearch
+  // @modified chrome://browser/content/browser.js::
+  // BrowserSearch::webSearch
   Function('BrowserSearch.webSearch = ' +
     BrowserSearch.webSearch.toString().replace(
       '} else {',
@@ -66,7 +73,9 @@
 })();
 
 
-// Modify a title of bookmark and history item.
+/**
+ * Modify the title of a bookmark/history item
+ */
 (function() {
 
   // @modified resource:///modules/PlacesUIUtils.jsm::
@@ -96,13 +105,17 @@
 })();
 
 
-// Shows a long URL text without cropped in tooltip of URL bar.
+/**
+ * Shows a long URL text without cropped in a tooltip of the URL bar
+ */
 (function() {
 
-  // @see chrome://browser/content/browser.xul::<tooltip id="urlTooltip">
+  // @see chrome://browser/content/browser.xul::
+  // <tooltip id="urlTooltip">
   $ID('urlTooltip').removeAttribute('crop');
 
-  // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
+  // @modified chrome://browser/content/urlbarBindings.xml::
+  // _initURLTooltip
   $ID('urlbar')._initURLTooltip = function() {
     if (this.focused || !this._contentIsCropped || this._tooltipTimer)
       return;
@@ -117,10 +130,13 @@
 })();
 
 
-// Ensure that popup menu is detected.
+/**
+ * Ensure that a popup menu is detected
+ */
 (function() {
 
-  // @modified chrome://browser/content/utilityOverlay.js::closeMenus
+  // @modified chrome://browser/content/utilityOverlay.js::
+  // closeMenus
   Function('window.closeMenus =' +
     window.closeMenus.toString().replace(/node\.tagName/g, 'node.localName')
   )();
@@ -128,19 +144,32 @@
 })();
 
 
-// Relocates the scroll-buttons at tab overflowed.
+/**
+ * Relocates the scroll-buttons when tabs overflowed on the tab bar
+ */
 (function() {
 
-  // margin of a pinned tab is 3px.
+  // the margin of a pinned tab is 3px
   setChromeCSS('\
-    .tabbrowser-arrowscrollbox>.arrowscrollbox-scrollbox{-moz-box-ordinal-group:1}\
-    .tabbrowser-arrowscrollbox>.scrollbutton-up{-moz-box-ordinal-group:2}\
-    .tabbrowser-arrowscrollbox>.scrollbutton-down{-moz-box-ordinal-group:3}\
-    .tabbrowser-arrowscrollbox>.scrollbutton-up{margin-left:3px!important;}\
-    .tabbrowser-tab[pinned]{margin-right:3px!important;}\
+    .tabbrowser-arrowscrollbox>.arrowscrollbox-scrollbox{\
+      -moz-box-ordinal-group:1;\
+    }\
+    .tabbrowser-arrowscrollbox>.scrollbutton-up{\
+      -moz-box-ordinal-group:2;\
+    }\
+    .tabbrowser-arrowscrollbox>.scrollbutton-down{\
+      -moz-box-ordinal-group:3;\
+    }\
+    .tabbrowser-arrowscrollbox>.scrollbutton-up{\
+      margin-left:3px!important;\
+    }\
+    .tabbrowser-tab[pinned]{\
+      margin-right:3px!important;\
+    }\
   ');
 
-  // @modified chrome://browser/content/tabbrowser.xml::_positionPinnedTabs
+  // @modified chrome://browser/content/tabbrowser.xml::
+  // _positionPinnedTabs
   Function('gBrowser.tabContainer._positionPinnedTabs =' +
     gBrowser.tabContainer._positionPinnedTabs.toString().
     replace(
@@ -148,18 +177,20 @@
       'let scrollButtonWidth = 0;'
     ).replace(
       'width += tab.getBoundingClientRect().width;',
-      // add margin of a pinned tab.
+      // add the margin of a pinned tab
       'width += tab.getBoundingClientRect().width + 3;'
     )
   )();
 
-  // recalc the positions.
+  // recalc the positions
   gBrowser.tabContainer._positionPinnedTabs();
 
 })();
 
 
-// Suppress continuous focus with holding TAB-key down.
+/**
+ * Suppress continuous focusing with holding the TAB-key down
+ */
 (function() {
 
   var tabPressed = false;
@@ -184,16 +215,17 @@
 })();
 
 
-// Tab-key focusing handler.
-// @require UI.uc.js
+/**
+ * TAB-key focusing handler
+ * @require UI.uc.js
+ */
 (function() {
 
   // Toggles TAB-key focusing behavor.
 
   // @pref see http://kb.mozillazine.org/Accessibility.tabfocus
-  // 1: Give focus to text fields only.
-  // 7: Give focus to focusable text fields, form elements, and links.
-  // (default)
+  // 1: Give focus to text fields only
+  // 7: Give focus to focusable text fields, form elements, and links[default]
   const kPrefTabFocus = 'accessibility.tabfocus';
 
   var defaultTabFocus = getPref(kPrefTabFocus);
@@ -230,8 +262,10 @@
 })();
 
 
-// Disables function with alt+click on link. (default function: download of
-// the link)
+/**
+ * Disables Alt+Click on a link
+ * @note Fx default function: downloading of a link.
+ */
 (function() {
 
   addEvent([gBrowser.mPanelContainer, 'click', function(event) {
@@ -244,7 +278,9 @@
 })();
 
 
-// Gets rid of target="_blank" links.
+/**
+ * Gets rid of target="_blank" links
+ */
 (function() {
 
   addEvent([gBrowser.mPanelContainer, 'mousedown', handleEvent, false]);
@@ -267,7 +303,9 @@
 })();
 
 
-// Add 'open new tab' menu in the tab-context-menu.
+/**
+ * Add 'Open new tab' menu in the tab-context-menu
+ */
 (function() {
 
   var menu, popup;
@@ -302,10 +340,12 @@
 })();
 
 
-// Show status text in URL bar
-// @note In fullscreen mode, the default statusbar is used
-// @require UI.uc.js
-// TODO: When the toolbar is customized, the statusfield in the urlbar is lost
+/**
+ * Show status text in URL bar
+ * @note The default statusbar is used when the fullscreen mode.
+ * @require UI.uc.js
+ * TODO: When the toolbar is customized, the statusfield in the urlbar is lost.
+ */
 (function() {
   // Move '#statusbar-display' before 'input.urlbar-input' to control them by
   // CSS
@@ -382,7 +422,7 @@
 
 
 /**
- * Clear scrollbar
+ * Clear scrollbars
  * @note This setting is for my own windows theme.
  */
 (function() {
@@ -416,7 +456,7 @@
 })();
 
 
-// Utilities.
+//********** Utilities
 
 function getLink(aNode) {
   while (aNode) {
@@ -437,7 +477,7 @@ function $ID(aId)
   document.getElementById(aId);
 
 
-// Imports.
+//********** Imports
 
 function $E(aTag, aAttribute)
   ucjsUtil.createNode(aTag, aAttribute);
