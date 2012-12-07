@@ -598,9 +598,42 @@ function Util() {
     ).test(aURL);
   }
 
-  function log(aMsg) {
+  function log(aMessage) {
+    const kLogFormat = '%date%\n[%loaderName%]\n%message%';
+
+    let str = kLogFormat.
+      replace('%loaderName%', kSystem.loaderName).
+      replace('%date%', getFormatDate()).
+      replace('%message%', aMessage);
+
     $S('@mozilla.org/consoleservice;1', 'nsIConsoleService').
-    logStringMessage('[' + kSystem.loaderName + '] ' + aMsg);
+    logStringMessage(str);
+  }
+
+  function getFormatDate() {
+    const kDateFormat = '%04Y/%02M/%02D %02h:%02m:%02s.%03ms';
+
+    let date = new Date();
+    let map = {
+      'Y': date.getFullYear(),
+      'M': date.getMonth() + 1,
+      'D': date.getDate(),
+      'h': date.getHours(),
+      'm': date.getMinutes(),
+      's': date.getSeconds(),
+      'ms': date.getMilliseconds()
+    };
+
+    return kDateFormat.replace(/%(0)?(\d+)?(ms|[YMDhms])/g,
+      function(match, pad, width, type) {
+        let value = String(map[type]);
+        width = width && parseInt(width);
+        if (width && value.length < width) {
+          return (Array(width).join(!!pad ? '0' : ' ') + value).substr(-width);
+        }
+        return value;
+      }
+    );
   }
 
   // expose
@@ -649,34 +682,45 @@ function Log(aEnabled) {
   var output = function(aValue, aDepth) {
     const {log} = Util;
 
-    var str = '<something>';
-    var indent = aDepth ? Array(aDepth + 1).join(' ') + '+- ' : '';
+    var indent = aDepth ? Array(aDepth + 1).join('  ') + '+- ' : '';
+    var data;
 
     if (typeof aValue === 'string') {
-      str = aValue;
+      data = aValue;
     } else if (aValue === undefined) {
-      str = '<undefined>';
+      data = '<undefined>';
     } else if (aValue === null) {
-      str = '<null>';
+      data = '<null>';
     } else {
+      let json;
       try {
-        str = JSON.stringify(aValue);
-      } catch (e) {}
+        json = JSON.stringify(aValue);
+      } catch (e) {
+        data = '<JSON error>';
+      }
+      // iterates over the properties of an object
+      // TODO: Nested objects handling.
+      if (/^{.+}$/.test(json)) {
+        let obj = JSON.parse(json);
+        data = [];
+        for (let key in obj) {
+          data.push(key + ': ' + obj[key]);
+        }
+      }
+    }
+    if (!data) {
+      data = '<something>';
     }
 
-    // iterates over the properties of an object
-    if (/^{.+}$/.test(str)) {
-      str = JSON.parse(str);
-      for (let key in str) {
-        log(indent + key + ': ' + str[key]);
-      }
+    if (Array.isArray(data)) {
+      log(data.map(function(a) indent + a).join('\n'));
     } else {
-      log(indent + str);
+      log(indent + data);
     }
   };
 
   exports.list = function(aCaption, ...aValues) {
-    output(format('%caption% -----', {'caption': aCaption}));
+    output(format('%caption% ----------', {'caption': aCaption}));
 
     for (let i = 0, l = aValues.length; i < l; i++) {
       output(aValues[i], i + 1);
