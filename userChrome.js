@@ -593,9 +593,16 @@ function Util() {
   }
 
   function testURL(aSource, aURL) {
-    return RegExp(
-      '^' + aSource.replace(/\W/g, '\\$&').replace(/\\\*/g, '.*?') + '$'
-    ).test(aURL);
+    // 1.escape the special character so that it is treated literally
+    // 2.convert the wildcard character '*' to match any characters
+    let pattern =
+      '^' +
+      aSource.trim().
+      replace(/[{}()\[\]\\^$.?]/g, '\\$&').
+      replace(/\*+/g, '.*') +
+      '$';
+
+    return RegExp(pattern).test(aURL);
   }
 
   function log(aMessage) {
