@@ -635,8 +635,11 @@ function Util() {
       function(match, pad, width, type) {
         let value = String(map[type]);
         width = width && parseInt(width);
-        if (width && value.length < width) {
-          return (Array(width).join(!!pad ? '0' : ' ') + value).substr(-width);
+        if (0 < width && value.length !== width) {
+          if (value.length < width) {
+            value = Array(width).join(!!pad ? '0' : ' ') + value;
+          }
+          return value.substr(-width);
         }
         return value;
       }
