@@ -87,7 +87,7 @@ const kPref = {
   OPENPOS_UNDOCLOSE: kPosType.DEFAULT,
 
   // which tab is selected after a *selected* tab is closed
-  // @value {array of kPosType}
+  // @value {kPosType[]}
   // @note The default selection works if no matches.
   SELECTPOS_TABCLOSE: [
     kPosType.NEXT_ADJACENT_EXTENDED_DESCENDANT,
@@ -109,7 +109,9 @@ const kPref = {
   SUSPEND_LOADING: true,
   // the delay time until the loading is suspended
   // @value {integer} millisecond
-  //   0: immediately stop loading
+  //   0: try to stop loading immediately
+  // @note It may take time because our process works after the Fx default one
+  // for a background tab.
   SUSPEND_DELAY: 0,
   // auto-reloads the suspended tab that is next adjacent of a selected tab
   // @value {boolean}
@@ -562,8 +564,7 @@ var mTabSuspender = {
   timers: {},
 
   set: function(aTab, aDelay) {
-    // ensure that our process works after the default one for the loading of
-    // a background tab
+    // wait until the default process for a background tab is done
     var timer = setTimeout(function(tab) {
       this.stop(tab);
     }.bind(this), aDelay, aTab);
