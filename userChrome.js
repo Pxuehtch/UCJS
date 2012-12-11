@@ -594,11 +594,11 @@ function Util() {
 
   function testURL(aSource, aURL) {
     // 1.escape the special character so that it is treated literally
-    // 2.convert the wildcard character '*' to match any characters
+    // 2.convert the wildcard character '*' to '.*' that matches any string
     let pattern =
       '^' +
       aSource.trim().
-      replace(/[{}()\[\]\\^$.?]/g, '\\$&').
+      replace(/[{}()\[\]\\^$.?+|]/g, '\\$&').
       replace(/\*+/g, '.*') +
       '$';
 
