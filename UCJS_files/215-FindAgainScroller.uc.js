@@ -495,8 +495,6 @@ function SmoothScroll() {
       if (typeof aGoal === 'undefined')
         return;
 
-      aNode = aNode || getDocumentElement();
-
       var scrollable = testScrollable(aNode);
       if (!scrollable)
         return;
@@ -654,10 +652,6 @@ function SmoothScroll() {
       return aNode;
     }
     return aNode.ownerDocument.defaultView;
-  }
-
-  function getDocumentElement() {
-    return gBrowser.contentDocument.documentElement;
   }
 
   function Position(aX, aY) {
