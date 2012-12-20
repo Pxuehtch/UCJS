@@ -151,8 +151,7 @@ function ScrollObserver() {
     }
 
     function addItem(aNode) {
-      if (aNode &&
-          mItems.every(function(item) item.node !== aNode)) {
+      if (mItems.every(function(item) item.node !== aNode)) {
         mItems.push({
           node: aNode,
           scroll: getScroll(aNode)
@@ -234,7 +233,10 @@ function ScrollObserver() {
     var xpath = 'descendant-or-self::*[contains(normalize-space(),"' + text +
       '")]|descendant::textarea';
     $X(xpath, body).forEach(function(node) {
-      mScrollable.addItem(testScrollable(node));
+      let item = testScrollable(node);
+      if (item) {
+        mScrollable.addItem(item);
+      }
     });
   }
 
