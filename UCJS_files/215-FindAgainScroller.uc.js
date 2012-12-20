@@ -129,6 +129,9 @@ function FindAgainScroller_init() {
 function ScrollObserver() {
   var mScrollable = Scrollable();
 
+
+  //********** Functions
+
   function Scrollable() {
     var mItems = [];
     var mScrolledState = null;
@@ -282,7 +285,7 @@ function ScrollObserver() {
   }
 
 
-  // Expose
+  //********** Expose
   return {
     attach: attach,
     detach: detach,
@@ -309,7 +312,7 @@ function SkipInvisible() {
   var mFirstInvisible = null;
 
 
-  // Functions
+  //********** Functions
 
   function test() {
     // WORKAROUND: force to exit from a loop of testing
@@ -392,7 +395,7 @@ function SkipInvisible() {
   }
 
 
-  // Expose
+  //********** Expose
   return {
     test: test
   };
@@ -422,7 +425,7 @@ function AlignPosition() {
   };
 
 
-  // Functions
+  //********** Functions
 
   function align(aFindPrevious) {
     var selection = getSelection();
@@ -459,7 +462,7 @@ function AlignPosition() {
   }
 
 
-  // Expose
+  //********** Expose
   return {
     get alwaysAlign() kOption.alwaysAlign,
     align: align
@@ -521,7 +524,7 @@ function SmoothScroll() {
   };
 
 
-  // Functions
+  //********** Functions
 
   function startScroll(aStart) {
     if (aStart) {
@@ -543,7 +546,8 @@ function SmoothScroll() {
       stopScroll(true);
     } else if (
       (was.position.x === now.position.x || was.inside.x !== now.inside.x) &&
-      (was.position.y === now.position.y || was.inside.y !== now.inside.y)) {
+      (was.position.y === now.position.y || was.inside.y !== now.inside.y)
+    ) {
       // goal or go over a bit. stop stepping at here
       stopScroll();
     } else {
@@ -659,7 +663,7 @@ function SmoothScroll() {
   }
 
 
-  // Expose
+  //********** Expose
   return {
     start: function({node, start, goal}) {
       mState.init(node, start, goal);
@@ -693,7 +697,7 @@ function FoundBlink() {
   addEvent([gBrowser.mPanelContainer, 'mousedown', uninit, false]);
 
 
-  // Functions
+  //********** Functions
 
   function init() {
     uninit();
@@ -765,14 +769,14 @@ function FoundBlink() {
   }
 
 
-  // Expose
+  //********** Expose
   return {
     start: start
   };
 }
 
 
-// Imports
+//********** Imports
 
 function $X(aXPath, aNode)
   ucjsUtil.getNodesByXPath(aXPath, aNode);
@@ -784,7 +788,8 @@ function log(aMsg)
   ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
 
 
-// Entry point
+//********** Entry point
+
 FindAgainScroller_init();
 
 
