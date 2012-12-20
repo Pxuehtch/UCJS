@@ -225,10 +225,12 @@ function ScrollObserver() {
     if (!body)
       return;
 
+    // the document can be scrolled
     if (aWindow.scrollMaxX || aWindow.scrollMaxY) {
-      mScrollable.addItem(body);
+      mScrollable.addItem(aWindow);
     }
 
+    // scan the elements that can be scrolled
     var text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
     var xpath = 'descendant-or-self::*[contains(normalize-space(),"' + text +
       '")]|descendant::textarea';
@@ -241,7 +243,7 @@ function ScrollObserver() {
   }
 
   function testScrollable(aNode) {
-    var getComputedStyle = getWindow(aNode).getComputedStyle;
+    var getComputedStyle = aNode.ownerDocument.defaultView.getComputedStyle;
     var style;
 
     while (!(aNode instanceof HTMLHtmlElement)) {
@@ -265,20 +267,15 @@ function ScrollObserver() {
   function getScroll(aNode) {
     var x, y;
 
-    if (aNode instanceof HTMLBodyElement) {
-      let win = getWindow(aNode);
-      x = win.scrollX;
-      y = win.scrollY;
+    if (aNode instanceof Window) {
+      x = aNode.scrollX;
+      y = aNode.scrollY;
     } else {
       x = aNode.scrollLeft;
       y = aNode.scrollTop;
     }
 
     return {x: x, y: y};
-  }
-
-  function getWindow(aNode) {
-    return aNode.ownerDocument.defaultView || gBrowser.contentWindow;
   }
 
 
@@ -623,7 +620,8 @@ function SmoothScroll() {
   function testScrollable(aNode) {
     var view = null, scrollable = false;
 
-    if (aNode instanceof HTMLHtmlElement || aNode instanceof HTMLBodyElement) {
+    if (aNode instanceof Window ||
+        aNode instanceof HTMLHtmlElement || aNode instanceof HTMLBodyElement) {
       view = getWindow(aNode);
       scrollable = view.scrollMaxX || view.scrollMaxY;
     } else if (aNode instanceof HTMLTextAreaElement) {
@@ -640,7 +638,10 @@ function SmoothScroll() {
   }
 
   function getWindow(aNode) {
-    return aNode.ownerDocument.defaultView || gBrowser.contentWindow;
+    if (aNode instanceof Window) {
+      return aNode;
+    }
+    return aNode.ownerDocument.defaultView;
   }
 
   function getDocumentElement() {
