@@ -217,12 +217,11 @@ function ScrollObserver() {
       });
     }
 
-    // Grab <body> or <frameset>
+    // <frame> window has |contentDocument|
     var doc = aWindow.contentDocument || aWindow.document;
-
-    // Skip XHTML2 document
-    var body = doc.body;
-    if (!body)
+    // |body| returns <body> or <frameset> element
+    var root = doc.body || doc.documentElement;
+    if (!root)
       return;
 
     // the document can be scrolled
@@ -234,7 +233,7 @@ function ScrollObserver() {
     var text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
     var xpath = 'descendant-or-self::*[contains(normalize-space(),"' + text +
       '")]|descendant::textarea';
-    $X(xpath, body).forEach(function(node) {
+    $X(xpath, root).forEach(function(node) {
       let item = testScrollable(node);
       if (item) {
         mScrollable.addItem(item);
@@ -246,20 +245,24 @@ function ScrollObserver() {
     var getComputedStyle = aNode.ownerDocument.defaultView.getComputedStyle;
     var style;
 
-    while (!(aNode instanceof HTMLHtmlElement)) {
-      if (aNode instanceof HTMLElement) {
-        style = getComputedStyle(aNode, '');
+    while (aNode) {
+      if (aNode instanceof Element) {
+        if (aNode instanceof HTMLTextAreaElement &&
+            aNode.scrollHeight > aNode.clientHeight) {
+          return aNode;
+        }
 
-        if ((/^(?:scroll|auto)$/.test(style.overflowX) &&
-             aNode.scrollWidth > aNode.clientWidth) ||
-            (/^(?:scroll|auto)$/.test(style.overflowY) &&
-             aNode.scrollHeight > aNode.clientHeight) ||
-            (aNode instanceof HTMLTextAreaElement &&
-             aNode.scrollHeight > aNode.clientHeight)) {
+        style = getComputedStyle(aNode, '');
+        if (
+          (/^(?:scroll|auto)$/.test(style.overflowY) &&
+           aNode.scrollHeight > aNode.clientHeight) ||
+          (/^(?:scroll|auto)$/.test(style.overflowX) &&
+           aNode.scrollWidth > aNode.clientWidth)
+        ) {
           return aNode;
         }
       }
-      aNode = aNode.parentElement;
+      aNode = aNode.parentNode;
     }
     return null;
   }
@@ -365,14 +368,13 @@ function SkipInvisible() {
     var getComputedStyle = win.getComputedStyle;
     var style;
 
-    while (!(aNode instanceof HTMLHtmlElement)) {
-      if (aNode instanceof HTMLElement) {
+    while (aNode) {
+      if (aNode instanceof Element) {
         if (aNode.hidden) {
           return false;
         }
 
         style = getComputedStyle(aNode, '');
-
         if (
           style.visibility !== 'visible' ||
           style.display === 'none' ||
@@ -384,7 +386,7 @@ function SkipInvisible() {
           return false;
         }
       }
-      aNode = aNode.parentElement;
+      aNode = aNode.parentNode;
     }
     return true;
   }
@@ -618,23 +620,33 @@ function SmoothScroll() {
   }
 
   function testScrollable(aNode) {
-    var view = null, scrollable = false;
+    var view = null;
+    var scrollable = false;
 
     if (aNode instanceof Window ||
-        aNode instanceof HTMLHtmlElement || aNode instanceof HTMLBodyElement) {
+        aNode instanceof HTMLHtmlElement ||
+        aNode instanceof HTMLBodyElement) {
       view = getWindow(aNode);
       scrollable = view.scrollMaxX || view.scrollMaxY;
-    } else if (aNode instanceof HTMLTextAreaElement) {
+    }
+    else if (aNode instanceof HTMLTextAreaElement) {
       scrollable = aNode.scrollHeight > aNode.clientHeight;
-    } else if (aNode instanceof HTMLElement) {
+    }
+    else if (aNode instanceof Element) {
       let style = getWindow(aNode).getComputedStyle(aNode, '');
       scrollable =
-        style.overflowX === 'scroll' || style.overflowY === 'scroll' ||
-        (style.overflowX === 'auto' && aNode.scrollWidth > aNode.clientWidth) ||
-        (style.overflowY === 'auto' && aNode.scrollHeight > aNode.clientHeight);
+        style.overflowY === 'scroll' ||
+        style.overflowX === 'scroll' ||
+        (style.overflowY === 'auto' &&
+         aNode.scrollHeight > aNode.clientHeight) ||
+        (style.overflowX === 'auto' &&
+         aNode.scrollWidth > aNode.clientWidth);
     }
 
-    return scrollable ? {view: view} : null;
+    if (scrollable) {
+      return {view: view};
+    }
+    return null;
   }
 
   function getWindow(aNode) {
