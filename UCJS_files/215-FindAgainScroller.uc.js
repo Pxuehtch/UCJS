@@ -376,8 +376,14 @@ function SkipInvisible() {
 
         style = getComputedStyle(aNode, '');
 
-        if (style.visibility !== 'visible' || style.display === 'none' ||
-            (style.position === 'absolute' && parseInt(style.left, 10) < 0)) {
+        if (
+          style.visibility !== 'visible' ||
+          style.display === 'none' ||
+          // TODO: Use a certain detection of an element that is out of view by
+          // the position hacks.
+          (style.position === 'absolute' &&
+           (parseInt(style.left, 10) < 0) || (parseInt(style.top, 10) < 0))
+        ) {
           return false;
         }
       }
