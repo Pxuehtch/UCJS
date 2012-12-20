@@ -133,16 +133,20 @@ function ScrollObserver() {
   //********** Functions
 
   function Scrollable() {
-    var mItems = [];
+    var mItems = new Map();
     var mScrolledState = null;
 
+    // TODO: In Fx19 |Map::size| will change from a method to a property.
+    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
+    function itemsCount() mItems.size();
+
+    // TODO: In Fx19 |Map::clear| will be available.
+    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
     function cleanup() {
-      if (mItems.length) {
-        mItems.forEach(function(item) {
-          item.node = null;
-          item.scroll = null;
-        });
-        mItems.length = 0;
+      if (itemsCount()) {
+        for (let [node] of mItems) {
+          mItems.delete(node);
+        }
       }
 
       if (mScrolledState !== null) {
@@ -154,11 +158,8 @@ function ScrollObserver() {
     }
 
     function addItem(aNode) {
-      if (mItems.every(function(item) item.node !== aNode)) {
-        mItems.push({
-          node: aNode,
-          scroll: getScroll(aNode)
-        });
+      if (!mItems.has(aNode)) {
+        mItems.set(aNode, getScroll(aNode));
       }
     }
 
@@ -177,23 +178,23 @@ function ScrollObserver() {
     function updateScrolledState() {
       mScrolledState = null;
 
-      mItems.some(function(item) {
-        var now = getScroll(item.node);
-        if (now.x !== item.scroll.x || now.y !== item.scroll.y) {
-          // @note Used as the parameters of |SmoothScroll::start|.
+      for (let [node, scroll] of mItems) {
+        let now = getScroll(node);
+        if (now.x !== scroll.x || now.y !== scroll.y) {
+          // @note |mScrolledState| is used as the parameters of
+          // |SmoothScroll::start|.
           mScrolledState = {
-            node: item.node,
-            start: item.scroll,
+            node: node,
+            start: scroll,
             goal: now
           };
-          return true;
+          break;
         }
-        return false;
-      });
+      }
     }
 
     return {
-      get count() mItems.length,
+      get count() itemsCount(),
       cleanup: cleanup,
       addItem: addItem,
       isScrolled: isScrolled,
