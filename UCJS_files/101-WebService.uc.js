@@ -123,7 +123,7 @@ var mXHRHandler = (function() {
     setTimeout(function() {
       lastRequestTime = Date.now();
       xhr.send(null);
-    }, kCooldownTime);
+    }, cooldownTime);
   }
 
   return {
