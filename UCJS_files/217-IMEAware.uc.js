@@ -193,7 +193,7 @@ var mIMEAwareHandler = {
 };
 
 
-// Utilities
+//********** Utilities
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
@@ -205,7 +205,7 @@ function log(aMsg)
   ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
 
 
-// Entry point
+//********** Entry point
 
 function IMEAware_init() {
   function onFocus(aEvent) {

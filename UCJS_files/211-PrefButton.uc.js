@@ -6,8 +6,9 @@
 
 // @require Util.uc.js
 // @usage Access to items on the navigation toolbar.
-// @note Buttons is styled as the height of toolbar is 24pt. see setStyleSheet().
-// @note Some about:config preferences are changed. see @pref.
+// @note Buttons is styled as the height of toolbar is 24pt. see
+// |setStyleSheet()|
+// @note Some about:config preferences are changed. see @pref
 
 
 (function() {
@@ -16,22 +17,22 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
- * Identifiers.
+ * Identifiers
  */
 const kID = {
-  // Default.
+  // Default
   NAVIGATION_TOOLBAR: 'nav-bar',
-  // Custom.
+  // Custom
   CONTAINER_ID:   'ucjs_prefbutton_container',
   ITEM_CLASS_KEY: 'ucjs_prefbutton_item',
   ITEM_ID_PREFIX: 'ucjs_prefbutton_'
 };
 
 /**
- * Type of <button>.
+ * Type of <button>
  */
 const kItemType = {
   button:   'button',
@@ -39,16 +40,17 @@ const kItemType = {
 };
 
 /**
- * Preset items.
+ * Preset items
  * @note Key name must consist of 1-byte character [A-Za-z0-9_] only.
- * @param disabled {boolean} [option] If true, this item is ignored.
- * @param tabMode {boolean} [option] If true, each tab is observed.
- * @param type {kItemType} type of <button>.
- * @param label {string} Button label.
- * @param image {URL string} [instead of label] Button image.
- * @param description {string} Tooltip text.
- * @param checked {getter} [for type 'checkbox'] Return true/false for checkbox state.
- * @param command {function} Button command.
+ * @param disabled {boolean} [option] If true, this item is ignored
+ * @param tabMode {boolean} [option] If true, each tab is observed
+ * @param type {kItemType} type of <button>
+ * @param label {string} Button label
+ * @param image {URL string} [instead of label] Button image
+ * @param description {string} Tooltip text
+ * @param checked {getter} [for type 'checkbox'] Return true/false for
+ * checkbox state.
+ * @param command {function} Button command
  */
 var mPreset = {
   'ToggleCSS_Tab': {
@@ -70,9 +72,9 @@ var mPreset = {
     description: 'Toggle Referrer',
 
     // @pref see http://kb.mozillazine.org/Network.http.sendRefererHeader
-    // 0:never send the referrer header.
-    // 1:send when clicking on a link.
-    // 2:send when clicking on a link or loading an image (Default).
+    // 0:never send the referrer header
+    // 1:send when clicking on a link
+    // 2:send when clicking on a link or loading an image (Default)
     pref: 'network.http.sendRefererHeader',
 
     get checked() getPref(this.pref, 2) !== 0,
@@ -121,14 +123,18 @@ var mPreset = {
     image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAe1BMVEUAAAC6urpmZmZvb2+qqqpmZjOZZjMzMzOZmZmZZmbMzGbMmTOZmTOZmWbMzJnFxcXMmWb//5n/zGZmMzPS0tL//8z/zJlaW1szM2bMmZlaZGd7e3szZmbi4uKHh4fMzMzv7+/IyMhecnqZmcxmZswzM5mZZpmZzMxmZpkJF2RIAAAAKXRSTlMA/////////////////////////////////////////////////////0LHzqgAAACJSURBVHhefc7JEsIgEARQYkZFMIPEsCiSqLjk/7/QEU1JLvbtdddQMPY3KamSz5TGcQIAqEe63f3kOET+M4oBzpcYrtkKEY1BiD24/r2SKBoDD/WJig4tUdv2cAzOd7nRxloUonG+yk+qHepWCLndf8xY1dAu5Zp/Tb/Y0F6YmuVqZrpa1DMXeQFq7Aju0wjcLAAAAABJRU5ErkJggg==',
 
     command: function() {
-      $ID("Tools:Sanitize").doCommand();
+      $ID('Tools:Sanitize').doCommand();
     }
   }//,
 };
 
 
-// Progress listener.
+//********** Functions
 
+
+/**
+ * Progress listener
+ */
 var mBrowserProgressListener = {
   onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
     if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
@@ -141,9 +147,6 @@ var mBrowserProgressListener = {
   onStatusChange: function() {},
   onSecurityChange: function() {}
 };
-
-
-// Functions.
 
 function PrefButton_init() {
   setStyleSheet();
@@ -167,7 +170,7 @@ function updateState(aTabMode) {
     let button = $ID(item.id);
     switch (item.type) {
       case kItemType.button:
-        // Do nothing.
+        // Do nothing
         break;
       case kItemType.checkbox:
         if (button.checked !== item.checked) {
@@ -200,7 +203,8 @@ function makeButtons() {
 
     let button = $CE('button');
 
-    button.id = item.id = kID.ITEM_ID_PREFIX + name.replace(/[^A-Za-z0-9_]/g, '_');
+    button.id = item.id =
+      kID.ITEM_ID_PREFIX + name.replace(/[^A-Za-z0-9_]/g, '_');
     button.className = kID.ITEM_CLASS_KEY;
     button.setAttribute('type', item.type);
     button.setAttribute('tooltiptext', item.description);
@@ -260,7 +264,7 @@ function setStyleSheet() {
 }
 
 
-// Utilities.
+//********** Utilities
 
 function $ID(aId)
   document.getElementById(aId);
@@ -269,7 +273,7 @@ function $CE(aTag)
   document.createElement(aTag);
 
 
-// Imports.
+//********** Imports
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
@@ -287,7 +291,7 @@ function log(aMsg)
   ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 PrefButton_init();
 

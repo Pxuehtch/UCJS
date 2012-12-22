@@ -14,8 +14,6 @@ var ucjsLinkInfo = (function() {
 "use strict";
 
 
-// Constances
-
 const kID = {
   linkTree: 'linktree',
   addressColumn: 'linktree-address'
@@ -40,7 +38,7 @@ const kNote = {
 };
 
 
-// Handlers
+//********** Handlers
 
 var gLinkView = null;
 var gLinkInfoBuilt = false;
@@ -51,7 +49,8 @@ function init() {
     let copyColumnIndex =
       tree.columns.getNamedColumn(kID.addressColumn).index;
 
-    // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
+    // @see chrome://browser/content/pageinfo/pageInfo.js::
+    // pageInfoTreeView()
     gLinkView = new pageInfoTreeView(kID.linkTree, copyColumnIndex);
     tree.view = gLinkView;
   }
@@ -64,7 +63,8 @@ function build() {
     gLinkInfoBuilt = true;
 
     try {
-      // @see chrome://browser/content/pageinfo/pageInfo.js::goThroughFrames()
+      // @see chrome://browser/content/pageinfo/pageInfo.js::
+      // goThroughFrames()
       goThroughFrames(gDocument, gWindow);
     } catch (e) {
       // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]:
@@ -104,18 +104,22 @@ function grabLink(aNode) {
     let imgs = aNode.getElementsByTagName('img');
     let name = ((imgs && imgs.length) ? kNote.image : '') + getText(aNode);
     addLink([name, aNode.href, kType.a, aNode.target, aNode.accessKey]);
-  } else if (aNode instanceof HTMLScriptElement && aNode.src) {
+  }
+  else if (aNode instanceof HTMLScriptElement && aNode.src) {
     addLink([getText(aNode, kType.script), aNode.src, kType.script]);
-  } else if (aNode instanceof HTMLLinkElement && aNode.href) {
+  }
+  else if (aNode instanceof HTMLLinkElement && aNode.href) {
     let target = aNode.rel || aNode.rev || '';
     addLink([getText(aNode, target), aNode.href, kType.link, target]);
-  } else if ((aNode instanceof HTMLInputElement ||
-              aNode instanceof HTMLButtonElement) && aNode.type) {
+  }
+  else if ((aNode instanceof HTMLInputElement ||
+            aNode instanceof HTMLButtonElement) &&
+           aNode.type) {
     let name = '', address = '', target = '';
     switch (aNode.type.toLowerCase()) {
       case 'image':
         name = kNote.image;
-        // Fall through.
+        // Fall through
       case 'submit':
         name += getText(aNode, aNode.alt || aNode.value || kType.submit);
         if ('form' in aNode && aNode.form) {
@@ -125,12 +129,16 @@ function grabLink(aNode) {
         addLink([name, address || kNote.error, kType.submit, target || '']);
         break;
     }
-  } else if (aNode instanceof HTMLAreaElement && aNode.href) {
+  }
+  else if (aNode instanceof HTMLAreaElement && aNode.href) {
     addLink([getText(aNode), aNode.href, kType.area, aNode.target]);
-  } else if ((aNode instanceof HTMLQuoteElement ||
-              aNode instanceof HTMLModElement) && aNode.cite) {
+  }
+  else if ((aNode instanceof HTMLQuoteElement ||
+            aNode instanceof HTMLModElement) &&
+           aNode.cite) {
     addLink([getText(aNode), aNode.cite, kType[aNode.localName]]);
-  } else if (aNode.hasAttributeNS(XLinkNS, 'href')) {
+  }
+  else if (aNode.hasAttributeNS(XLinkNS, 'href')) {
     let address = '',
         href = aNode.getAttributeNS(XLinkNS, 'href'),
         charset = aNode.ownerDocument.characterSet;
@@ -141,7 +149,8 @@ function grabLink(aNode) {
       address = kNote.error;
     }
     addLink([getText(aNode), address, kType.XLink]);
-  } else {
+  }
+  else {
     return NodeFilter.FILTER_SKIP;
   }
   return NodeFilter.FILTER_ACCEPT;
@@ -186,7 +195,7 @@ function openLink(aEvent) {
 }
 
 
-// Exports.
+//********** Exports
 
 return {
   init: init,

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name TabHandler.uc.js
-// @description Custom handling on the tab bar
+// @description Custom handling on the tab bar.
 // @include main
 // ==/UserScript==
 
@@ -250,7 +250,7 @@ function makeCustomFunctions() {
 }
 
 
-// Imports
+//********** Imports
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
@@ -259,7 +259,7 @@ function log(aMsg)
   ucjsUtil.logMessage('Misc.uc.js', aMsg);
 
 
-// Entry point
+//********** Entry point
 
 function TabHandler_init() {
   mTabBarClickEvent.init();

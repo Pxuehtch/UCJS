@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note Creates a preference menu in 'tools' of menu bar.
+// @note Creates a preference menu in 'tools' of the menu bar.
 
 
 (function() {
@@ -15,7 +15,7 @@
 
 
 /**
- * Identifiers.
+ * Identifiers
  */
 const kID = {
   STYLESHEET: 'ucjs_sitestyle_stylesheet',
@@ -24,7 +24,7 @@ const kID = {
 
 
 /**
- * Settings for UI.
+ * Settings for UI
  * @note U() for display.
  */
 const kUI = {
@@ -37,8 +37,8 @@ const kUI = {
 
 
 /**
- * List of noisy URL of the search results.
- * @param {string} Tests with 'https?://(www.)?' + value.
+ * List of noisy URL of the search results
+ * @param {string} Tests with 'https?://(www.)?' + value
  * @param {regexp}
  * @note cf. http://d.hatena.ne.jp/edvakf/20090723/1248365807
  */
@@ -143,17 +143,17 @@ const kNoiseList = [
 
 
 /**
- * List of target site.
+ * List of target site
  * @param disabled {boolean} [optional]
- *   true: this item is ignored and following items will be tested.
- *   false [default]: this item is tested.
+ *   true: this item is ignored and following items will be tested
+ *   false [default]: this item is tested
  * @param name {string}
  * @param include {regExp|string}|{regexp[]|string[]}
- *   {string}: tests exact match.
+ *   {string}: tests exact match
  * @param quickApply {boolean} [optional]
- *   true: command is applied as soon as location changes.
- *   false [default]: not applied until document loads.
- * @param wait {int} [optional] wait-time[ms] after document loads.
+ *   true: command is applied as soon as location changes
+ *   false [default]: not applied until document loads
+ * @param wait {int} [optional] wait-time[ms] after document loads
  * @param command {function}
  */
 const kSiteList = [
@@ -168,7 +168,7 @@ const kSiteList = [
     quickApply: true,
     command: function(aDocument) {
       var location = aDocument.location;
-      // switch to the old mode.
+      // switch to the old mode
       if (!/[?&#]sout=1/.test(location.href)) {
         location.replace(location.href + '&sout=1');
       }
@@ -183,24 +183,25 @@ const kSiteList = [
         var [mode] = /[?&#]tb[ms]=[^&]+/.exec(params) || [];
         if (a)
           return mode && a.test(mode);
-        // main or not.
+        // main or not
         return !mode;
       }
 
       processResultItems();
       setPageCSS({
-        // except for shopping, application, books, places.
+        // except for shopping, application, books, places
         custom: !testMode(/shop|app|bks|plcs/),
-        // except for shopping, places.
+        // except for shopping, places
         multiColumn: !testMode(/shop|plcs/)
       });
 
       function processResultItems() {
-        // sanitize links.
+        // sanitize links
         Array.forEach($S('li.g a', aDocument), function(a) {
           a.removeAttribute('onmousedown');
 
-          var url = /google\./.test(a.hostname) && /^\/url$/.test(a.pathname) &&
+          var url = /google\./.test(a.hostname) &&
+            /^\/url$/.test(a.pathname) &&
             /[&?](?:q|url)=([^&]+)/.exec(a.search);
           if (url) {
             a.href = decodeURIComponent(url[1]);
@@ -218,7 +219,7 @@ const kSiteList = [
             item.classList.add('ucjs_sitestyle_weaken');
           }
 
-          // emphasize same host item.
+          // emphasize same host item
           var host = link.hostname;
           if (host === lastHost) {
             item.classList.add('ucjs_sitestyle_samehost');
@@ -295,7 +296,7 @@ const kSiteList = [
             }';
         }
 
-        // On ajax loading, replace the old CSS.
+        // replace the old CSS on ajax loading
         setStyleSheet(css, aDocument, {replace: true});
       }
     }
@@ -304,7 +305,7 @@ const kSiteList = [
     name: 'Yahoo!JAPAN Result',
     include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
     command: function(aDocument) {
-      // sanitize links.
+      // sanitize links
       Array.forEach($S('#contents a'), function(a) {
         a.removeAttribute('onmousedown');
 
@@ -315,19 +316,19 @@ const kSiteList = [
         }
       });
 
-      // process items.
+      // process items
       Array.forEach($S('li'), function(item) {
         var link = $S1('.hd>h3>a', item);
         if (!link)
           return;
 
-        // weaken noisy item.
+        // weaken noisy item
         if (mNoisyURLHandler.test(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
       });
 
-      // set page CSS.
+      // set page CSS
       setStyleSheet('\
         /* custom class */\
         .ucjs_sitestyle_weaken h3{\
@@ -398,10 +399,10 @@ const kSiteList = [
   {
     name: 'Youtube Player',
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|user\/|\w+$)/,
-    // wait for DOM built.
+    // wait for DOM built
     wait: 500,
     command: function(aDocument) {
-      // exclude playlist mode.
+      // exclude playlist mode
       if (/[?&]list=/.test(aDocument.location.search))
         return;
 
@@ -434,13 +435,13 @@ const kSiteList = [
 
 
 /**
- * Page observer handler.
+ * Page observer handler
  * @return {hash}
  *   @member init {function}
  */
 var mPageObserver = (function() {
   /**
-   * Handler for the cache of browsers on progress listener.
+   * Handler for the cache of browsers on progress listener
    */
   var mBrowserState = (function() {
     var browsers = new WeakMap();
@@ -477,7 +478,8 @@ var mPageObserver = (function() {
       }, false]);
     },
 
-    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
+    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation,
+    aFlags) {
       var URL = aLocation.spec;
       if (!/^https?/.test(URL))
         return;
@@ -488,19 +490,22 @@ var mPageObserver = (function() {
       if (!site)
         return;
 
-      // 1st. test quick apply.
+      // 1st. test quick apply
       if (site.quickApply) {
         apply(aBrowser, site);
         return;
       }
 
-      // 2nd. wait document loading.
+      // 2nd. wait document loading
       // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
-      var observing = (aFlags & 0x1) ? 'FIRST_STOP_REQUEST' : 'FIRST_STOP_WINDOW';
-      mBrowserState.init(aBrowser, {URL: URL, site: site, observing: observing});
+      var observing = (aFlags & 0x1) ?
+        'FIRST_STOP_REQUEST' : 'FIRST_STOP_WINDOW';
+      mBrowserState.init(aBrowser,
+        {URL: URL, site: site, observing: observing});
     },
 
-    onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
+    onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags,
+    aStatus) {
       var URL = aBrowser.currentURI.spec;
       if (!/^https?/.test(URL))
         return;
@@ -509,11 +514,17 @@ var mPageObserver = (function() {
       if (!state || state.URL !== URL)
         return;
 
-      // aFlags: STATE_STOP=0x10, STATE_IS_REQUEST=0x10000, STATE_IS_WINDOW=0x80000
-      if ((state.observing === 'FIRST_STOP_WINDOW' && (aFlags & 0x10) && (aFlags & 0x80000) &&
-          aRequest.name === URL) ||
-          (state.observing === 'FIRST_STOP_REQUEST' && (aFlags & 0x10) && (aFlags & 0x10000) &&
-          aRequest.name === 'about:document-onload-blocker')) {
+      // aFlags: STATE_STOP=0x10, STATE_IS_REQUEST=0x10000,
+      // STATE_IS_WINDOW=0x80000
+      if (
+          (state.observing === 'FIRST_STOP_WINDOW' &&
+           (aFlags & 0x10) && (aFlags & 0x80000) &&
+           aRequest.name === URL) ||
+
+          (state.observing === 'FIRST_STOP_REQUEST' &&
+           (aFlags & 0x10) && (aFlags & 0x10000) &&
+           aRequest.name === 'about:document-onload-blocker')
+      ) {
         apply(aBrowser, state.site);
         mBrowserState.uninit(aBrowser);
       }
@@ -575,13 +586,14 @@ var mPageObserver = (function() {
 
 
 /**
- * Preference menu handler.
+ * Preference menu handler
  * @return {hash}
  *   @member init {function}
  */
 var mPrefMenu = (function() {
   function init() {
-    var menu = document.getElementById('menu_ToolsPopup').appendChild($E('menu', {
+    var menu = document.getElementById('menu_ToolsPopup').
+    appendChild($E('menu', {
       id: kID.PREFMENU,
       label: kUI.PREFMENU.label,
       accesskey: kUI.PREFMENU.accesskey
@@ -626,7 +638,7 @@ var mPrefMenu = (function() {
 
 
 /**
- * Noisy URL handler.
+ * Noisy URL handler
  * @return {hash}
  *   @member test {function}
  */
@@ -649,7 +661,7 @@ var mNoisyURLHandler = (function() {
 })();
 
 
-// Imports.
+//********** Imports
 
 function $E(aTagOrNode, aAttribute)
   ucjsUtil.createNode(aTagOrNode, aAttribute);
@@ -668,14 +680,15 @@ function addEvent(aData)
 
 function setStyleSheet(aCSS, aDocument, aOption) {
   var {replace} = aOption || {};
-  ucjsUtil.setContentStyleSheet(aCSS, {doc: aDocument, id: kID.STYLESHEET, replace: replace});
+  ucjsUtil.setContentStyleSheet(aCSS,
+    {doc: aDocument, id: kID.STYLESHEET, replace: replace});
 }
 
 function log(aMsg)
   ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 function SiteStyle_init() {
   mPageObserver.init();

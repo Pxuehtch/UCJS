@@ -4,10 +4,11 @@
 // @include main
 // ==/UserScript==
 
-// @require userChrome.js with ucjsScriptLoader.
+// @require userChrome.js with ucjsScriptLoader
 // @require Util.uc.js
 // @usage At a menuitem in 'tools' of the main menu.
-// @note Exports a property in global window. (ucjsScriptList.XXX) see ScriptList_init.
+// @note Exports a property in the global window, |ucjsScriptList.XXX|. see
+// |ScriptList_init|
 
 
 (function(window, undefined) {
@@ -17,13 +18,13 @@
 
 
 /**
- * Required modules.
+ * Required modules
  */
 const {ucjsScriptLoader, ucjsUtil} = window;
 
 
 /**
- * UI bundle.
+ * UI bundle
  * @note U() for UI display.
  */
 const kUIBundle = {
@@ -49,11 +50,11 @@ const kUIBundle = {
 };
 
 
-// Functions.
+//********** Functions
 
 /**
- * Main function.
- * @note Exports 'ucjsScriptList' in global scope.
+ * Main function
+ * @note Exports 'ucjsScriptList' in the global scope.
  */
 function ScriptList_init() {
   if (ucjsScriptLoader) {
@@ -67,7 +68,7 @@ function ScriptList_init() {
 }
 
 /**
- * Handler of scripts list.
+ * Scripts list handler
  * @param aScriptLoader {hash}
  * @return {hash}
  *   @member count {number}
@@ -84,8 +85,8 @@ function getScripts(aScriptLoader) {
 }
 
 /**
- * Create a menu in the menu-bar.
- * @param aScripts {hash} scripts data handler.
+ * Creates a menu in the menu-bar
+ * @param aScripts {hash} scripts data handler
  */
 function createMenu(aScripts) {
   const {menu: kMenuUI} = kUIBundle;
@@ -112,8 +113,8 @@ function createMenu(aScripts) {
 }
 
 /**
- * Handler of a panel of scripts list.
- * @param aScripts {hash} scripts data handler.
+ * Handler of a panel of the scripts list
+ * @param aScripts {hash} scripts data handler
  * @return {hash}
  *   @member open {function}
  *   @member close {function}
@@ -123,10 +124,17 @@ function ScriptListPanel(aScripts) {
 
   makePanel();
 
-  function getPanel() $ID(kPanelUI.id);
-  function getScriptDataList() $ID(kPanelUI.scriptDataListID);
-  function getScriptInfoCaption() $ID(kPanelUI.scriptInfoCaptionID);
-  function getScriptInfoBox() $ID(kPanelUI.scriptInfoBoxID);
+  function getPanel()
+    $ID(kPanelUI.id);
+
+  function getScriptDataList()
+    $ID(kPanelUI.scriptDataListID);
+
+  function getScriptInfoCaption()
+    $ID(kPanelUI.scriptInfoCaptionID);
+
+  function getScriptInfoBox()
+    $ID(kPanelUI.scriptInfoBoxID);
 
   function makePanel() {
     var panel = $ID('mainPopupSet').appendChild($E('panel', {
@@ -136,14 +144,16 @@ function ScriptListPanel(aScripts) {
       style: 'min-width:40em;'
     }));
 
-    // Title.
-    panel.appendChild($E('hbox', {pack: 'center'})).appendChild($E('label', {
+    // Title
+    panel.appendChild($E('hbox', {pack: 'center'})).
+    appendChild($E('label', {
       value: kPanelUI.title,
       class: 'header'
     }));
 
-    // Script list view.
-    var treeView = panel.appendChild($E('hbox', {flex: 1})).appendChild($E('tree', {
+    // Script list view
+    var treeView = panel.appendChild($E('hbox', {flex: 1})).
+    appendChild($E('tree', {
       id: kPanelUI.scriptDataListID,
       flex: 1,
       seltype: 'single',
@@ -154,17 +164,43 @@ function ScriptListPanel(aScripts) {
     addEvent([treeView, 'select', onSelectListItem, false]);
 
     var treeCols = treeView.appendChild($E('treecols'));
-    treeCols.appendChild($E('treecol', {label: '#', fixed: true, style: 'width:auto;text-align:right;'}));
-    treeCols.appendChild($E('splitter', {class: 'tree-splitter', hidden: true}));
-    treeCols.appendChild($E('treecol', {label: 'File', flex: 1, style: 'min-width:15em;'}));
-    treeCols.appendChild($E('splitter', {class: 'tree-splitter'}));
-    treeCols.appendChild($E('treecol', {label: 'Ext.', fixed: true, style: 'width:auto;'}));
-    treeCols.appendChild($E('splitter', {class: 'tree-splitter', hidden: true}));
-    treeCols.appendChild($E('treecol', {label: 'Folder', flex: 1, style: 'min-width:15em;'}));
+    treeCols.appendChild($E('treecol', {
+      label: '#',
+      fixed: true,
+      style: 'width:auto;text-align:right;'
+    }));
+    treeCols.appendChild($E('splitter', {
+      class: 'tree-splitter',
+      hidden: true
+    }));
+    treeCols.appendChild($E('treecol', {
+      label: 'File',
+      flex: 1,
+      style: 'min-width:15em;'
+    }));
+    treeCols.appendChild($E('splitter', {
+      class: 'tree-splitter'
+    }));
+    treeCols.appendChild($E('treecol', {
+      label: 'Ext.',
+      fixed: true,
+      style: 'width:auto;'
+    }));
+    treeCols.appendChild($E('splitter', {
+      class: 'tree-splitter',
+      hidden: true
+    }));
+    treeCols.appendChild($E('treecol', {
+      label: 'Folder',
+      flex: 1,
+      style: 'min-width:15em;'
+    }));
 
     var treeChildren = treeView.appendChild($E('treechildren'));
-    aScripts.data().forEach(function(script, i) {
-      var treeRow = treeChildren.appendChild($E('treeitem')).appendChild($E('treerow'));
+    aScripts.data().
+    forEach(function(script, i) {
+      var treeRow = treeChildren.appendChild($E('treeitem')).
+      appendChild($E('treerow'));
       treeRow.appendChild($E('treecell', {
         label: i + 1
       }));
@@ -172,14 +208,15 @@ function ScriptListPanel(aScripts) {
         label: script.getURL('FILENAME')
       }));
       treeRow.appendChild($E('treecell', {
-        label: script.getURL('FILENAME').replace(/^.+\.([a-z]+)$/i, '$1').toUpperCase()
+        label: script.getURL('FILENAME').
+        replace(/^.+\.([a-z]+)$/i, '$1').toUpperCase()
       }));
       treeRow.appendChild($E('treecell', {
         label: script.getURL('FOLDER')
       }));
     });
 
-    // Script information.
+    // Script information
     var infoGroupBox = panel.appendChild($E('groupbox'));
     infoGroupBox.appendChild($E('caption', {
       id: kPanelUI.scriptInfoCaptionID
@@ -192,7 +229,7 @@ function ScriptListPanel(aScripts) {
       rows: 5
     }));
 
-    // Action buttons.
+    // Action buttons
     var buttonsBox = panel.appendChild($E('hbox'));
     buttonsBox.appendChild($E('spacer', {flex: 1}));
     buttonsBox.appendChild($E('button', {
@@ -200,7 +237,7 @@ function ScriptListPanel(aScripts) {
       oncommand: 'ucjsScriptList.close();'
     }));
 
-    // Resizer.
+    // Resizer
     var resizerBox = panel.appendChild($E('hbox'));
     resizerBox.appendChild($E('spacer', {flex: 1}));
     resizerBox.appendChild($E('resizer', {dir: 'bottomend'}));
@@ -219,6 +256,7 @@ function ScriptListPanel(aScripts) {
   function open() {
     var panel = getPanel();
     panel.openPopupAtScreen(0, 0, false);
+
     var [x, y] = getCenteringPosition(panel);
     panel.moveTo(x, y);
 
@@ -237,7 +275,7 @@ function ScriptListPanel(aScripts) {
 }
 
 
-// Utilities.
+//********** Utilities
 
 function getCenteringPosition(aElement) {
   var {clientWidth: w, clientHeight: h} = aElement;
@@ -257,10 +295,12 @@ function getCenteringPosition(aElement) {
   return [x / 2, y / 2];
 }
 
-function $ID(aID) document.getElementById(aID);
+function $ID(aID)
+  document.getElementById(aID);
 
 function $E(aTagOrNode, aAttribute) {
-  var element = (typeof aTagOrNode === 'string') ? document.createElement(aTagOrNode) : aTagOrNode;
+  var element = (typeof aTagOrNode === 'string') ?
+    document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
@@ -274,7 +314,7 @@ function $E(aTagOrNode, aAttribute) {
 }
 
 /**
- * String formatter.
+ * String formatter
  * @param aForm {string}
  * @param aAttribute {hash}
  */
@@ -286,7 +326,7 @@ function F(aForm, aAttribute) {
 }
 
 /**
- * String converter for UI display.
+ * String converter for UI display
  * @param aData {hash}
  */
 function U(aData) {
@@ -297,7 +337,7 @@ function U(aData) {
 }
 
 
-// Imports.
+//********** Imports
 
 function addEvent(aData)
   ucjsUtil.setEventListener(aData);
@@ -309,7 +349,7 @@ function log(aMsg)
   ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 ScriptList_init();
 

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        RedirectParser.uc.js
-// @description Parses a link URL by inner URLs.
+// @description Parses a link URL by the inner URLs.
 // @include     main
 // ==/UserScript==
 
@@ -14,14 +14,12 @@
 "use strict";
 
 
-// Constances.
-
-// Whether the access key of a menu item is expressed with underline.
+// Whether the access key of a menu item is expressed with underline
 const kUnderlinedAccesskey =
   getPref('intl.menuitems.alwaysappendaccesskeys') === 'false';
 
 const kPref = {
-  // Show schemes except http://, https:// and ftp://.
+  // Show schemes except 'http://', 'https://' and 'ftp://'
   showAllSchemes: true
 };
 
@@ -32,12 +30,12 @@ const kPref = {
  * @key link {regexp}
  *   The URL for a target link should run as a preset.
  *   A capturing parentheses is required. The matches is tested against
- *   |item.pattern|.
+ *   |item.pattern|
  * @key item {hash[]}
  *   @key pattern {regexp}
  *   @key description {string}
  *   @key prefix {string} [optional]
- *     Add |prefix| to matching |pattern|.
+ *     Adds |prefix| to matching |pattern|
  */
 const kPreset = [
   {
@@ -93,7 +91,7 @@ const kBundle = {
 };
 
 /**
- * Handler of the parsed data of a link URL.
+ * Handler of the parsed data of a link URL
  */
 var mItemData = {
   preset: null,
@@ -147,7 +145,7 @@ var mItemData = {
 };
 
 
-// Functions.
+//********** Functions
 
 function RedirectParser_init() {
   initMenu()
@@ -294,9 +292,9 @@ function testSplittable(aURL) {
 function splitIntoSchemes(aURL) {
   var URLs = [];
 
-  // Splits aURL by '://'.
+  // Splits aURL by '://'
   // e.g. ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
-  // [0][1][2] are surely not empty.
+  // [0][1][2] are surely not empty
   const delimiter = /((?:\:|%(?:25)?3A)(?:\/|%(?:25)?2F){2})/i;
   var splits = aURL.split(delimiter);
   if (splits.length === 3)
@@ -316,10 +314,10 @@ function splitIntoSchemes(aURL) {
   return URLs.reduce(function(a, b) {
     var s = b.split(delimiter);
     if (!s[0] || !s[2]) {
-      // '://...' or 'http://' is combined with a previous string.
+      // '://...' or 'http://' is combined with a previous string
       a[a.length - 1] += b;
     } else {
-      // 'http://...' is a complete URL string.
+      // 'http://...' is a complete URL string
       a[a.length] = b;
     }
     return a;
@@ -330,7 +328,7 @@ function sliceScheme(aString) {
   if (!aString)
     return ['', ''];
 
-  // Scan scheme-like characters.
+  // Scan scheme-like characters
   // @note Allowable characters for scheme name, "+-.", are excluded because
   // they are ambiguous within queries.
   const charRe = /[a-z0-9]/i, escapedRe = /%(?:25)?2D/i;
@@ -372,7 +370,7 @@ function trimTrailing(aURL) {
 }
 
 
-// Utilities.
+//********** Utilities
 
 function $ID(aId)
   document.getElementById(aId);
@@ -386,7 +384,7 @@ function chr4key(aIndex) {
   return chars[aIndex % chars.length];
 }
 
-// Imports.
+//********** Imports
 
 function getContextMenu()
   ucjsUI.ContentArea.contextMenu;
@@ -399,11 +397,12 @@ function setAction(aNode, aAction, aURL) {
   switch (aAction) {
     case 'open':
       // @require Util.uc.js
-      action = 'ucjsUtil.openTab("' + aURL + '",{inBackground:event.button===1});';
+      action = 'ucjsUtil.openTab("' + aURL +
+      '",{inBackground:event.button===1});';
       break;
     case 'copy':
       action = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
-        'getService(Ci.nsIClipboardHelper).copyString("' + aURL + '");';
+      'getService(Ci.nsIClipboardHelper).copyString("' + aURL + '");';
       break;
   }
 
@@ -434,7 +433,7 @@ function log(aMsg)
   ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 RedirectParser_init();
 

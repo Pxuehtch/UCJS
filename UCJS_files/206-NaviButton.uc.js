@@ -8,11 +8,13 @@
 // @note Some default functions are modified. search @modified.
 
 /**
- * @usage If 'middle click', a new tab will open.
- *   click: go back or forward a step. (On the back-button with a referrer, a new tab opens.)
- *   shift+click: go to the border of the same domain of the current page.
- *   ctrl+click: go to the stop of history.
- * @see mHistory.jump().
+ * @usage
+ *   click: go back or forward a step
+ *   click the back button with a referrer: a new tab opens
+ *   shift+click: go to the border of the same domain of the current page
+ *   ctrl+click: go to the stop of history
+ * @note A new tab will open with 'middle button click'.
+ * @see |mHistory.jump()|
  */
 
 
@@ -22,14 +24,14 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 const kID = {
-  // Default.
+  // Default
   BACK_BUTTON:    'back-button',
   FORWARD_BUTTON: 'forward-button',
 
-  // Custom.
+  // Custom
   TOOLTIP:  'ucjs_navibutton_tooltip',
   REFERRER: 'ucjs_navibutton_referrer'
 };
@@ -63,10 +65,10 @@ const kStyle = {
 };
 
 
-// Handlers.
+//********** Handlers
 
 /**
- * Handler of a navigation button.
+ * Handler of a navigation button
  */
 var mButton = {
   init: function(aButton) {
@@ -112,7 +114,8 @@ var mButton = {
   },
 
   preventCommand: function(aButton) {
-    var command = (aButton.id === kID.BACK_BUTTON) ? 'BrowserBack' : 'BrowserForward';
+    var command = (aButton.id === kID.BACK_BUTTON) ?
+      'BrowserBack' : 'BrowserForward';
 
     // @modified chrome://browser/content/browser.js::BrowserBack
     // @modified chrome://browser/content/browser.js::BrowserForward
@@ -130,8 +133,8 @@ var mButton = {
 
 
 /**
- * Progress listener.
- * @see NaviButton_init().
+ * Progress listener
+ * @see |NaviButton_init()|
  */
 var mBrowserProgressListener = {
   onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
@@ -152,7 +155,7 @@ var mBrowserProgressListener = {
 
 
 /**
- * Handler of referrer.
+ * Handler of referrer
  * @note Declared in TabEx.uc.js
  */
 var mReferrer = {
@@ -173,7 +176,7 @@ var mReferrer = {
 
 
 /**
- * Handler of a tooltip panel.
+ * Handler of a tooltip panel
  */
 var mTooltip = {
   init: function() {
@@ -292,7 +295,7 @@ var mTooltip = {
 
 
 /**
- * Handler of history.
+ * Handler of history
  */
 var mHistory = {
   initData: function(aBackward, aReferrer) {
@@ -410,7 +413,7 @@ var mHistory = {
 };
 
 
-// Utilities.
+//********** Utilities
 
 function openReferrer() {
   var tabs = gBrowser.mTabs;
@@ -432,13 +435,13 @@ function $E(aTag)
   document.createElement(aTag);
 
 
-// Imports.
+//********** Imports
 
 function log(aStr)
   ucjsUtil.logMessage('NaviButton.uc.js', aStr);
 
 
-// Main.
+//********** Entry point
 
 function NaviButton_init() {
   var back = $(kID.BACK_BUTTON), forward = $(kID.FORWARD_BUTTON);

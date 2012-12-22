@@ -14,10 +14,10 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
- * List of user preset.
+ * List of user preset
  * @key disabled {boolean} [option]
  * @key URL
  *   {URL string}
@@ -51,12 +51,13 @@ const kServices = [
     command: function(aOption) {
       function updateLabel(count, menuitem) {
         if (menuitem) {
-          let label = menuitem.getAttribute('label').replace('(-)', '(' + count + ')');
+          let label = menuitem.getAttribute('label').
+            replace('(-)', '(' + count + ')');
           menuitem.setAttribute('label', label);
         }
       }
 
-      // do not request URL with parameters for security.
+      // do not request URL with parameters for security
       if (/[?#].*$/.test(aOption.data)) {
         updateLabel(U('注意：パラメータ付 URL'), aOption.menuitem);
         return;
@@ -74,7 +75,7 @@ const kServices = [
     }
   },
   {
-    // (SSL)https://www.aguse.jp/ has a problem with CSS.
+    // @note (SSL)https://www.aguse.jp/ has a problem with CSS.
     URL: 'http://www.aguse.jp/?m=w&url=%ESC%',
     types: ['LINK'],
     label: 'を aguse で調査'
@@ -83,7 +84,9 @@ const kServices = [
     URL: 'https://docs.google.com/viewer?url=%ESC%',
     types: ['LINK'],
     // @see https://docs.google.com/support/bin/answer.py?answer=1189935
-    extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages', 'ai', 'psd', 'tif', 'tiff', 'dxf', 'svg', 'eps', 'ps', 'ttf', 'xps', 'zip', 'rar'],
+    extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages',
+      'ai', 'psd', 'tif', 'tiff', 'dxf', 'svg', 'eps', 'ps', 'ttf', 'xps',
+      'zip', 'rar'],
     label: 'を Google Docs Viewer で表示'
   },
   {
@@ -106,7 +109,7 @@ const kServices = [
 
 /**
  * Alias for URL of kServices
- * @note applied in this order.
+ * @note Applied in this order.
  */
 const kURLAlias = {
   'NoScheme': function(aValue) aValue.replace(/^https?:\/\//, ''),
@@ -132,15 +135,18 @@ const kID = {
 };
 
 
-// Functions.
+//********** Functions
 
 function initMenu() {
   var contextMenu = getContextMenu();
   var refItem = contextMenu.firstChild;
 
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of separators.
-  contextMenu.insertBefore($E('menuseparator'), refItem).id = kID.startSeparator;
-  contextMenu.insertBefore($E('menuseparator'), refItem).id = kID.endSeparator;
+  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+  // separators.
+  contextMenu.insertBefore($E('menuseparator'), refItem).id =
+    kID.startSeparator;
+  contextMenu.insertBefore($E('menuseparator'), refItem).id =
+    kID.endSeparator;
 
   addEvent([contextMenu, 'popupshowing', onPopupShowing, false]);
 }
@@ -208,7 +214,8 @@ function makeItem(aType, aData, aService) {
   var label = kString.types[aType] + aService.label;
   item.setAttribute('label', U(label));
 
-  var URL = (typeof aService.URL === 'function') ? aService.URL(aData) : aService.URL;
+  var URL = (typeof aService.URL === 'function') ?
+    aService.URL(aData) : aService.URL;
   URL = URL.replace(/%([\w|]+)%/, function($0, $1) {
     var data = aData;
     var aliases = $1.split('|');
@@ -243,12 +250,12 @@ function testExtension(aExtensions, aURL) {
   }
 
   // Case: http://www.example.com/path/file1.ext?key=file2.ext
-  // Examines file2.ext, and then file1.ext.
+  // Examines file2.ext, and then file1.ext
   return targets.some(function(a) aExtensions.indexOf(a) > -1);
 }
 
 
-// Utilities.
+//********** Utilities
 
 function $ID(aID)
   document.getElementById(aID);
@@ -257,7 +264,7 @@ function $E(aTag)
   document.createElement(aTag);
 
 
-// Imports.
+//********** Imports
 
 function getContextMenu()
   ucjsUI.ContentArea.contextMenu;
@@ -267,7 +274,8 @@ function setEvent(aURL, aMenuitem) {
     'onclick',
     'if(event.button===2)return;' +
     'if(event.button===1)closeMenus(event.target);' +
-    'ucjsUtil.openTab("' + aURL + '",{inBackground:event.button===1,relatedToCurrent:true});'
+    'ucjsUtil.openTab("' + aURL +
+    '",{inBackground:event.button===1,relatedToCurrent:true});'
   );
 }
 
@@ -284,7 +292,7 @@ function log(aMsg)
   ucjsUtil.logMessage('SendTo.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 function SendTo_init() {
   initMenu();

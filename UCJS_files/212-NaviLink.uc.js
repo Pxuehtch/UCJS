@@ -15,29 +15,29 @@ var ucjsNaviLink = (function() {
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 const kPref = {
-  // Show page information menu.
+  // Show page information menu
   showPageInfo: true,
-  // Show unregistered navigation links.
+  // Show unregistered navigation links
   showSubNaviLinks: true,
-  // Max number of guessed siblings.
+  // Max number of guessed siblings
   maxGuessSiblingsNum: 3,
-  // Max number of items of each categories in navigation links.
+  // Max number of items of each categories in navigation links
   maxNaviLinkItemsNum: 30
 };
 
 /**
- * User presets.
- * @key name {string} Display name. U() for UI.
+ * User presets
+ * @key name {string} Display name. U() for UI
  * @key URL {RegExp}
  * @key submit {boolean}
- *   true: Scan form and submit.
- *   false[default]: Scan link and open URL.
+ *   true: Scan form and submit
+ *   false[default]: Scan link and open URL
  * @key prev {XPath}
- *   If submit is true, set xpath of <input>.
- *   If submit is false, set xpath of element which has URL.
+ *   If submit is true, set xpath of <input>
+ *   If submit is false, set xpath of element which has URL
  * @key next {XPath}
  */
 const kPresetNavi = [
@@ -58,7 +58,7 @@ const kPresetNavi = [
 ];
 
 /**
- * Items of link navigations.
+ * Items of link navigations
  * @note Key is 'rel' attribute of <link> or linkable element.
  * @note Displayed in this order. U() for UI.
  */
@@ -85,7 +85,7 @@ const kNaviLink = U({
 });
 
 /**
- * Synonymous keys.
+ * Synonymous keys
  * @note Value is in a key of kNaviLink.
  */
 const kNaviLinkConversion = {
@@ -102,7 +102,7 @@ const kNaviLinkConversion = {
 };
 
 /**
- * Items of page infomation.
+ * Items of page infomation
  * @note Displayed in this order. U() for UI.
  */
 const kPageInfo = U({
@@ -114,7 +114,7 @@ const kPageInfo = U({
 });
 
 /**
- * Types of a prev/next navigation.
+ * Types of a prev/next navigation
  * @note U() for UI display.
  */
 const kSiblingScanType = U({
@@ -125,27 +125,27 @@ const kSiblingScanType = U({
 });
 
 /**
- * Strings format.
- * @see format().
+ * Strings format
+ * @see |format()|
  * @note U() for UI display.
  */
 const kFormat = U({
-  // Main categories.
+  // Main categories
   upper: '上の階層',
   prev: '前ページ - %scanType%',
   next: '次ページ - %scanType%',
   naviLink: 'Navi Link',
   pageInfo: 'Page Info',
 
-  // Title of siblings.
+  // Title of siblings
   preset: '[%name%] %title%',
   official: '%title%',
   searching: '%title% (%score%)',
   numbering: '%old% -> %new%',
-  // Tooltip of submit mode of preset.
+  // Tooltip of submit mode of preset
   submit: '<FORM> submit',
 
-  // Sub items of NaviLink or PageInfo.
+  // Sub items of NaviLink or PageInfo
   type: '%title%%count%{ (%>1%)}',
   tooManyItems: '項目が多いので表示を制限 (%count%/%total%)',
   item: '%title%%attributes%{ [%%]}',
@@ -153,7 +153,7 @@ const kFormat = U({
 });
 
 /**
- * Identifiers.
+ * Identifiers
  */
 const kID = (function() {
   const prefix = 'ucjs_navilink_';
@@ -171,10 +171,10 @@ const kID = (function() {
 })();
 
 
-// Handlers.
+//********** Handlers
 
 /**
- * Handler of the menu settings.
+ * Handler of the menu settings
  */
 var mMenu = (function() {
 
@@ -192,7 +192,7 @@ var mMenu = (function() {
 
     var item = aEvent.target;
 
-    // checks whether this event comes from an item of NaviLink.
+    // checks whether this event comes from an item of NaviLink
     var contextMenu = getURLBarContextMenu();
     var node = item, id = node.id;
     while (node !== contextMenu && !id) {
@@ -229,7 +229,7 @@ var mMenu = (function() {
 
     var [sSep, eSep] = getSeparators();
 
-    // Remove existing items.
+    // Remove existing items
     for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
       contextMenu.removeChild(item);
     }
@@ -482,7 +482,7 @@ var mMenu = (function() {
   }
 
   /**
-   * Formats attributes.
+   * Formats attributes
    * @param aAttributes {array}
    *   [['name1', 'value1'], ['name2', ['value1', 'value2']]]
    * @return {string}
@@ -501,7 +501,8 @@ var mMenu = (function() {
       if (Array.isArray(value)) {
         value = value.join(kValuesDelimiter);
       }
-      attributes.push(format(kAttributeFormat, {'name': name, 'value': value}));
+      attributes.push(format(kAttributeFormat,
+        {'name': name, 'value': value}));
     });
 
     return attributes.join(kAttributesDelimiter);
@@ -518,7 +519,7 @@ var mMenu = (function() {
 
 
 /**
- * Handler of the user preset navigation links.
+ * Handler of the user preset navigation links
  */
 var mPresetNavi = (function() {
 
@@ -568,8 +569,8 @@ var mPresetNavi = (function() {
 
 
 /**
- * Handler of official navigation links according to 'rel' attribute.
- * @note [Additional] makes the list of page information.
+ * Handler of the official navigation links according to the 'rel' attribute
+ * @note [additional] Makes a list of the page information.
  */
 var mNaviLink = (function() {
 
@@ -613,7 +614,7 @@ var mNaviLink = (function() {
   }
 
   function getLinkList() {
-    // Keep the order list of sort to the first item.
+    // Keep the order list of sort to the first item
     var naviList = [kNaviLink], subNaviList = [{}], infoList = [kPageInfo];
 
     scanMeta(infoList);
@@ -764,10 +765,10 @@ var mNaviLink = (function() {
   }
 
   /**
-   * Creates a new list item.
+   * Creates a new list item
    * @param aIndex {int}
    * @param aNode {Node}
-   * @param aType {kNaviLink or kPageInfo}
+   * @param aType {kNaviLink|kPageInfo}
    * @param aAttributes {array}
    *   [['name1', 'value1'], ['name2', ['value1', 'value2']]]
    * @return {hash}
@@ -794,7 +795,7 @@ var mNaviLink = (function() {
 
 
 /**
- * Handler of links to the sibling(prev/next) page.
+ * Handler of links to the sibling(prev/next) page
  */
 var mSiblingNavi = (function() {
 
@@ -806,7 +807,7 @@ var mSiblingNavi = (function() {
 
   function getState(aDirection) {
     var res = null;
-    // Set keys of kSiblingScanType.
+    // Set keys of |kSiblingScanType|
     var scanType = '';
 
     if (!res) {
@@ -875,7 +876,7 @@ var mSiblingNavi = (function() {
     function push(aText, aURL, aScore) {
       entries[entries.length] = {text: aText, URL: aURL, score: aScore};
 
-      // Cache for contains().
+      // Cache for contains()
       URLs[URLs.length] = aURL;
     }
 
@@ -940,14 +941,16 @@ var mSiblingNavi = (function() {
   }
 
   /**
-   * Evaluator of the navigation-like text and URL.
+   * Evaluator of the navigation-like text and URL
    */
   var naviTester = (function() {
 
-    // Test for text.
+    // Test for text
     var textLike = (function() {
-      // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a, ←:\u2190
-      // &rsaquo;(>):\u203a, &raquo;(>>):\u00bb, ＞:\uff1e, ≫:\u226b, →:\u2192
+      // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
+      // ←:\u2190
+      // &rsaquo;(>):\u203a, &raquo;(>>):\u00bb, ＞:\uff1e, ≫:\u226b,
+      // →:\u2192
       const kNaviSign = {
         prev: '<|\\u2039|\\u00ab|\\uff1c|\\u226a|\\u2190',
         next: '>|\\u203a|\\u00bb|\\uff1e|\\u226b|\\u2192'
@@ -956,11 +959,13 @@ var mSiblingNavi = (function() {
       // 前:\u524D, 古い:\u53e4\u3044
       // 次:\u6b21, 新し:\u65b0\u3057
       const kNaviWord = {
-        prev: ['prev(?:ious)?|old(?:er)?|back(?:ward)?|less', '\\u524d|\\u53e4\\u3044'],
-        next: ['next|new(?:er)?|forward|more', '\\u6b21|\\u65b0\\u3057']
+        prev: ['prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
+               '\\u524d|\\u53e4\\u3044'],
+        next: ['next|new(?:er)?|forward|more',
+               '\\u6b21|\\u65b0\\u3057']
       };
 
-      // Weight of ratings.
+      // Weight of ratings
       const kWeight = normalizeWeight({
         matchSign: 50,
         matchWord: 50,
@@ -1011,7 +1016,7 @@ var mSiblingNavi = (function() {
             let adjust = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
             point += (kWeight.lessText * adjust);
           } else {
-            // Exact match.
+            // Exact match
             point += kWeight.lessText;
           }
         }
@@ -1028,7 +1033,7 @@ var mSiblingNavi = (function() {
       };
     })();
 
-    // Test for URL.
+    // Test for URL
     var URLLike = (function() {
       const kWeight = normalizeWeight({
         equalLength: 35,
@@ -1051,7 +1056,7 @@ var mSiblingNavi = (function() {
       function getEqualLengthRate(aSrc, aDst) {
         var sLen = aSrc.length, dLen = aDst.length;
 
-        // Be less than (1.0).
+        // Be less than (1.0)
         return 1 - (Math.abs(sLen - dLen) / (sLen + dLen));
       }
 
@@ -1070,7 +1075,7 @@ var mSiblingNavi = (function() {
           return false;
         });
 
-        // Be less than (1.0).
+        // Be less than (1.0)
         return overlaps.length / sParts.length;
       }
 
@@ -1130,14 +1135,16 @@ var mSiblingNavi = (function() {
 
   function guessByNumbering(aDirection) {
     /**
-     * Part like page numbers in URL.
+     * Part like page numbers in URL
      * @const kNumQuery {RegExp}
      *   Query with a numeric value; [?&]page=123 or [?&]123
      * @const kNumEndPath {RegExp}
      *   Path ended with numbers; (abc)123 or (abc)123.jpg or (abc)123/
      */
-    const kNumQuery = /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig,
-          kNumEndPath = /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
+    const kNumQuery =
+      /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig;
+    const kNumEndPath =
+      /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
 
     var URI = getCurrentURI('NO_REF');
     if (!URI.hasPath())
@@ -1177,7 +1184,7 @@ var mSiblingNavi = (function() {
 
 
 /**
- * Handler of links to the upper(top/parent) page.
+ * Handler of links to the upper(top/parent) page
  */
 var mUpperNavi = (function() {
 
@@ -1240,18 +1247,20 @@ var mUpperNavi = (function() {
   }
 
   return {
-    getParentURL: function() guessParentURL(getCurrentURI('NO_QUERY')),
-    getTopURL: function() guessTopURL(getCurrentURI('NO_QUERY')),
+    getParentURL:
+      function() guessParentURL(getCurrentURI('NO_QUERY')),
+    getTopURL:
+      function() guessTopURL(getCurrentURI('NO_QUERY')),
     getURLList: getURLList
   };
 
 })();
 
 
-// Utilities.
+//********** Utilities
 
 /**
- * Wrapper of URI object.
+ * Wrapper of URI object
  */
 function getCurrentURI(aFlags)
   createURI(gBrowser.currentURI, aFlags);
@@ -1277,7 +1286,7 @@ function createURI(aURI, aFlags) {
     case 'NO_QUERY':
       mPath = removeQuery(mPath);
       mSpec = removeQuery(mSpec);
-      // Fall through.
+      // Fall through
     case 'NO_REF':
       mPath = removeRef(mPath);
       mSpec = removeRef(mSpec);
@@ -1340,14 +1349,14 @@ function submitForm(aSubmitInput) {
 }
 
 /**
- * Formats string.
- * @param aFormat {string} kFormat.
+ * Formats string
+ * @param aFormat {string} |kFormat|
  * @param aAttribute {hash} {name, value}
- * @return {string} a formatted string.
+ * @return {string} a formatted string
  * @usage
  *   aFormat:'%key% has %num% letters' and aAttribute:{key:'ABC',num:3} into
  *   'ABC has 3 letters'
- * @usage A conditional replacement
+ * @usage A conditional replacement;
  *   aFormat:'%num%{%(>1)% letters}' and aAttribute:{num:#} into
  *   #>1 -> '# letters', otherwise -> ''
  */
@@ -1355,23 +1364,27 @@ function format(aFormat, aAttribute) {
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       name = '%' + name + '%';
-      // When value is null or undefined or '', the match word will be removed.
+
+      // the match word will be removed when value is null or undefined or ''
       if (value === null || typeof value === 'undefined') {
         value = '';
       }
 
       let [conditional, condition] =
         aFormat.match(RegExp(name + '\{(.+?)\}')) || [];
+
       if (conditional) {
         let result = '';
 
         if (value !== '') {
           let [target, expression] = condition.match(/%(.*?)%/) || [];
+
           if (target) {
             let right = true;
 
             if (expression) {
-              let val = (typeof value === 'string') ? '"' + value + '"' : value;
+              let val = (typeof value === 'string') ?
+                '"' + value + '"' : value;
               try {
                 right = Function('return ' + val + expression)();
               } catch (e) {
@@ -1384,10 +1397,8 @@ function format(aFormat, aAttribute) {
             }
           }
         }
-  
         aFormat = aFormat.replace(conditional, result);
       }
-
       aFormat = aFormat.replace(name, value);
     }
   }
@@ -1397,17 +1408,20 @@ function format(aFormat, aAttribute) {
 
 function getLeaf(aURL) {
   if (aURL) {
-    return aURL.slice(aURL.replace(/[?#].*$/, '').lastIndexOf('/') + 1) || aURL;
+    return aURL.slice(aURL.replace(/[?#].*$/, '').lastIndexOf('/') + 1) ||
+           aURL;
   }
   return '';
 }
 
-function trim(aText) aText ? aText.trim().replace(/\s+/g, ' ') : '';
+function trim(aText)
+  aText ? aText.trim().replace(/\s+/g, ' ') : '';
 
-function trimFigures(aNumber) (+aNumber).toFixed(5);
+function trimFigures(aNumber)
+  (+aNumber).toFixed(5);
 
 /**
- * Converts 2-byte characters into UTF-16 in order to properly display UI.
+ * Converts 2-byte characters into UTF-16 in order to properly display UI
  * @param aData {string}|{hash}
  */
 function U(aData) {
@@ -1422,7 +1436,7 @@ function U(aData) {
 }
 
 
-// Imports.
+//********** Imports
 
 function getURLBarContextMenu()
   ucjsUI.URLBar.contextMenu;
@@ -1449,7 +1463,7 @@ function log(aMsg)
   ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 function NaviLink_init() {
   mMenu.init();
@@ -1458,7 +1472,7 @@ function NaviLink_init() {
 NaviLink_init();
 
 
-// Exports to global.
+//********** Expose
 
 return {
   getNext:   mSiblingNavi.getNextURL,

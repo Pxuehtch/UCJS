@@ -18,7 +18,7 @@ const kSortDirections = ['ascending', 'descending', 'natural'];
 
 
 /**
- * Cache of the custom properties of a tree view.
+ * Cache of the custom properties of a tree view
  */
 var mSortState = (function() {
   var mMap = new WeakMap();
@@ -37,11 +37,11 @@ var mSortState = (function() {
 
 
 /**
- * Implements the click handler of a header.
+ * Implements the click handler of a header
  * @see chrome://browser/content/pageinfo/pageInfo.js
  */
 pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
-  // Useless of sorting when a single row.
+  // Useless of sorting when a single row
   if (this.rowCount < 2)
     return;
 
@@ -54,13 +54,13 @@ pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
 
   if (state.sortColumn !== aColumn) {
     if (state.sortColumn) {
-      // Remove the previous sorting mark of a header.
+      // Remove the previous sorting mark of a header
       state.sortColumn.element.removeAttribute(kSORT_DIRECTION_ATTRIBUTE);
     }
     state.sortColumn = aColumn;
   }
 
-  // Only the first time store the natural order.
+  // Only the first time store the natural order
   if (!state.naturalData) {
     state.naturalData = this.data.concat();
   }
@@ -71,7 +71,7 @@ pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
     sort(this.data, aColumn.index, direction === 'ascending');
   }
 
-  // Give focus on the first row.
+  // Give focus on the first row
   this.selection.clearSelection();
   this.selection.select(0);
   this.invalidate();
@@ -90,7 +90,7 @@ function sort(aData, aColumnIndex, aAscending) {
 }
 
 
-// Disables the default sort functions.
+// Disables the default sort functions
 // @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
 gMetaView.onPageMediaSort = function() {};
 gImageView.onPageMediaSort = function() {};

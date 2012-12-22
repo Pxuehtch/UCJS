@@ -13,7 +13,7 @@
 "use strict";
 
 
-// Preferences
+//********** Preferences
 
 /**
  * Selector for filtering
@@ -29,7 +29,7 @@ const kStyle = {
 };
 
 
-// Functions
+//********** Functions
 
 function makeUI() {
   var toolbar = document.getElementById('ToolbarMode');
@@ -65,7 +65,7 @@ function toggle(aEvent) {
 }
 
 
-// Utilities
+//********** Utilities
 
 function addEvent(aData) {
   ucjsUtil.setEventListener(aData);
@@ -83,7 +83,7 @@ function log(aMsg)
   ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
 
 
-// Entry point
+//********** Entry point
 
 function ListFilter_init() {
   makeUI();

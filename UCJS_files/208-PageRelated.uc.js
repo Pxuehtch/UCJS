@@ -14,7 +14,7 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
  * Preset
@@ -109,7 +109,7 @@ const kID = {
 };
 
 
-// Functions.
+//********** Functions
 
 function PageRelated_init() {
   initMenu()
@@ -130,7 +130,7 @@ function showMenu(aEvent) {
 
   var [sSep, eSep] = getSeparators();
 
-  // Remove existing items.
+  // Remove existing items
   for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
     contextMenu.removeChild(item);
   }
@@ -179,7 +179,8 @@ function showMenu(aEvent) {
 }
 
 function setSeparators(aContextMenu) {
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of separators.
+  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+  // separators.
   aContextMenu.appendChild($E('menuseparator', {id: kID.startSeparator}));
   aContextMenu.appendChild($E('menuseparator', {id: kID.endSeparator}));
 }
@@ -229,12 +230,17 @@ function formatURL(aURL, aData) {
 }
 
 
-// Imports.
+//********** Imports
 
-function getCommandOpenURLs(aURLsArray)
-  'ucjsUtil.openTabs(%URLs%,{inBackground:%background%,relatedToCurrent:true});'.
-  replace('%URLs%', aURLsArray.toSource()).
-  replace('%background%', (aURLsArray.length > 1) ? 'true' : 'event.button===1');
+function getCommandOpenURLs(aURLsArray) {
+  var URLs = aURLsArray.toSource();
+  var inBG = (aURLsArray.length > 1) ? 'true' : 'event.button===1';
+
+  var command = 'ucjsUtil.openTabs(' +
+    '%URLs%,{inBackground:%inBG%,relatedToCurrent:true});';
+
+  return command.replace('%URLs%', URLs).replace('%inBG%', inBG);
+}
 
 function getURLBarContextMenu()
   ucjsUI.URLBar.contextMenu;
@@ -249,7 +255,7 @@ function log(aMsg)
   ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
 
 
-// Entry point.
+//********** Entry point
 
 PageRelated_init();
 

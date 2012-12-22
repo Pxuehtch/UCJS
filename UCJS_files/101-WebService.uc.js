@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage Access to functions through global functions (ucjsWebService.XXX).
+// @usage Access to functions through the global scope, |ucjsWebService.XXX|.
 
 
 var ucjsWebService = (function() {
@@ -14,21 +14,23 @@ var ucjsWebService = (function() {
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
  * Presets of service
  * @value {hash}
  *   type: {string}
- *     'get' - requests data
- *     'open' - opens tab
+ *     'get': requests data
+ *     'open': opens tab
  *   name: {string} preset name
  *   URL: {string} URL of the service
- *     alias %...% is available (e.g. %ESC% or %NoScheme|ESC%) @see kURLAlias
- *   form: {hash} [option, Only with type 'open']
+ *     alias %...% is available (e.g. %ESC% or %NoScheme|ESC%)
+ *     @see kURLAlias
+ *   form: {hash} [optional; only with type 'open']
  *     form: {XPath of <form>}
  *     input: {XPath of <input>}
- *   parse: {function} [option, Only with type 'get'] parses the response from HTTP request
+ *   parse: {function} [optional; only with type 'get'] parses the response
+ *   from HTTP request
  *     @param value {string} response text of request
  *     @param status {number} response status of request
  */
@@ -78,20 +80,24 @@ const kPresets = [
  * @note applied in this order
  */
 const kURLAlias = {
-  'NoScheme': function(aValue) aValue.replace(/^https?:\/\//, ''),
-  'NoParameter': function(aValue) aValue.replace(/[?#].*$/, ''),
-  'ESC': function(aValue) encodeURIComponent(aValue),
-  'RAW': function(aValue) aValue
+  'NoScheme':
+    function(aValue) aValue.replace(/^https?:\/\//, ''),
+  'NoParameter':
+    function(aValue) aValue.replace(/[?#].*$/, ''),
+  'ESC':
+    function(aValue) encodeURIComponent(aValue),
+  'RAW':
+    function(aValue) aValue
 };
 
 
-// Functions.
+//********** Functions
 
 /**
- * XMLHttpRequest handler.
+ * XMLHttpRequest handler
  */
 var mXHRHandler = (function() {
-  const kCooldownInterval = 1000;
+  const kCooldownTime = 1000;
 
   var lastRequestTime = Date.now();
 
@@ -103,7 +109,7 @@ var mXHRHandler = (function() {
         try {
           aFunc(xhr.responseText, xhr.status);
         } catch (e) {
-          // nothing.
+          // nothing
         } finally {
           xhr.onreadystatechange = null;
           xhr = null;
@@ -111,10 +117,13 @@ var mXHRHandler = (function() {
       }
     };
 
+    var cooldownTime = (Date.now() - lastRequestTime < kCooldownTime) ?
+      kCooldownTime : 0;
+
     setTimeout(function() {
       lastRequestTime = Date.now();
       xhr.send(null);
-    }, (Date.now() - lastRequestTime < kCooldownInterval) ? kCooldownInterval : 0);
+    }, kCooldownTime);
   }
 
   return {
@@ -126,8 +135,9 @@ var mXHRHandler = (function() {
  * @usage ucjsWebService.open(aOption);
  * @param aOption {hash}
  *   name: {string} preset name
- *   data: {string|number|[string|number]} [option] passed data
- *     when URL has multiple aliases, set replaced values in the order in Array[]
+ *   data: {string|number|[string|number]} [optional] the passed data
+ *     @note Set the replaced values in the order in Array[] when a URL has
+ *     multiple aliases.
  */
 function open(aOption) {
   var result = getResult(aOption, 'open');
@@ -145,8 +155,9 @@ function open(aOption) {
  * @usage ucjsWebService.get(aOption);
  * @param aOption {hash}
  *   name: {string} preset name
- *   data: {string|number|[string|number]} [option] passed data
- *     when URL has multiple aliases, set replaced values in the order in Array[]
+ *   data: {string|number|[string|number]} [optional] the passed data
+ *     @note Set the replaced values in the order in Array[] when a URL has
+ *     multiple aliases.
  *   callback: {function} method to get a response value
  *     @param response {string} response text of request
  */
@@ -168,7 +179,7 @@ function get(aOption) {
 
 function getResult(aOption, aType) {
   if (!aOption.name)
-    throw 'aOption.name is empty.';
+    throw 'aOption.name is empty';
 
   var result = null;
 
@@ -202,7 +213,7 @@ function evaluate(aOption, aPreset) {
 
 function buildURL(aURL, aData) {
   if (!aURL)
-    throw 'aURL is empty.';
+    throw 'aURL is empty';
   if (!aData)
     return aURL;
 
@@ -235,8 +246,10 @@ function inputAndSubmit(aForm, aData) {
 }
 
 function reSubmit(aData, aSubmit, aLess) {
-  const kAvoidInput = 'descendant::input[@type="password"]|descendant::textarea',
-        kTextInput = 'descendant::input[not(@disabled or @hidden or @readonly) and @type="text"]';
+  const kAvoidInput =
+    'descendant::input[@type="password"]|descendant::textarea';
+  const kTextInput =
+    'descendant::input[not(@disabled or @hidden or @readonly) and @type="text"]';
 
   var form = null, input = null;
   Array.some(content.document.forms, function(f) {
@@ -248,10 +261,13 @@ function reSubmit(aData, aSubmit, aLess) {
     }
     return false
   });
+
   if (!input || !input.value)
     return false;
 
-  input.value += (aLess ? ' -' : ' ') + '"' + aData.replace(/\s+/g, ' ').trim() + '"';
+  input.value +=
+    (aLess ? ' -' : ' ') + '"' + aData.replace(/\s+/g, ' ').trim() + '"';
+
   if (aSubmit) {
     form.submit();
   } else {
@@ -261,7 +277,7 @@ function reSubmit(aData, aSubmit, aLess) {
 }
 
 
-// Utilities.
+//********** Utilities
 
 function openTab(aURL)
   ucjsUtil.openTab(aURL, {inBackground: false});
@@ -276,13 +292,15 @@ function log(aMsg)
   ucjsUtil.logMessage('WebService.uc.js', aMsg);
 
 
-// Exports.
+//********** Exports
 
 return {
   open: open,
   get: get,
-  reSubmitLess: function(aData, aSubmit) reSubmit(aData, aSubmit, true),
-  reSubmitMore: function(aData, aSubmit) reSubmit(aData, aSubmit, false)
+  reSubmitLess:
+    function(aData, aSubmit) reSubmit(aData, aSubmit, true),
+  reSubmitMore:
+    function(aData, aSubmit) reSubmit(aData, aSubmit, false)
 };
 
 

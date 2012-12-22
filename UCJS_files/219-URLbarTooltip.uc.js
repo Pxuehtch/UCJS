@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        URLbarTooltip.uc.js
-// @description Show suggestion hints on tooltip of URL bar.
+// @description Show suggestion hints on a tooltip of the URL bar.
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage A tooltip panel will popup with 'ctrl + mousemove' on a URL bar.
+// @usage A tooltip panel will popup with 'ctrl + mousemove' on the URL bar.
 
 
 (function() {
@@ -71,7 +71,7 @@ function showPanel(aEvent) {
 function buildContent() {
   var panel = getPanel();
 
-  // Remove existing content.
+  // Remove existing content
   panel.firstChild && panel.removeChild(panel.firstChild);
 
   var box = $E('vbox');

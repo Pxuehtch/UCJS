@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name TextLink.uc.js
-// @description Detects the unlinked URL-like text
+// @description Detects the unlinked URL-like text.
 // @include main
 // ==/UserScript==
 
@@ -8,12 +8,12 @@
 
 /**
  * @usage When 'double-click' on a URL-like text, a new tab will open
- * in the detected URL
- * If 'Shift or Ctrl' has been pressed, the text is only selected
- * by the default behavior
+ * in the detected URL.
+ * @note If 'Shift or Ctrl' has been pressed, the text is only selected
+ * by the default behavior.
  */
 
-// @note cf. https://github.com/piroor/textlink
+// @see https://github.com/piroor/textlink
 
 
 (function() {
@@ -75,8 +75,10 @@ var mURLUtil = (function() {
    * @note if no match is found returns null
    */
   var match = (function() {
-    const absolute = '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[%URIC%]*',
-          relative = '\\.\\.?\\/[%URIC%]+';
+    const absolute =
+      '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[%URIC%]*';
+    const relative =
+      '\\.\\.?\\/[%URIC%]+';
     const re = RegExp(resolve(absolute + '|' + relative), 'ig');
 
     return function(aStr) normalize(aStr).match(re);
@@ -128,7 +130,7 @@ var mURLUtil = (function() {
 })();
 
 
-// Functions
+//********** Functions
 
 function TextLink_init() {
   addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
@@ -238,12 +240,13 @@ function initRange(aRange, aSourceRange) {
 }
 
 
-// Utilities
+//********** Utilities
 
 /**
- * hankaku / zenkaku converter
- * ASCII printable characters:
- * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+ * hankaku / zenkaku converter for ASCII printable characters
+ * 94 characters:
+ * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
+ * abcdefghijklmnopqrstuvwxyz{|}~
  * hankaku: 0x0021-0x007E
  * zenkaku: 0xFF01-0xFF5E
  * @note cf. http://taken.s101.xrea.com/blog/article.php?id=510
@@ -284,7 +287,7 @@ function isTextDocument(aDoc) {
 }
 
 
-// Imports
+//********** Imports
 
 function $X(aXPath, aNode)
   ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
@@ -299,7 +302,7 @@ function log(aMsg)
   ucjsUtil.logMessage('TextLink.uc.js', aMsg);
 
 
-// Entry point
+//********** Entry point
 
 TextLink_init();
 

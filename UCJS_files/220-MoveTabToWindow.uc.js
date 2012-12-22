@@ -14,11 +14,11 @@
 "use strict";
 
 
-// Preferences.
+//********** Preferences
 
 /**
  * Settings for UI
- * @note U() converts unicode characters into readable string in UI
+ * @note U() converts unicode characters into readable string in UI.
  */
 const kBundle = {
   menu: {
@@ -40,7 +40,7 @@ const kBundle = {
 };
 
 
-// Functions.
+//********** Functions
 
 function MoveTabToWindow_init() {
   buildMenu();
@@ -143,7 +143,7 @@ function getWindowsState(aTab) {
   while (enumerator.hasMoreElements()) {
     i++;
     let win = enumerator.getNext();
-    // Skip window which is closed, current, not browser, and popup.
+    // Skip window which is closed, current, not browser, and popup
     if (win.closed ||
         win === window ||
         win.document.documentElement.
@@ -186,13 +186,13 @@ function moveTabToOtherWindow(aTab, aWindow) {
   // Create a new tab in the other window.
   var newTab = otherTabBrowser.addTab('about:blank');
   var newBrowser = otherTabBrowser.getBrowserForTab(newTab);
-  // Stop the about:blank load.
+  // Stop the about:blank load
   newBrowser.stop();
-  // Make sure it has a docshell.
+  // Make sure it has a docshell
   newBrowser.docShell;
-  // Swap the our tab with a new one, and then close it.
+  // Swap the our tab with a new one, and then close it
   otherTabBrowser.swapBrowsersAndCloseOther(newTab, aTab);
-  // Select the moved tab.
+  // Select the moved tab
   otherTabBrowser.selectedTab = newTab;
 
   aWindow.focus();
@@ -213,7 +213,7 @@ function getWindowEnumerator() {
 }
 
 
-// Utilities.
+//********** Utilities
 
 function $ID(aId)
   document.getElementById(aId);
@@ -234,7 +234,7 @@ function $E(aTagOrNode, aAttribute) {
 }
 
 
-// Imports.
+//********** Imports
 
 function U(aText)
   ucjsUtil.convertForSystem(aText);
@@ -246,7 +246,7 @@ function log(aMsg)
   ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
 
 
-// Start.
+//********** Entry point
 
 MoveTabToWindow_init();
 

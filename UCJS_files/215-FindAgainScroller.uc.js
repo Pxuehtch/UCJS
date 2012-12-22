@@ -19,7 +19,7 @@
  */
 const kConfig = {
   // Skip a found result that a user can not see (e.g. a text in a popup menu
-  // that does not poped up)
+  // that does not popped up)
   // @note If a document has only invisible results, they will be selected.
   // @note WORKAROUND for Fx default behavior.
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801

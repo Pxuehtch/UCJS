@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        AllTabs.uc.js
-// @description Unifies alltabs-button and tabview-button
+// @description Unifies alltabs-button and tabview-button.
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
 // @require [optional] UI.uc.js
-// @usage Access to the tab view button in the tab bar
+// @usage Access to the tab view button in the tab bar.
 // @note Some default functions are modified. see @modified
 // @note cf. https://github.com/teramako/Pano/blob/master/chrome/content/pano-menu.sub.js
 
@@ -16,7 +16,7 @@
 "use strict";
 
 
-// Preferences
+//********** Preferences
 
 /**
  * String format for UI
@@ -24,7 +24,7 @@
  * @note Plural form of numbers is avalable;
  *   '%key{None;A key;%key keys}' ->
  *    key=0:'None', key=1:'A key', key=#(>=2):'# keys'
- * @see format()
+ * @see |format()|
  */
 const kFormat = {
   GROUPS_MENU: 'Groups',
@@ -62,7 +62,7 @@ const kID = {
 };
 
 
-// Helper objects
+//********** Helper objects
 
 /**
  * Wrapper of tabs
@@ -140,7 +140,7 @@ var mTabGroups = {
 };
 
 
-// Functions
+//********** Functions
 
 function AllTabs_init() {
   initCSS();
@@ -528,7 +528,7 @@ function format(aFormat, aAttribute) {
 }
 
 
-// Imports
+//********** Imports
 
 function U(aStr)
   ucjsUtil.convertForSystem(aStr);
@@ -543,7 +543,7 @@ function log(aMsg)
   ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
 
 
-// Entry point
+//********** Entry point
 
 AllTabs_init();
 
