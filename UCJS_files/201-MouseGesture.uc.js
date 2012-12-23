@@ -975,12 +975,21 @@ function GestureTracer() {
 //***** Utilities.
 
 function inGestureArea(aEvent) {
-  // Margin of cancelling a gesture.
-  // @value Pixels of the width of scrollbar.
-  const kMargin = 16;
+  // The margin of cancelling a gesture
+  // @value {integer} pixels > 0
+  // @note Including the width of a scrollbar.
+  const kMargin = 16; // the scrollbar width of my Fx
 
-  var {clientX: x, clientY: y} = aEvent;
-  var {width, height} = gBrowser.mPanelContainer.boxObject;
+  // get the coordinates of the event relative to the content area
+  // @note |aEvent.clientX/Y| returns the coordinate within the window or
+  // frame, so that we can not retrieve the client coordinates over frames.
+  var {screenX: x, screenY: y} = aEvent;
+  var {screenX: left, screenY: top, width, height} =
+    gBrowser.selectedBrowser.boxObject;
+
+  // convert the screen coordinates of a cursor to the client ones
+  x -= left;
+  y -= top;
 
   return kMargin < x && x < (width - kMargin) &&
          kMargin < y && y < (height - kMargin);
