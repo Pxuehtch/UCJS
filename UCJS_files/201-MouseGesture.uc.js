@@ -13,14 +13,13 @@
  *  *Normal mode: gestures or wheel rotations holding down the right mouse
  *   button.
  *  *Drag&Drop mode: gestures dragging a selected text or a link or an image.
- *  *Shift and Ctrl keys are supported.
+ *  *'Shift' key and 'Ctrl' key are supported.
  *
  * @note;
  *  *The gestures is only available within the inner frame of the content
  *   area. The default width of the frame is 16px. see inGestureArea()
  *  *The max number of signs(directions and wheel rotations) per gesture is 10.
  *   see GestureManager()
- *  *'Alt + RightClick' makes status reset in trouble.
  */
 
 
@@ -31,24 +30,24 @@
 
 
 /**
- * Gesture signs for kGestureSet.
+ * Gesture signs for kGestureSet
  */
 const kGestureSign = {
-  // Modifier keys.
+  // Modifier keys
   shift: 'S&', ctrl: 'C&',
-  // Directions.
+  // Directions
   left: 'L', right: 'R', up: 'U', down: 'D',
-  // Mouse wheel for the normal mode.
+  // Mouse wheel for the normal mode
   wheelUp: 'W+', wheelDown: 'W-',
-  // Target types for the D&D mode.
+  // Target types for the D&D mode
   text: 'TEXT#', link: 'LINK#', image: 'IMAGE#',
-  // Do action immediately without mouseup when gesture matches.
+  // Do action immediately without mouseup when gesture matches
   quickShot: '!'
 };
 
 
 /**
- * Gestures setting.
+ * Gestures setting
  * @key gestures {string[]} combination of kGestureSign
  * @key name {string}
  * @key command {function}
@@ -59,7 +58,7 @@ const kGestureSign = {
  * @key disabled {boolean} [optional]
  */
 const kGestureSet = [
-  //***** Navigations
+  //********** Navigations
   {
     gestures: ['L'],
     name: '戻る',
@@ -126,7 +125,7 @@ const kGestureSet = [
   },
 
 
-  //***** Tabs
+  //********** Tabs
   {
     gestures: ['DL'],
     name: 'タブを複製',
@@ -200,7 +199,7 @@ const kGestureSet = [
   },
 
 
-  //***** UI
+  //********** UI
   {
     gestures: ['RD'],
     name: '履歴を開閉',
@@ -233,7 +232,7 @@ const kGestureSet = [
   },
 
 
-  //***** D&D mode
+  //********** D&D mode
   {
     gestures: ['TEXT#L'],
     name: 'Weblio',
@@ -315,12 +314,12 @@ const kGestureSet = [
 ];
 
 
-//***** Handlers.
+//********** Handlers
 // TODO: Cancel the gesture when enters into a window(always on top) that is
 // overwrapped on the gesture area.
 
 /**
- * Main handler.
+ * Main handler
  */
 function MouseGesture() {
   const kState = {READY: 0, GESTURE: 1, DRAG: 2};
@@ -343,7 +342,7 @@ function MouseGesture() {
     addEvent([pc, 'contextmenu', onContextMenu, false]);
     addEvent([pc, 'click', onClick, false]);
 
-    // Use not 'dragenter' but 'dragover' to check the coordinate.
+    // @note Use not 'dragenter' but 'dragover' to check the coordinate.
     addEvent([pc, 'dragstart', onDragStart, false]);
     addEvent([pc, 'dragend', onDragEnd, false]);
     addEvent([pc, 'dragover', onDragOver, false]);
@@ -351,7 +350,7 @@ function MouseGesture() {
   }
 
 
-  //***** Events.
+  //********** Events
 
   function onMouseDown(aEvent) {
     var canStart = mMouse.update(aEvent);
@@ -444,7 +443,7 @@ function MouseGesture() {
       return;
 
     // cancel the gesture drag and the default drag works
-    // @note the default drag is also cancelled by pressing ESC
+    // @note The default drag is also cancelled by pressing ESC.
     var forceCancel = aEvent.shiftKey && aEvent.altKey;
     if (forceCancel) {
       cancelGesture();
@@ -481,7 +480,7 @@ function MouseGesture() {
   }
 
 
-  //***** Helpers.
+  //********** Helpers
 
   function startGesture(aEvent) {
     mState = kState.GESTURE;
@@ -518,8 +517,8 @@ function MouseGesture() {
 }
 
 /**
- * Observes the mouse events.
- * Manages to suppress the contextmenu popup and the click event.
+ * Observes the mouse events
+ * Manages to suppress the contextmenu popup and the click event
  * @return {hash}
  *   @member update {function}
  *
@@ -605,7 +604,7 @@ function MouseManager() {
         break;
       case 'click':
         if (button === 2) {
-          // force reset in trouble
+          // force to reset all states
           if (aEvent.altKey) {
             clear();
           }
@@ -628,20 +627,20 @@ function MouseManager() {
 }
 
 /**
- * Builds the mouse gestures and performs its command.
+ * Builds the mouse gestures and performs its command
  * @return {hash}
  *   @member clear {function}
  *   @member init {function}
  *   @member update {function}
  *   @member evaluate {function}
  *
- * TODO: show clearly to the user that a quickshot has fired.
+ * TODO: Show clearly to the user that a quickshot has fired.
  */
 function GestureManager() {
   /**
-   * Max length of the chain of a gesture.
-   * The chain consists of directions and wheel rotations.
+   * Max length of the chain of a gesture
    * @value {integer}
+   * @note The chain consists of directions and wheel rotations.
    */
   const kMaxChainLength = 10;
 
@@ -882,7 +881,7 @@ function GestureManager() {
     var str = toString();
 
     if (mError) {
-      // HACK: display the status after its values have been cleared
+      // HACK: Display the status after its values have been cleared.
       setTimeout(function(s) updateStatusbarText(s), 0, str);
     } else {
       updateStatusbarText(str);
@@ -919,15 +918,15 @@ function GestureManager() {
 }
 
 /**
- * Traces the coordinates of a mouse pointer.
+ * Traces the coordinates of a mouse pointer
  * @return {hash}
  *   @member clear {function}
  *   @member init {function}
  *   @member update {function}
  */
 function GestureTracer() {
-  // The minimum distance of movement for the gesture is detected.
-  // @value Pixels > 0
+  // The minimum distance of movement for the gesture is detected
+  // @value {integer} pixels > 0
   const kTolerance = 10;
 
   var mLastX, mLastY;
@@ -972,7 +971,7 @@ function GestureTracer() {
 }
 
 
-//***** Utilities.
+//********** Utilities
 
 function inGestureArea(aEvent) {
   // The margin of cancelling a gesture
@@ -1059,7 +1058,7 @@ function $(aId)
   document.getElementById(aId);
 
 
-//***** Imports.
+//********** Imports
 
 function enableContextMenu(aEnable) {
   ucjsUI.ContentArea.contextMenu.hidden = !aEnable;
@@ -1094,7 +1093,7 @@ function log(aMsg)
   ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
 
 
-//***** Entry point.
+//********** Entry point
 
 function MouseGesture_init() {
   MouseGesture();
