@@ -8,10 +8,16 @@
 // @usage Access to functions through the global scope, |ucjsWebService.XXX|.
 
 
-var ucjsWebService = (function() {
+var ucjsWebService = (function(window, undefined) {
 
 
 "use strict";
+
+
+/**
+ * Required objects
+ */
+const {ucjsUtil} = window;
 
 
 //********** Preferences
@@ -276,7 +282,7 @@ function reSubmit(aData, aSubmit, aLess) {
     'descendant::input[not(@disabled or @hidden or @readonly) and @type="text"]';
 
   var form = null, input = null;
-  Array.some(content.document.forms, function(f) {
+  Array.some(window.content.document.forms, function(f) {
     var inputs = !$X1(kAvoidInput, f) && $XA(kTextInput, f);
     if (inputs && inputs.length === 1) {
       form = f;
@@ -328,4 +334,4 @@ return {
 };
 
 
-})();
+})(this);

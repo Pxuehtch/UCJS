@@ -8,10 +8,16 @@
 // @usage Access to items in the URLbar context menu.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
+
+
+/**
+ * Required objects
+ */
+const {ucjsUtil, ucjsUI} = window;
 
 
 //********** Preferences
@@ -324,4 +330,4 @@ function log(aMsg)
 PageRelated_init();
 
 
-})();
+})(this);

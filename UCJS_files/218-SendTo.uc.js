@@ -5,13 +5,20 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
+// @require [for preset] WebService.uc.js
 // @usage Access to items in the main context menu.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
+
+
+/**
+ * Required objects
+ */
+const {ucjsUtil, ucjsUI, ucjsWebService} = window;
 
 
 //********** Preferences
@@ -331,4 +338,4 @@ function SendTo_init() {
 SendTo_init();
 
 
-})();
+})(this);
