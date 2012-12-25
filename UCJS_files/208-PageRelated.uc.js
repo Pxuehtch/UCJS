@@ -261,11 +261,20 @@ function getAvailableItems() {
   return items;
 }
 
-function setSeparators(aContextMenu) {
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
-  // separators.
-  aContextMenu.appendChild($E('menuseparator', {id: kID.startSeparator}));
-  aContextMenu.appendChild($E('menuseparator', {id: kID.endSeparator}));
+// @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+// separators.
+function setSeparators(aContextMenu, aReferenceNode) {
+  if (aReferenceNode === undefined) {
+    aReferenceNode = null;
+  }
+
+  [
+    $E('menuseparator', {id: kID.startSeparator}),
+    $E('menuseparator', {id: kID.endSeparator})
+  ].
+  forEach(function(separator) {
+    aContextMenu.insertBefore(separator, aReferenceNode);
+  });
 }
 
 function getSeparators() {
