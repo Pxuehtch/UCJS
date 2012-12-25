@@ -90,9 +90,7 @@ const kPreset = [
     URL: 'https://docs.google.com/viewer?url=%ENC%',
     types: ['LINK'],
     // @see https://docs.google.com/support/bin/answer.py?answer=1189935
-    extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages',
-      'ai', 'psd', 'tif', 'tiff', 'dxf', 'svg', 'eps', 'ps', 'ttf', 'xps',
-      'zip', 'rar'],
+    extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf'],
     label: '%TYPE%を Google Docs Viewer で表示'
   },
   {
