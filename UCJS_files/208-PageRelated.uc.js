@@ -278,10 +278,11 @@ function setSeparators(aContextMenu, aReferenceNode) {
 }
 
 function getSeparators() {
-  function $ID(id) document.getElementById(id);
-
   return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
 }
+
+function $ID(aID)
+  document.getElementById(aID);
 
 function $E(aTag, aAttribute) {
   var node = document.createElement(aTag);
