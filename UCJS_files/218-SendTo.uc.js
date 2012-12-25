@@ -31,7 +31,8 @@ const {ucjsUtil, ucjsUI, ucjsWebService} = window;
  * @key URL {function} for the custom formattings
  *   @param aData {string} the raw data
  * @key types {array of 'PAGE'|'LINK'|'IMAGE'|'TEXT'}
- * @key label {string}
+ * @key label {string} a display name for menuitem
+ *   %TYPE% is replaced into |kString.types|
  * @key extensions {string[]} [option]
  * @key command {function(aOption)} [option]
  *   @param aOption {hash}
@@ -43,7 +44,7 @@ const kPreset = [
     // @require WebService.uc.js
     disabled: !ucjsWebService,
     types: ['PAGE'],
-    label: 'の はてなブックマーク (-)',
+    label: '%TYPE%の はてなブックマーク (-)',
 
     URL: function(aData) {
       var entryURL = 'http://b.hatena.ne.jp/entry/';
@@ -83,7 +84,7 @@ const kPreset = [
     // @note (SSL)https://www.aguse.jp/ has a problem with CSS.
     URL: 'http://www.aguse.jp/?m=w&url=%ENC%',
     types: ['LINK'],
-    label: 'を aguse で調査'
+    label: '%TYPE%を aguse で調査'
   },
   {
     URL: 'https://docs.google.com/viewer?url=%ENC%',
@@ -92,23 +93,23 @@ const kPreset = [
     extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages',
       'ai', 'psd', 'tif', 'tiff', 'dxf', 'svg', 'eps', 'ps', 'ttf', 'xps',
       'zip', 'rar'],
-    label: 'を Google Docs Viewer で表示'
+    label: '%TYPE%を Google Docs Viewer で表示'
   },
   {
     URL: 'https://www.google.com/searchbyimage?image_url=%ENC%',
     types: ['IMAGE'],
-    label: 'を Google Image で検索'
+    label: '%TYPE%を Google Image で検索'
   },
   {
     URL: 'https://www.pixlr.com/editor/?image=%ENC%',
     types: ['LINK', 'IMAGE'],
     extensions: ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'pxd'],
-    label: 'を Pixlr Editor で編集'
+    label: '%TYPE%を Pixlr Editor で編集'
   },
   {
     URL: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%ENC%',
     types: ['TEXT'],
-    label: 'を Yahoo!辞書 で引く'
+    label: '%TYPE%を Yahoo!辞書 で引く'
   }
 ];
 
@@ -257,7 +258,8 @@ function getAvailableItems() {
 function makeItem(aType, aData, aService) {
   var item = $E('menuitem');
 
-  var label = kString.types[aType] + aService.label;
+  var label = aService.label.replace('%TYPE%', kString.types[aType]);
+
   item.setAttribute('label', U(label));
 
   var URL =
