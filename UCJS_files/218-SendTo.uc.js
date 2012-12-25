@@ -19,12 +19,10 @@
 /**
  * List of user preset
  * @key disabled {boolean} [option]
- * @key URL
- *   {URL string}
- *     alias %...% is available. (e.g. %ESC% or %NoScheme|ESC%)
- *     @see kURLAlias
- *   {function(aData)}
- *     @param aData {string}
+ * @key URL {string} a URL that opens
+ *   pass the data by alias. see |AliasFixup|
+ * @key URL {function} for the custom formattings
+ *   @param aData {string} the raw data
  * @key types {array of 'PAGE'|'LINK'|'IMAGE'|'TEXT'}
  * @key label {string}
  * @key extensions {string[]} [option]
@@ -45,7 +43,7 @@ const kServices = [
       if (/^https:/.test(aData)) {
         entryURL += 's/';
       }
-      return entryURL + '%NoScheme%';
+      return entryURL + '%SCHEMELESS%';
     },
 
     command: function(aOption) {
@@ -76,12 +74,12 @@ const kServices = [
   },
   {
     // @note (SSL)https://www.aguse.jp/ has a problem with CSS.
-    URL: 'http://www.aguse.jp/?m=w&url=%ESC%',
+    URL: 'http://www.aguse.jp/?m=w&url=%ENC%',
     types: ['LINK'],
     label: 'を aguse で調査'
   },
   {
-    URL: 'https://docs.google.com/viewer?url=%ESC%',
+    URL: 'https://docs.google.com/viewer?url=%ENC%',
     types: ['LINK'],
     // @see https://docs.google.com/support/bin/answer.py?answer=1189935
     extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages',
@@ -90,33 +88,72 @@ const kServices = [
     label: 'を Google Docs Viewer で表示'
   },
   {
-    URL: 'https://www.google.com/searchbyimage?image_url=%ESC%',
+    URL: 'https://www.google.com/searchbyimage?image_url=%ENC%',
     types: ['IMAGE'],
     label: 'を Google Image で検索'
   },
   {
-    URL: 'https://www.pixlr.com/editor/?image=%ESC%',
+    URL: 'https://www.pixlr.com/editor/?image=%ENC%',
     types: ['LINK', 'IMAGE'],
     extensions: ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'pxd'],
     label: 'を Pixlr Editor で編集'
   },
   {
-    URL: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%ESC%',
+    URL: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%ENC%',
     types: ['TEXT'],
     label: 'を Yahoo!辞書 で引く'
   }
 ];
 
 /**
- * Alias for URL of kServices
- * @note Applied in this order.
+ * Handler of fixing up a alias with the data
+ * @return {hash}
+ *   @member create {function} creates a text that fixed up
+ *
+ * [Aliases]
+ * %RAW% : data itself
+ * %ENC% : with URI encoded
+ * %SCHEMELESS%, sl : without the URL scheme
+ * %PARAMLESS%, pl : without the URL parameter
+ *
+ * The aliases can be combined by '|'
+ * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
+ * encoded. (the multiple aliases is applied in the order of settings)
  */
-const kURLAlias = {
-  'NoScheme': function(aValue) aValue.replace(/^https?:\/\//, ''),
-  'NoParameter': function(aValue) aValue.replace(/[?#].*$/, ''),
-  'ESC': function(aValue) encodeURIComponent(aValue),
-  'RAW': function(aValue) aValue
-};
+var AliasFixup = (function() {
+  const kAliasSplitter = '|';
+  const kAliasPattern = RegExp('%([a-z_' + kAliasSplitter + ']+)%', 'ig');
+
+  function create(aText, aData) {
+    return aText.replace(kAliasPattern, function(match, alias) {
+      let rv = aData;
+      alias.split(kAliasSplitter).forEach(function(modifier) {
+        rv = fixupModifier(rv, modifier);
+      });
+      return rv;
+    });
+  }
+
+  function fixupModifier(aData, aModifier) {
+    switch (aModifier) {
+      case 'SCHEMELESS':
+      case 'sl':
+        return aData.replace(/^https?:\/\//, '');
+      case 'PARAMLESS':
+      case 'pl':
+        return aData.replace(/[?#].*$/, '');
+      case 'ENC':
+        return encodeURIComponent(aData);
+      case 'RAW':
+        return aData;
+    }
+    return '';
+  }
+
+  return {
+    create: create
+  };
+})();
 
 const kString = {
   types: {
@@ -214,18 +251,11 @@ function makeItem(aType, aData, aService) {
   var label = kString.types[aType] + aService.label;
   item.setAttribute('label', U(label));
 
-  var URL = (typeof aService.URL === 'function') ?
-    aService.URL(aData) : aService.URL;
-  URL = URL.replace(/%([\w|]+)%/, function($0, $1) {
-    var data = aData;
-    var aliases = $1.split('|');
-    for (let alias in kURLAlias) {
-      if (aliases.indexOf(alias) > -1) {
-        data = kURLAlias[alias](data);
-      }
-    }
-    return data;
-  });
+  var URL =
+  AliasFixup.create(
+    (typeof aService.URL === 'function') ? aService.URL(aData) : aService.URL,
+    aData
+  );
 
   var tooltip = kString.tooltip.replace('%URL%', URL).replace('%DATA%', aData);
   item.setAttribute('tooltiptext', tooltip);

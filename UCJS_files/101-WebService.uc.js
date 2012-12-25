@@ -24,8 +24,7 @@ var ucjsWebService = (function() {
  *     'open': opens tab
  *   name: {string} preset name
  *   URL: {string} URL of the service
- *     alias %...% is available (e.g. %ESC% or %NoScheme|ESC%)
- *     @see kURLAlias
+ *     pass the data by alias. see |AliasFixup|
  *   form: {hash} [optional; only with type 'open']
  *     form: {XPath of <form>}
  *     input: {XPath of <input>}
@@ -39,7 +38,7 @@ const kPresets = [
     type: 'get',
     name: 'HatenaBookmarkCount',
     // @see http://developer.hatena.ne.jp/ja/documents/bookmark/apis/getcount
-    URL: 'http://api.b.st-hatena.com/entry.count?url=%ESC%',
+    URL: 'http://api.b.st-hatena.com/entry.count?url=%ENC%',
     parse: function(value, status) {
       if (status === 200) {
         return value || 0;
@@ -50,22 +49,22 @@ const kPresets = [
   {
     type: 'open',
     name: 'GoogleSearch',
-    URL: 'https://www.google.co.jp/search?q=%ESC%'
+    URL: 'https://www.google.co.jp/search?q=%ENC%'
   },
   {
     type: 'open',
     name: 'GoogleTranslation',
-    URL: 'http://translate.google.co.jp/#auto|ja|%ESC%'
+    URL: 'http://translate.google.co.jp/#auto|ja|%ENC%'
   },
   {
     type: 'open',
     name: 'Eijiro',
-    URL: 'http://eow.alc.co.jp/%ESC%/UTF-8/'
+    URL: 'http://eow.alc.co.jp/%ENC%/UTF-8/'
   },
   {
     type: 'open',
     name: 'Weblio',
-    URL: 'http://ejje.weblio.jp/content/%ESC%'
+    URL: 'http://ejje.weblio.jp/content/%ENC%'
   },
   {
     type: 'open',
@@ -76,19 +75,60 @@ const kPresets = [
 ];
 
 /**
- * Alias for URL of kPresets
- * @note applied in this order
+ * Handler of fixing up a alias with the data
+ * @return {hash}
+ *   @member create {function} creates a text that fixed up
+ *
+ * [Aliases]
+ * %RAW% : data itself
+ * %ENC% : with URI encoded
+ * %SCHEMELESS%, sl : without the URL scheme
+ * %PARAMLESS%, pl : without the URL parameter
+ *
+ * The aliases can be combined by '|'
+ * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
+ * encoded. (the multiple aliases is applied in the order of settings)
  */
-const kURLAlias = {
-  'NoScheme':
-    function(aValue) aValue.replace(/^https?:\/\//, ''),
-  'NoParameter':
-    function(aValue) aValue.replace(/[?#].*$/, ''),
-  'ESC':
-    function(aValue) encodeURIComponent(aValue),
-  'RAW':
-    function(aValue) aValue
-};
+var AliasFixup = (function() {
+  const kAliasSplitter = '|';
+  const kAliasPattern = RegExp('%([a-z_' + kAliasSplitter + ']+)%', 'ig');
+
+  function create(aText, aData) {
+    let data = !Array.isArray(aData) ? [aData] : aData.concat();
+
+    return aText.replace(kAliasPattern, function(match, alias) {
+      if (!data.length) {
+        return match;
+      }
+
+      let rv = String(data.shift());
+      alias.split(kAliasSplitter).forEach(function(modifier) {
+        rv = fixupModifier(rv, modifier);
+      });
+      return rv;
+    });
+  }
+
+  function fixupModifier(aData, aModifier) {
+    switch (aModifier) {
+      case 'SCHEMELESS':
+      case 'sl':
+        return aData.replace(/^https?:\/\//, '');
+      case 'PARAMLESS':
+      case 'pl':
+        return aData.replace(/[?#].*$/, '');
+      case 'ENC':
+        return encodeURIComponent(aData);
+      case 'RAW':
+        return aData;
+    }
+    return '';
+  }
+
+  return {
+    create: create
+  };
+})();
 
 
 //********** Functions
@@ -217,23 +257,7 @@ function buildURL(aURL, aData) {
   if (!aData)
     return aURL;
 
-  var data = !Array.isArray(aData) ? [aData] : aData.concat();
-
-  return aURL.replace(/%([\w|]+)%/g, function($0, $1) {
-    if (!data.length)
-      return $0;
-
-    var value = data.shift() + '';
-    var aliases = $1.split('|');
-
-    for (let alias in kURLAlias) {
-      if (aliases.indexOf(alias) > -1) {
-        value = kURLAlias[alias](value);
-      }
-    }
-
-    return value;
-  });
+  return AliasFixup.create(aURL, aData);
 }
 
 function inputAndSubmit(aForm, aData) {

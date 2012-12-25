@@ -23,80 +23,139 @@
  * @value {hash[]}
  *   @key disabled {boolean} [option]
  *   @key name {string} display name for menuitem
- *   @key URL {function}
+ *   @key URL {string} a URL that opens
+ *     pass the page information by alias. see |AliasFixup|
+ *   @key URL {function} for the custom formattings
  *     @param aPage {hash}
  *       @key URL {string} a page URL
- *         alias %...% is available (e.g. %ESC% or %NoScheme|ESC%) @see kURLAlias
  *       @key title {string} a page title
  */
 const kSiteInfo = {
   'Translator': [
     {
-      name: 'Google 翻訳 EN>JP',
-      URL: function(aPage)
-        formatURL('http://translate.google.com/translate?hl=ja&sl=en&u=%RAW%', aPage.URL)
+      name: 'Google 翻訳 > JP',
+      URL: 'http://translate.google.com/translate?sl=auto&tl=ja&u=%u%'
     }
   ],
 
   'Archive': [
     {
-      name: 'Internet Archive',
-      URL: function(aPage)
-        formatURL('http://web.archive.org/*/%RAW%', aPage.URL)
+      name: 'Google cache:',
+      URL: 'https://www.google.co.jp/search?q=cache:%u|sl%'
     },
     {
-      name: 'Google cache:',
-      URL: function(aPage)
-        formatURL('https://www.google.co.jp/search?q=cache:%NoScheme%', aPage.URL)
+      name: 'Internet Archive',
+      URL: 'http://web.archive.org/*/%u%'
     },
     {
       name: 'WEB 魚拓',
-      URL: function(aPage)
-        formatURL('https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%NoScheme%', aPage.URL)
+      URL: 'https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%u|sl%'
     }
   ],
 
   'Bookmark': [
     {
       name: 'はてなブックマーク',
-      URL: function(aPage) {
+      URL: function(aPageInfo) {
         var entryURL = 'http://b.hatena.ne.jp/entry/';
-        if (/^https:/.test(aPage.URL)) {
+        if (/^https:/.test(aPageInfo.URL)) {
           entryURL += 's/';
         }
-        return formatURL(entryURL + '%NoScheme%', aPage.URL);
+        return entryURL + '%u|sl%';
       }
     },
     {
       name: 'reddit',
-      URL: function(aPage)
-        formatURL('http://www.reddit.com/submit?url=%ESC%', aPage.URL)
+      URL: 'http://www.reddit.com/submit?url=%u|en%'
     }
   ],
 
   'Related': [
     {
-      name: 'Yahoo! link:',
-      URL: function(aPage)
-        formatURL('http://search.yahoo.co.jp/search?p=link:%RAW%', aPage.URL)
+      name: 'Google link:',
+      URL: 'https://www.google.co.jp/search?q=link:%u|sl%'
     },
     {
-      name: 'Google タイトル',
-      URL: function(aPage)
-        formatURL('https://www.google.co.jp/search?q="%RAW%"', aPage.title)
+      name: 'Google with Page Title',
+      URL: 'https://www.google.co.jp/search?q="%t%"'
+    },
+    {
+      name: 'Yahoo! link:',
+      URL: 'http://search.yahoo.co.jp/search?p=link:%u%'
+    },
+    {
+      name: 'Yahoo! with Page Title',
+      URL: 'http://search.yahoo.co.jp/search?p="%t|en%"'
     }
   ]
 };
 
 /**
- * Alias for URL of kServices
- * @note applied in this order.
+ * Handler of fixing up a alias with the page information
+ * @return {hash}
+ *   @member create {function} creates a text that fixed up
+ *
+ * [Aliases]
+ * %URL%, %u% : a page URL
+ * %TITLE%, %t% : a page title
+ *
+ * The modifiers can be combined by '|'
+ * SCHEMELESS, sl : without the URL scheme
+ * PARAMLESS, pl : without the URL parameter
+ * ENCODE, en : with URI encoded
+ *
+ * e.g.
+ * %URL|ENCODE%, %u|en% : a page URL with URI encoded
+ * %URL|SCHEMELESS|ENCODE%, %u|sl|en% : a page URL that is trimmed the scheme
+ * and then URI encoded (the multiple modifiers is applied in the order of
+ * settings)
  */
-const kURLAlias = {
-  'NoScheme': function(aValue) aValue.replace(/^https?:\/\//, ''),
-  'ESC': function(aValue) encodeURIComponent(aValue),
-  'RAW': function(aValue) aValue
-};
+var AliasFixup = (function() {
+  const kAliasSplitter = '|';
+  const kAliasPattern = RegExp('%([a-z_' + kAliasSplitter + ']+)%', 'ig');
+
+  function create(aText, aPageInfo) {
+    return aText.replace(kAliasPattern, function(match, alias) {
+      let keys = alias.split(kAliasSplitter);
+      let rv = fixupTarget(keys.shift(), aPageInfo);
+      keys.forEach(function(modifier) {
+        rv = fixupModifier(rv, modifier);
+      });
+      return rv;
+    });
+  }
+
+  function fixupTarget(aTarget, aPageInfo) {
+    switch (aTarget) {
+      case 'URL':
+      case 'u':
+        return aPageInfo.URL;
+      case 'TITLE':
+      case 't':
+        return aPageInfo.title;
+    }
+    return '';
+  }
+
+  function fixupModifier(aText, aModifier) {
+    switch (aModifier) {
+      case 'SCHEMELESS':
+      case 'sl':
+        return aText.replace(/^https?:\/\//, '');
+      case 'PARAMLESS':
+      case 'pl':
+        return aText.replace(/[?#].*$/, '');
+      case 'ENCODE':
+      case 'en':
+        return encodeURIComponent(aText);
+    }
+    return '';
+  }
+
+  return {
+    create: create
+  };
+})();
 
 const kString = {
   warnParameter: '注意：パラメータ付 URL',
@@ -162,7 +221,12 @@ function showMenu(aEvent) {
       if (info.disabled)
         return;
 
-      var URL = info.URL(page);
+      let URL =
+      AliasFixup.create(
+        (typeof data.URL === 'function') ? data.URL(pageInfo) : data.URL,
+        pageInfo
+      );
+
       URLs.push(URL);
 
       popup.appendChild($E('menuitem', {label: info.name, open: [URL], tooltiptext: URL}));
