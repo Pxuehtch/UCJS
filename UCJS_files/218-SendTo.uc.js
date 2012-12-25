@@ -182,14 +182,8 @@ const kID = {
 
 function initMenu() {
   var contextMenu = getContextMenu();
-  var refItem = contextMenu.firstChild;
 
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
-  // separators.
-  contextMenu.insertBefore($E('menuseparator'), refItem).id =
-    kID.startSeparator;
-  contextMenu.insertBefore($E('menuseparator'), refItem).id =
-    kID.endSeparator;
+  setSeparators(contextMenu, contextMenu.firstChild);
 
   addEvent([contextMenu, 'popupshowing', showContextMenu, false]);
 }
@@ -200,7 +194,7 @@ function showContextMenu(aEvent) {
     return;
   }
 
-  var sSep = $ID(kID.startSeparator), eSep = $ID(kID.endSeparator);
+  var [sSep, eSep] = getSeparators();
 
   for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
     contextMenu.removeChild(item);
@@ -296,6 +290,26 @@ function testExtension(aExtensions, aURL) {
 
 
 //********** Utilities
+
+// @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+// separators.
+function setSeparators(aContextMenu, aReferenceNode) {
+  if (aReferenceNode === undefined) {
+    aReferenceNode = null;
+  }
+
+  [
+    $E('menuseparator', {id: kID.startSeparator}),
+    $E('menuseparator', {id: kID.endSeparator})
+  ].
+  forEach(function(separator) {
+    aContextMenu.insertBefore(separator, aReferenceNode);
+  });
+}
+
+function getSeparators() {
+  return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
+}
 
 function $ID(aID)
   document.getElementById(aID);
