@@ -205,18 +205,26 @@ function showContextMenu(aEvent) {
     return;
   }
 
+  getAvailableItems().forEach(function(item) {
+    contextMenu.insertBefore(item, eSep);
+  });
+}
+
+function getAvailableItems() {
+  var items = [];
+
   var pageInfo = {
     title: gBrowser.contentTitle,
     URL: gBrowser.currentURI.spec
   };
 
   if (/[?#].*$/.test(pageInfo.URL)) {
-    contextMenu.insertBefore($E('menuitem', {
+    items.push($E('menuitem', {
       label: kString.warnParameter,
       style: 'font-weight:bold;',
       tooltiptext: pageInfo.URL.replace(/[?#]/, '\n$&'),
       disabled: true
-    }), eSep);
+    }));
   }
 
   for (let category in kPreset) {
@@ -247,8 +255,10 @@ function showContextMenu(aEvent) {
     }
 
     menu.appendChild(popup);
-    contextMenu.insertBefore(menu, eSep);
+    items.push(menu);
   }
+
+  return items;
 }
 
 function setSeparators(aContextMenu) {
