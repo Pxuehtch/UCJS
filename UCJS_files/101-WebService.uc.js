@@ -19,25 +19,22 @@ var ucjsWebService = (function(window, undefined) {
  */
 const {ucjsUtil} = window;
 
-
-//********** Preferences
-
 /**
- * Presets of service
- * @value {hash}
+ * Preset list
+ * @value {hash[]}
  *   type: {string}
  *     'get': requests data
  *     'open': opens tab
- *   name: {string} preset name
- *   URL: {string} URL of the service
+ *   name: {string} a preset name
+ *   URL: {string} URL that opens
  *     pass the data by alias. see |AliasFixup|
  *   form: {hash} [optional; only with type 'open']
  *     form: {XPath of <form>}
  *     input: {XPath of <input>}
  *   parse: {function} [optional; only with type 'get'] parses the response
  *   from HTTP request
- *     @param aValue {string} response text of request
- *     @param aStatus {number} response status of request
+ *     @param aValue {string} a response text of request
+ *     @param aStatus {number} a response status of request
  */
 const kPresets = [
   {
@@ -136,9 +133,6 @@ var AliasFixup = (function() {
   };
 })();
 
-
-//********** Functions
-
 /**
  * XMLHttpRequest handler
  */
@@ -157,7 +151,7 @@ var mRequestHandler = (function() {
         try {
           aFunc(xhr.responseText, xhr.status);
         } catch (ex) {
-          // nothing
+          // do nothing
         } finally {
           xhr.onreadystatechange = null;
           xhr = null;
@@ -179,10 +173,13 @@ var mRequestHandler = (function() {
   };
 })();
 
+
+//********** Functions
+
 /**
  * @usage ucjsWebService.open(aOption);
  * @param aOption {hash}
- *   name: {string} preset name
+ *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
  *     @note Set the replaced values in the order in Array[] when a URL has
  *     multiple aliases.
@@ -203,12 +200,12 @@ function open(aOption) {
 /**
  * @usage ucjsWebService.get(aOption);
  * @param aOption {hash}
- *   name: {string} preset name
+ *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
  *     @note Set the replaced values in the order in Array[] when a URL has
  *     multiple aliases.
- *   callback: {function} method to get a response value
- *     @param response {string} response text of request
+ *   callback: {function} a method to get a response value
+ *     @param response {string} a response text of request
  */
 function get(aOption) {
   var result = getResult(aOption, 'get');
@@ -248,9 +245,12 @@ function getResult(aOption, aType) {
 function evaluate(aOption, aPreset) {
   var result = {};
 
+  // copy the preset
   for (let key in aPreset) {
     result[key] = aPreset[key];
   }
+
+  // add or overwrite the option
   for (let key in aOption) {
     if (!(key in result)) {
       result[key] = aOption[key];
@@ -315,7 +315,7 @@ function reSubmit(aData, aSubmit, aLess) {
 }
 
 
-//********** Utilities
+//********** Imports
 
 function openTab(aURL)
   ucjsUtil.openTab(aURL, {inBackground: false});
