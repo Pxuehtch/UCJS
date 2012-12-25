@@ -325,7 +325,7 @@ function formatURL(aURL, aData) {
 //********** Imports
 
 function commandForOpenURLs(aURLsArray) {
-  var URLs = aURLsArray.toSource();
+  var URLs = JSON.stringify(aURLsArray);
   var inBG = (aURLsArray.length > 1) ? 'true' : 'event.button===1';
 
   var command = 'ucjsUtil.openTabs(' +
