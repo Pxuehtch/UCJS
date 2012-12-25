@@ -143,7 +143,9 @@ var AliasFixup = (function() {
  * XMLHttpRequest handler
  */
 var mRequestHandler = (function() {
-  const kCooldownTime = 1000;
+  // The minimum time for waiting a request
+  // @value {integer} milliseconds > 0
+  const kMinCooldownTime = 2000;
 
   var lastRequestTime = Date.now();
 
@@ -163,8 +165,8 @@ var mRequestHandler = (function() {
       }
     };
 
-    var cooldownTime = (Date.now() - lastRequestTime < kCooldownTime) ?
-      kCooldownTime : 0;
+    var remainTime = kMinCooldownTime - (Date.now() - lastRequestTime);
+    var cooldownTime = Math.max(remainTime, 0)
 
     setTimeout(function() {
       lastRequestTime = Date.now();
