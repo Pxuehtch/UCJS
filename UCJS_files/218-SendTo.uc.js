@@ -20,9 +20,6 @@
  */
 const {ucjsUtil, ucjsUI, ucjsWebService} = window;
 
-
-//********** Preferences
-
 /**
  * Identifiers
  */
@@ -35,6 +32,10 @@ const kID = {
  * UI strings
  */
 const kString = {
+  /**
+   * for the label text of a menuitem
+   * @note Keep in sync with |kPreset[item].types|.
+   */
   types: {
     'PAGE': 'ページ',
     'LINK': 'リンク',
@@ -42,24 +43,38 @@ const kString = {
     'TEXT': 'テキスト'
   },
 
+  /**
+   * the tooltip text of a menuitem
+   * %DATA% : the passed data
+   * %URL% : the opened URL
+   */
   tooltip: '%DATA%\n\n%URL%'
 };
 
 /**
- * List of user preset
- * @key disabled {boolean} [option]
- * @key URL {string} a URL that opens
- *   pass the data by alias. see |AliasFixup|
- * @key URL {function} for the custom formattings
- *   @param aData {string} the raw data
- * @key types {array of 'PAGE'|'LINK'|'IMAGE'|'TEXT'}
- * @key label {string} a display name for menuitem
- *   %TYPE% is replaced into |kString.types|
- * @key extensions {string[]} [option]
- * @key command {function(aOption)} [option]
- *   @param aOption {hash}
- *     @key menuitem {element}
- *     @key data {string}
+ * Preset list
+ * @value {hash[]}
+ *   @key label {string} a display name for menuitem
+ *     %TYPE% is replaced into |kString.types|
+ *   @key types {string[]}
+ *     the passed data and case of showing the menuitem
+ *     'PAGE': the page URL not on the following cases
+ *     'LINK': the link URL on a link
+ *     'IMAGE': the image URL on an image
+ *     'TEXT': the selected text on a selection
+ *     @note Keep in sync with |kString.types|.
+ *   @key URL {string} a URL that opens
+ *     pass the data by alias. see |AliasFixup|
+ *   @key URL {function} for the custom formattings
+ *     @param aData {string} the raw data
+ *   @key extensions {string[]} [optional]
+ *     specify the file extensions for 'LINK' type
+ *   @key command {function} [optional] a command that is executed at showing
+ *   the menuitem
+ *     @param aOption {hash}
+ *       @key menuitem {Element}
+ *       @key data {string}
+ *   @key disabled {boolean} [optional]
  */
 const kPreset = [
   {
@@ -85,7 +100,7 @@ const kPreset = [
         }
       }
 
-      // do not request URL with parameters for security
+      // do not request a URL with parameters for security
       if (/[?#].*$/.test(aOption.data)) {
         updateLabel(U('注意：パラメータ付 URL'), aOption.menuitem);
         return;
@@ -103,7 +118,6 @@ const kPreset = [
     }
   },
   {
-    // @note (SSL)https://www.aguse.jp/ has a problem with CSS.
     URL: 'http://www.aguse.jp/?m=w&url=%ENC%',
     types: ['LINK'],
     label: '%TYPE%を aguse で調査'
@@ -202,6 +216,7 @@ function showContextMenu(aEvent) {
 
   var [sSep, eSep] = getSeparators();
 
+  // remove existing items
   for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
     contextMenu.removeChild(item);
   }
@@ -293,9 +308,6 @@ function testExtension(aExtensions, aURL) {
   // Examines file2.ext, and then file1.ext
   return targets.some(function(el) aExtensions.indexOf(el) > -1);
 }
-
-
-//********** Utilities
 
 // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
 // separators.
