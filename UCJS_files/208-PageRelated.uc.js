@@ -308,19 +308,6 @@ function $E(aTag, aAttribute) {
   return node;
 }
 
-function formatURL(aURL, aData) {
-  return aURL.replace(/%([\w|]+)%/, function($0, $1) {
-    var data = aData;
-    var aliases = $1.split('|');
-    for (let alias in kURLAlias) {
-      if (aliases.indexOf(alias) > -1) {
-        data = kURLAlias[alias](data);
-      }
-    }
-    return data;
-  });
-}
-
 
 //********** Imports
 
