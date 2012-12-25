@@ -304,7 +304,7 @@ function reSubmit(aData, aSubmit, aLess) {
   }
 
   textInput.value +=
-    (aLess ? ' -' : ' ') + '"' + aData.replace(/\s+/g, ' ').trim() + '"';
+    (aLess ? ' -' : ' ') + '"' + aData.trim().replace(/\s+/g, ' ') + '"';
 
   if (aSubmit) {
     textForm.submit();
