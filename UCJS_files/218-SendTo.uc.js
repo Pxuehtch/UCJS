@@ -254,22 +254,22 @@ function getAvailableItems() {
 }
 
 function makeItem(aType, aData, aService) {
-  var item = $E('menuitem');
-
-  var label = aService.label.replace('%TYPE%', kString.types[aType]);
-
-  item.setAttribute('label', U(label));
-
   var URL =
   AliasFixup.create(
     (typeof aService.URL === 'function') ? aService.URL(aData) : aService.URL,
     aData
   );
 
-  var tooltip = kString.tooltip.replace('%URL%', URL).replace('%DATA%', aData);
-  item.setAttribute('tooltiptext', tooltip);
-
-  setEvent(URL, item)
+  var item = $E('menuitem', {
+    label:
+      aService.label.
+      replace('%TYPE%', kString.types[aType]),
+    tooltiptext:
+      kString.tooltip.
+      replace('%URL%', URL).
+      replace('%DATA%', aData),
+    open: URL
+  });
 
   if (aService.command) {
     aService.command({menuitem: item, data: aData});
@@ -300,8 +300,30 @@ function testExtension(aExtensions, aURL) {
 function $ID(aID)
   document.getElementById(aID);
 
-function $E(aTag)
-  document.createElement(aTag);
+function $E(aTag, aAttribute) {
+  let node = document.createElement(aTag);
+
+  if (!!aAttribute) {
+    for (let [name, value] in Iterator(aAttribute)) {
+      if (value !== null && value !== undefined) {
+        if (name === 'label') {
+          node.setAttribute('label', U(value));
+        } else if (name === 'open') {
+          node.setAttribute(
+            'onclick',
+            'if(event.button===2)return;' +
+            'if(event.button===1)closeMenus(event.target);' +
+            commandForOpenURL(value)
+          );
+        } else {
+          node.setAttribute(name, value);
+        }
+      }
+    }
+  }
+
+  return node;
+}
 
 
 //********** Imports
@@ -309,14 +331,11 @@ function $E(aTag)
 function getContextMenu()
   ucjsUI.ContentArea.contextMenu;
 
-function setEvent(aURL, aMenuitem) {
-  aMenuitem.setAttribute(
-    'onclick',
-    'if(event.button===2)return;' +
-    'if(event.button===1)closeMenus(event.target);' +
-    'ucjsUtil.openTab("' + aURL +
-    '",{inBackground:event.button===1,relatedToCurrent:true});'
-  );
+function commandForOpenURL(aURL) {
+  var command = 'ucjsUtil.openTab("%URL%"' +
+    ',{inBackground:event.button===1,relatedToCurrent:true});';
+
+  return command.replace('%URL%', aURL);
 }
 
 function U(aStr)
