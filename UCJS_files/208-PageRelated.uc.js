@@ -288,7 +288,7 @@ function $E(aTag, aAttribute) {
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && typeof value !== 'undefined') {
+      if (value !== null && value !== undefined) {
         if (name === 'label') {
           node.setAttribute('label', U(value));
         } else if (name === 'open') {
