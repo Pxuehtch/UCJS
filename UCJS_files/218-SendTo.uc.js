@@ -24,6 +24,28 @@ const {ucjsUtil, ucjsUI, ucjsWebService} = window;
 //********** Preferences
 
 /**
+ * Identifiers
+ */
+const kID = {
+  startSeparator: 'ucjs_sendTo_start_sep',
+  endSeparator: 'ucjs_sendTo_end_sep'
+};
+
+/**
+ * UI strings
+ */
+const kString = {
+  types: {
+    'PAGE': 'ページ',
+    'LINK': 'リンク',
+    'IMAGE': '画像',
+    'TEXT': 'テキスト'
+  },
+
+  tooltip: '%DATA%\n\n%URL%'
+};
+
+/**
  * List of user preset
  * @key disabled {boolean} [option]
  * @key URL {string} a URL that opens
@@ -161,22 +183,6 @@ var AliasFixup = (function() {
   };
 })();
 
-const kString = {
-  types: {
-    'PAGE': 'ページ',
-    'LINK': 'リンク',
-    'IMAGE': '画像',
-    'TEXT': 'テキスト'
-  },
-
-  tooltip: '%DATA%\n\n%URL%'
-};
-
-const kID = {
-  startSeparator: 'ucjs_sendTo_start_sep',
-  endSeparator: 'ucjs_sendTo_end_sep'
-};
-
 
 //********** Functions
 
@@ -190,7 +196,7 @@ function initMenu() {
 
 function showContextMenu(aEvent) {
   var contextMenu = aEvent.target;
-  if (getContextMenu() !== contextMenu) {
+  if (contextMenu !== getContextMenu()) {
     return;
   }
 
