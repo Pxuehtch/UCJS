@@ -19,9 +19,6 @@
  */
 const {ucjsUtil, ucjsUI} = window;
 
-
-//********** Preferences
-
 /**
  * Identifiers
  */
@@ -39,18 +36,17 @@ const kString = {
 };
 
 /**
- * Preset
- *
+ * Preset list
  * @key {string} category name for menu
  * @value {hash[]}
- *   @key disabled {boolean} [option]
- *   @key name {string} display name for menuitem
+ *   @key name {string} a display name for menuitem
  *   @key URL {string} a URL that opens
  *     pass the page information by alias. see |AliasFixup|
  *   @key URL {function} for the custom formattings
- *     @param aPage {hash}
+ *     @param aPageInfo {hash}
  *       @key URL {string} a page URL
  *       @key title {string} a page title
+ *   @key disabled {boolean} [optional]
  */
 const kPreset = {
   'Translator': [
@@ -198,11 +194,12 @@ function showContextMenu(aEvent) {
 
   var [sSep, eSep] = getSeparators();
 
-  // Remove existing items
+  // remove existing items
   for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
     contextMenu.removeChild(item);
   }
 
+  // allow only HTTP page
   if (!/^https?$/.test(gBrowser.currentURI.scheme)) {
     return;
   }
@@ -220,6 +217,7 @@ function getAvailableItems() {
     URL: gBrowser.currentURI.spec
   };
 
+  // warning of a URL with a parameter
   if (/[?#].*$/.test(pageInfo.URL)) {
     items.push($E('menuitem', {
       label: kString.warnParameter,
@@ -246,14 +244,21 @@ function getAvailableItems() {
         pageInfo
       );
 
-      URLs.push(URL);
+      popup.appendChild($E('menuitem', {
+        label: data.name,
+        open: [URL],
+        tooltiptext: URL
+      }));
 
-      popup.appendChild($E('menuitem', {label: data.name, open: [URL], tooltiptext: URL}));
+      URLs.push(URL);
     });
 
     if (URLs.length > 1) {
       popup.appendChild($E('menuseparator'));
-      popup.appendChild($E('menuitem', {label: kString.openAll, open: URLs}));
+      popup.appendChild($E('menuitem', {
+        label: kString.openAll,
+        open: URLs
+      }));
     }
 
     menu.appendChild(popup);
