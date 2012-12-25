@@ -197,8 +197,9 @@ function initMenu() {
 
 function onPopupShowing(aEvent) {
   var contextMenu = aEvent.target;
-  if (getContextMenu() !== contextMenu)
+  if (getContextMenu() !== contextMenu) {
     return;
+  }
 
   var sSep = $ID(kID.startSeparator), eSep = $ID(kID.endSeparator);
 
@@ -221,8 +222,9 @@ function getAvailableItems() {
 
   kServices.forEach(function(service) {
     var {disabled, types, extensions} = service;
-    if (disabled)
+    if (disabled) {
       return;
+    }
 
     if (!onLink && !onImage && !onTextInput &&
         types.indexOf('PAGE') > -1 &&
@@ -277,8 +279,9 @@ function makeItem(aType, aData, aService) {
 }
 
 function testExtension(aExtensions, aURL) {
-  if (!aURL)
+  if (!aURL) {
     return false;
+  }
 
   var targets = [];
   var re = /[\w\-]+\.([a-z]{2,5})(?=[?#]|$)/ig, match;

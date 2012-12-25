@@ -190,8 +190,9 @@ function initMenu() {
 
 function showMenu(aEvent) {
   var contextMenu = aEvent.target;
-  if (contextMenu !== getURLBarContextMenu())
+  if (contextMenu !== getURLBarContextMenu()) {
     return;
+  }
 
   var [sSep, eSep] = getSeparators();
 
@@ -200,8 +201,9 @@ function showMenu(aEvent) {
     contextMenu.removeChild(item);
   }
 
-  if (!/^https?$/.test(gBrowser.currentURI.scheme))
+  if (!/^https?$/.test(gBrowser.currentURI.scheme)) {
     return;
+  }
 
   var page = {
     title: gBrowser.contentTitle,
@@ -224,8 +226,9 @@ function showMenu(aEvent) {
     let URLs = [];
 
     kSiteInfo[type].forEach(function(info) {
-      if (info.disabled)
+      if (info.disabled) {
         return;
+      }
 
       let URL =
       AliasFixup.create(

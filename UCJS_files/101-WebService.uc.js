@@ -187,8 +187,9 @@ var mXHRHandler = (function() {
  */
 function open(aOption) {
   var result = getResult(aOption, 'open');
-  if (!result)
+  if (!result) {
     return;
+  }
 
   openTab(result.URL);
 
@@ -209,8 +210,9 @@ function open(aOption) {
  */
 function get(aOption) {
   var result = getResult(aOption, 'get');
-  if (!result)
+  if (!result) {
     return;
+  }
 
   mXHRHandler.request(
     result.URL,
@@ -224,8 +226,9 @@ function get(aOption) {
 }
 
 function getResult(aOption, aType) {
-  if (!aOption.name)
+  if (!aOption.name) {
     throw 'aOption.name is empty';
+  }
 
   var result = null;
 
@@ -258,10 +261,12 @@ function evaluate(aOption, aPreset) {
 }
 
 function buildURL(aURL, aData) {
-  if (!aURL)
+  if (!aURL) {
     throw 'aURL is empty';
-  if (!aData)
+  }
+  if (!aData) {
     return aURL;
+  }
 
   return AliasFixup.create(aURL, aData);
 }
@@ -292,8 +297,9 @@ function reSubmit(aData, aSubmit, aLess) {
     return false
   });
 
-  if (!input || !input.value)
+  if (!input || !input.value) {
     return false;
+  }
 
   input.value +=
     (aLess ? ' -' : ' ') + '"' + aData.replace(/\s+/g, ' ').trim() + '"';
