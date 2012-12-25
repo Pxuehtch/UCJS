@@ -36,7 +36,7 @@ const {ucjsUtil, ucjsUI} = window;
  *       @key URL {string} a page URL
  *       @key title {string} a page title
  */
-const kSiteInfo = {
+const kPreset = {
   'Translator': [
     {
       name: 'Google 翻訳 > JP',
@@ -185,10 +185,10 @@ function initMenu() {
 
   setSeparators(contextMenu);
 
-  addEvent([contextMenu, 'popupshowing', showMenu, false]);
+  addEvent([contextMenu, 'popupshowing', showContextMenu, false]);
 }
 
-function showMenu(aEvent) {
+function showContextMenu(aEvent) {
   var contextMenu = aEvent.target;
   if (contextMenu !== getURLBarContextMenu()) {
     return;
@@ -205,28 +205,28 @@ function showMenu(aEvent) {
     return;
   }
 
-  var page = {
+  var pageInfo = {
     title: gBrowser.contentTitle,
     URL: gBrowser.currentURI.spec
   };
 
-  if (/[?#].*$/.test(page.URL)) {
+  if (/[?#].*$/.test(pageInfo.URL)) {
     contextMenu.insertBefore($E('menuitem', {
       label: kString.warnParameter,
       style: 'font-weight:bold;',
-      tooltiptext: page.URL.replace(/[?#]/, '\n$&'),
+      tooltiptext: pageInfo.URL.replace(/[?#]/, '\n$&'),
       disabled: true
     }), eSep);
   }
 
-  for (let type in kSiteInfo) {
-    let menu = $E('menu', {label: type});
+  for (let category in kPreset) {
+    let menu = $E('menu', {label: category});
     let popup = $E('menupopup');
 
     let URLs = [];
 
-    kSiteInfo[type].forEach(function(info) {
-      if (info.disabled) {
+    kPreset[category].forEach(function(data) {
+      if (data.disabled) {
         return;
       }
 
@@ -238,7 +238,7 @@ function showMenu(aEvent) {
 
       URLs.push(URL);
 
-      popup.appendChild($E('menuitem', {label: info.name, open: [URL], tooltiptext: URL}));
+      popup.appendChild($E('menuitem', {label: data.name, open: [URL], tooltiptext: URL}));
     });
 
     if (URLs.length > 1) {
@@ -265,28 +265,28 @@ function getSeparators() {
 }
 
 function $E(aTag, aAttribute) {
-  var element = document.createElement(aTag);
+  var node = document.createElement(aTag);
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       if (value !== null && typeof value !== 'undefined') {
         if (name === 'label') {
-          element.setAttribute('label', U(value));
+          node.setAttribute('label', U(value));
         } else if (name === 'open') {
-          element.setAttribute(
+          node.setAttribute(
             'onclick',
             'if(event.button===2)return;' +
             'if(event.button===1)closeMenus(event.target);' +
-            getCommandOpenURLs(value)
+            commandForOpenURLs(value)
           );
         } else {
-          element.setAttribute(name, value);
+          node.setAttribute(name, value);
         }
       }
     }
   }
 
-  return element;
+  return node;
 }
 
 function formatURL(aURL, aData) {
@@ -305,7 +305,7 @@ function formatURL(aURL, aData) {
 
 //********** Imports
 
-function getCommandOpenURLs(aURLsArray) {
+function commandForOpenURLs(aURLsArray) {
   var URLs = aURLsArray.toSource();
   var inBG = (aURLsArray.length > 1) ? 'true' : 'event.button===1';
 

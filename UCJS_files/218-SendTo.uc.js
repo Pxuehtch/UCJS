@@ -38,7 +38,7 @@ const {ucjsUtil, ucjsUI, ucjsWebService} = window;
  *     @key menuitem {element}
  *     @key data {string}
  */
-const kServices = [
+const kPreset = [
   {
     // @require WebService.uc.js
     disabled: !ucjsWebService,
@@ -192,10 +192,10 @@ function initMenu() {
   contextMenu.insertBefore($E('menuseparator'), refItem).id =
     kID.endSeparator;
 
-  addEvent([contextMenu, 'popupshowing', onPopupShowing, false]);
+  addEvent([contextMenu, 'popupshowing', showContextMenu, false]);
 }
 
-function onPopupShowing(aEvent) {
+function showContextMenu(aEvent) {
   var contextMenu = aEvent.target;
   if (getContextMenu() !== contextMenu) {
     return;
@@ -220,7 +220,7 @@ function getAvailableItems() {
   var selection = getSelectionAtCursor();
   var onPlainTextLink = selection && !onLink && linkURL;
 
-  kServices.forEach(function(service) {
+  kPreset.forEach(function(service) {
     var {disabled, types, extensions} = service;
     if (disabled) {
       return;
@@ -284,14 +284,14 @@ function testExtension(aExtensions, aURL) {
   }
 
   var targets = [];
-  var re = /[\w\-]+\.([a-z]{2,5})(?=[?#]|$)/ig, match;
-  while ((match = re.exec(aURL))) {
+  var pattern = /[\w\-]+\.([a-z]{2,5})(?=[?#]|$)/ig, match;
+  while ((match = pattern.exec(aURL))) {
     targets.unshift(match[1]);
   }
 
   // Case: http://www.example.com/path/file1.ext?key=file2.ext
   // Examines file2.ext, and then file1.ext
-  return targets.some(function(a) aExtensions.indexOf(a) > -1);
+  return targets.some(function(el) aExtensions.indexOf(el) > -1);
 }
 
 

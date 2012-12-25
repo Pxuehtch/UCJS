@@ -36,8 +36,8 @@ const {ucjsUtil} = window;
  *     input: {XPath of <input>}
  *   parse: {function} [optional; only with type 'get'] parses the response
  *   from HTTP request
- *     @param value {string} response text of request
- *     @param status {number} response status of request
+ *     @param aValue {string} response text of request
+ *     @param aStatus {number} response status of request
  */
 const kPresets = [
   {
@@ -45,9 +45,9 @@ const kPresets = [
     name: 'HatenaBookmarkCount',
     // @see http://developer.hatena.ne.jp/ja/documents/bookmark/apis/getcount
     URL: 'http://api.b.st-hatena.com/entry.count?url=%ENC%',
-    parse: function(value, status) {
-      if (status === 200) {
-        return value || 0;
+    parse: function(aValue, aStatus) {
+      if (aStatus === 200) {
+        return aValue || 0;
       }
       return null;
     }
@@ -142,7 +142,7 @@ var AliasFixup = (function() {
 /**
  * XMLHttpRequest handler
  */
-var mXHRHandler = (function() {
+var mRequestHandler = (function() {
   const kCooldownTime = 1000;
 
   var lastRequestTime = Date.now();
@@ -154,7 +154,7 @@ var mXHRHandler = (function() {
       if (xhr.readyState === 4) {
         try {
           aFunc(xhr.responseText, xhr.status);
-        } catch (e) {
+        } catch (ex) {
           // nothing
         } finally {
           xhr.onreadystatechange = null;
@@ -214,7 +214,7 @@ function get(aOption) {
     return;
   }
 
-  mXHRHandler.request(
+  mRequestHandler.request(
     result.URL,
     function(response, status) {
       if (result.parse) {
@@ -286,28 +286,28 @@ function reSubmit(aData, aSubmit, aLess) {
   const kTextInput =
     'descendant::input[not(@disabled or @hidden or @readonly) and @type="text"]';
 
-  var form = null, input = null;
-  Array.some(window.content.document.forms, function(f) {
-    var inputs = !$X1(kAvoidInput, f) && $XA(kTextInput, f);
+  var textForm = null, textInput = null;
+  Array.some(window.content.document.forms, function(form) {
+    var inputs = !$X1(kAvoidInput, form) && $XA(kTextInput, form);
     if (inputs && inputs.length === 1) {
-      form = f;
-      input = inputs[0];
+      textForm = form;
+      textInput = inputs[0];
       return true;
     }
     return false
   });
 
-  if (!input || !input.value) {
+  if (!textInput || !textInput.value) {
     return false;
   }
 
-  input.value +=
+  textInput.value +=
     (aLess ? ' -' : ' ') + '"' + aData.replace(/\s+/g, ' ').trim() + '"';
 
   if (aSubmit) {
-    form.submit();
+    textForm.submit();
   } else {
-    input.focus();
+    textInput.focus();
   }
   return true;
 }
