@@ -23,6 +23,22 @@ const {ucjsUtil, ucjsUI} = window;
 //********** Preferences
 
 /**
+ * Identifiers
+ */
+const kID = {
+  startSeparator: 'ucjs_relatedInfo_startSep',
+  endSeparator: 'ucjs_relatedInfo_endSep'
+};
+
+/**
+ * UI strings
+ */
+const kString = {
+  warnParameter: '注意：パラメータ付 URL',
+  openAll: 'すべて開く'
+};
+
+/**
  * Preset
  *
  * @key {string} category name for menu
@@ -163,22 +179,8 @@ var AliasFixup = (function() {
   };
 })();
 
-const kString = {
-  warnParameter: '注意：パラメータ付 URL',
-  openAll: 'すべて開く'
-};
-
-const kID = {
-  startSeparator: 'ucjs_relatedInfo_startSep',
-  endSeparator: 'ucjs_relatedInfo_endSep'
-};
-
 
 //********** Functions
-
-function PageRelated_init() {
-  initMenu()
-}
 
 function initMenu() {
   var contextMenu = getURLBarContextMenu();
@@ -336,6 +338,10 @@ function log(aMsg)
 
 
 //********** Entry point
+
+function PageRelated_init() {
+  initMenu()
+}
 
 PageRelated_init();
 
