@@ -17,6 +17,11 @@ var ucjsTabEx = (function(window, undefined) {
 
 
 /**
+ * Required module
+ */
+const {ucjsUtil} = window;
+
+/**
  * Identifier
  */
 const kID = {
