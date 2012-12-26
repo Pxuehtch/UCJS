@@ -1338,8 +1338,6 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 
     if (aSupportedStatements &&
         aSupportedStatements.indexOf(statement) < 0) {
-      log('aStatement: "' + aStatement + '" is unsupported\n' +
-          'supported values;\n' + aSupportedStatements.join('\n'));
       throw new TypeError('unsupported aStatement');
     }
 
