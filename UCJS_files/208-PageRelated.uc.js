@@ -111,7 +111,7 @@ const kPreset = {
 /**
  * Handler of fixing up a alias with the page information
  * @return {hash}
- *   @member create {function} creates a text that fixed up
+ *   @member create {function}
  *
  * [Aliases]
  * %URL%, %u% : a page URL

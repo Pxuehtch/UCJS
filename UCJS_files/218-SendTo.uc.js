@@ -150,13 +150,13 @@ const kPreset = [
 /**
  * Handler of fixing up a alias with the data
  * @return {hash}
- *   @member create {function} creates a text that fixed up
+ *   @member create {function}
  *
  * [Aliases]
  * %RAW% : data itself
  * %ENC% : with URI encoded
- * %SCHEMELESS%, sl : without the URL scheme
- * %PARAMLESS%, pl : without the URL parameter
+ * %SCHEMELESS%, %sl% : without the URL scheme
+ * %PARAMLESS%, %pl% : without the URL parameter
  *
  * The aliases can be combined by '|'
  * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
