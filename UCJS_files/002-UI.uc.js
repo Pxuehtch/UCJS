@@ -28,18 +28,24 @@ var mContentArea = {
 
 /**
  * Location bar
+ * @see chrome://browser/content/urlbarBindings.xml
  */
-var mURLBar = {
-  get textBox() {
-    delete this.textBox;
-    return this.textBox = $ANONID('textbox-input-box', gURLBar);
-  },
+var mURLBar = (function() {
+  // @see chrome://browser/content/browser.js
+  const {gURLbar} = window;
 
-  get contextMenu() {
-    delete this.contextMenu;
-    return this.contextMenu = $ANONID('input-box-contextmenu', this.textBox);
-  }
-};
+  return {
+    get textBox() {
+      delete this.textBox;
+      return this.textBox = $ANONID('textbox-input-box', gURLBar);
+    },
+
+    get contextMenu() {
+      delete this.contextMenu;
+      return this.contextMenu = $ANONID('input-box-contextmenu', this.textBox);
+    }
+  };
+})();
 
 /**
  * Find bar
