@@ -142,6 +142,10 @@ var mStatusField = (function() {
     MESSAGE: 'ucjs_ui_statusField_message'
   };
 
+  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
+  const kTimeFormat = '%Y/%m/%d %H:%M:%S';
+  const kLinkFormat = '%url% [%time%]';
+
   /**
    * Toggle showing the statusbar text for a link URL under a cursor
    */
@@ -184,9 +188,14 @@ var mStatusField = (function() {
       } catch (e) {}
 
       if (URI) {
+        let visited;
+        if (PlacesUtils.history.isVisited(URI)) {
+          url = format(url, getLastVisitTime(URI));
+          visited = true;
+        }
         if (PlacesUtils.bookmarks.isBookmarked(URI)) {
           linkState = 'bookmarked';
-        } else if (PlacesUtils.history.isVisited(URI)) {
+        } else if (visited) {
           linkState = 'visited';
         } else {
           linkState = 'unknown';
@@ -194,7 +203,7 @@ var mStatusField = (function() {
       }
 
       this.hideOverLinkImmediately = true;
-      $setOverLink.apply(this, arguments);
+      $setOverLink.call(this, url, anchorElt);
       this.hideOverLinkImmediately = false;
     };
 
@@ -245,6 +254,49 @@ var mStatusField = (function() {
       }\
     ';
     setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
+  }
+
+  function getLastVisitTime(aURI) {
+    if (aURI.schemeIs('about')) {
+      return 0;
+    }
+
+    // @see resource:///modules/PlacesUtils.jsm
+    const history = window.PlacesUtils.history;
+    const {Ci} = window;
+
+    var query, options, root;
+    var time;
+
+    query = history.getNewQuery();
+    query.uri = aURI;
+
+    options = history.getNewQueryOptions();
+    options.queryType =
+      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
+    options.sortingMode =
+      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
+    options.maxResults = 1;
+
+    root = history.executeQuery(query, options).root;
+    root.containerOpen = true;
+    try {
+      // convert microseconds into milliseconds
+      time = root.getChild(0).time / 1000;
+    } catch (e) {}
+    root.containerOpen = false;
+
+    return time || 0;
+  }
+
+  function format(aUrl, aTime) {
+    if (!aTime) {
+      return aUrl;
+    }
+
+    return kLinkFormat.
+      replace('%url%', aUrl).
+      replace('%time%', (new Date(aTime)).toLocaleFormat(kTimeFormat));
   }
 
 
