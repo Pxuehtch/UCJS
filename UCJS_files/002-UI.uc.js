@@ -26,7 +26,6 @@ var mContentArea = {
   }
 };
 
-
 /**
  * Location bar
  */
@@ -41,7 +40,6 @@ var mURLBar = {
     return this.contextMenu = $ANONID('input-box-contextmenu', this.textBox);
   }
 };
-
 
 /**
  * Find bar
@@ -93,8 +91,9 @@ var mFindBar = {
   },
 
   findWith: function(aText, aHighlight) {
-    if (!aText)
+    if (!aText) {
       return;
+    }
 
     if (this.text) {
       this.clearText();
@@ -117,7 +116,6 @@ var mFindBar = {
     }
   }
 };
-
 
 /**
  * Status bar
@@ -291,7 +289,6 @@ var mStatusField = (function() {
   return _mStatusField;
 })();
 
-
 /**
  * Menuitems of a popup menu
  * @require TabEx.uc.js
@@ -318,10 +315,10 @@ var mMenuitem = {
  * Manages the visibility of menu separators in the context menu
  */
 function manageContextMenuSeparators() {
-  [mContentArea, mURLBar].forEach(function(aContainer) {
-    var contextMenu = aContainer.contextMenu;
-    addEvent([contextMenu, 'popupshowing', function(aEvent) {
-      if (aEvent.target === contextMenu) {
+  [mContentArea, mURLBar].forEach(function(container) {
+    var contextMenu = container.contextMenu;
+    addEvent([contextMenu, 'popupshowing', function(event) {
+      if (event.target === contextMenu) {
         setTimeout(manage, 0, $X('xul:menuseparator', contextMenu));
       }
     }, false]);
@@ -348,7 +345,8 @@ function manageContextMenuSeparators() {
   }
 
   function shouldShow(aSeparator, aSibling) {
-    // @see chrome://browser/content/utilityOverlay.js::isElementVisible()
+    // @see chrome://browser/content/utilityOverlay.js::
+    // isElementVisible()
     var isElementVisible = window.isElementVisible;
     var node = aSeparator;
     do {
@@ -360,25 +358,34 @@ function manageContextMenuSeparators() {
 }
 
 
-//********** Utilities
+//********** Utility
 
-function $ID(aId)
-  window.document.getElementById(aId);
+function $ID(aId) {
+  return window.document.getElementById(aId);
+}
 
-function $ANONID(aId, aContext)
-  window.ucjsUtil.getNodeByAnonid(aId, aContext);
 
-function $X(aXPath, aContext)
-  window.ucjsUtil.getNodesByXPath(aXPath, aContext);
+//********** Imports
 
-function addEvent(aData)
+function $ANONID(aId, aContext) {
+  return window.ucjsUtil.getNodeByAnonid(aId, aContext);
+}
+
+function $X(aXPath, aContext) {
+  return window.ucjsUtil.getNodesByXPath(aXPath, aContext);
+}
+
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function setCSS(aCSS, aTitle)
+function setCSS(aCSS, aTitle) {
   window.ucjsUtil.setChromeStyleSheet(aCSS);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('UI.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('UI.uc.js', aMsg);
+}
 
 
 //********** Entry point
