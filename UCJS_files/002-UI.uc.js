@@ -142,6 +142,27 @@ var mStatusField = (function() {
     MESSAGE: 'ucjs_ui_statusField_message'
   };
 
+  /**
+   * Toggle showing the statusbar text for a link URL under a cursor
+   */
+  let toggleShowOverLink = (function() {
+    // @modified chrome://browser/content/browser.js::
+    // XULBrowserWindow::setOverLink
+    var $setOverLink = null;
+
+    return function(aEnabled) {
+      // only at first, set to the current |setOverLink|
+      if (!$setOverLink) {
+        $setOverLink = XULBrowserWindow.setOverLink;
+      }
+
+      if (aEnabled) {
+        XULBrowserWindow.setOverLink = $setOverLink;
+      } else {
+        XULBrowserWindow.setOverLink = function() {};
+      }
+    };
+  })();
 
   // Custom status display
   customizeCSS();
@@ -282,18 +303,7 @@ var mStatusField = (function() {
     },
 
     setOverLink: function(aEnabled) {
-      // @modified chrome://browser/content/browser.js::
-      // XULBrowserWindow::setOverLink
-      if (!aEnabled) {
-        if (!this.$setOverLink) {
-          this.$setOverLink = XULBrowserWindow.setOverLink;
-        }
-        XULBrowserWindow.setOverLink = function(url, anchorElt) {};
-      } else {
-        if (this.$setOverLink) {
-          XULBrowserWindow.setOverLink = this.$setOverLink;
-        }
-      }
+      toggleShowOverLink(aEnabled);
     }
   };
 })();
