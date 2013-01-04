@@ -23,13 +23,12 @@ var ucjsUtil = (function(window, undefined) {
 //********** XPCOM handler
 
 var mXPCOM = (function() {
-
   const {Cc, Ci} = window;
   function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
   function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
 
   return {
-    // Services.
+    //********** Services
 
     get WindowMediator() {
       delete this.WindowMediator;
@@ -92,7 +91,8 @@ var mXPCOM = (function() {
         $S('@mozilla.org/xre/app-info;1', 'nsIXULRuntime');
     },
 
-    // Instances.
+
+    //**********Instances
 
     DocumentEncoder: function(aType) {
       return $I('@mozilla.org/layout/documentEncoder;1?type=' + aType,
@@ -108,7 +108,6 @@ var mXPCOM = (function() {
       return $I('@mozilla.org/supports-PRBool;1', 'nsISupportsPRBool');
     }
   }
-
 })();
 
 
@@ -116,8 +115,9 @@ var mXPCOM = (function() {
 
 function setEventListener(aData) {
   var [target, type, listener, capture] = aData;
-  if (!target || !type || !listener)
+  if (!target || !type || !listener) {
     return;
+  }
 
   capture = !!capture;
 
@@ -151,16 +151,19 @@ function getSelectionAtCursor(aOption) {
     node = event.target;
     rangeParent = event.rangeParent;
     rangeOffset = event.rangeOffset; // TODO: may be wrong
-  } else if (window.gContextMenu) {
+  }
+  else if (window.gContextMenu) {
     // contextmenu mode
+    // @see chrome://browser/content/nsContextMenu.js
     node = window.document.popupNode;
     rangeParent = window.document.popupRangeParent;
     rangeOffset = window.document.popupRangeOffset;
   }
 
   var selection = getSelectionController(node);
-  if (!selection)
+  if (!selection) {
     return null;
+  }
 
   var text = '';
 
@@ -195,8 +198,9 @@ function getSelectionAtCursor(aOption) {
 }
 
 function getSelectionController(aNode) {
-  if (!aNode)
+  if (!aNode) {
     return null;
+  }
 
   // 1. scan selection in a textbox (exclude password)
   if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
@@ -213,8 +217,9 @@ function getSelectionController(aNode) {
 }
 
 function getSelectedTextInRange(aRange) {
-  if (!aRange.toString())
+  if (!aRange.toString()) {
     return '';
+  }
 
   var type = 'text/plain';
   var encoder = mXPCOM.DocumentEncoder(type);
@@ -233,13 +238,15 @@ function getSelectedTextInRange(aRange) {
 
 // @see chrome://browser/content/browser.js::getBrowserSelection()
 function trimText(aText, aMaxLength) {
-  if (!aText)
+  if (!aText) {
     return '';
+  }
 
   if (aText.length > aMaxLength) {
     let match = RegExp('^(?:\\s*.){0,' + aMaxLength + '}').exec(aText);
-    if (!match)
+    if (!match) {
       return '';
+    }
     aText = match[0];
   }
 
@@ -263,7 +270,7 @@ function lookupNamespace(aPrefix) {
   return kNamespace[aPrefix] || null;
 }
 
-// for XUL element.
+// @note Only for XUL element.
 function createNode(aTagOrNode, aAttribute) {
   function getNamespaceOf(s) {
     var match = /^(.+?):/.exec(s);
@@ -279,8 +286,9 @@ function createNode(aTagOrNode, aAttribute) {
   } else if (aTagOrNode instanceof Element) {
     element = aTagOrNode;
   }
-  if (!element)
+  if (!element) {
     throw 'aTagOrNode should be tagname or element.';
+  }
 
   if (!!aAttribute) {
     let attributeNS;
@@ -299,7 +307,7 @@ function createNode(aTagOrNode, aAttribute) {
   return element;
 }
 
-// for XUL element.
+// @note Only for XUL element.
 function getNodeByAnonid(aId, aContext) {
   return window.document.
     getAnonymousElementByAttribute(aContext, 'anonid', aId);
@@ -401,10 +409,14 @@ function evaluateXPath(aXPath, aContext, aType) {
   if (defaultNS) {
     let tmpPrefix = '__NS__';
     aXPath = fixNamespacePrefixForXPath(aXPath, tmpPrefix);
-    resolver = function(prefix) (prefix === tmpPrefix) ?
-                                defaultNS : lookupNamespace(prefix);
+    resolver = function(prefix) {
+      return (prefix === tmpPrefix) ?
+        defaultNS : lookupNamespace(prefix);
+    };
   } else {
-    resolver = function(prefix) lookupNamespace(prefix);
+    resolver = function(prefix) {
+      return lookupNamespace(prefix);
+    };
   }
 
   var result = null;
@@ -474,8 +486,9 @@ function unescapeURLCharacters(aURL) {
     "3a":":", "3b":";", "3d":"=", "3f":"?", "40":"@", "5f":"_", "7e":"~"
   };
 
-  if (!aURL)
+  if (!aURL) {
     return '';
+  }
 
   for (let key in kURLChars) {
     aURL = aURL.replace(RegExp('%(?:25)?' + key, 'ig'), kURLChars[key]);
@@ -485,8 +498,9 @@ function unescapeURLCharacters(aURL) {
 }
 
 function unescapeURLForUI(aURL, aCharset) {
-  if (!aURL)
+  if (!aURL) {
     return '';
+  }
 
   var charset = aCharset || getFocusedDocument().characterSet;
 
@@ -494,11 +508,13 @@ function unescapeURLForUI(aURL, aCharset) {
 }
 
 function resolveURL(aURL, aBaseURL) {
-  if (!aURL || !/\S/.test(aURL))
+  if (!aURL || !/\S/.test(aURL)) {
     return '';
+  }
 
-  if (/^[a-zA-Z]+:/.test(aURL))
+  if (/^[a-zA-Z]+:/.test(aURL)) {
     return aURL;
+  }
 
   var baseURL = aBaseURL || getFocusedDocument().documentURI;
 
@@ -508,8 +524,9 @@ function resolveURL(aURL, aBaseURL) {
 
 function openNewWindow(aURL, aOption) {
   var URL = resolveURL(aURL);
-  if (!URL)
+  if (!URL) {
     return;
+  }
 
   aOption = aOption || {};
   var {inBackground} = aOption;
@@ -517,7 +534,8 @@ function openNewWindow(aURL, aOption) {
   checkSecurity(URL);
 
   // @see chrome://browser/content/utilityOverlay.js::openNewWindowWith()
-  var newWin = window.openNewWindowWith(URL, getFocusedDocument(), null, false);
+  var newWin = window.
+    openNewWindowWith(URL, getFocusedDocument(), null, false);
 
   if (inBackground) {
     setTimeout(window.focus, 0);
@@ -543,8 +561,9 @@ function openTabs(aURLs, aOption) {
   if (typeof aURLs === 'string') {
     aURLs = aURLs.split('|');
   }
-  if (!Array.isArray(aURLs) || aURLs.length === 0)
+  if (!Array.isArray(aURLs) || aURLs.length === 0) {
     return;
+  }
 
   aOption = aOption || {};
   var {inBackground} = aOption;
@@ -582,8 +601,9 @@ function openURLIn(aURL, aInTab, aOption) {
 
 function openTab(aURL, aOption) {
   var URL = resolveURL(aURL);
-  if (!URL)
+  if (!URL) {
     return;
+  }
 
   aOption = aOption || {};
   var {inBackground} = aOption;
@@ -601,8 +621,9 @@ function openTab(aURL, aOption) {
 
 function loadPage(aURL, aOption) {
   var URL = resolveURL(aURL);
-  if (!URL)
+  if (!URL) {
     return;
+  }
 
   aOption = aOption || {};
   var {
@@ -618,12 +639,15 @@ function loadPage(aURL, aOption) {
 
   const {Ci} = window;
   var flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
-  if (allowThirdPartyFixup)
+  if (allowThirdPartyFixup) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
-  if (fromExternal)
+  }
+  if (fromExternal) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-  if (isUTF8)
+  }
+  if (isUTF8) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
+  }
 
   gBrowser.loadURIWithFlags(URL, flags, referrerURI, charset, postData);
 
@@ -659,8 +683,9 @@ function removeTab(aTab, aOption) {
  * @see chrome://browser/content/tabbrowser.xml::removeAllTabsBut
  */
 function removeAllTabsBut(aTab) {
-  if (aTab.pinned)
+  if (aTab.pinned) {
     return;
+  }
 
   if (!aTab.hidden && aTab !== gBrowser.selectedTab) {
     gBrowser.selectedTab = aTab;
@@ -680,8 +705,9 @@ function removeAllTabsBut(aTab) {
 //********** Miscellaneous function
 
 function convertFromUTF16(aStr, aCharset) {
-  if (!aCharset)
+  if (!aCharset) {
     return null;
+  }
 
   var suc = mXPCOM.ScriptableUnicodeConverter();
 
@@ -742,8 +768,9 @@ function focusWindowAtIndex(aIdx) {
 }
 
 function restartApp(aPurgeCaches) {
-  if (!canQuitApp())
+  if (!canQuitApp()) {
     return;
+  }
 
   if (aPurgeCaches) {
     mXPCOM.XULRuntime.invalidateCachesOnRestart();
@@ -758,16 +785,18 @@ function canQuitApp() {
 
   var cancel = mXPCOM.SupportsPRBool();
   os.notifyObservers(cancel, 'quit-application-requested', null);
-  if (cancel.data)
+  if (cancel.data) {
     return false;
+  }
 
   os.notifyObservers(null, 'quit-application-granted', null);
 
   var wins = getWindowList(null), win;
   while (wins.hasMoreElements()) {
     win = wins.getNext();
-    if (('tryToClose' in win) && !win.tryToClose())
+    if (('tryToClose' in win) && !win.tryToClose()) {
       return false;
+    }
   }
   return true;
 }
@@ -783,8 +812,9 @@ function removeGlobalStyleSheet(aCSS, aAgent) {
 function registerGlobalStyleSheet(aCSS, aAgent, aRegister) {
   try {
     var css = normalizeCSS(aCSS);
-    if (!css)
+    if (!css) {
       return;
+    }
 
     var URI = mXPCOM.IOService.
       newURI('data:text/css,' + encodeURIComponent(css), null, null);
@@ -805,8 +835,9 @@ function registerGlobalStyleSheet(aCSS, aAgent, aRegister) {
 
 function registerChromeStyleSheet(aCSS) {
   var css = normalizeCSS(aCSS);
-  if (!css)
+  if (!css) {
     return;
+  }
 
   var stylesheet = window.document.createProcessingInstruction(
     'xml-stylesheet',
@@ -814,8 +845,9 @@ function registerChromeStyleSheet(aCSS) {
     replace('%DATA%', encodeURIComponent(css))
   );
 
-  stylesheet.getAttribute =
-    function(key) window.document.documentElement.getAttribute(key);
+  stylesheet.getAttribute = function(name) {
+    return window.document.documentElement.getAttribute(name);
+  };
 
   return window.document.insertBefore(stylesheet,
     window.document.documentElement);
@@ -827,19 +859,22 @@ function registerContentStyleSheet(aCSS, aOption) {
   var d = doc || getFocusedDocument();
 
   var head = (d.getElementsByTagName('head') || [])[0];
-  if (!head)
+  if (!head) {
     return;
+  }
 
   var old = id && d.getElementById(id);
   if (old) {
-    if (!replace)
+    if (!replace) {
       return;
+    }
     head.removeChild(old);
   }
 
   var css = normalizeCSS(aCSS);
-  if (!css)
+  if (!css) {
     return;
+  }
 
   var style = d.createElement('style');
   if (id) {
@@ -880,9 +915,12 @@ function getPref(aKey, aDef) {
 
   try {
     switch (pb.getPrefType(aKey)) {
-      case pb.PREF_BOOL:   return pb.getBoolPref(aKey);
-      case pb.PREF_INT:    return pb.getIntPref(aKey);
-      case pb.PREF_STRING: return pb.getCharPref(aKey);
+      case pb.PREF_BOOL:
+        return pb.getBoolPref(aKey);
+      case pb.PREF_INT:
+        return pb.getIntPref(aKey);
+      case pb.PREF_STRING:
+        return pb.getCharPref(aKey);
     }
   } catch (e) {}
   return aDef || null;
@@ -899,9 +937,12 @@ function setPref(aKey, aVal) {
 
     if (getPref(aKey) !== aVal) {
       switch (typeof aVal) {
-        case 'boolean': pb.setBoolPref(aKey, aVal);
-        case 'number':  pb.setIntPref(aKey, aVal);
-        case 'string':  pb.setCharPref(aKey, aVal);
+        case 'boolean':
+          pb.setBoolPref(aKey, aVal);
+        case 'number':
+          pb.setIntPref(aKey, aVal);
+        case 'string':
+          pb.setCharPref(aKey, aVal);
       };
     }
   } catch (e) {}
@@ -913,8 +954,9 @@ function setPref(aKey, aVal) {
 function logMessage(aTarget, aMessage) {
   const kMessageFormat = '[%target%]\n%msg%';
 
-  function U(str)
-    convertForSystem(str);
+  function U(str) {
+    return convertForSystem(str);
+  }
 
   let formatMessage = U(kMessageFormat.
     replace('%target%', aTarget).replace('%msg%', aMessage));
