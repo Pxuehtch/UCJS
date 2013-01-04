@@ -29,10 +29,9 @@
 
 })();
 
-
 /**
- * Calling the WebSearch command at the hidden search bar puts a quick alias
- * in the address bar
+ * When the search bar is hidden, calling the <web search> command puts a
+ * quick alias in the address bar
  * @note Alias is set as a keyword of the default engine at a search engines
  * manager.
  * @see http://d.hatena.ne.jp/Griever/20110603/1307109954
@@ -57,7 +56,6 @@
   ))();
 
 })();
-
 
 /**
  * Modify the title of a bookmark/history item
@@ -90,7 +88,6 @@
 
 })();
 
-
 /**
  * Shows a long URL text without cropped in a tooltip of the URL bar
  */
@@ -103,8 +100,9 @@
   // @modified chrome://browser/content/urlbarBindings.xml::
   // _initURLTooltip
   $ID('urlbar')._initURLTooltip = function() {
-    if (this.focused || !this._contentIsCropped || this._tooltipTimer)
+    if (this.focused || !this._contentIsCropped || this._tooltipTimer) {
       return;
+    }
 
     this._tooltipTimer = setTimeout(function() {
       this._urlTooltip.firstChild.textContent = this.value;
@@ -115,7 +113,6 @@
 
 })();
 
-
 /**
  * Ensure that a popup menu is detected
  */
@@ -124,11 +121,11 @@
   // @modified chrome://browser/content/utilityOverlay.js::
   // closeMenus
   Function('window.closeMenus =' +
-    window.closeMenus.toString().replace(/node\.tagName/g, 'node.localName')
+    window.closeMenus.toString().
+    replace(/node\.tagName/g, 'node.localName')
   )();
 
 })();
-
 
 /**
  * Relocates the scroll-buttons when tabs overflowed on the tab bar
@@ -173,7 +170,6 @@
 
 })();
 
-
 /**
  * Suppress continuous focusing with holding the TAB-key down
  */
@@ -181,7 +177,8 @@
 
   var tabPressed = false;
 
-  addEvent([gBrowser.mPanelContainer, 'keypress', function (event) {
+  addEvent([gBrowser.mPanelContainer, 'keypress',
+  function (event) {
     if (event.keyCode === event.DOM_VK_TAB) {
       if (tabPressed) {
         event.preventDefault();
@@ -192,14 +189,14 @@
     }
   }, true]);
 
-  addEvent([gBrowser.mPanelContainer, 'keyup', function (event) {
+  addEvent([gBrowser.mPanelContainer, 'keyup',
+  function (event) {
     if (event.keyCode === event.DOM_VK_TAB) {
       tabPressed = false;
     }
   }, true]);
 
 })();
-
 
 /**
  * TAB-key focusing handler
@@ -247,14 +244,14 @@
 
 })();
 
-
 /**
  * Disables Alt+Click on a link
  * @note Fx default function: downloading of a link.
  */
 (function() {
 
-  addEvent([gBrowser.mPanelContainer, 'click', function(event) {
+  addEvent([gBrowser.mPanelContainer, 'click',
+  function(event) {
     if (event.altKey && event.button === 0 && getLink(event.target)) {
       event.preventDefault();
       event.stopPropagation();
@@ -263,13 +260,13 @@
 
 })();
 
-
 /**
  * Gets rid of target="_blank" links
  */
 (function() {
 
-  addEvent([gBrowser.mPanelContainer, 'mousedown', handleEvent, false]);
+  addEvent([gBrowser.mPanelContainer,
+    'mousedown', handleEvent, false]);
 
   function handleEvent(aEvent) {
     var node = aEvent.target;
@@ -287,7 +284,6 @@
     aDocument instanceof HTMLDocument && /^https?/.test(aDocument.URL);
 
 })();
-
 
 /**
  * Add 'Open new tab' menu in the tab-context-menu
@@ -321,10 +317,10 @@
     }));
   });
 
-  gBrowser.tabContextMenu.insertBefore(menu, $ID('context_undoCloseTab'));
+  gBrowser.tabContextMenu.
+  insertBefore(menu, $ID('context_undoCloseTab'));
 
 })();
-
 
 /**
  * Show status text in URL bar
@@ -407,7 +403,6 @@
   ');
 })();
 
-
 /**
  * Clear scrollbars
  * @note This setting is for my own windows theme.
@@ -460,38 +455,48 @@ function getLink(aNode) {
   return aNode;
 }
 
-function $ID(aId)
-  window.document.getElementById(aId);
+function $ID(aId) {
+  return window.document.getElementById(aId);
+}
 
 
 //********** Imports
 
-function $E(aTag, aAttribute)
-  window.ucjsUtil.createNode(aTag, aAttribute);
+function $E(aTag, aAttribute) {
+  return window.ucjsUtil.createNode(aTag, aAttribute);
+}
 
-function $ANONID(aId, aNode)
-  window.ucjsUtil.getNodeByAnonid(aId, aNode);
+function $ANONID(aId, aNode) {
+  return window.ucjsUtil.getNodeByAnonid(aId, aNode);
+}
 
-function U(aText)
-  window.ucjsUtil.toStringForUI(aText);
+function U(aText) {
+  return window.ucjsUtil.toStringForUI(aText);
+}
 
-function setChromeCSS(aCSS)
-  window.ucjsUtil.setChromeStyleSheet(aCSS);
+function setChromeCSS(aCSS) {
+  return window.ucjsUtil.setChromeStyleSheet(aCSS);
+}
 
-function setGlobalAgentCSS(aCSS)
-  window.ucjsUtil.setGlobalStyleSheet(aCSS, true);
+function setGlobalAgentCSS(aCSS) {
+  return window.ucjsUtil.setGlobalStyleSheet(aCSS, true);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function getPref(aKey)
-  window.ucjsUtil.getPref(aKey);
+function getPref(aKey) {
+  return window.ucjsUtil.getPref(aKey);
+}
 
-function setPref(aKey, aVal)
+function setPref(aKey, aVal) {
   window.ucjsUtil.setPref(aKey, aVal);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
+}
 
 
 })(this);
