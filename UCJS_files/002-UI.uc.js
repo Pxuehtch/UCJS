@@ -143,75 +143,6 @@ var mStatusField = (function() {
   };
 
 
-  // Exported object
-  var _mStatusField = {
-    get textBox() {
-      delete this.textBox;
-      return this.textBox = $ID('statusbar-display');
-    },
-
-    // Gets statusbar text
-    // @note Retrieves the raw value from "label" attribute because the label
-    // getter returns an empty string whenever the status field is inactive.
-    // @see chrome://browser/content/tabbrowser.xml::
-    // <binding id="statuspanel">::<property name="label">::<getter>
-    get text() {
-      return this.textBox.getAttribute('label');
-    },
-
-    // Sets statusbar text
-    // @note The label setter don't touch "label" attribute when an empty
-    // value is passed. So sets an empty string to "label" attribute to clear
-    // the statusbar.
-    // @see chrome://browser/content/tabbrowser.xml::
-    // <binding id="statuspanel">::<property name="label">::<setter>
-    set text(aVal) {
-      this.textBox.label = aVal;
-      if (!aVal && this.text) {
-        this.textBox.setAttribute('label', '');
-      }
-    },
-
-    exists: function() {
-      return this.textBox !== null;
-    },
-
-    update: function(aText) {
-      var text = aText || '';
-      var field = this.textBox;
-
-      if (this.text !== text) {
-        this.text = text;
-      }
-
-      if (text) {
-        if (!field.hasAttribute(kStatusAttribute.MESSAGE)) {
-          field.setAttribute(kStatusAttribute.MESSAGE, true);
-        }
-      } else {
-        if (field.hasAttribute(kStatusAttribute.MESSAGE)) {
-          field.removeAttribute(kStatusAttribute.MESSAGE);
-        }
-      }
-    },
-
-    setOverLink: function(aEnabled) {
-      // @modified chrome://browser/content/browser.js::
-      // XULBrowserWindow::setOverLink
-      if (!aEnabled) {
-        if (!this.$setOverLink) {
-          this.$setOverLink = XULBrowserWindow.setOverLink;
-        }
-        XULBrowserWindow.setOverLink = function(url, anchorElt) {};
-      } else {
-        if (this.$setOverLink) {
-          XULBrowserWindow.setOverLink = this.$setOverLink;
-        }
-      }
-    }
-  };
-
-
   // Custom status display
   customizeCSS();
   customizeFunctions();
@@ -297,8 +228,74 @@ var mStatusField = (function() {
   }
 
 
-  // Exports
-  return _mStatusField;
+  //********** Expose
+
+  return {
+    get textBox() {
+      delete this.textBox;
+      return this.textBox = $ID('statusbar-display');
+    },
+
+    // Gets statusbar text
+    // @note Retrieves the raw value from "label" attribute because the label
+    // getter returns an empty string whenever the status field is inactive.
+    // @see chrome://browser/content/tabbrowser.xml::
+    // <binding id="statuspanel">::<property name="label">::<getter>
+    get text() {
+      return this.textBox.getAttribute('label');
+    },
+
+    // Sets statusbar text
+    // @note The label setter don't touch "label" attribute when an empty
+    // value is passed. So sets an empty string to "label" attribute to clear
+    // the statusbar.
+    // @see chrome://browser/content/tabbrowser.xml::
+    // <binding id="statuspanel">::<property name="label">::<setter>
+    set text(aVal) {
+      this.textBox.label = aVal;
+      if (!aVal && this.text) {
+        this.textBox.setAttribute('label', '');
+      }
+    },
+
+    exists: function() {
+      return this.textBox !== null;
+    },
+
+    update: function(aText) {
+      var text = aText || '';
+      var field = this.textBox;
+
+      if (this.text !== text) {
+        this.text = text;
+      }
+
+      if (text) {
+        if (!field.hasAttribute(kStatusAttribute.MESSAGE)) {
+          field.setAttribute(kStatusAttribute.MESSAGE, true);
+        }
+      } else {
+        if (field.hasAttribute(kStatusAttribute.MESSAGE)) {
+          field.removeAttribute(kStatusAttribute.MESSAGE);
+        }
+      }
+    },
+
+    setOverLink: function(aEnabled) {
+      // @modified chrome://browser/content/browser.js::
+      // XULBrowserWindow::setOverLink
+      if (!aEnabled) {
+        if (!this.$setOverLink) {
+          this.$setOverLink = XULBrowserWindow.setOverLink;
+        }
+        XULBrowserWindow.setOverLink = function(url, anchorElt) {};
+      } else {
+        if (this.$setOverLink) {
+          XULBrowserWindow.setOverLink = this.$setOverLink;
+        }
+      }
+    }
+  };
 })();
 
 /**
