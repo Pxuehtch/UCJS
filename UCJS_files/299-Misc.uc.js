@@ -68,8 +68,6 @@
   // PlacesUIUtils::getBestTitle
   const {PlacesUIUtils} = window;
 
-  var $getBestTitle = PlacesUIUtils.getBestTitle;
-
   PlacesUIUtils.getBestTitle = function(aNode, aDoNotCutTitle) {
     var title;
 
