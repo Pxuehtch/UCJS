@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name ScriptList.uc.js
-// @description List viewer of user scripts for userChromeJS extension.
+// @description List viewer of the user scripts for userChromeJS extension.
 // @include main
 // ==/UserScript==
 
-// @require userChrome.js with ucjsScriptLoader
+// @require userChrome.js with |ucjsScriptLoader|
 // @require Util.uc.js
-// @usage At a menuitem in 'tools' of the main menu.
+// @usage Creates a menuitem in 'tools' of the main menu.
 
 
 (function(window, undefined) {
@@ -17,7 +17,7 @@
 
 /**
  * UI bundle
- * @note U() for UI display.
+ * @note |U()| for UI display.
  */
 const kUIBundle = {
   menu: U({
@@ -283,9 +283,6 @@ function getCenteringPosition(aElement) {
   return [x / 2, y / 2];
 }
 
-function $ID(aID)
-  window.document.getElementById(aID);
-
 /**
  * String formatter
  * @param aForm {string}
@@ -298,20 +295,28 @@ function F(aForm, aAttribute) {
   return aForm;
 }
 
+function $ID(aID) {
+  return window.document.getElementById(aID);
+}
+
 
 //********** Imports
 
-function U(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function $E(aTagOrNode, aAttribute)
-  window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
+}
 
 
 //********** Entry point
