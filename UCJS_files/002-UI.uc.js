@@ -49,79 +49,85 @@ var mURLBar = (function() {
 
 /**
  * Find bar
+ * @see chrome://global/content/bindings/findbar.xml
  */
-var mFindBar = {
-  get textBox() {
-    delete this.textBox;
-    return this.textBox = gFindBar.getElement('findbar-textbox');
-  },
+var mFindBar = (function() {
+  // @see chrome://browser/content/browser.js
+  const {gFindBar} = window;
 
-  get highlightButton() {
-    delete this.highlightButton;
-    return this.highlightButton = gFindBar.getElement('highlight');
-  },
+  return {
+    get textBox() {
+      delete this.textBox;
+      return this.textBox = gFindBar.getElement('findbar-textbox');
+    },
 
-  get text() {
-    return this.textBox.value;
-  },
+    get highlightButton() {
+      delete this.highlightButton;
+      return this.highlightButton = gFindBar.getElement('highlight');
+    },
 
-  set text(aValue) {
-    aValue =  aValue || '';
+    get text() {
+      return this.textBox.value;
+    },
 
-    if (this.text !== aValue) {
-      this.textBox.value = aValue;
-    }
+    set text(aValue) {
+      aValue =  aValue || '';
 
-    if (!gFindBar.hidden) {
-      this.textBox.focus();
-      this.textBox.select();
-    }
-  },
+      if (this.text !== aValue) {
+        this.textBox.value = aValue;
+      }
 
-  toggleFindbar: function() {
-    if (gFindBar.hidden) {
+      if (!gFindBar.hidden) {
+        this.textBox.focus();
+        this.textBox.select();
+      }
+    },
+
+    toggleFindbar: function() {
+      if (gFindBar.hidden) {
+        gFindBar.onFindCommand();
+      } else {
+        gFindBar.close();
+      }
+    },
+
+    toggleHighlight: function(aHighlight) {
+      gFindBar.toggleHighlight(aHighlight);
+
+      if (aHighlight) {
+        this.highlightButton.setAttribute('checked', 'true');
+      } else {
+        this.highlightButton.removeAttribute('checked');
+      }
+    },
+
+    findWith: function(aText, aHighlight) {
+      if (!aText) {
+        return;
+      }
+
+      if (this.text) {
+        this.clearText();
+      }
+
       gFindBar.onFindCommand();
-    } else {
-      gFindBar.close();
+      this.text = aText;
+      gFindBar.onFindAgainCommand();
+
+      if (aHighlight) {
+        this.toggleHighlight(true);
+      }
+    },
+
+    clearText: function() {
+      this.text = '';
+
+      if (this.highlightButton.checked) {
+        this.toggleHighlight(false);
+      }
     }
-  },
-
-  toggleHighlight: function(aHighlight) {
-    gFindBar.toggleHighlight(aHighlight);
-
-    if (aHighlight) {
-      this.highlightButton.setAttribute('checked', 'true');
-    } else {
-      this.highlightButton.removeAttribute('checked');
-    }
-  },
-
-  findWith: function(aText, aHighlight) {
-    if (!aText) {
-      return;
-    }
-
-    if (this.text) {
-      this.clearText();
-    }
-
-    gFindBar.onFindCommand();
-    this.text = aText;
-    gFindBar.onFindAgainCommand();
-
-    if (aHighlight) {
-      this.toggleHighlight(true);
-    }
-  },
-
-  clearText: function() {
-    this.text = '';
-
-    if (this.highlightButton.checked) {
-      this.toggleHighlight(false);
-    }
-  }
-};
+  };
+})();
 
 /**
  * Status bar
