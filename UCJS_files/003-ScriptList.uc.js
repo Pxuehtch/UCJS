@@ -293,21 +293,6 @@ function getCenteringPosition(aElement) {
 function $ID(aID)
   window.document.getElementById(aID);
 
-function $E(aTagOrNode, aAttribute) {
-  var element = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) : aTagOrNode;
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        element.setAttribute(name, value);
-      }
-    }
-  }
-
-  return element;
-}
-
 /**
  * String formatter
  * @param aForm {string}
@@ -320,25 +305,17 @@ function F(aForm, aAttribute) {
   return aForm;
 }
 
-/**
- * String converter for UI display
- * @param aData {hash}
- */
-function U(aData) {
-  for (let i in aData) {
-    aData[i] = str4ui(aData[i]);
-  }
-  return aData;
-}
-
 
 //********** Imports
 
+function U(aStr)
+  window.ucjsUtil.toStringForUI(aStr);
+
+function $E(aTagOrNode, aAttribute)
+  window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);
-
-function str4ui(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
 
 function log(aMsg)
   window.ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
