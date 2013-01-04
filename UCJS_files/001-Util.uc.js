@@ -259,7 +259,7 @@ function trimText(aText, aMaxLength) {
   return aText;
 }
 
-function lookupNamespace(aPrefix) {
+function lookupNamespaceURI(aPrefix) {
   const kNamespace = {
     xul:   'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
     html:  'http://www.w3.org/1999/xhtml',
@@ -274,7 +274,7 @@ function lookupNamespace(aPrefix) {
 function createNode(aTagOrNode, aAttribute) {
   function getNamespaceOf(s) {
     var match = /^(.+?):/.exec(s);
-    return match ? lookupNamespace(match[1]) : '';
+    return match ? lookupNamespaceURI(match[1]) : '';
   }
 
   var element = null;
@@ -411,11 +411,11 @@ function evaluateXPath(aXPath, aContext, aType) {
     aXPath = fixNamespacePrefixForXPath(aXPath, tmpPrefix);
     resolver = function(prefix) {
       return (prefix === tmpPrefix) ?
-        defaultNS : lookupNamespace(prefix);
+        defaultNS : lookupNamespaceURI(prefix);
     };
   } else {
     resolver = function(prefix) {
-      return lookupNamespace(prefix);
+      return lookupNamespaceURI(prefix);
     };
   }
 
