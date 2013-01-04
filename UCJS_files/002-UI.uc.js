@@ -164,39 +164,11 @@ var mStatusField = (function() {
     };
   })();
 
-  // Custom status display
-  customizeCSS();
-  customizeFunctions();
-
-  function customizeCSS() {
-    var css = '\
-      .statuspanel-label{\
-        font-weight:bolder!important;\
-      }\
-      #statusbar-display:not([%%kStatusAttribute.LINKSTATE%%]) label{\
-        color:brown!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
-        color:green!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
-        color:purple!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
-        color:red!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.MESSAGE%%] label{\
-        color:blue!important;\
-      }\
-      #statusbar-display[inactive],\
-      #statusbar-display[label=""]{\
-        display:none!important;\
-      }\
-    ';
-    setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
-  }
-
-  function customizeFunctions() {
+  /**
+   * Indicate the state of a link under a cursor
+   */
+  customizeOverLinkText();
+  function customizeOverLinkText() {
     var linkState = null;
 
     // @modified chrome://browser/content/browser.js::
@@ -246,6 +218,33 @@ var mStatusField = (function() {
 
       $updateStatusField.apply(this, arguments);
     };
+
+    // set CSS styles
+    var css = '\
+      .statuspanel-label{\
+        font-weight:bolder!important;\
+      }\
+      #statusbar-display:not([%%kStatusAttribute.LINKSTATE%%]) label{\
+        color:brown!important;\
+      }\
+      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
+        color:green!important;\
+      }\
+      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
+        color:purple!important;\
+      }\
+      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
+        color:red!important;\
+      }\
+      #statusbar-display[%%kStatusAttribute.MESSAGE%%] label{\
+        color:blue!important;\
+      }\
+      #statusbar-display[inactive],\
+      #statusbar-display[label=""]{\
+        display:none!important;\
+      }\
+    ';
+    setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
   }
 
 
