@@ -7,8 +7,6 @@
 // @require userChrome.js with ucjsScriptLoader
 // @require Util.uc.js
 // @usage At a menuitem in 'tools' of the main menu.
-// @note Exports a property in the global window, |ucjsScriptList.XXX|. see
-// |ScriptList_init|
 
 
 (function(window, undefined) {
@@ -48,16 +46,10 @@ const kUIBundle = {
 
 /**
  * Main function
- * @note Exports 'ucjsScriptList' in the global scope.
  */
 function ScriptList_init() {
   if (window.ucjsScriptLoader) {
-    let scripts = getScripts(window.ucjsScriptLoader);
-
-    createMenu(scripts);
-
-    // Exports.
-    window.ucjsScriptList = ScriptListPanel(scripts);
+    createMenu(getScripts(window.ucjsScriptLoader));
   }
 }
 
@@ -92,12 +84,14 @@ function createMenu(aScripts) {
   }));
 
   if (aScripts.count) {
-    menu.appendChild($E('menupopup')).appendChild($E('menuitem', {
+    let panel = ScriptListPanel(aScripts);
+    let menuitem = menu.appendChild($E('menupopup')).
+    appendChild($E('menuitem', {
       label: kMenuUI.selectLabel,
       accesskey: kMenuUI.selectAccesskey,
-      tooltiptext: kMenuUI.selectTip,
-      oncommand: 'ucjsScriptList.open();'
+      tooltiptext: kMenuUI.selectTip
     }));
+    addEvent([menuitem, 'command', panel.open, false]);
   } else {
     $E(menu, {
       tooltiptext: kMenuUI.disabledTip,
@@ -111,7 +105,6 @@ function createMenu(aScripts) {
  * @param aScripts {hash} scripts data handler
  * @return {hash}
  *   @member open {function}
- *   @member close {function}
  */
 function ScriptListPanel(aScripts) {
   const {panel: kPanelUI} = kUIBundle;
@@ -226,10 +219,11 @@ function ScriptListPanel(aScripts) {
     // Action buttons
     var buttonsBox = panel.appendChild($E('hbox'));
     buttonsBox.appendChild($E('spacer', {flex: 1}));
-    buttonsBox.appendChild($E('button', {
-      label: kPanelUI.closeButton,
-      oncommand: 'ucjsScriptList.close();'
+    var closeButton = buttonsBox.
+    appendChild($E('button', {
+      label: kPanelUI.closeButton
     }));
+    addEvent([closeButton, 'command', close, false]);
 
     // Resizer
     var resizerBox = panel.appendChild($E('hbox'));
@@ -263,8 +257,7 @@ function ScriptListPanel(aScripts) {
   }
 
   return {
-    open: open,
-    close: close
+    open: open
   };
 }
 
