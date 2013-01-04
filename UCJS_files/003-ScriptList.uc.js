@@ -66,7 +66,9 @@ function getScripts(aScriptLoader) {
 
   return {
     count: data.length,
-    data: function(aIndex) aIndex >= 0 ? data[aIndex] : data,
+    data: function(aIndex) {
+      return aIndex >= 0 ? data[aIndex] : data
+    }
   };
 }
 
