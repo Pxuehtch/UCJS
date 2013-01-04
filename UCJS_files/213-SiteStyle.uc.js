@@ -673,7 +673,7 @@ function $S1(aSelector, aContext)
   window.ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
 
 function U(aStr)
-  window.ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.toStringForUI(aStr);
 
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);

@@ -722,8 +722,32 @@ function convertToUTF16(aStr, aCharset) {
   return aStr;
 }
 
-function convertForSystem(aStr) {
-  return convertToUTF16(aStr, 'UTF-8');
+/**
+ * Converts UTF-8 characters that are emmbeded in a user script into UTF-16 so
+ * that they can be displayed properly for UI
+ * @param aData {string|hash}
+ * @return {}
+ *
+ * @note If |aData| is hash, it allows the nested array or hash but the end
+ * value should be a string.
+ */
+function toStringForUI(aData) {
+  if (typeof aData === 'string') {
+    return convertToUTF16(aData, 'UTF-8');
+  }
+
+  if (Array.isArray(aData)) {
+    return aData.map(function(value) toStringForUI(value));
+  }
+
+  if (/^{.+}$/.test(JSON.stringify(aData))) {
+    for (let key in aData) {
+      aData[key] = toStringForUI(aData[key]);
+    }
+    return aData;
+  }
+
+  return '';
 }
 
 function getWindowList(aType) {
@@ -944,11 +968,11 @@ function setPref(aKey, aVal) {
 //********** Log function
 
 function logMessage(aTarget, aMessage) {
-  const kMessageFormat = '[%target%]\n%msg%';
-
-  function U(str) {
-    return convertForSystem(str);
+  function U(value) {
+    return toStringForUI(value, 'UTF-8');
   }
+
+  const kMessageFormat = '[%target%]\n%msg%';
 
   let formatMessage = U(kMessageFormat.
     replace('%target%', aTarget).replace('%msg%', aMessage));
@@ -1031,7 +1055,7 @@ return {
   removeTab: removeTab,
   removeAllTabsBut: removeAllTabsBut,
 
-  convertForSystem: convertForSystem,
+  toStringForUI: toStringForUI,
   getWindowList: getWindowList,
   focusWindow: focusWindow,
   focusWindowAtIndex: focusWindowAtIndex,

@@ -897,7 +897,7 @@ function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);
 
 function str4ui(aStr)
-  window.ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.toStringForUI(aStr);
 
 function log(aMsg)
   window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);

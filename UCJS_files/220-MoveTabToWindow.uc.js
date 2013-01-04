@@ -236,7 +236,7 @@ function $E(aTagOrNode, aAttribute) {
 //********** Imports
 
 function U(aText)
-  window.ucjsUtil.convertForSystem(aText);
+  window.ucjsUtil.toStringForUI(aText);
 
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);

@@ -368,7 +368,7 @@ function commandForOpenURL(aURL) {
 }
 
 function U(aStr)
-  window.ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.toStringForUI(aStr);
 
 function getSelectionAtCursor()
   window.ucjsUtil.getSelectionAtCursor();

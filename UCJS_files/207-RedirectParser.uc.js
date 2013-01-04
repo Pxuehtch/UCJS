@@ -423,7 +423,7 @@ function url4ui(aURL)
   window.ucjsUtil.unescapeURLForUI(aURL);
 
 function U(aStr)
-  window.ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.toStringForUI(aStr);
 
 function getPref(aKey)
   window.ucjsUtil.getPref(aKey);

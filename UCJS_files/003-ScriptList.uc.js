@@ -338,7 +338,7 @@ function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);
 
 function str4ui(aStr)
-  window.ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.toStringForUI(aStr);
 
 function log(aMsg)
   window.ucjsUtil.logMessage('ScriptList.uc.js', aMsg);

@@ -328,7 +328,7 @@ function getURLBarContextMenu()
   window.ucjsUI.URLBar.contextMenu;
 
 function U(aStr)
-  window.ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.toStringForUI(aStr);
 
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);

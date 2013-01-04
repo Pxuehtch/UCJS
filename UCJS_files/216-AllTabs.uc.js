@@ -529,7 +529,7 @@ function format(aFormat, aAttribute) {
 //********** Imports
 
 function U(aStr)
-  window.ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.toStringForUI(aStr);
 
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);

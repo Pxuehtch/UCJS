@@ -1455,7 +1455,7 @@ function unesc(aURL)
   window.ucjsUtil.unescapeURLCharacters(aURL);
 
 function str4ui(aText)
-  window.ucjsUtil.convertForSystem(aText);
+  window.ucjsUtil.toStringForUI(aText);
 
 function openURL(aURL, aInTab, aOption)
   window.ucjsUtil.openURLIn(aURL, aInTab, aOption);

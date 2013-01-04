@@ -489,7 +489,7 @@ function $ANONID(aId, aNode)
   window.ucjsUtil.getNodeByAnonid(aId, aNode);
 
 function U(aText)
-  window.ucjsUtil.convertForSystem(aText);
+  window.ucjsUtil.toStringForUI(aText);
 
 function setChromeCSS(aCSS)
   window.ucjsUtil.setChromeStyleSheet(aCSS);
