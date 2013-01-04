@@ -212,7 +212,7 @@
   const kPrefTabFocus = 'accessibility.tabfocus';
 
   var defaultTabFocus = getPref(kPrefTabFocus);
-  addEvent([window, 'unload', function(e) {
+  addEvent([window, 'unload', function() {
     setPref(kPrefTabFocus, defaultTabFocus);
   }, false]);
 
