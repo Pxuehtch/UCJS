@@ -304,7 +304,7 @@ function getFocusedWindow() {
   if (window.document.documentElement.
       getAttribute('windowtype') === 'navigator:browser') {
     if (!focusedWindow || focusedWindow === window) {
-      focusedWindow = gBrowser.contentWindow;
+      focusedWindow = window.content;
     }
   }
   return focusedWindow || window;
