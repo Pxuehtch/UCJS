@@ -18,7 +18,7 @@
  */
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -161,7 +161,7 @@ var mBrowserProgressListener = {
 var mReferrer = {
   get ref() {
     delete this.ref;
-    return this.ref = (ucjsTabEx && ucjsTabEx.referrer);
+    return this.ref = (window.ucjsTabEx && window.ucjsTabEx.referrer);
   },
 
   exists: function()
@@ -429,16 +429,16 @@ function openReferrer() {
 }
 
 function $(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $E(aTag)
-  document.createElement(aTag);
+  window.document.createElement(aTag);
 
 
 //********** Imports
 
 function log(aStr)
-  ucjsUtil.logMessage('NaviButton.uc.js', aStr);
+  window.ucjsUtil.logMessage('NaviButton.uc.js', aStr);
 
 
 //********** Entry point
@@ -464,4 +464,4 @@ function NaviButton_init() {
 NaviButton_init();
 
 
-})();
+})(this);

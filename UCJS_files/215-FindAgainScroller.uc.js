@@ -8,7 +8,7 @@
 // @note A default function is modified. see @modified
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -59,7 +59,7 @@ var TextFinder = {
     if (editable) {
       try {
         return editable.
-          QueryInterface(Ci.nsIDOMNSEditableElement).
+          QueryInterface(window.Ci.nsIDOMNSEditableElement).
           editor.
           selectionController;
       } catch (e) {}
@@ -354,7 +354,7 @@ function SkipInvisible() {
     }
 
     var result = selectionController.
-      getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
+      getSelection(window.Ci.nsISelectionController.SELECTION_NORMAL).
       getRangeAt(0).
       commonAncestorContainer;
 
@@ -444,6 +444,8 @@ function AlignPosition() {
   }
 
   function getSelection() {
+    const {Ci} = window;
+
     var selectionController = TextFinder.selectionController;
 
     return selectionController &&
@@ -452,6 +454,8 @@ function AlignPosition() {
   }
 
   function scrollSelection(aSelection, aVPosition, aHPosition) {
+    const {Ci} = window;
+
     aSelection.
     QueryInterface(Ci.nsISelectionPrivate).
     scrollIntoView(
@@ -496,7 +500,7 @@ function SmoothScroll() {
         this.uninit(true);
       }
 
-      if (typeof aGoal === 'undefined')
+      if (aGoal === undefined)
         return;
 
       var scrollable = testScrollable(aNode);
@@ -751,12 +755,16 @@ function FoundBlink() {
   }
 
   function getRange() {
+    const {Ci} = window;
+
     return mSelectionController.
       getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
       getRangeAt(0);
   }
 
   function setDisplay(aShow) {
+    const {Ci} = window;
+
     try {
       mSelectionController.setDisplaySelection(
         aShow ?
@@ -780,13 +788,13 @@ function FoundBlink() {
 //********** Imports
 
 function $X(aXPath, aNode)
-  ucjsUtil.getNodesByXPath(aXPath, aNode);
+  window.ucjsUtil.getNodesByXPath(aXPath, aNode);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
+  window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
 
 
 //********** Entry point
@@ -794,4 +802,4 @@ function log(aMsg)
 FindAgainScroller_init();
 
 
-})();
+})(this);

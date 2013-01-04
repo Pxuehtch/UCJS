@@ -8,7 +8,7 @@
 // @usage A tooltip panel will popup with 'ctrl + mousemove' on the URL bar.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -63,7 +63,12 @@ function URLbarTooltip_init() {
 function showPanel(aEvent) {
   if (aEvent.ctrlKey && getPanel().state === 'closed') {
     buildContent();
+
+    // close the default tooltip
+    // @see chrome://browser/content/urlbarBindings.xml::
+    // _initURLTooltip
     getURLbar()._hideURLTooltip();
+
     getPanel().openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
   }
 }
@@ -131,9 +136,15 @@ function getRestrictData() {
 }
 
 function getShortcutData() {
+  const {Cc, Ci} = window;
+  // @see resource:///modules/Services.jsm
+  const searchService = window.Services.search;
+  // @see resource:///modules/PlacesUtils.jsm
+  const bookmarkService = window.PlacesUtils.bookmarks;
+
   var searchEnginesData = [], bookmarksData = [];
 
-  Services.search.getEngines().forEach(function(a) {
+  searchService.getEngines().forEach(function(a) {
     if (a.alias) {
       searchEnginesData.
       push({keyword: a.alias, name: a.description || a.name});
@@ -151,10 +162,7 @@ function getShortcutData() {
     DBConnection.
     createStatement(sql);
 
-  // @see resource:///modules/PlacesUtils.jsm
-  var bookmarkService = PlacesUtils.bookmarks;
   var id, uri;
-
   try {
     while (statement.executeStep()) {
       id = statement.row.id;
@@ -193,22 +201,22 @@ function setStyles() {
 //********** Utilities
 
 function $ID(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 
 //********** Imports
 
 function $E(aTagOrNode, aAttribute)
-  ucjsUtil.createNode(aTagOrNode, aAttribute);
+  window.ucjsUtil.createNode(aTagOrNode, aAttribute);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function getPref(aKey)
-  ucjsUtil.getPref(aKey);
+  window.ucjsUtil.getPref(aKey);
 
 function log(aMsg)
-  ucjsUtil.logMessage('URLbarTooltip.uc.js', aMsg);
+  window.ucjsUtil.logMessage('URLbarTooltip.uc.js', aMsg);
 
 
 //********** Entry point
@@ -216,4 +224,4 @@ function log(aMsg)
 URLbarTooltip_init();
 
 
-})();
+})(this);

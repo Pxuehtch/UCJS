@@ -8,7 +8,7 @@
 // @require [for action] Util.uc.js, TabEx.uc.js
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -202,7 +202,8 @@ var mTabBarClickEvent = {
         // open home pages
         // Shift: The current opened tabs are closed.
         // Ctrl: Only the first of the multiple homepages is opened.
-        ucjsUtil.openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
+        window.ucjsUtil.
+        openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
         break;
       case (MC && notTabs):
         // reopen the prev-closed tab
@@ -212,12 +213,12 @@ var mTabBarClickEvent = {
       case (LC && foreTab):
         if (ctrlKey) {
           // select/reopen the opener tab
-          ucjsTabEx.selectOpenerTab(target, {undoClose: true});
+          window.ucjsTabEx.selectOpenerTab(target, {undoClose: true});
         } else {
           // select the previous selected tab
           // Shift: select/reopen the *exact* previous selected tab
           let option = shiftKey ? {undoClose: true} : {traceBack: true};
-          ucjsTabEx.selectPrevSelectedTab(target, option);
+          window.ucjsTabEx.selectPrevSelectedTab(target, option);
         }
         break;
       case (LDC && foreTab):
@@ -230,7 +231,7 @@ var mTabBarClickEvent = {
         break;
       case (MC && (foreTab || backTab)):
         // close a tab
-        ucjsUtil.removeTab(target, {safeBlock: true});
+        window.ucjsUtil.removeTab(target, {safeBlock: true});
         break;
     }
   }
@@ -253,10 +254,10 @@ function makeCustomFunctions() {
 //********** Imports
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('Misc.uc.js', aMsg);
+  window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
 
 
 //********** Entry point
@@ -269,4 +270,4 @@ function TabHandler_init() {
 TabHandler_init();
 
 
-})();
+})(this);

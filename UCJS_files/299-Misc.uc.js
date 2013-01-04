@@ -9,7 +9,7 @@
 // @note Some default functions are modified. see @modified.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -56,7 +56,7 @@
   // @modified chrome://browser/content/browser.js::
   // BrowserSearch::webSearch
   Function('BrowserSearch.webSearch = ' +
-    BrowserSearch.webSearch.toString().replace(
+    window.BrowserSearch.webSearch.toString().replace(
       '} else {',
       '\
       } else if (isElementVisible(gURLBar) &&\
@@ -80,6 +80,8 @@
 
   // @modified resource:///modules/PlacesUIUtils.jsm::
   // PlacesUIUtils::getBestTitle
+  const {PlacesUIUtils} = window;
+
   var $getBestTitle = PlacesUIUtils.getBestTitle;
 
   PlacesUIUtils.getBestTitle = function(aNode, aDoNotCutTitle) {
@@ -349,13 +351,14 @@
 (function() {
   // Move '#statusbar-display' before 'input.urlbar-input' to control them by
   // CSS
-  var urlbarTextbox = ucjsUI.URLBar.textBox;
+  var urlbarTextbox = window.ucjsUI.URLBar.textBox;
   urlbarTextbox.insertBefore(ucjsUI.StatusField.textBox,
     urlbarTextbox.firstChild);
 
   // Set the position of a status display
   // @modified chrome://browser/content/browser.js::
   // XULBrowserWindow::updateStatusField
+  const {XULBrowserWindow} = window;
   var $updateStatusField = XULBrowserWindow.updateStatusField;
   XULBrowserWindow.updateStatusField = function() {
     // style of #statusbar-display
@@ -474,37 +477,37 @@ function getLink(aNode) {
 }
 
 function $ID(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 
 //********** Imports
 
 function $E(aTag, aAttribute)
-  ucjsUtil.createNode(aTag, aAttribute);
+  window.ucjsUtil.createNode(aTag, aAttribute);
 
 function $ANONID(aId, aNode)
-  ucjsUtil.getNodeByAnonid(aId, aNode);
+  window.ucjsUtil.getNodeByAnonid(aId, aNode);
 
 function U(aText)
-  ucjsUtil.convertForSystem(aText);
+  window.ucjsUtil.convertForSystem(aText);
 
 function setChromeCSS(aCSS)
-  ucjsUtil.setChromeStyleSheet(aCSS);
+  window.ucjsUtil.setChromeStyleSheet(aCSS);
 
 function setGlobalAgentCSS(aCSS)
-  ucjsUtil.setGlobalStyleSheet(aCSS, true);
+  window.ucjsUtil.setGlobalStyleSheet(aCSS, true);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function getPref(aKey)
-  ucjsUtil.getPref(aKey);
+  window.ucjsUtil.getPref(aKey);
 
 function setPref(aKey, aVal)
-  ucjsUtil.setPref(aKey, aVal);
+  window.ucjsUtil.setPref(aKey, aVal);
 
 function log(aMsg)
-  ucjsUtil.logMessage('Misc.uc.js', aMsg);
+  window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
 
 
-})();
+})(this);

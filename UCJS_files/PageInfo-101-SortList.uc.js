@@ -7,7 +7,7 @@
 // @note Disables the default sorting function.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -40,10 +40,11 @@ var mSortState = (function() {
  * Implements the click handler of a header
  * @see chrome://browser/content/pageinfo/pageInfo.js
  */
-pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
+window.pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
   // Useless of sorting when a single row
-  if (this.rowCount < 2)
+  if (this.rowCount < 2) {
     return;
+  }
 
   var element = aColumn.element;
   var direction = element.getAttribute(kSORT_DIRECTION_ATTRIBUTE) || 'natural';
@@ -92,8 +93,8 @@ function sort(aData, aColumnIndex, aAscending) {
 
 // Disables the default sort functions
 // @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
-gMetaView.onPageMediaSort = function() {};
-gImageView.onPageMediaSort = function() {};
+window.gMetaView.onPageMediaSort = function() {};
+window.gImageView.onPageMediaSort = function() {};
 
 
-})();
+})(this);

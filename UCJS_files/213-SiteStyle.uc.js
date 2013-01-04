@@ -8,7 +8,7 @@
 // @note Creates a preference menu in 'tools' of the menu bar.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -592,7 +592,7 @@ var mPageObserver = (function() {
  */
 var mPrefMenu = (function() {
   function init() {
-    var menu = document.getElementById('menu_ToolsPopup').
+    var menu = window.document.getElementById('menu_ToolsPopup').
     appendChild($E('menu', {
       id: kID.PREFMENU,
       label: kUI.PREFMENU.label,
@@ -664,28 +664,28 @@ var mNoisyURLHandler = (function() {
 //********** Imports
 
 function $E(aTagOrNode, aAttribute)
-  ucjsUtil.createNode(aTagOrNode, aAttribute);
+  window.ucjsUtil.createNode(aTagOrNode, aAttribute);
 
 function $S(aSelector, aContext)
-  ucjsUtil.getNodesBySelector(aSelector, aContext);
+  window.ucjsUtil.getNodesBySelector(aSelector, aContext);
 
 function $S1(aSelector, aContext)
-  ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
+  window.ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
 
 function U(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function setStyleSheet(aCSS, aDocument, aOption) {
   var {replace} = aOption || {};
-  ucjsUtil.setContentStyleSheet(aCSS,
+  window.ucjsUtil.setContentStyleSheet(aCSS,
     {doc: aDocument, id: kID.STYLESHEET, replace: replace});
 }
 
 function log(aMsg)
-  ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
+  window.ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
 
 
 //********** Entry point
@@ -698,4 +698,4 @@ function SiteStyle_init() {
 SiteStyle_init();
 
 
-})();
+})(this);

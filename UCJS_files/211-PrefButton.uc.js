@@ -11,7 +11,7 @@
 // @note Some about:config preferences are changed. see @pref
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -59,10 +59,19 @@ var mPreset = {
     label: 'CSS',
     description: 'Toggle CSS (Tab)',
 
-    get checked() !getMarkupDocumentViewer().authorStyleDisabled,
+    // gets the content viewer for the current content document
+    // @see chrome://browser/content/tabbrowser.xml::
+    // markupDocumentViewer
+    get documentViewer() {
+      return gBrowser.markupDocumentViewer;
+    },
+
+    get checked() {
+      return !this.documentViewer.authorStyleDisabled;
+    },
 
     command: function() {
-      getMarkupDocumentViewer().authorStyleDisabled = this.checked;
+      this.documentViewer.authorStyleDisabled = this.checked;
     }
   },
 
@@ -92,6 +101,8 @@ var mPreset = {
     get disabled() (this.plugin === null),
 
     get plugin() {
+      const {Cc, Ci} = window;
+
       var ph = Cc['@mozilla.org/plugin/host;1'].getService(Ci.nsIPluginHost);
       var plugins = ph.getPluginTags({});
       var plugin = null;
@@ -137,7 +148,7 @@ var mPreset = {
  */
 var mBrowserProgressListener = {
   onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
-    if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
+    if (aStateFlags & window.Ci.nsIWebProgressListener.STATE_STOP) {
       updateState();
     }
   },
@@ -267,28 +278,28 @@ function setStyleSheet() {
 //********** Utilities
 
 function $ID(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $CE(aTag)
-  document.createElement(aTag);
+  window.document.createElement(aTag);
 
 
 //********** Imports
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function setCSS(aCSS)
-  ucjsUtil.setChromeStyleSheet(aCSS);
+  window.ucjsUtil.setChromeStyleSheet(aCSS);
 
 function getPref(aKey, aDefaultValue)
-  ucjsUtil.getPref(aKey, aDefaultValue);
+  window.ucjsUtil.getPref(aKey, aDefaultValue);
 
 function setPref(aKey, aValue)
-  ucjsUtil.setPref(aKey, aValue);
+  window.ucjsUtil.setPref(aKey, aValue);
 
 function log(aMsg)
-  ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
+  window.ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
 
 
 //********** Entry point
@@ -296,4 +307,4 @@ function log(aMsg)
 PrefButton_init();
 
 
-})();
+})(this);

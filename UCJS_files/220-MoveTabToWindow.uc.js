@@ -8,13 +8,11 @@
 // @usage Access to items in a tab context menu.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
 
-
-//********** Preferences
 
 /**
  * Settings for UI
@@ -204,27 +202,28 @@ function getTabContextMenu() {
 
 function getContextTab() {
   // @see chrome://browser/content/browser.js::TabContextMenu
-  return TabContextMenu.contextTab;
+  return window.TabContextMenu.contextTab;
 }
 
 function getWindowEnumerator() {
   // Enumerator of all windows in order from front to back.
-  return Services.wm.getZOrderDOMWindowEnumerator(null, true);
+  // @see resource:///modules/Services.jsm
+  return window.Services.wm.getZOrderDOMWindowEnumerator(null, true);
 }
 
 
 //********** Utilities
 
 function $ID(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $E(aTagOrNode, aAttribute) {
   var element = (typeof aTagOrNode === 'string') ?
-    document.createElement(aTagOrNode) : aTagOrNode;
+    window.document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && typeof value !== 'undefined') {
+      if (value !== null && value !== undefined) {
         element.setAttribute(name, value);
       }
     }
@@ -237,13 +236,13 @@ function $E(aTagOrNode, aAttribute) {
 //********** Imports
 
 function U(aText)
-  ucjsUtil.convertForSystem(aText);
+  window.ucjsUtil.convertForSystem(aText);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
+  window.ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
 
 
 //********** Entry point
@@ -251,4 +250,4 @@ function log(aMsg)
 MoveTabToWindow_init();
 
 
-})();
+})(this);

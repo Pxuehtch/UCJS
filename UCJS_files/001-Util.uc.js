@@ -20,16 +20,11 @@ var ucjsUtil = (function(window, undefined) {
 "use strict";
 
 
-//********** Generic variables
-
-var {document, Components} = window;
-var {classes: Cc, interfaces: Ci} = Components;
-
-
 //********** XPCOM handler
 
 var mXPCOM = (function() {
 
+  const {Cc, Ci} = window;
   function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
   function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
 
@@ -156,11 +151,11 @@ function getSelectionAtCursor(aOption) {
     node = event.target;
     rangeParent = event.rangeParent;
     rangeOffset = event.rangeOffset; // TODO: may be wrong
-  } else if (gContextMenu) {
+  } else if (window.gContextMenu) {
     // contextmenu mode
-    node = document.popupNode;
-    rangeParent = document.popupRangeParent;
-    rangeOffset = document.popupRangeOffset;
+    node = window.document.popupNode;
+    rangeParent = window.document.popupRangeParent;
+    rangeOffset = window.document.popupRangeOffset;
   }
 
   var selection = getSelectionController(node);
@@ -207,7 +202,7 @@ function getSelectionController(aNode) {
   if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
       aNode instanceof HTMLTextAreaElement) {
     try {
-      return aNode.QueryInterface(Ci.nsIDOMNSEditableElement).
+      return aNode.QueryInterface(window.Ci.nsIDOMNSEditableElement).
         editor.selection;
     } catch (e) {}
     return null;
@@ -279,8 +274,8 @@ function createNode(aTagOrNode, aAttribute) {
   if (typeof aTagOrNode === 'string') {
     let elementNS = getNamespaceOf(aTagOrNode);
     element = elementNS ?
-      document.createElementNS(elementNS, aTagOrNode) :
-      document.createElement(aTagOrNode);
+      window.document.createElementNS(elementNS, aTagOrNode) :
+      window.document.createElement(aTagOrNode);
   } else if (aTagOrNode instanceof Element) {
     element = aTagOrNode;
   }
@@ -290,7 +285,7 @@ function createNode(aTagOrNode, aAttribute) {
   if (!!aAttribute) {
     let attributeNS;
     for (let [name, value] in Iterator(aAttribute)) {
-      if (name && value !== null && typeof value !== 'undefined') {
+      if (name && value !== null && value !== undefined) {
         attributeNS = getNamespaceOf(name);
         if (attributeNS) {
           element.setAttributeNS(attributeNS, name, value);
@@ -306,7 +301,8 @@ function createNode(aTagOrNode, aAttribute) {
 
 // for XUL element.
 function getNodeByAnonid(aId, aContext) {
-  return document.getAnonymousElementByAttribute(aContext, 'anonid', aId);
+  return window.document.
+    getAnonymousElementByAttribute(aContext, 'anonid', aId);
 }
 
 /**
@@ -315,9 +311,9 @@ function getNodeByAnonid(aId, aContext) {
  *   if in the main browser window, returns a content window (top or frame)
  */
 function getFocusedWindow() {
-  var focusedWindow = document.commandDispatcher.focusedWindow;
+  var focusedWindow = window.document.commandDispatcher.focusedWindow;
 
-  if (document.documentElement.
+  if (window.document.documentElement.
       getAttribute('windowtype') === 'navigator:browser') {
     if (!focusedWindow || focusedWindow === window) {
       focusedWindow = gBrowser.contentWindow;
@@ -466,7 +462,7 @@ function checkSecurity(aURL) {
   window.urlSecurityCheck(
     aURL,
     gBrowser.contentPrincipal,
-    Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL
+    window.Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL
   );
 }
 
@@ -620,6 +616,7 @@ function loadPage(aURL, aOption) {
     checkSecurity(URL);
   }
 
+  const {Ci} = window;
   var flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
   if (allowThirdPartyFixup)
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
@@ -811,16 +808,17 @@ function registerChromeStyleSheet(aCSS) {
   if (!css)
     return;
 
-  var stylesheet = document.createProcessingInstruction(
+  var stylesheet = window.document.createProcessingInstruction(
     'xml-stylesheet',
     'type="text/css" href="data:text/css,%DATA%"'.
     replace('%DATA%', encodeURIComponent(css))
   );
 
   stylesheet.getAttribute =
-    function(key) document.documentElement.getAttribute(key);
+    function(key) window.document.documentElement.getAttribute(key);
 
-  return document.insertBefore(stylesheet, document.documentElement);
+  return window.document.insertBefore(stylesheet,
+    window.document.documentElement);
 }
 
 function registerContentStyleSheet(aCSS, aOption) {
@@ -874,7 +872,7 @@ function loadOverlay(aOverlay) {
   var overlay = 'data:application/vnd.mozilla.xul+xml;charset=utf-8,' +
     encodeURIComponent(aOverlay);
 
-  document.loadOverlay(overlay, null);
+  window.document.loadOverlay(overlay, null);
 }
 
 function getPref(aKey, aDef) {

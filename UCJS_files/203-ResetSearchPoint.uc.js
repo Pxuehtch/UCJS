@@ -13,7 +13,7 @@
  */
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -78,6 +78,8 @@ function setSelection(aElement, aWindow) {
 }
 
 function setFastFindFor(aWindow) {
+  const {Ci} = window;
+
   var docShell =
     aWindow.
     QueryInterface(Ci.nsIInterfaceRequestor).
@@ -107,7 +109,7 @@ function getClickManager(aElement) {
     win && win.top === window.content;
 
   var isEditable =
-    aElement instanceof Ci.nsIDOMNSEditableElement &&
+    aElement instanceof window.Ci.nsIDOMNSEditableElement &&
     aElement.type !== 'submit' &&
     aElement.type !== 'image';
 
@@ -149,10 +151,10 @@ function getFastFind() {
 //********** Imports
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
+  window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
 
 
 //********** Entry point

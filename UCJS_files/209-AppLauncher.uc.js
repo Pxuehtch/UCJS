@@ -15,7 +15,7 @@
  * Main function
  * @param Util {hash} utility functions
  */
-(function(Util) {
+(function(Util, window, undefined) {
 
 
 "use strict";
@@ -393,6 +393,9 @@ function doBrowse(aEvent) {
 }
 
 function getAvailableActions() {
+  // @see chrome://browser/content/nsContextMenu.js
+  const {gContextMenu} = window;
+
   var actions = [];
 
   var onMedia = false;
@@ -468,6 +471,9 @@ function getAvailableActions() {
 }
 
 function doAction(aApp, aAction) {
+  // @see chrome://browser/content/nsContextMenu.js
+  const {gContextMenu} = window;
+
   var URL = '';
   var save = false;
 
@@ -581,7 +587,7 @@ var gFileType = {
       try {
         // @see chrome://global/content/contentAreaUtils.js::makeURI
         let URI = window.makeURI(aURL, null, null);
-        return URI ? URI.QueryInterface(Ci.nsIURL).fileExtension : '';
+        return URI ? URI.QueryInterface(window.Ci.nsIURL).fileExtension : '';
       } catch (e) {}
     }
     return '';
@@ -590,7 +596,7 @@ var gFileType = {
 
 
 function inImagePage() {
-  return gContextMenu.target.ownerDocument instanceof ImageDocument;
+  return window.gContextMenu.target.ownerDocument instanceof ImageDocument;
 }
 
 function inTextPage() {
@@ -600,10 +606,10 @@ function inTextPage() {
 }
 
 function $(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $E(aTag)
-  document.createElement(aTag);
+  window.document.createElement(aTag);
 
 function addSeparator(aPopup)
   aPopup.appendChild($E('menuseparator'));
@@ -647,7 +653,7 @@ AppLauncher_init();
  * Arguments of the main function
  * @return Util {hash} utility functions
  */
-((function() {
+((function(window, undefined) {
 
 
 "use strict";
@@ -673,7 +679,7 @@ const kSpecialFolderAliases = [
 
 //********** XPCOM settings
 
-const {classes: Cc, interfaces: Ci} = Components;
+const {classes: Cc, interfaces: Ci} = window.Components;
 function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
 function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
 
@@ -836,7 +842,9 @@ function getSavePath(aURL) {
   leafName = kFileNameForm.replace('%LEAF%', leafName);
 
   var dir = getSpecialDirectory('TmpD');
-  dir.append(validateFileName(leafName.replace('%NUM%', '')));
+  // @see chrome://global/content/contentAreaUtils.js::
+  // validateFileName()
+  dir.append(window.validateFileName(leafName.replace('%NUM%', '')));
 
   var uniqueNum = 0;
   while (dir.exists()) {
@@ -880,19 +888,19 @@ function warn(aTitle, aMsg) {
 //********** Import
 
 function getContextMenu()
-  ucjsUI.ContentArea.contextMenu;
+  window.ucjsUI.ContentArea.contextMenu;
 
 function getNodesByXPath(aXPath, aNode)
-  ucjsUtil.getNodesByXPath(aXPath, aNode);
+  window.ucjsUtil.getNodesByXPath(aXPath, aNode);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function str4ui(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function log(aMsg)
-  ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
+  window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
 
 
 //********** Export
@@ -908,4 +916,4 @@ return {
 };
 
 
-})());
+})(this), this);

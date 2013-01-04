@@ -23,7 +23,7 @@
  */
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -70,7 +70,7 @@ const kGestureSet = [
     gestures: ['S&L'],
     name: '前のページへ',
     command: function() {
-      ucjsUtil.loadPage(ucjsNaviLink.getPrev());
+      window.ucjsUtil.loadPage(window.ucjsNaviLink.getPrev());
     }
   },
   {
@@ -84,7 +84,7 @@ const kGestureSet = [
     gestures: ['S&R'],
     name: '次のページへ',
     command: function() {
-      ucjsUtil.loadPage(ucjsNaviLink.getNext());
+      window.ucjsUtil.loadPage(window.ucjsNaviLink.getNext());
     }
   },
   {
@@ -113,7 +113,8 @@ const kGestureSet = [
     gestures: ['UD'],
     name: '更新/中止',
     command: function() {
-      doCmd(XULBrowserWindow.isBusy ? 'Browser:Stop' : 'Browser:Reload');
+      doCmd(window.XULBrowserWindow.isBusy ?
+        'Browser:Stop' : 'Browser:Reload');
     }
   },
   {
@@ -145,56 +146,56 @@ const kGestureSet = [
     gestures: ['DR'],
     name: 'タブを閉じる',
     command: function() {
-      ucjsUtil.removeTab(gBrowser.selectedTab, {safeBlock: true});
+      window.ucjsUtil.removeTab(gBrowser.selectedTab, {safeBlock: true});
     }
   },
   {
     gestures: ['S&C&DR'],
     name: '強制的にタブを閉じる',
     command: function() {
-      ucjsUtil.removeTab(gBrowser.selectedTab);
+      window.ucjsUtil.removeTab(gBrowser.selectedTab);
     }
   },
   {
     gestures: ['S&DRL', 'DRLW+', 'DRLW-'],
     name: '既読のタブを閉じる',
     command: function() {
-      ucjsTabEx.closeReadTabs();
+      window.ucjsTabEx.closeReadTabs();
     }
   },
   {
     gestures: ['S&DRDL', 'DRDLW+', 'DRDLW-'],
     name: '左側のタブを閉じる',
     command: function() {
-      ucjsTabEx.closeLeftTabs();
+      window.ucjsTabEx.closeLeftTabs();
     }
   },
   {
     gestures: ['S&DRDR', 'DRDRW+', 'DRDRW-'],
     name: '右側のタブを閉じる',
     command: function() {
-      ucjsTabEx.closeRightTabs();
+      window.ucjsTabEx.closeRightTabs();
     }
   },
   {
     gestures: ['S&DRU', 'DRUW+', 'DRUW-'],
     name: '他のタブを閉じる',
     command: function() {
-      ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
+      window.ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
     }
   },
   {
     gestures: ['S&DRUL', 'DRULW+', 'DRULW-'],
     name: 'ホームだけにする',
     command: function() {
-      ucjsUtil.openHomePages({doReplace: true});
+      window.ucjsUtil.openHomePages({doReplace: true});
     }
   },
   {
     gestures: ['DURD'], // shape of 'h'.
     name: 'ホームを開く',
     command: function() {
-      ucjsUtil.openHomePages();
+      window.ucjsUtil.openHomePages();
     }
   },
 
@@ -237,21 +238,21 @@ const kGestureSet = [
     gestures: ['TEXT#L'],
     name: 'Weblio',
     command: function({dragData}) {
-      ucjsWebService.open({name: 'Weblio', data: dragData});
+      window.ucjsWebService.open({name: 'Weblio', data: dragData});
     }
   },
   {
     gestures: ['S&TEXT#L'],
     name: 'Google翻訳',
     command: function({dragData}) {
-      ucjsWebService.open({name: 'GoogleTranslation', data: dragData});
+      window.ucjsWebService.open({name: 'GoogleTranslation', data: dragData});
     }
   },
   {
     gestures: ['TEXT#R'],
     name: 'Google検索',
     command: function({dragData}) {
-      ucjsWebService.open({name: 'GoogleSearch', data: dragData});
+      window.ucjsWebService.open({name: 'GoogleSearch', data: dragData});
     }
   },
   {
@@ -259,42 +260,42 @@ const kGestureSet = [
     name: 'Google検索 site:',
     command: function({dragData}) {
       var data = dragData + ' site:' + gBrowser.currentURI.spec;
-      ucjsWebService.open({name: 'GoogleSearch', data: data});
+      window.ucjsWebService.open({name: 'GoogleSearch', data: data});
     }
   },
   {
     gestures: ['TEXT#D'],
     name: 'ページ内検索',
     command: function({dragData}) {
-      ucjsUI.FindBar.findWith(dragData, true);
+      window.ucjsUI.FindBar.findWith(dragData, true);
     }
   },
   {
     gestures: ['TEXT#UR'],
     name: '加えて再検索 (Focus)',
     command: function({dragData}) {
-      ucjsWebService.reSubmitMore(dragData);
+      window.ucjsWebService.reSubmitMore(dragData);
     }
   },
   {
     gestures: ['S&TEXT#UR'],
     name: '加えて再検索 (Submit)',
     command: function({dragData}) {
-      ucjsWebService.reSubmitMore(dragData, true);
+      window.ucjsWebService.reSubmitMore(dragData, true);
     }
   },
   {
     gestures: ['TEXT#DR'],
     name: '除いて再検索 (Focus)',
     command: function({dragData}) {
-      ucjsWebService.reSubmitLess(dragData);
+      window.ucjsWebService.reSubmitLess(dragData);
     }
   },
   {
     gestures: ['S&TEXT#DR'],
     name: '除いて再検索 (Submit)',
     command: function({dragData}) {
-      ucjsWebService.reSubmitLess(dragData, true);
+      window.ucjsWebService.reSubmitLess(dragData, true);
     }
   },
   {
@@ -1055,34 +1056,34 @@ function doCmd(aCommand) {
 }
 
 function $(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 
 //********** Imports
 
 function enableContextMenu(aEnable) {
-  ucjsUI.ContentArea.contextMenu.hidden = !aEnable;
+  window.ucjsUI.ContentArea.contextMenu.hidden = !aEnable;
 }
 
 function setOverLink(aEnabled) {
-  ucjsUI.StatusField.setOverLink(aEnabled);
+  window.ucjsUI.StatusField.setOverLink(aEnabled);
 }
 
 function updateStatusbarText(aText) {
-  ucjsUI.StatusField.update(aText);
+  window.ucjsUI.StatusField.update(aText);
 }
 
 function U(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function getSelectionAtCursor(aOption)
-  ucjsUtil.getSelectionAtCursor(aOption);
+  window.ucjsUtil.getSelectionAtCursor(aOption);
 
 function openTab(aURL, aBG) {
-  ucjsUtil.openTab(aURL, {
+  window.ucjsUtil.openTab(aURL, {
     inBackground: aBG,
     relatedToCurrent: true,
     ucjsTrustURL: /^data:image\/(?:gif|jpg|png);base64,/.test(aURL)
@@ -1090,7 +1091,7 @@ function openTab(aURL, aBG) {
 }
 
 function log(aMsg)
-  ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
+  window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
 
 
 //********** Entry point
@@ -1102,4 +1103,4 @@ function MouseGesture_init() {
 MouseGesture_init();
 
 
-})();
+})(this);

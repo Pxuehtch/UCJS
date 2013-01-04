@@ -16,11 +16,6 @@
 
 
 /**
- * Required objects
- */
-const {ucjsUtil, ucjsUI, ucjsWebService} = window;
-
-/**
  * Identifiers
  */
 const kID = {
@@ -79,7 +74,7 @@ const kString = {
 const kPreset = [
   {
     // @require WebService.uc.js
-    disabled: !ucjsWebService,
+    disabled: !window.ucjsWebService,
     types: ['PAGE'],
     label: '%TYPE%の はてなブックマーク (-)',
 
@@ -229,7 +224,9 @@ function showContextMenu(aEvent) {
 function getAvailableItems() {
   var items = [];
 
-  var {onLink, onImage, onTextInput, linkURL, mediaURL} = gContextMenu;
+  // @see chrome://browser/content/nsContextMenu.js
+  var {onLink, onImage, onTextInput, linkURL, mediaURL} =
+    window.gContextMenu;
   var pageURL = gBrowser.currentURI.spec;
   var selection = getSelectionAtCursor();
   var onPlainTextLink = selection && !onLink && linkURL;
@@ -330,10 +327,10 @@ function getSeparators() {
 }
 
 function $ID(aID)
-  document.getElementById(aID);
+  window.document.getElementById(aID);
 
 function $E(aTag, aAttribute) {
-  let node = document.createElement(aTag);
+  let node = window.document.createElement(aTag);
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
@@ -361,7 +358,7 @@ function $E(aTag, aAttribute) {
 //********** Imports
 
 function getContextMenu()
-  ucjsUI.ContentArea.contextMenu;
+  window.ucjsUI.ContentArea.contextMenu;
 
 function commandForOpenURL(aURL) {
   var command = 'ucjsUtil.openTab("%URL%"' +
@@ -371,16 +368,16 @@ function commandForOpenURL(aURL) {
 }
 
 function U(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function getSelectionAtCursor()
-  ucjsUtil.getSelectionAtCursor();
+  window.ucjsUtil.getSelectionAtCursor();
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('SendTo.uc.js', aMsg);
+  window.ucjsUtil.logMessage('SendTo.uc.js', aMsg);
 
 
 //********** Entry point

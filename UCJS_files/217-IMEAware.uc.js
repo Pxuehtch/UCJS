@@ -8,7 +8,7 @@
 // @note cf. https://github.com/Griever/userChromeJS/blob/master/IME-Colors.uc.js
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -136,7 +136,8 @@ var mIMEAwareHandler = {
    */
   checkValidity: function() {
     try {
-      return !!(this.textbox && Cu.getWeakReference(this.textbox).get());
+      return !!(this.textbox &&
+        window.Cu.getWeakReference(this.textbox).get());
     } catch (e) {}
     return false;
   },
@@ -146,6 +147,8 @@ var mIMEAwareHandler = {
    * @return {string} key in kStyleSet
    */
   getIMEState: function() {
+    const {Ci} = window;
+
     var win = this.textbox.ownerDocument.defaultView;
     if (win) {
       let imeMode = win.getComputedStyle(this.textbox, null).imeMode;
@@ -196,13 +199,13 @@ var mIMEAwareHandler = {
 //********** Utilities
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function $X1(aXPath, aNode)
-  ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
+  window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
 
 function log(aMsg)
-  ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
+  window.ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
 
 
 //********** Entry point
@@ -222,11 +225,11 @@ function IMEAware_init() {
     mIMEAwareHandler.uninit();
   }
 
-  addEvent([document.documentElement, 'focus', onFocus, true]);
+  addEvent([window.document.documentElement, 'focus', onFocus, true]);
   addEvent([window, 'unload', onUnload, false]);
 }
 
 IMEAware_init();
 
 
-})();
+})(this);

@@ -8,7 +8,7 @@
 // @note Some functions are exported. (ucjsLinkInfo.XXX)
 
 
-var ucjsLinkInfo = (function() {
+var ucjsLinkInfo = (function(window, undefined) {
 
 
 "use strict";
@@ -45,13 +45,13 @@ var gLinkInfoBuilt = false;
 
 function init() {
   if (!gLinkView) {
-    let tree = document.getElementById(kID.linkTree);
+    let tree = window.document.getElementById(kID.linkTree);
     let copyColumnIndex =
       tree.columns.getNamedColumn(kID.addressColumn).index;
 
     // @see chrome://browser/content/pageinfo/pageInfo.js::
     // pageInfoTreeView()
-    gLinkView = new pageInfoTreeView(kID.linkTree, copyColumnIndex);
+    gLinkView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
     tree.view = gLinkView;
   }
 
@@ -65,7 +65,7 @@ function build() {
     try {
       // @see chrome://browser/content/pageinfo/pageInfo.js::
       // goThroughFrames()
-      goThroughFrames(gDocument, gWindow);
+      window.goThroughFrames(window.gDocument, window.gWindow);
     } catch (e) {
       // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]:
       // gWindow.frames.length is undefined after closing the target page
@@ -77,6 +77,10 @@ function build() {
 }
 
 function LI_processFrames() {
+  // @see chrome://browser/content/pageinfo/pageInfo.js::
+  // gFrameList
+  var {gFrameList} = window;
+
   if (gFrameList.length) {
     let doc = gFrameList[0];
     let iterator = doc.createTreeWalker(
@@ -142,6 +146,8 @@ function grabLink(aNode) {
     let address = '',
         href = aNode.getAttributeNS(XLinkNS, 'href'),
         charset = aNode.ownerDocument.characterSet;
+    // @see resource:///modules/Services.jsm
+    let io = window.Services.io;
     try {
       let baseURI = Services.io.newURI(aNode.baseURI, charset, null);
       address = Services.io.newURI(href, charset, baseURI).spec;
@@ -158,8 +164,8 @@ function grabLink(aNode) {
 
 // @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
 function getText(aNode, aDefault) {
-  return (getValueText(aNode) || aNode.title || aDefault || kNote.error).
-    substr(0, 50);
+  return (window.getValueText(aNode) || aNode.title || aDefault ||
+    kNote.error).substr(0, 50);
 }
 
 function addLink(aValueArray) {
@@ -203,4 +209,4 @@ return {
 };
 
 
-})();
+})(this);

@@ -18,12 +18,6 @@
 
 
 /**
- * Required modules
- */
-const {ucjsScriptLoader, ucjsUtil} = window;
-
-
-/**
  * UI bundle
  * @note U() for UI display.
  */
@@ -57,8 +51,8 @@ const kUIBundle = {
  * @note Exports 'ucjsScriptList' in the global scope.
  */
 function ScriptList_init() {
-  if (ucjsScriptLoader) {
-    let scripts = getScripts(ucjsScriptLoader);
+  if (window.ucjsScriptLoader) {
+    let scripts = getScripts(window.ucjsScriptLoader);
 
     createMenu(scripts);
 
@@ -278,33 +272,34 @@ function ScriptListPanel(aScripts) {
 //********** Utilities
 
 function getCenteringPosition(aElement) {
+  var {outerWidth, outerHeight, screen} = window;
   var {clientWidth: w, clientHeight: h} = aElement;
   var x = 0, y = 0;
 
-  if (window.outerWidth > w) {
-    x = window.outerWidth - w;
-  } else if (window.screen.availWidth > w) {
-    x = window.screen.availWidth - w;
+  if (outerWidth > w) {
+    x = outerWidth - w;
+  } else if (screen.availWidth > w) {
+    x = screen.availWidth - w;
   }
-  if (window.outerHeight > h) {
-    y = window.outerHeight - h;
-  } else if (window.screen.availHeight > h) {
-    y = window.screen.availHeight - h;
+  if (outerHeight > h) {
+    y = outerHeight - h;
+  } else if (screen.availHeight > h) {
+    y = screen.availHeight - h;
   }
 
   return [x / 2, y / 2];
 }
 
 function $ID(aID)
-  document.getElementById(aID);
+  window.document.getElementById(aID);
 
 function $E(aTagOrNode, aAttribute) {
   var element = (typeof aTagOrNode === 'string') ?
-    document.createElement(aTagOrNode) : aTagOrNode;
+    window.document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && typeof value !== 'undefined') {
+      if (value !== null && value !== undefined) {
         element.setAttribute(name, value);
       }
     }
@@ -340,13 +335,13 @@ function U(aData) {
 //********** Imports
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function str4ui(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function log(aMsg)
-  ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
+  window.ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
 
 
 //********** Entry point

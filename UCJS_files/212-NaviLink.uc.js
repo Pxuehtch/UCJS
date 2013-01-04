@@ -9,13 +9,11 @@
 // @note Some functions are exported to global (ucjsNaviLink.XXX).
 
 
-var ucjsNaviLink = (function() {
+var ucjsNaviLink = (function(window, undefined) {
 
 
 "use strict";
 
-
-//********** Preferences
 
 const kPref = {
   // Show page information menu
@@ -205,7 +203,9 @@ var mMenu = (function() {
     if (aEvent.button === 2)
       return;
     if (aEvent.button === 1) {
-      closeMenus(item);
+      // @see chrome://browser/content/utilityOverlay.js::
+      // closeMenus
+      window.closeMenus(item);
     }
 
     if (!item.value)
@@ -260,7 +260,7 @@ var mMenu = (function() {
   }
 
   function getSeparators() {
-    function $ID(id) document.getElementById(id);
+    function $ID(id) window.document.getElementById(id);
 
     return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
   }
@@ -1228,7 +1228,8 @@ var mUpperNavi = (function() {
 
     var baseDomain = host;
     try {
-      baseDomain = Services.eTLD.getBaseDomainFromHost(host);
+      // @see resource:///modules/Services.jsm
+      baseDomain = window.Services.eTLD.getBaseDomainFromHost(host);
     } catch (e) {
       // @throws NS_ERROR_UNEXPECTED host contains characters disallowed in
       // URIs.
@@ -1266,7 +1267,7 @@ function getCurrentURI(aFlags)
   createURI(gBrowser.currentURI, aFlags);
 
 function createURI(aURI, aFlags) {
-  if (!(aURI instanceof Ci.nsIURI)) {
+  if (!(aURI instanceof window.Ci.nsIURI)) {
     // @see chrome://global/content/contentAreaUtils.js::makeURI
     aURI = window.makeURI(aURI, null, null);
   }
@@ -1318,11 +1319,11 @@ function createURI(aURI, aFlags) {
 
 function $E(aTagOrNode, aAttribute) {
   var element = (typeof aTagOrNode === 'string') ?
-    document.createElement(aTagOrNode) : aTagOrNode;
+    window.document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && typeof value !== 'undefined') {
+      if (value !== null && value !== undefined) {
         element.setAttribute(name, value);
       }
     }
@@ -1366,7 +1367,7 @@ function format(aFormat, aAttribute) {
       name = '%' + name + '%';
 
       // the match word will be removed when value is null or undefined or ''
-      if (value === null || typeof value === 'undefined') {
+      if (value === null || value === undefined) {
         value = '';
       }
 
@@ -1439,28 +1440,28 @@ function U(aData) {
 //********** Imports
 
 function getURLBarContextMenu()
-  ucjsUI.URLBar.contextMenu;
+  window.ucjsUI.URLBar.contextMenu;
 
 function $SA(aSelector)
-  ucjsUtil.getNodesBySelector(aSelector);
+  window.ucjsUtil.getNodesBySelector(aSelector);
 
 function $X1(aXPath)
-  ucjsUtil.getFirstNodeByXPath(aXPath);
+  window.ucjsUtil.getFirstNodeByXPath(aXPath);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function unesc(aURL)
-  ucjsUtil.unescapeURLCharacters(aURL);
+  window.ucjsUtil.unescapeURLCharacters(aURL);
 
 function str4ui(aText)
-  ucjsUtil.convertForSystem(aText);
+  window.ucjsUtil.convertForSystem(aText);
 
 function openURL(aURL, aInTab, aOption)
-  ucjsUtil.openURLIn(aURL, aInTab, aOption);
+  window.ucjsUtil.openURLIn(aURL, aInTab, aOption);
 
 function log(aMsg)
-  ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
+  window.ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
 
 
 //********** Entry point
@@ -1482,4 +1483,4 @@ return {
 };
 
 
-})();
+})(this);

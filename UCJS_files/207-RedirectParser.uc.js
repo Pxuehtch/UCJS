@@ -8,7 +8,7 @@
 // @usage Access to menu in the main context menu.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -169,7 +169,9 @@ function initMenu() {
 
 function showContextMenu(aEvent) {
   if (aEvent.target === getContextMenu()) {
-    gContextMenu.showItem($ID(kBundle.menu.id), scanURL(gContextMenu.linkURL));
+    // @see chrome://browser/content/nsContextMenu.js
+    window.gContextMenu.showItem($ID(kBundle.menu.id),
+      scanURL(gContextMenu.linkURL));
   }
 }
 
@@ -373,10 +375,10 @@ function trimTrailing(aURL) {
 //********** Utilities
 
 function $ID(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $E(aTag)
-  document.createElement(aTag);
+  window.document.createElement(aTag);
 
 function chr4key(aIndex) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -387,7 +389,7 @@ function chr4key(aIndex) {
 //********** Imports
 
 function getContextMenu()
-  ucjsUI.ContentArea.contextMenu;
+  window.ucjsUI.ContentArea.contextMenu;
 
 function setAction(aNode, aAction, aURL) {
   if (!aAction || !aURL)
@@ -415,22 +417,22 @@ function setAction(aNode, aAction, aURL) {
 }
 
 function unesc(aStr)
-  ucjsUtil.unescapeURLCharacters(aStr);
+  window.ucjsUtil.unescapeURLCharacters(aStr);
 
 function url4ui(aURL)
-  ucjsUtil.unescapeURLForUI(aURL);
+  window.ucjsUtil.unescapeURLForUI(aURL);
 
 function U(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function getPref(aKey)
-  ucjsUtil.getPref(aKey);
+  window.ucjsUtil.getPref(aKey);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
+  window.ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
 
 
 //********** Entry point
@@ -438,4 +440,4 @@ function log(aMsg)
 RedirectParser_init();
 
 
-})();
+})(this);

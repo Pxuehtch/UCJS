@@ -15,11 +15,6 @@
 
 
 /**
- * Required objects
- */
-const {ucjsUtil, ucjsUI} = window;
-
-/**
  * Identifiers
  */
 const kID = {
@@ -289,10 +284,10 @@ function getSeparators() {
 }
 
 function $ID(aID)
-  document.getElementById(aID);
+  window.document.getElementById(aID);
 
 function $E(aTag, aAttribute) {
-  var node = document.createElement(aTag);
+  var node = window.document.createElement(aTag);
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
@@ -330,16 +325,16 @@ function commandForOpenURLs(aURLsArray) {
 }
 
 function getURLBarContextMenu()
-  ucjsUI.URLBar.contextMenu;
+  window.ucjsUI.URLBar.contextMenu;
 
 function U(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
+  window.ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
 
 
 //********** Entry point

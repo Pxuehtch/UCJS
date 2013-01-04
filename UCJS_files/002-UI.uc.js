@@ -10,7 +10,7 @@
 // @usage Access to items through global property (ucjsUI.XXX).
 
 
-var ucjsUI = (function() {
+var ucjsUI = (function(window, undefined) {
 
 
 "use strict";
@@ -123,6 +123,10 @@ var mFindBar = {
  * Status bar
  */
 var mStatusField = (function() {
+  // @modified chrome://browser/content/browser.js::
+  // XULBrowserWindow
+  const {XULBrowserWindow} = window;
+
   const kStatusAttribute = {
     LINKSTATE: 'ucjs_ui_statusField_linkstate',
     MESSAGE: 'ucjs_ui_statusField_message'
@@ -238,6 +242,8 @@ var mStatusField = (function() {
     var $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink = function(url, anchorElt) {
       // @see resource:///modules/PlacesUtils.jsm
+      const {PlacesUtils} = window;
+
       var URI;
       try {
         URI = PlacesUtils._uri(url);
@@ -292,12 +298,12 @@ var mStatusField = (function() {
  */
 var mMenuitem = {
   toggleUnreadTab: function(aMenuitem, aTab) {
-    if (!ucjsTabEx)
+    if (!window.ucjsTabEx)
       throw 'TabEx.uc.js is required.';
 
     const ATTR_UNREADTAB = 'ucjs_ui_menuitem_unreadTab';
 
-    if (!ucjsTabEx.tabState.read(aTab)) {
+    if (!window.ucjsTabEx.tabState.read(aTab)) {
       aMenuitem.classList.add(ATTR_UNREADTAB);
     } else {
       aMenuitem.classList.remove(ATTR_UNREADTAB);
@@ -357,22 +363,22 @@ function manageContextMenuSeparators() {
 //********** Utilities
 
 function $ID(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $ANONID(aId, aContext)
-  ucjsUtil.getNodeByAnonid(aId, aContext);
+  window.ucjsUtil.getNodeByAnonid(aId, aContext);
 
 function $X(aXPath, aContext)
-  ucjsUtil.getNodesByXPath(aXPath, aContext);
+  window.ucjsUtil.getNodesByXPath(aXPath, aContext);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function setCSS(aCSS, aTitle)
-  ucjsUtil.setChromeStyleSheet(aCSS);
+  window.ucjsUtil.setChromeStyleSheet(aCSS);
 
 function log(aMsg)
-  ucjsUtil.logMessage('UI.uc.js', aMsg);
+  window.ucjsUtil.logMessage('UI.uc.js', aMsg);
 
 
 //********** Entry point
@@ -395,4 +401,4 @@ return {
 };
 
 
-})();
+})(this);

@@ -15,11 +15,6 @@ var ucjsWebService = (function(window, undefined) {
 
 
 /**
- * Required objects
- */
-const {ucjsUtil} = window;
-
-/**
  * Preset list
  * @value {hash[]}
  *   type: {string}
@@ -318,16 +313,16 @@ function reSubmit(aData, aSubmit, aLess) {
 //********** Imports
 
 function openTab(aURL)
-  ucjsUtil.openTab(aURL, {inBackground: false});
+  window.ucjsUtil.openTab(aURL, {inBackground: false});
 
 function $X1(aXPath, aContext)
-  ucjsUtil.getFirstNodeByXPath(aXPath, aContext);
+  window.ucjsUtil.getFirstNodeByXPath(aXPath, aContext);
 
 function $XA(aXPath, aContext)
-  ucjsUtil.getNodesByXPath(aXPath, aContext);
+  window.ucjsUtil.getNodesByXPath(aXPath, aContext);
 
 function log(aMsg)
-  ucjsUtil.logMessage('WebService.uc.js', aMsg);
+  window.ucjsUtil.logMessage('WebService.uc.js', aMsg);
 
 
 //********** Exports

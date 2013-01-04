@@ -8,13 +8,11 @@
 // @usage Access to items in the main context menu.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
 
-
-//********** Preferences
 
 /**
  * Numbers of the listed items
@@ -74,6 +72,9 @@ var mMenu = (function() {
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
   // separators.
   function showContextMenu(aEvent) {
+    // @see chrome://browser/content/nsContextMenu.js
+    const {gContextMenu} = window;
+
     if (aEvent.target !== getContextMenu())
       return;
 
@@ -225,7 +226,8 @@ var mHistoryList = (function() {
 
   function getLastVisitTime(aURI) {
     // @see resource:///modules/PlacesUtils.jsm
-    const history = PlacesUtils.history;
+    const history = window.PlacesUtils.history;
+    const {Ci} = window;
 
     var query, options, root;
     var time;
@@ -255,7 +257,8 @@ var mHistoryList = (function() {
 
   function getRecentHistoryPlacesRoot() {
     // @see resource:///modules/PlacesUtils.jsm
-    const history = PlacesUtils.history;
+    const history = window.PlacesUtils.history;
+    const {Ci} = window;
 
     var query, options;
 
@@ -324,8 +327,8 @@ var mOpenedList = (function() {
       }));
 
       // @note [optional] Set flag for a unread tab.
-      if (ucjsUI && !tab.selected) {
-        ucjsUI.Menuitem.toggleUnreadTab(item, tab);
+      if (window.ucjsUI && !tab.selected) {
+        window.ucjsUI.Menuitem.toggleUnreadTab(item, tab);
       }
     }
   }
@@ -378,13 +381,19 @@ var mOpenedList = (function() {
     }
   }
 
-  function getWindowEnumerator()
-    Cc['@mozilla.org/appshell/window-mediator;1'].
-    getService(Ci.nsIWindowMediator).
-    getEnumerator(null);
+  function getWindowEnumerator() {
+    const {Cc, Ci} = window;
 
-  function isBrowserWindow(aWindow)
-    aWindow.location.href === 'chrome://browser/content/browser.xul';
+    return Cc['@mozilla.org/appshell/window-mediator;1'].
+      getService(Ci.nsIWindowMediator).
+      getEnumerator(null);
+  }
+
+  function isBrowserWindow(aWindow) {
+    // @see chrome://browser/content/utilityOverlay.js::
+    // getBrowserURL()
+    return aWindow.location.href === window.getBrowserURL();
+  }
 
   return {
     build: build
@@ -486,9 +495,12 @@ var mClosedList = (function() {
     return true;
   }
 
-  function getSessionStore()
-    Cc['@mozilla.org/browser/sessionstore;1'].
-    getService(Ci.nsISessionStore);
+  function getSessionStore() {
+    const {Cc, Ci} = window;
+
+    return Cc['@mozilla.org/browser/sessionstore;1'].
+      getService(Ci.nsISessionStore);
+  }
 
   return {
     build: build
@@ -500,14 +512,14 @@ var mClosedList = (function() {
 //********** Utilities
 
 function $ID(aID)
-  document.getElementById(aID);
+  window.document.getElementById(aID);
 
 function $E(aTagName, aAttribute) {
-  var element = document.createElement(aTagName);
+  var element = window.document.createElement(aTagName);
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && typeof value !== 'undefined') {
+      if (value !== null && value !== undefined) {
         if (name === 'icon') {
           element.style.listStyleImage = 'url(' + value + ')';
         } else if (name === 'action') {
@@ -582,10 +594,13 @@ function getTitle(aTitle, aURL) {
   }
 
   // @see resource:///modules/PlacesUIUtils.jsm
-  return aTitle || PlacesUIUtils.getString('noTitle');
+  return aTitle || window.PlacesUIUtils.getString('noTitle');
 }
 
 function getFavicon(aIcon, aPageURI) {
+  // @see resource:///modules/PlacesUtils.jsm
+  const {favicons} = window.PlacesUtils;
+
   if (!aIcon) {
     if (typeof aPageURI === 'string') {
       try {
@@ -598,14 +613,13 @@ function getFavicon(aIcon, aPageURI) {
 
     if (aPageURI) {
       try {
-        // @see resource:///modules/PlacesUtils.jsm
-        aIcon = PlacesUtils.favicons.getFaviconForPage(aPageURI).spec;
+        aIcon = favicons.getFaviconForPage(aPageURI).spec;
       } catch (e) {}
 
       if (!aIcon && !/^https?:/.test(aPageURI.spec)) {
         let ext;
         try {
-          ext = aPageURI.QueryInterface(Ci.nsIURL).fileExtension;
+          ext = aPageURI.QueryInterface(window.Ci.nsIURL).fileExtension;
         } catch (e) {}
 
         if (ext) {
@@ -615,8 +629,7 @@ function getFavicon(aIcon, aPageURI) {
     }
 
     if (!aIcon) {
-      // @see resource:///modules/PlacesUtils.jsm
-      aIcon = PlacesUtils.favicons.defaultFavicon.spec;
+      aIcon = favicons.defaultFavicon.spec;
     }
   }
 
@@ -627,16 +640,16 @@ function getFavicon(aIcon, aPageURI) {
 //********** Imports
 
 function getContextMenu()
-  ucjsUI.ContentArea.contextMenu;
+  window.ucjsUI.ContentArea.contextMenu;
 
 function focusWindowAtIndex(aIdx)
   'ucjsUtil.focusWindowAtIndex(' + aIdx + ');';
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function log(aMsg)
-  ucjsUtil.logMessage('ListEx.uc.js', aMsg);
+  window.ucjsUtil.logMessage('ListEx.uc.js', aMsg);
 
 
 //********** Entry point
@@ -648,4 +661,4 @@ function ListEx_init() {
 ListEx_init();
 
 
-})();
+})(this);

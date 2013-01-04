@@ -10,13 +10,11 @@
 // @note Some default functions are modified. see @modified
 // @note cf. https://github.com/teramako/Pano/blob/master/chrome/content/pano-menu.sub.js
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
 
-
-//********** Preferences
 
 /**
  * String format for UI
@@ -89,7 +87,7 @@ var mTabs = {
  */
 var mTabView = {
   get GroupItems()
-    TabView.getContentWindow().GroupItems,
+    window.TabView.getContentWindow().GroupItems,
 
   get groupItems()
     this.GroupItems.groupItems,
@@ -101,7 +99,7 @@ var mTabView = {
     this.activeGroupItem.getTitle(),
 
   init: function() {
-    TabView._initFrame();
+    window.TabView._initFrame();
   }
 };
 
@@ -193,7 +191,7 @@ function customizeAllTabsPopupFunction() {
      * Toggle flag of unread tab
      * @require UI.uc.js
      */
-    ucjsUI && ucjsUI.Menuitem.toggleUnreadTab(aMenuitem, aTab);
+    window.ucjsUI && window.ucjsUI.Menuitem.toggleUnreadTab(aMenuitem, aTab);
   };
 }
 
@@ -214,7 +212,7 @@ function customizeTabTooltip() {
   // @modified chrome://browser/content/tabbrowser.xml::createTooltip
   gBrowser.createTooltip = function(event) {
     event.stopPropagation();
-    var tab = document.tooltipNode;
+    var tab = window.document.tooltipNode;
     if (tab.localName != 'tab') {
       event.preventDefault();
       return;
@@ -479,17 +477,17 @@ function createTabMenuItem(aTab, aPopup, aRefItem) {
 // Utilities
 
 function $(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $E(aTagName, aAttribute) {
-  var element = document.createElement(aTagName);
+  var element = window.document.createElement(aTagName);
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       if (name === 'user') {
         [name, value] = value;
       }
-      if (value !== null && typeof value !== 'undefined') {
+      if (value !== null && value !== undefined) {
         element.setAttribute(name, value);
       }
     }
@@ -531,16 +529,16 @@ function format(aFormat, aAttribute) {
 //********** Imports
 
 function U(aStr)
-  ucjsUtil.convertForSystem(aStr);
+  window.ucjsUtil.convertForSystem(aStr);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function setCSS(aCSS, aTitle)
-  ucjsUtil.setChromeStyleSheet(aCSS);
+  window.ucjsUtil.setChromeStyleSheet(aCSS);
 
 function log(aMsg)
-  ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
+  window.ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
 
 
 //********** Entry point
@@ -548,4 +546,4 @@ function log(aMsg)
 AllTabs_init();
 
 
-})();
+})(this);

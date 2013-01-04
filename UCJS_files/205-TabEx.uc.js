@@ -17,11 +17,6 @@ var ucjsTabEx = (function(window, undefined) {
 
 
 /**
- * Required module
- */
-const {ucjsUtil} = window;
-
-/**
  * Identifier
  */
 const kID = {
@@ -358,6 +353,8 @@ var mTabOpener = {
         return newTab;
       }
 
+      const {Ci} = window;
+
       var aRelatedToCurrent, aFromExternal, aIsUTF8;
       if (arguments.length === 2 &&
           typeof arguments[1] === 'object' &&
@@ -430,7 +427,7 @@ var mTabOpener = {
         let URL = browser.userTypedValue || browser.currentURI.spec;
         let query = {
           URL: URL,
-          flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
+          flags: window.Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
         mTab.data(aTab, 'query', query);
         break;
@@ -1278,7 +1275,7 @@ function getPageTitle(aURL) {
   var title;
   try {
     // @see resource:///modules/PlacesUtils.jsm
-    title = PlacesUtils.history.getPageTitle(makeURI(aURL));
+    title = window.PlacesUtils.history.getPageTitle(makeURI(aURL));
   } catch (e) {}
 
   return title || aURL;
@@ -1293,6 +1290,8 @@ function makeURI(aURL) {
 }
 
 function scanHistoryDatabase(aSQL, aParams, aColumnName) {
+  const {Cc, Ci} = window;
+
   var statement =
     Cc['@mozilla.org/browser/nav-history-service;1'].
     getService(Ci.nsPIPlacesDatabase).
@@ -1361,22 +1360,22 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 //********** Imports
 
 function getPref(aKey)
-  ucjsUtil.getPref(aKey);
+  window.ucjsUtil.getPref(aKey);
 
 function setPref(aKey, aVal)
-  ucjsUtil.setPref(aKey, aVal);
+  window.ucjsUtil.setPref(aKey, aVal);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function openTab(aURL, aOption)
-  ucjsUtil.openTab(aURL, aOption);
+  window.ucjsUtil.openTab(aURL, aOption);
 
 function removeTab(aTab, aOption)
-  ucjsUtil.removeTab(aTab, aOption);
+  window.ucjsUtil.removeTab(aTab, aOption);
 
 function log(aMsg)
-  ucjsUtil.logMessage('TabEx.uc.js', aMsg);
+  window.ucjsUtil.logMessage('TabEx.uc.js', aMsg);
 
 
 //********** Entry point

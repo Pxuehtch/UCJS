@@ -16,7 +16,7 @@
 // @see https://github.com/piroor/textlink
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -265,6 +265,8 @@ function zen2han(aChar) {
 }
 
 function encodeToPlain(aRange) {
+  const {Cc, Ci} = window;
+
   var encoder =
     Cc['@mozilla.org/layout/documentEncoder;1?type=text/plain'].
     createInstance(Ci.nsIDocumentEncoder);
@@ -290,16 +292,16 @@ function isTextDocument(aDoc) {
 //********** Imports
 
 function $X(aXPath, aNode)
-  ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
+  window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function openTab(aURL)
-  ucjsUtil.openTab(aURL, {relatedToCurrent: true});
+  window.ucjsUtil.openTab(aURL, {relatedToCurrent: true});
 
 function log(aMsg)
-  ucjsUtil.logMessage('TextLink.uc.js', aMsg);
+  window.ucjsUtil.logMessage('TextLink.uc.js', aMsg);
 
 
 //********** Entry point
@@ -307,4 +309,4 @@ function log(aMsg)
 TextLink_init();
 
 
-})();
+})(this);

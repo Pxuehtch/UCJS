@@ -8,7 +8,7 @@
 // @usage Opens a tooltip panel with 'alt + ctrl + mousemove'.
 
 
-(function() {
+(function(window, undefined) {
 
 
 "use strict";
@@ -372,31 +372,34 @@ function splitURL(aURL, aBaseURL) {
 }
 
 function copyToClipboard(aText) {
+  const {Cc, Ci} = window;
+
   Cc['@mozilla.org/widget/clipboardhelper;1'].
   getService(Ci.nsIClipboardHelper).
   copyString(aText);
 }
 
 function $(aId)
-  document.getElementById(aId);
+  window.document.getElementById(aId);
 
 function $E(aTag)
-  document.createElement(aTag);
+  window.document.createElement(aTag);
 
 function $T(aText)
-  document.createTextNode(aText);
+  window.document.createTextNode(aText);
 
 
 //********** Imports
 
 function addEvent(aData)
-  ucjsUtil.setEventListener(aData);
+  window.ucjsUtil.setEventListener(aData);
 
 function url4ui(aURL, aBaseURL)
-  ucjsUtil.unescapeURLForUI(ucjsUtil.resolveURL(aURL, aBaseURL));
+  window.ucjsUtil.unescapeURLForUI(
+    window.ucjsUtil.resolveURL(aURL, aBaseURL));
 
 function log(aMsg)
-  ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
+  window.ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
 
 
 //********** Entry point
@@ -408,4 +411,4 @@ function TooltipEx_init() {
 TooltipEx_init();
 
 
-})();
+})(this);
