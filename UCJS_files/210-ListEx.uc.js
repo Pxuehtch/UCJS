@@ -326,9 +326,9 @@ var mOpenedList = (function() {
         action: action
       }));
 
-      // @note [optional] Set flag for a unread tab.
-      if (window.ucjsUI && !tab.selected) {
-        window.ucjsUI.Menuitem.toggleUnreadTab(item, tab);
+      // indicate the state of an unread tab
+      if (!tab.selected) {
+        setStateForUnreadTab(item, tab);
       }
     }
   }
@@ -641,6 +641,9 @@ function getFavicon(aIcon, aPageURI) {
 
 function getContextMenu()
   window.ucjsUI.ContentArea.contextMenu;
+
+function setStateForUnreadTab(aMenuitem, aTab)
+  window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
 
 function focusWindowAtIndex(aIdx)
   'ucjsUtil.focusWindowAtIndex(' + aIdx + ');';

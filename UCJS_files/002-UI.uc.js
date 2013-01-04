@@ -294,16 +294,17 @@ var mStatusField = (function() {
  * @require TabEx.uc.js
  */
 var mMenuitem = {
-  toggleUnreadTab: function(aMenuitem, aTab) {
-    if (!window.ucjsTabEx)
-      throw 'TabEx.uc.js is required.';
+  setStateForUnreadTab: function(aMenuitem, aTab) {
+    const kATTR_UNREADTAB = 'ucjs_ui_menuitem_unreadTab';
 
-    const ATTR_UNREADTAB = 'ucjs_ui_menuitem_unreadTab';
-
-    if (!window.ucjsTabEx.tabState.read(aTab)) {
-      aMenuitem.classList.add(ATTR_UNREADTAB);
-    } else {
-      aMenuitem.classList.remove(ATTR_UNREADTAB);
+    if (window.ucjsTabEx) {
+      // @note We check the *read* state of a tab and then set the *unread*
+      // attribute of a menuitem.
+      if (window.ucjsTabEx.tabState.read(aTab)) {
+        aMenuitem.classList.remove(kATTR_UNREADTAB);
+      } else {
+        aMenuitem.classList.add(kATTR_UNREADTAB);
+      }
     }
   }
 };

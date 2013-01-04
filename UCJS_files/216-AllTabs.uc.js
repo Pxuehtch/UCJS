@@ -187,11 +187,8 @@ function customizeAllTabsPopupFunction() {
   alltabsPopup._setMenuitemAttributes = function(aMenuitem, aTab) {
     $_setMenuitemAttributes.apply(this, arguments);
 
-    /**
-     * Toggle flag of unread tab
-     * @require UI.uc.js
-     */
-    window.ucjsUI && window.ucjsUI.Menuitem.toggleUnreadTab(aMenuitem, aTab);
+    // indicate the state of an unread tab
+    setStateForUnreadTab(aMenuitem, aTab);
   };
 }
 
@@ -527,6 +524,9 @@ function format(aFormat, aAttribute) {
 
 
 //********** Imports
+
+function setStateForUnreadTab(aMenuitem, aTab)
+  window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
 
 function U(aStr)
   window.ucjsUtil.toStringForUI(aStr);
