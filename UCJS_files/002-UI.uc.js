@@ -343,6 +343,7 @@ var mStatusField = (function() {
       }
 
       if (text) {
+        // add style as a message text
         if (!field.hasAttribute(kStatusAttribute.MESSAGE)) {
           field.setAttribute(kStatusAttribute.MESSAGE, true);
         }
