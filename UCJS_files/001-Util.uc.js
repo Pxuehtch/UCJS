@@ -259,52 +259,32 @@ function trimText(aText, aMaxLength) {
   return aText;
 }
 
-function lookupNamespaceURI(aPrefix) {
-  const kNamespace = {
-    xul:   'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
-    html:  'http://www.w3.org/1999/xhtml',
-    xhtml: 'http://www.w3.org/1999/xhtml',
-    xlink: 'http://www.w3.org/1999/xlink'
-  };
-
-  return kNamespace[aPrefix] || null;
-}
-
-// @note Only for XUL element.
+/**
+ * Creates an element with the attributes
+ * @param aTagOrNode {string|Element}
+ *   {string}: set a <tagname>
+ *   {Element}: only setting the attributes
+ * @param aAttribute {hash}
+ *   set list of <attribute name>: <attribute value>
+ *   an attribute will be ignored if the value is |null| or |undefined|
+ * @return {Element}
+ *
+ * @note Only for XUL element.
+ * TODO: Handle the namespace of a tag/attribute.
+ */
 function createNode(aTagOrNode, aAttribute) {
-  function getNamespaceOf(s) {
-    var match = /^(.+?):/.exec(s);
-    return match ? lookupNamespaceURI(match[1]) : '';
-  }
+	let node = (typeof aTagOrNode === 'string') ?
+	  window.document.createElement(aTagOrNode) : aTagOrNode;
 
-  var element = null;
-  if (typeof aTagOrNode === 'string') {
-    let elementNS = getNamespaceOf(aTagOrNode);
-    element = elementNS ?
-      window.document.createElementNS(elementNS, aTagOrNode) :
-      window.document.createElement(aTagOrNode);
-  } else if (aTagOrNode instanceof Element) {
-    element = aTagOrNode;
-  }
-  if (!element) {
-    throw 'aTagOrNode should be tagname or element.';
-  }
+	if (!!aAttribute) {
+		for (let [name, value] in Iterator(aAttribute)) {
+			if (value !== null && value !== undefined) {
+				node.setAttribute(name, value);
+			}
+		}
+	}
 
-  if (!!aAttribute) {
-    let attributeNS;
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (name && value !== null && value !== undefined) {
-        attributeNS = getNamespaceOf(name);
-        if (attributeNS) {
-          element.setAttributeNS(attributeNS, name, value);
-        } else {
-          element.setAttribute(name, value);
-        }
-      }
-    }
-  }
-
-  return element;
+	return node;
 }
 
 // @note Only for XUL element.
@@ -424,6 +404,17 @@ function evaluateXPath(aXPath, aContext, aType) {
     result = doc.evaluate(aXPath, base, resolver, aType, null);
   } catch (e) {}
   return result;
+}
+
+function lookupNamespaceURI(aPrefix) {
+  const kNS = {
+    xul:   'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
+    html:  'http://www.w3.org/1999/xhtml',
+    xhtml: 'http://www.w3.org/1999/xhtml',
+    xlink: 'http://www.w3.org/1999/xlink'
+  };
+
+  return kNS[aPrefix] || null;
 }
 
 // @note cf. http://nanto.asablo.jp/blog/2008/12/11/4003371
