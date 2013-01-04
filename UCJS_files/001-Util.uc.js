@@ -1056,7 +1056,6 @@ return {
   removeAllTabsBut: removeAllTabsBut,
 
   toStringForUI: toStringForUI,
-  getWindowList: getWindowList,
   focusWindow: focusWindow,
   focusWindowAtIndex: focusWindowAtIndex,
   restartApp: restartApp,

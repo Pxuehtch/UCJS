@@ -31,20 +31,6 @@
 
 
 /**
- * Closes all windows when the browser window shutdowns
- */
-(function() {
-
-  addEvent([window, 'unload', function() {
-    if (!ucjsUtil.getWindowList().hasMoreElements()) {
-      goQuitApplication();
-    }
-  }, false]);
-
-})();
-
-
-/**
  * Calling the WebSearch command at the hidden search bar puts a quick alias
  * in the address bar
  * @note Alias is set as a keyword of the default engine at a search engines
