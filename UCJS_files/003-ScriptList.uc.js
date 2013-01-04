@@ -22,7 +22,7 @@
 const kUIBundle = {
   menu: U({
     id: 'ucjs_scriptList_menu',
-    label: 'userChrome.js [登録: %COUNT%]',
+    label: '<userChrome.js> [登録: %COUNT%]',
     accesskey: 'u',
     disabledTip: 'スクリプトの読込なし',
     selectLabel: 'Open scripts list...',
@@ -32,7 +32,7 @@ const kUIBundle = {
 
   panel: U({
     id: 'ucjs_scriptList_panel',
-    title: 'userChrome.js Script List',
+    title: '<userChrome.js> Script List',
     scriptDataListID: 'ucjs_scriptList_scriptDataList',
     scriptInfoCaptionID: 'ucjs_scriptList_scriptInfoCaption',
     scriptInfoCaption: 'Information: [#%SELECTED% / %COUNT%]',
