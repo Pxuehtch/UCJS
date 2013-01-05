@@ -414,7 +414,7 @@ var mHistory = {
     function getEntryAt(aIdx) {
       var info = {title: '', URL: '', host: ''};
 
-      var entry = gBrowser.sessionHistory.getEntryAtIndex(aIdx, false);
+      var entry = sh.getEntryAtIndex(aIdx, false);
       if (entry) {
         if (entry.title) {
           info.title = entry.title;
