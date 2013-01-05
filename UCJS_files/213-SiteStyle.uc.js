@@ -177,14 +177,18 @@ const kSiteList = [
     name: 'Google Result',
     include: /^https?:\/\/www\.google\.[a-z.]+\/.*q=/,
     command: function(aDocument) {
-      var params = aDocument.location.hash || aDocument.location.search;
-      function testMode(a) {
-        var [mode] = /[?&#]tb[ms]=[^&]+/.exec(params) || [];
-        if (a)
-          return mode && a.test(mode);
-        // main or not
-        return !mode;
-      }
+      let testMode = (function() {
+        let params = aDocument.location.hash || aDocument.location.search;
+        let [, mode] = /[?&#]tb[ms]=([^&]+)/.exec(params) || [];
+
+        return function(aModeList) {
+          if (aModeList) {
+            return mode && RegExp('^(' + aModeList + ')$').test(mode);
+          }
+          // the main result page or not
+          return !mode;
+        };
+      })();
 
       processResultItems();
       setPageCSS({
