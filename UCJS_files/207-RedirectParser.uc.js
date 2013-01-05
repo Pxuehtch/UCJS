@@ -410,12 +410,12 @@ function setAction(aNode, aAction, aURL) {
   switch (aAction) {
     case 'open':
       // @require Util.uc.js
-      action = 'ucjsUtil.openTab("' + aURL +
-      '",{inBackground:event.button===1});';
+      action = 'ucjsUtil.openTab("%URL%",' +
+        '{inBackground:event.button===1});';
       break;
     case 'copy':
       action = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
-      'getService(Ci.nsIClipboardHelper).copyString("' + aURL + '");';
+        'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
       break;
   }
 
@@ -423,7 +423,7 @@ function setAction(aNode, aAction, aURL) {
     'onclick',
     'if(event.button===2)return;' +
     'if(event.button===1)closeMenus(event.target);' +
-    action
+    action.replace('%URL%', aURL)
   );
 }
 
