@@ -233,8 +233,7 @@ function getAvailableItems() {
         return;
       }
 
-      let URL =
-      AliasFixup.create(
+      let URL = AliasFixup.create(
         (typeof data.URL === 'function') ? data.URL(pageInfo) : data.URL,
         pageInfo
       );
@@ -283,8 +282,9 @@ function getSeparators() {
   return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
 }
 
-function $ID(aID)
-  window.document.getElementById(aID);
+function $ID(aID) {
+  return window.document.getElementById(aID);
+}
 
 function $E(aTag, aAttribute) {
   var node = window.document.createElement(aTag);
