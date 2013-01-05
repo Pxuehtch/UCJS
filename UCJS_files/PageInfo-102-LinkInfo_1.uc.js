@@ -72,6 +72,7 @@ function build() {
       // which have frames.
       return;
     }
+
     LI_processFrames();
   }
 }
@@ -107,14 +108,29 @@ function grabLink(aNode) {
   if (aNode instanceof HTMLAnchorElement && aNode.href) {
     let imgs = aNode.getElementsByTagName('img');
     let name = ((imgs && imgs.length) ? kNote.image : '') + getText(aNode);
-    addLink([name, aNode.href, kType.a, aNode.target, aNode.accessKey]);
+    addLink([
+      name,
+      aNode.href,
+      kType.a,
+      aNode.target,
+      aNode.accessKey
+    ]);
   }
   else if (aNode instanceof HTMLScriptElement && aNode.src) {
-    addLink([getText(aNode, kType.script), aNode.src, kType.script]);
+    addLink([
+      getText(aNode, kType.script),
+      aNode.src,
+      kType.script
+    ]);
   }
   else if (aNode instanceof HTMLLinkElement && aNode.href) {
     let target = aNode.rel || aNode.rev || '';
-    addLink([getText(aNode, target), aNode.href, kType.link, target]);
+    addLink([
+      getText(aNode, target),
+      aNode.href,
+      kType.link,
+      target
+    ]);
   }
   else if ((aNode instanceof HTMLInputElement ||
             aNode instanceof HTMLButtonElement) &&
@@ -130,17 +146,30 @@ function grabLink(aNode) {
           address = aNode.form.action;
           target = aNode.form.target;
         }
-        addLink([name, address || kNote.error, kType.submit, target || '']);
+        addLink([
+          name,
+          address || kNote.error,
+          kType.submit,
+          target || ''
+        ]);
         break;
     }
   }
   else if (aNode instanceof HTMLAreaElement && aNode.href) {
-    addLink([getText(aNode), aNode.href, kType.area, aNode.target]);
+    addLink([
+      getText(aNode),
+      aNode.href,
+      kType.area,
+      aNode.target
+    ]);
   }
   else if ((aNode instanceof HTMLQuoteElement ||
-            aNode instanceof HTMLModElement) &&
-           aNode.cite) {
-    addLink([getText(aNode), aNode.cite, kType[aNode.localName]]);
+            aNode instanceof HTMLModElement) && aNode.cite) {
+    addLink([
+      getText(aNode),
+      aNode.cite,
+      kType[aNode.localName]
+    ]);
   }
   else if (aNode.hasAttributeNS(XLinkNS, 'href')) {
     let address = '',
@@ -154,7 +183,11 @@ function grabLink(aNode) {
     } catch (e) {
       address = kNote.error;
     }
-    addLink([getText(aNode), address, kType.XLink]);
+    addLink([
+      getText(aNode),
+      address,
+      kType.XLink
+    ]);
   }
   else {
     return NodeFilter.FILTER_SKIP;
@@ -176,8 +209,9 @@ function addLink(aValueArray) {
  * Opens URL of a clicked row
  */
 function openLink(aEvent) {
-  if (aEvent.originalTarget.localName != 'treechildren')
+  if (aEvent.originalTarget.localName != 'treechildren') {
     return;
+  }
 
   var tree = aEvent.target;
   if (!('treeBoxObject' in tree)) {
@@ -186,8 +220,9 @@ function openLink(aEvent) {
 
   var row = {};
   tree.treeBoxObject.getCellAt(aEvent.clientX, aEvent.clientY, row, {}, {});
-  if (row.value == -1)
+  if (row.value == -1) {
     return;
+  }
 
   var column = tree.columns.getNamedColumn(kID.addressColumn);
   var URL = tree.treeBoxObject.view.getCellText(row.value, column);
