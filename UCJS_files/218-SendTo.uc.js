@@ -87,26 +87,29 @@ const kPreset = [
     },
 
     command: function(aOption) {
-      function updateLabel(count, menuitem) {
+      let {menuitem, data} = aOption;
+
+      function updateLabel(text) {
         if (menuitem) {
-          let label = menuitem.getAttribute('label').
-            replace('(-)', '(' + count + ')');
-          menuitem.setAttribute('label', label);
+          let label = menuitem.getAttribute('label');
+          $E(menuitem, {
+            label: label.replace('(-)', '(' + text + ')')
+          });
         }
       }
 
       // do not request a URL with parameters for security
-      if (/[?#].*$/.test(aOption.data)) {
-        updateLabel(U('注意：パラメータ付 URL'), aOption.menuitem);
+      if (/[?#].*$/.test(data)) {
+        updateLabel(U('注意：パラメータ付 URL'));
         return;
       }
 
-      ucjsWebService.get({
+      window.ucjsWebService.get({
         name: 'HatenaBookmarkCount',
-        data: aOption.data,
-        callback: function(count) {
-          if (count !== null) {
-            updateLabel(count, aOption.menuitem);
+        data: data,
+        callback: function(aResponse) {
+          if (aResponse !== null) {
+            updateLabel(aResponse);
           }
         }
       });
@@ -331,8 +334,9 @@ function $ID(aID) {
   return window.document.getElementById(aID);
 }
 
-function $E(aTag, aAttribute) {
-  let node = window.document.createElement(aTag);
+function $E(aTagOrNode, aAttribute) {
+  let node = (typeof aTagOrNode === 'string') ?
+    window.document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
