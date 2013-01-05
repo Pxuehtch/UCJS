@@ -91,7 +91,7 @@ const kGestureSet = [
     gestures: ['!LW-', '!RW-'],
     name: 'ページの履歴',
     command: function({event}) {
-      $('backForwardMenu').
+      $ID('backForwardMenu').
       openPopupAtScreen(event.screenX, event.screenY, false);
     }
   },
@@ -1054,7 +1054,7 @@ function getImageURL(aNode) {
 }
 
 function doCmd(aCommand) {
-  var command = $(aCommand);
+  var command = $ID(aCommand);
   if (command) {
     command.doCommand();
   } else {
@@ -1063,7 +1063,7 @@ function doCmd(aCommand) {
   }
 }
 
-function $(aId) {
+function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
