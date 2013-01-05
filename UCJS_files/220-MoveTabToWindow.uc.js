@@ -227,23 +227,12 @@ function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
-function $E(aTagOrNode, aAttribute) {
-  var element = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) : aTagOrNode;
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        element.setAttribute(name, value);
-      }
-    }
-  }
-
-  return element;
-}
-
 
 //********** Imports
+
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+}
 
 function U(aStr) {
   return window.ucjsUtil.toStringForUI(aStr);
