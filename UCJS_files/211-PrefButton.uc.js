@@ -214,7 +214,7 @@ function doCommand(aEvent) {
 function makeButtons() {
   var toolbar = $ID(kID.NAVIGATION_TOOLBAR);
 
-  var hbox = $CE('hbox');
+  var hbox = $E('hbox');
   hbox.id = kID.CONTAINER_ID;
 
   for (let [name, item] in Iterator(mPreset)) {
@@ -222,7 +222,7 @@ function makeButtons() {
       continue;
     }
 
-    let button = $CE('button');
+    let button = $E('button');
 
     button.id = item.id =
       kID.ITEM_ID_PREFIX + name.replace(/[^A-Za-z0-9_]/g, '_');
@@ -291,7 +291,7 @@ function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
-function $CE(aTag) {
+function $E(aTag) {
   return window.document.createElement(aTag);
 }
 
