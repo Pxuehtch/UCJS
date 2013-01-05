@@ -24,11 +24,12 @@ const kID = {
 
 /**
  * UI strings
+ * @note |U()| for UI display.
  */
-const kString = {
+const kString = U({
   warnParameter: '注意：パラメータ付 URL',
   openAll: 'すべて開く'
-};
+});
 
 /**
  * Preset list
@@ -223,7 +224,8 @@ function getAvailableItems() {
   }
 
   for (let category in kPreset) {
-    let menu = $E('menu', {label: category});
+    // @note |U()| for UI display.
+    let menu = $E('menu', {label: U(category)});
     let popup = $E('menupopup');
 
     let URLs = [];
@@ -239,7 +241,8 @@ function getAvailableItems() {
       );
 
       popup.appendChild($E('menuitem', {
-        label: data.name,
+        // @note |U()| for UI display.
+        label: U(data.name),
         open: [URL],
         tooltiptext: URL
       }));
@@ -290,9 +293,7 @@ function $E(aTag, aAttribute) {
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       if (value !== null && value !== undefined) {
-        if (name === 'label') {
-          node.setAttribute('label', U(value));
-        } else if (name === 'open') {
+        if (name === 'open') {
           node.setAttribute(
             'onclick',
             'if(event.button===2)return;' +
