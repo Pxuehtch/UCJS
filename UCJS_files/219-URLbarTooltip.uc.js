@@ -42,12 +42,13 @@ const kStyle = {
 
 /**
  * UI strings
+ * @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
  */
-const kString = {
+const kString = U({
   title: 'Location bar suggestion hints',
   restrictGroup: 'Restrict',
   shortcutGroup: 'Shortcut'
-};
+});
 
 
 //********** Functions
@@ -210,6 +211,10 @@ function $ID(aID) {
 
 
 //********** Imports
+
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
