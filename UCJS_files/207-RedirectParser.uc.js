@@ -209,7 +209,7 @@ function makeMenuItems(aEvent) {
     var item = popup.appendChild($E('menuitem'));
     var label = '', tooltip = '';
 
-    let (key = chr4key(i)) {
+    let (key = charForAccesskey(i)) {
       item.setAttribute('accesskey', key);
       if (kUnderlinedAccesskey) {
         label += key + ': ';
@@ -240,7 +240,7 @@ function makeMenuItems(aEvent) {
     }
 
     // make the URL of a label readable
-    item.setAttribute('label', U(label) + url4ui(URL));
+    item.setAttribute('label', U(label) + unescURLforUI(URL));
     item.setAttribute('crop', 'center');
     // keep the URL of a tooltip as it is to confirm the raw one
     item.setAttribute('tooltiptext', U(tooltip) + URL);
@@ -269,7 +269,7 @@ function testPreset(aURL) {
         if (targetURL && item.prefix) {
           targetURL = item.prefix + targetURL;
         }
-        mItemData.add(unesc(targetURL));
+        mItemData.add(unescURLChars(targetURL));
       });
 
       return true;
@@ -287,7 +287,7 @@ function testSplittable(aURL) {
     // mark for menuseparator
     mItemData.separate();
 
-    let base = unesc(URLs.shift());
+    let base = unescURLChars(URLs.shift());
     if (URLs.length) {
       mItemData.add(base + URLs.join(''));
     }
@@ -389,7 +389,7 @@ function $E(aTag) {
   return window.document.createElement(aTag);
 }
 
-function chr4key(aIndex) {
+function charForAccesskey(aIndex) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
 
   return chars[aIndex % chars.length];
@@ -427,11 +427,11 @@ function setAction(aNode, aAction, aURL) {
   );
 }
 
-function unesc(aStr) {
+function unescURLChars(aStr) {
   return window.ucjsUtil.unescapeURLCharacters(aStr);
 }
 
-function url4ui(aURL) {
+function unescURLforUI(aURL) {
   return window.ucjsUtil.unescapeURLForUI(aURL);
 }
 
