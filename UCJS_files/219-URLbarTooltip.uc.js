@@ -14,11 +14,10 @@
 "use strict";
 
 
-//********** Preferences
-
 /**
  * Identifiers
- * @note Key for stylings, STYLE_XXX, must be also defined in kStyle.
+ * @note The names for stylings, |STYLE_XXX|, should be in sync with the keys
+ * of |kStyle|.
  */
 const kID = {
   panel: 'ucjs_URLbarTooltip_panel',
@@ -41,6 +40,9 @@ const kStyle = {
   }
 };
 
+/**
+ * UI strings
+ */
 const kString = {
   title: 'Location bar suggestion hints',
   restrictGroup: 'Restrict',
@@ -98,13 +100,13 @@ function makeGroup(aData, aGroupName) {
   columns.appendChild($E('column'));
   columns.appendChild($E('column'));
   rows = grid.appendChild($E('rows'));
-  aData.forEach(function(a) {
-    if (a.separator) {
+  aData.forEach(function(item) {
+    if (item.separator) {
       row = $E('separator', {class: kID.STYLE_GROOVE});
     } else {
       row = $E('row');
-      row.appendChild($E('label', {value: a.keyword}));
-      row.appendChild($E('label', {value: a.name}));
+      row.appendChild($E('label', {value: item.keyword}));
+      row.appendChild($E('label', {value: item.name}));
     }
     rows.appendChild(row);
   });
@@ -144,10 +146,12 @@ function getShortcutData() {
 
   var searchEnginesData = [], bookmarksData = [];
 
-  searchService.getEngines().forEach(function(a) {
-    if (a.alias) {
-      searchEnginesData.
-      push({keyword: a.alias, name: a.description || a.name});
+  searchService.getEngines().forEach(function(item) {
+    if (item.alias) {
+      searchEnginesData.push({
+        keyword: item.alias,
+        name: item.description || item.name
+      });
     }
   });
 
@@ -179,8 +183,8 @@ function getShortcutData() {
     statement.finalize();
   }
 
-  [searchEnginesData, bookmarksData].forEach(function(a) {
-    a.sort(function(x, y) x.keyword.localeCompare(y.keyword));
+  [searchEnginesData, bookmarksData].forEach(function(item) {
+    item.sort(function(a, b) a.keyword.localeCompare(b.keyword));
   });
 
   return searchEnginesData.concat({separator: true}, bookmarksData);
@@ -200,23 +204,28 @@ function setStyles() {
 
 //********** Utilities
 
-function $ID(aId)
-  window.document.getElementById(aId);
+function $ID(aID) {
+  return window.document.getElementById(aID);
+}
 
 
 //********** Imports
 
-function $E(aTagOrNode, aAttribute)
-  window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function getPref(aKey)
-  window.ucjsUtil.getPref(aKey);
+function getPref(aKey) {
+  return window.ucjsUtil.getPref(aKey);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('URLbarTooltip.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('URLbarTooltip.uc.js', aMsg);
+}
 
 
 //********** Entry point
