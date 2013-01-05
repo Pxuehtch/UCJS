@@ -193,8 +193,7 @@ function getShortcutData() {
 
 function setStyles() {
   for (let id in kStyle) {
-    Array.forEach(document.getElementsByClassName(kID[id]), function(a) {
-      var style = a.style;
+    Array.forEach($Class(kID[id]), function({style}) {
       for (let [name, value] in Iterator(kStyle[id])) {
         style.setProperty(name, value, 'important');
       }
@@ -207,6 +206,10 @@ function setStyles() {
 
 function $ID(aID) {
   return window.document.getElementById(aID);
+}
+
+function $Class(aClassName) {
+  return window.document.getElementsByClassName(aClassName);
 }
 
 
