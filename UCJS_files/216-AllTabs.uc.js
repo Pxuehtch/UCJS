@@ -4,11 +4,10 @@
 // @include     main
 // ==/UserScript==
 
-// @require Util.uc.js
-// @require [optional] UI.uc.js
+// @require Util.uc.js, UI.uc.js
 // @usage Access to the tab view button in the tab bar.
 // @note Some default functions are modified. see @modified
-// @note cf. https://github.com/teramako/Pano/blob/master/chrome/content/pano-menu.sub.js
+// @see https://github.com/teramako/Pano/blob/master/chrome/content/pano-menu.sub.js
 
 (function(window, undefined) {
 
@@ -18,11 +17,12 @@
 
 /**
  * String format for UI
- * @usage format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
- * @note Plural form of numbers is avalable;
- *   '%key{None;A key;%key keys}' ->
- *    key=0:'None', key=1:'A key', key=#(>=2):'# keys'
- * @see |format()|
+ *
+ * @usage see |format()|
+ * format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
+ * the plural form of numbers is avalable;
+ * '%key{None;A key;%key keys}' ->
+ * key=0:'None', key=1:'A key', key=#(>=2):'# keys'
  */
 const kFormat = {
   GROUPS_MENU: 'Groups',
@@ -59,9 +59,6 @@ const kID = {
   ATTR_TABOVERFLOWED: 'ucjs_alltabs_tabOverflowed'
 };
 
-
-//********** Helper objects
-
 /**
  * Wrapper of tabs
  * @see chrome://browser/content/tabbrowser.xml
@@ -83,7 +80,8 @@ var mTabs = {
 
 /**
  * Wrapper of TabView
- * @see chrome://browser/content/browser.js::TabView
+ * @see chrome://browser/content/browser.js::
+ * TabView
  */
 var mTabView = {
   get GroupItems()
@@ -182,7 +180,8 @@ function moveAllTabsMenuToTabViewButton() {
 function customizeAllTabsPopupFunction() {
   var alltabsPopup = $(kID.ALLTABS_POPUP);
 
-  // @modified chrome://browser/content/tabbrowser.xml::_setMenuitemAttributes
+  // @modified chrome://browser/content/tabbrowser.xml::
+  // _setMenuitemAttributes
   var $_setMenuitemAttributes = alltabsPopup._setMenuitemAttributes;
   alltabsPopup._setMenuitemAttributes = function(aMenuitem, aTab) {
     $_setMenuitemAttributes.apply(this, arguments);
@@ -206,7 +205,8 @@ function customizeTabViewButtonTooltip() {
 }
 
 function customizeTabTooltip() {
-  // @modified chrome://browser/content/tabbrowser.xml::createTooltip
+  // @modified chrome://browser/content/tabbrowser.xml::
+  // createTooltip
   gBrowser.createTooltip = function(event) {
     event.stopPropagation();
     var tab = window.document.tooltipNode;
@@ -235,7 +235,7 @@ function initAllTabsMenu() {
   var alltabsPopup = $(kID.ALLTABS_POPUP);
   addEvent([alltabsPopup, 'popupshowing', onPopupShowing, true]);
   addEvent([alltabsPopup, 'popuphidden', onPopupHidden, true]);
-  // WORKAROUND: See onCommand()
+  // WORKAROUND: See |onCommand()|
   addEvent([alltabsPopup, 'click', onCommand, false]);
 
   var groupsMenu = alltabsPopup.insertBefore(
@@ -294,8 +294,9 @@ function makeTabMenuItem(aTab, aOption) {
 
 function onCommand(aEvent) {
   aEvent.stopPropagation();
-  if (aEvent.button !== 0)
+  if (aEvent.button !== 0) {
     return;
+  }
 
   var element = aEvent.target;
 
@@ -325,7 +326,8 @@ function onCommand(aEvent) {
   // <binding id="tabbrowser-alltabs-popup">::<handler event="command">
   else if (element.parentNode.id === kID.ALLTABS_POPUP &&
            element.tab && element.tab.selected) {
-    gBrowser.tabContainer.mTabstrip.ensureElementIsVisible(element.tab);
+    gBrowser.tabContainer.mTabstrip.
+    ensureElementIsVisible(element.tab);
   }
 }
 
@@ -397,8 +399,9 @@ function onPopupShowing(aEvent) {
 
   // Popup of the groups menu
   else if (popup.id === kID.GROUPS_MENUPOPUP) {
-    if (popup.hasChildNodes())
+    if (popup.hasChildNodes()) {
       return;
+    }
 
     var activeGroupItem = mTabView.activeGroupItem;
     Array.forEach(mTabView.groupItems, function(groupItem) {
@@ -415,8 +418,9 @@ function onPopupShowing(aEvent) {
 
   // Popup of a group menu in the groups menu
   else if (popup.parentNode.hasAttribute(kID.ATTR_GROUPINDEX)) {
-    if (popup.hasChildNodes())
+    if (popup.hasChildNodes()) {
       return;
+    }
 
     let group = mTabGroups.
       getAt(popup.parentNode.getAttribute(kID.ATTR_GROUPINDEX));
@@ -473,8 +477,9 @@ function createTabMenuItem(aTab, aPopup, aRefItem) {
 
 // Utilities
 
-function $(aId)
-  window.document.getElementById(aId);
+function $(aId) {
+  return window.document.getElementById(aId);
+}
 
 function $E(aTagName, aAttribute) {
   var element = window.document.createElement(aTagName);
@@ -498,14 +503,15 @@ function hideElement(aElement) {
 }
 
 /**
- * String formatter
- * @usage format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
- * @note Plural form of numbers is avalable;
- *   '%key{None;A key;%key keys}' ->
- *    key=0:'None', key=1:'A key', key=#(>=2):'# keys'
  * @return {string}
  * @param aFormat {string}
  * @param aAttribute {string}
+ *
+ * @usage
+ * format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
+ * the plural form of numbers is avalable;
+ * '%key{None;A key;%key keys}' ->
+ * key=0:'None', key=1:'A key', key=#(>=2):'# keys'
  */
 function format(aFormat, aAttribute) {
   for (let [name, value] in Iterator(aAttribute)) {
@@ -525,20 +531,25 @@ function format(aFormat, aAttribute) {
 
 //********** Imports
 
-function setStateForUnreadTab(aMenuitem, aTab)
+function setStateForUnreadTab(aMenuitem, aTab) {
   window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
+}
 
-function U(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function setCSS(aCSS, aTitle)
+function setCSS(aCSS, aTitle) {
   window.ucjsUtil.setChromeStyleSheet(aCSS);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
+}
 
 
 //********** Entry point
