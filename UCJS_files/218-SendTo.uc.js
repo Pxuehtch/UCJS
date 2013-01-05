@@ -272,14 +272,15 @@ function makeItem(aType, aData, aService) {
     aData
   );
 
-  var item = $E('menuitem', {
-    label:
-      aService.label.
-      replace('%TYPE%', kString.types[aType]),
-    tooltiptext:
-      kString.tooltip.
-      replace('%URL%', URL).
-      replace('%DATA%', aData),
+  let label = aService.label.
+    replace('%TYPE%', kString.types[aType]);
+  let tooltip = kString.tooltip.
+    replace('%URL%', URL).replace('%DATA%', aData);
+
+  // @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
+  let item = $E('menuitem', {
+    label: U(label),
+    tooltiptext: tooltip,
     open: URL
   });
 
@@ -336,9 +337,7 @@ function $E(aTag, aAttribute) {
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       if (value !== null && value !== undefined) {
-        if (name === 'label') {
-          node.setAttribute('label', U(value));
-        } else if (name === 'open') {
+        if (name === 'open') {
           node.setAttribute(
             'onclick',
             'if(event.button===2)return;' +
