@@ -140,40 +140,40 @@ var mTab = (function () {
    *   set: a value that is set, null if removed.
    */
   function data(aTab, aKey, aValue) {
-    function getInt(aValue) {
-      return parseInt(aValue, 10);
+    function getInt(value) {
+      return parseInt(value, 10);
     }
 
-    var id, getter, setter;
+    var name, getter, setter;
     switch (aKey) {
       case 'query': // {hash}
-        id = kID.OPENQUERY;
-        getter = function(aValue) {
-          return JSON.parse(htmlUnescape(aValue));
+        name = kID.OPENQUERY;
+        getter = function(value) {
+          return JSON.parse(htmlUnescape(value));
         };
-        setter = function(aValue) {
-          return htmlEscape(JSON.stringify(aValue));
+        setter = function(value) {
+          return htmlEscape(JSON.stringify(value));
         };
         break;
       case 'open': // {integer}
-        id = kID.OPENTIME;
+        name = kID.OPENTIME;
         getter = getInt;
         break;
       case 'select': // {integer}
-        id = kID.SELECTTIME;
+        name = kID.SELECTTIME;
         getter = getInt;
         break;
       case 'read': // {integer}
-        id = kID.READTIME;
+        name = kID.READTIME;
         getter = getInt;
         break;
       case 'ancestors': // {integer[]}
-        id = kID.ANCESTORS;
-        getter = function(aValue) {
-          return aValue.split(' ').map(getInt);
+        name = kID.ANCESTORS;
+        getter = function(value) {
+          return value.split(' ').map(getInt);
         };
-        setter = function(aValue) {
-          return aValue.join(' ');
+        setter = function(value) {
+          return value.join(' ');
         };
         break;
       default:
@@ -182,20 +182,20 @@ var mTab = (function () {
 
     // get a data
     if (aValue === undefined) {
-      if (aTab.hasAttribute(id)) {
-        return getter(aTab.getAttribute(id));
+      if (aTab.hasAttribute(name)) {
+        return getter(aTab.getAttribute(name));
       }
       return null;
     }
 
     // remove or set a data
     if (aValue === null) {
-      if (aTab.hasAttribute(id)) {
-        aTab.removeAttribute(id);
+      if (aTab.hasAttribute(name)) {
+        aTab.removeAttribute(name);
       }
     } else {
       let value = setter ? setter(aValue) : aValue;
-      aTab.setAttribute(id, value);
+      aTab.setAttribute(name, value);
     }
     return aValue;
   }
@@ -210,25 +210,25 @@ var mTab = (function () {
    * called in the code is supported.
    */
   function SSdata(aClosedTabData, aKey) {
-    function getInt(aValue) {
-      return parseInt(aValue, 10);
+    function getInt(value) {
+      return parseInt(value, 10);
     }
 
-    var id, getter;
+    var name, getter;
     switch (aKey) {
       case 'open': // {integer}
-        id = kID.OPENTIME;
+        name = kID.OPENTIME;
         getter = getInt;
         break;
       case 'select': // {integer}
-        id = kID.SELECTTIME;
+        name = kID.SELECTTIME;
         getter = getInt;
         break;
       default:
         throw new TypeError('unsupported aKey of a closed tab data');
     }
 
-    return getter(aClosedTabData.state.attributes[id]);
+    return getter(aClosedTabData.state.attributes[name]);
   }
 
   /**
