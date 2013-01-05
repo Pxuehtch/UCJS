@@ -24,7 +24,6 @@
  */
 const kClickThresholdTimer = 200;
 
-
 /**
  * Disable the default click action on the tab bar
  * @value {boolean}
@@ -41,7 +40,6 @@ const kClickThresholdTimer = 200;
  *     <handler event="click">
  */
 const kDisableDefaultClick = true;
-
 
 /**
  * Handler of the click event on the tab bar
@@ -73,8 +71,9 @@ var mTabBarClickEvent = {
     // 1.show the default contextmenu
     // 2.do not handle an UI element(button/menu) on the tab bar
     if (aEvent.button === 2 ||
-        !this.checkTargetArea(aEvent))
+        !this.checkTargetArea(aEvent)) {
       return;
+    }
 
     switch (aEvent.type) {
       case 'mousedown':
@@ -168,16 +167,19 @@ var mTabBarClickEvent = {
     // skip UI elements on the tab bar
     // TODO: The probable elements 'menu*|toolbar*' are examined. More other
     // items may be needed.
-    if (/^(?:menu|toolbar)/.test(originalTarget.localName))
+    if (/^(?:menu|toolbar)/.test(originalTarget.localName)) {
       return null;
+    }
 
     // on a tab
-    if (target.localName === 'tab')
+    if (target.localName === 'tab') {
       return target.selected ? 'foreTab' : 'backTab';
+    }
 
     // on the margin where has no tabs in the tab bar
-    if (target.localName === 'tabs')
+    if (target.localName === 'tabs') {
       return 'notTabs';
+    }
 
     // WORKAROUND: unknown case
     return null;
@@ -243,21 +245,23 @@ var mTabBarClickEvent = {
  */
 function makeCustomFunctions() {
   // cycle-select tabs with the wheel scroll on a tab or tabbar
-  addEvent([gBrowser.tabContainer, 'wheel', function(aEvent) {
+  addEvent([gBrowser.tabContainer, 'wheel', function(event) {
     gBrowser.tabContainer.
-    advanceSelectedTab((aEvent.deltaY < 0) ? -1 : 1, true);
-    aEvent.stopPropagation();
+    advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
+    event.stopPropagation();
   }, true]);
 }
 
 
 //********** Imports
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
+}
 
 
 //********** Entry point

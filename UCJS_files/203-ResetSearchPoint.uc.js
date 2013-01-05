@@ -19,32 +19,39 @@
 "use strict";
 
 
+//********** Functions
+
 function ResetSearchPoint_init() {
-  addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
+  addEvent([gBrowser.mPanelContainer,
+    'dblclick', handleEvent, false]);
 }
 
 function handleEvent(aEvent) {
   aEvent.stopPropagation();
 
-  if (aEvent.button !== 0)
+  if (aEvent.button !== 0) {
     return;
+  }
 
   var clickManager = getClickManager(aEvent.target),
       fastFind = getFastFind();
-  if (!clickManager || !fastFind)
+  if (!clickManager || !fastFind) {
     return;
+  }
 
   var {clickedWindow, clickedElement} = clickManager,
       {currentWindow, foundEditable} = fastFind;
 
-  if (currentWindow !== clickedWindow || foundEditable !== clickedElement) {
+  if (currentWindow !== clickedWindow ||
+      foundEditable !== clickedElement) {
     if (foundEditable) {
       clearSelection(foundEditable);
     }
     if (clickedElement) {
       setSelection(clickedElement, clickedWindow);
     }
-    if (currentWindow !== clickedWindow || foundEditable) {
+    if (currentWindow !== clickedWindow ||
+        foundEditable) {
       setFastFindFor(clickedWindow);
     }
   }
@@ -150,11 +157,13 @@ function getFastFind() {
 
 //********** Imports
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
+}
 
 
 //********** Entry point

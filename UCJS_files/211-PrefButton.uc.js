@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 // @usage Access to items on the navigation toolbar.
-// @note Buttons is styled as the height of toolbar is 24pt. see
+// @note The buttons is styled as the height of a toolbar is 24pt. see
 // |setStyleSheet()|
 // @note Some about:config preferences are changed. see @pref
 
@@ -16,8 +16,6 @@
 
 "use strict";
 
-
-//********** Preferences
 
 /**
  * Identifiers
@@ -41,16 +39,17 @@ const kItemType = {
 
 /**
  * Preset items
- * @note Key name must consist of 1-byte character [A-Za-z0-9_] only.
- * @param disabled {boolean} [option] If true, this item is ignored
- * @param tabMode {boolean} [option] If true, each tab is observed
- * @param type {kItemType} type of <button>
- * @param label {string} Button label
- * @param image {URL string} [instead of label] Button image
- * @param description {string} Tooltip text
- * @param checked {getter} [for type 'checkbox'] Return true/false for
- * checkbox state.
- * @param command {function} Button command
+ * @note <key> name must consist of 1-byte character [A-Za-z0-9_] only.
+ * @param disabled {boolean} [optional]
+ *   true: this item is ignored
+ * @param tabMode {boolean} [optional]
+ *   true: each tab is observed
+ * @param type {kItemType} a type of <button>
+ * @param label {string} button label
+ * @param image {URL string} [instead of <label>] button image
+ * @param description {string} tooltip text
+ * @param checked {boolean} [for type <checkbox>] checkbox state
+ * @param command {function} button command
  */
 var mPreset = {
   'ToggleCSS_Tab': {
@@ -81,12 +80,14 @@ var mPreset = {
     description: 'Toggle Referrer',
 
     // @pref see http://kb.mozillazine.org/Network.http.sendRefererHeader
-    // 0:never send the referrer header
-    // 1:send when clicking on a link
-    // 2:send when clicking on a link or loading an image (Default)
+    // 0: never send the referrer header
+    // 1: send when clicking on a link
+    // 2: send when clicking on a link or loading an image (Default)
     pref: 'network.http.sendRefererHeader',
 
-    get checked() getPref(this.pref, 2) !== 0,
+    get checked() {
+      return getPref(this.pref, 2) !== 0;
+    },
 
     command: function() {
       setPref(this.pref, this.checked ? 0 : 2);
@@ -98,13 +99,18 @@ var mPreset = {
     label: 'Java',
     description: 'Toggle Java',
 
-    get disabled() (this.plugin === null),
+    get disabled() {
+      return this.plugin === null;
+    },
 
     get plugin() {
       const {Cc, Ci} = window;
 
-      var ph = Cc['@mozilla.org/plugin/host;1'].getService(Ci.nsIPluginHost);
-      var plugins = ph.getPluginTags({});
+      var plugins =
+        Cc['@mozilla.org/plugin/host;1'].
+        getService(Ci.nsIPluginHost).
+        getPluginTags({});
+
       var plugin = null;
 
       for (let i = 0; i < plugins.length; i++) {
@@ -118,7 +124,9 @@ var mPreset = {
       return this.plugin = plugin;
     },
 
-    get checked() !(this.plugin.disabled || this.plugin.blocklisted),
+    get checked() {
+      return !(this.plugin.disabled || this.plugin.blocklisted);
+    },
 
     command: function() {
       if (!this.plugin.blocklisted) {
@@ -175,13 +183,14 @@ function PrefButton_init() {
 
 function updateState(aTabMode) {
   for (let [, item] in Iterator(mPreset)) {
-    if (item.disabled || (aTabMode && !item.tabMode))
+    if (item.disabled || (aTabMode && !item.tabMode)) {
       continue;
+    }
 
     let button = $ID(item.id);
     switch (item.type) {
       case kItemType.button:
-        // Do nothing
+        // do nothing
         break;
       case kItemType.checkbox:
         if (button.checked !== item.checked) {
@@ -209,8 +218,9 @@ function makeButtons() {
   hbox.id = kID.CONTAINER_ID;
 
   for (let [name, item] in Iterator(mPreset)) {
-    if (item.disabled)
+    if (item.disabled) {
       continue;
+    }
 
     let button = $CE('button');
 
@@ -235,7 +245,7 @@ function makeButtons() {
 }
 
 function setStyleSheet() {
-  // @note Suppose the height of toolbar-menubar is 24pt.
+  // @note Suppose the height of the toolbar-menubar is 24pt.
   var css = '\
     #%%kID.CONTAINER_ID%%{\
       margin:3px 0 3px 2px;\
@@ -277,29 +287,36 @@ function setStyleSheet() {
 
 //********** Utilities
 
-function $ID(aId)
-  window.document.getElementById(aId);
+function $ID(aId) {
+  return window.document.getElementById(aId);
+}
 
-function $CE(aTag)
-  window.document.createElement(aTag);
+function $CE(aTag) {
+  return window.document.createElement(aTag);
+}
 
 
 //********** Imports
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function setCSS(aCSS)
+function setCSS(aCSS) {
   window.ucjsUtil.setChromeStyleSheet(aCSS);
+}
 
-function getPref(aKey, aDefaultValue)
-  window.ucjsUtil.getPref(aKey, aDefaultValue);
+function getPref(aKey, aDefaultValue) {
+  return window.ucjsUtil.getPref(aKey, aDefaultValue);
+}
 
-function setPref(aKey, aValue)
+function setPref(aKey, aValue) {
   window.ucjsUtil.setPref(aKey, aValue);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
+}
 
 
 //********** Entry point

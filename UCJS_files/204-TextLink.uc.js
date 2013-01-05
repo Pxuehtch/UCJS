@@ -9,7 +9,7 @@
 /**
  * @usage When 'double-click' on a URL-like text, a new tab will open
  * in the detected URL.
- * @note If 'Shift or Ctrl' has been pressed, the text is only selected
+ * @note If 'Shift' or 'Ctrl' has been pressed, the text is only selected
  * by the default behavior.
  */
 
@@ -133,16 +133,20 @@ var mURLUtil = (function() {
 //********** Functions
 
 function TextLink_init() {
-  addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
+  addEvent([gBrowser.mPanelContainer,
+    'dblclick', handleEvent, false]);
 }
 
 function handleEvent(aEvent) {
-  if (aEvent.shiftKey || aEvent.ctrlKey)
+  // return for the selection by the default action
+  if (aEvent.shiftKey || aEvent.ctrlKey) {
     return;
+  }
 
   var doc = aEvent.originalTarget.ownerDocument;
-  if (!isTextDocument(doc))
+  if (!isTextDocument(doc)) {
     return;
+  }
 
   var selection = doc.defaultView.getSelection();
   var URL = findURL(doc, selection);
@@ -156,8 +160,9 @@ function handleEvent(aEvent) {
 function findURL(aDocument, aSelection) {
   var URL = '';
 
-  if (!aSelection || !mURLUtil.guess(aSelection))
+  if (!aSelection || !mURLUtil.guess(aSelection)) {
     return URL;
+  }
 
   // make a target range with a source selection
   var range = aDocument.createRange();
@@ -168,8 +173,9 @@ function findURL(aDocument, aSelection) {
 
   // retrieve array of URL-like strings from the target range
   var URLs = mURLUtil.grab(range);
-  if (!URLs)
+  if (!URLs) {
     return URL;
+  }
 
   // scan the position of a URL in the target range
   var map = mURLUtil.map(range);
@@ -199,16 +205,18 @@ function initRange(aRange, aSourceRange) {
 
     while (count < kCharsBuffer) {
       node = $X(aXPath, node);
-      if (!node)
+      if (!node) {
         break;
-      border = node;
+      }
 
+      border = node;
       text = node.textContent;
       count += text.length;
 
       // white-space marks off the URL string
-      if (/\s/.test(text))
+      if (/\s/.test(text)) {
         break;
+      }
     }
 
     return {border: border, count: count};
@@ -291,17 +299,21 @@ function isTextDocument(aDoc) {
 
 //********** Imports
 
-function $X(aXPath, aNode)
-  window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
+function $X(aXPath, aNode) {
+  return window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function openTab(aURL)
+function openTab(aURL) {
   window.ucjsUtil.openTab(aURL, {relatedToCurrent: true});
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('TextLink.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('TextLink.uc.js', aMsg);
+}
 
 
 //********** Entry point

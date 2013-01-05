@@ -225,8 +225,9 @@ function ScrollObserver() {
     var doc = aWindow.contentDocument || aWindow.document;
     // |body| returns <body> or <frameset> element
     var root = doc.body || doc.documentElement;
-    if (!root)
+    if (!root) {
       return;
+    }
 
     // the document can be scrolled
     if (aWindow.scrollMaxX || aWindow.scrollMaxY) {
@@ -500,12 +501,14 @@ function SmoothScroll() {
         this.uninit(true);
       }
 
-      if (aGoal === undefined)
+      if (aGoal === undefined) {
         return;
+      }
 
       var scrollable = testScrollable(aNode);
-      if (!scrollable)
+      if (!scrollable) {
         return;
+      }
 
       this.view = scrollable.view;
       this.node = aNode;
@@ -515,8 +518,9 @@ function SmoothScroll() {
     },
 
     uninit: function(aForceGoal, aOnScrollStopped) {
-      if (!this.goal)
+      if (!this.goal) {
         return;
+      }
 
       if (!aOnScrollStopped) {
         stopScroll(aForceGoal);
@@ -561,8 +565,9 @@ function SmoothScroll() {
   }
 
   function stopScroll(aForceGoal) {
-    if (!mTimerID)
+    if (!mTimerID) {
       return;
+    }
 
     clearTimeout(mTimerID);
     mTimerID = null;
@@ -585,10 +590,12 @@ function SmoothScroll() {
   }
 
   function round(aValue) {
-    if (aValue > 0)
-      return Math.ceil(aValue); 
-    if (aValue < 0)
+    if (aValue > 0) {
+      return Math.ceil(aValue);
+    }
+    if (aValue < 0) {
       return Math.floor(aValue);
+    }
     return 0;
   }
 
@@ -727,8 +734,9 @@ function FoundBlink() {
   }
 
   function start() {
-    if (!init())
+    if (!init()) {
       return;
+    }
 
     var {duration, steps} = kOption;
     var limits = steps, blinks = 0;
@@ -736,13 +744,16 @@ function FoundBlink() {
 
     mTimerID = setInterval(function() {
       // Check whether the selection is into the view within trial limits
-      if (blinks === 0 && limits-- > 0 && !isRangeIntoView(range))
+      if (blinks === 0 && limits-- > 0 && !isRangeIntoView(range)) {
         return;
+      }
+
       // Break when blinks end or trial is expired
       if (blinks === steps || limits <= 0) {
         uninit();
         return;
       }
+
       setDisplay(!!(blinks % 2));
       blinks++;
     }, parseInt(duration / steps, 10));
@@ -787,14 +798,17 @@ function FoundBlink() {
 
 //********** Imports
 
-function $X(aXPath, aNode)
-  window.ucjsUtil.getNodesByXPath(aXPath, aNode);
+function $X(aXPath, aNode) {
+  return window.ucjsUtil.getNodesByXPath(aXPath, aNode);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
+}
 
 
 //********** Entry point

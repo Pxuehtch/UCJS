@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note cf. https://github.com/Griever/userChromeJS/blob/master/IME-Colors.uc.js
+// @see https://github.com/Griever/userChromeJS/blob/master/IME-Colors.uc.js
 
 
 (function(window, undefined) {
@@ -16,8 +16,7 @@
 
 /**
  * CSS styles of a textbox
- * @note Keys are linked with the return value of
- *   mIMEAwareHandler.getIMEState()
+ * @note The keys are linked with the return value of |getIMEState()|
  */
 const kStyleSet = {
   'DISABLED': {
@@ -93,12 +92,14 @@ var mIMEAwareHandler = {
 
     // delay and ensure that IMEStatus is ready
     this._delayedUpdateStyleTimer = setTimeout(function() {
-      if (!this.checkValidity())
+      if (!this.checkValidity()) {
         return;
+      }
 
       var ime = this.getIMEState();
-      if (this.IMEState === ime)
+      if (this.IMEState === ime) {
         return;
+      }
       this.IMEState = ime;
 
       this.setStyle();
@@ -169,11 +170,11 @@ var mIMEAwareHandler = {
     switch (aEvent.type) {
       case 'keydown':
         // '半角全角', 'カタカナひらがな':
-        // * 'keyup' unfires when a key is released
-        // * 'keyup'->'keydown' fire when a key is pressed down
-        // * the first 'keyup' unfires when pressed down just after focusing
-        //   on a textbox
-        // * in fx15: the keycode is not 229(VK_PROCESSKEY) but 0(Unidentified)
+        // 1.'keyup' unfires when a key is released
+        // 2.'keyup' fires and then 'keydown' fires when a key is pressed down
+        // 3.the first 'keyup' unfires at a key pressed down just after on
+        //   focusing a textbox
+        // 4.in fx15: the keycode is not 229(VK_PROCESSKEY) but 0(Unidentified)
         if (aEvent.keyCode === 0) {
           this.updateStyle();
         }
@@ -196,16 +197,19 @@ var mIMEAwareHandler = {
 };
 
 
-//********** Utilities
+//********** Imports
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function $X1(aXPath, aNode)
-  window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
+function $X1(aXPath, aNode) {
+  return window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
+}
 
 
 //********** Entry point
@@ -213,10 +217,12 @@ function log(aMsg)
 function IMEAware_init() {
   function onFocus(aEvent) {
     var node = aEvent.originalTarget;
-    if ((node instanceof HTMLTextAreaElement ||
-        (node instanceof HTMLInputElement &&
-         /^(?:text|search)$/.test(node.type))) &&
-        !node.readOnly) {
+    if (
+      (node instanceof HTMLTextAreaElement ||
+       (node instanceof HTMLInputElement &&
+        /^(?:text|search)$/.test(node.type))) &&
+      !node.readOnly
+    ) {
       mIMEAwareHandler.init(node);
     }
   }
@@ -225,8 +231,10 @@ function IMEAware_init() {
     mIMEAwareHandler.uninit();
   }
 
-  addEvent([window.document.documentElement, 'focus', onFocus, true]);
-  addEvent([window, 'unload', onUnload, false]);
+  addEvent([window.document.documentElement,
+    'focus', onFocus, true]);
+  addEvent([window,
+    'unload', onUnload, false]);
 }
 
 IMEAware_init();
