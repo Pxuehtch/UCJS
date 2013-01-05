@@ -14,28 +14,30 @@
 "use strict";
 
 
-// Whether the access key of a menu item is expressed with underline
+/**
+ * Whether the access key of a menu item is expressed with underline
+ */
 const kUnderlinedAccesskey =
   getPref('intl.menuitems.alwaysappendaccesskeys') === 'false';
 
+/**
+ * Preference
+ */
 const kPref = {
-  // Show schemes except 'http://', 'https://' and 'ftp://'
+  // show schemes except 'http://', 'https://' and 'ftp://'
   showAllSchemes: true
 };
 
 /**
  * User preset
- * @key name {string}
- *   The name of a preset
- * @key link {regexp}
- *   The URL for a target link should run as a preset.
- *   A capturing parentheses is required. The matches is tested against
+ * @key name {string} display name to UI
+ * @key link {regexp} URL for a target link should run as a preset
+ *   @note A capturing parentheses is required. The matches is tested against
  *   |item.pattern|
  * @key item {hash[]}
  *   @key pattern {regexp}
  *   @key description {string}
- *   @key prefix {string} [optional]
- *     Adds |prefix| to matching |pattern|
+ *   @key prefix {string} [optional] adds a prefix to the matched |pattern|
  */
 const kPreset = [
   {
@@ -113,8 +115,9 @@ var mItemData = {
       if (URL) {
         let action = 'open';
         if (!/^(?:https?|ftp):/.test(URL)) {
-          if (!kPref.showAllSchemes)
+          if (!kPref.showAllSchemes) {
             return;
+          }
           action = 'copy';
         }
         this.URLs.push({URL: URL, action: action});
@@ -125,8 +128,9 @@ var mItemData = {
   },
 
   isValid: function() {
-    // URLs[0] is a linkURL itself.
-    if (this.URLs.length <= 1 || (!this.preset && !this.separators.length)) {
+    // URLs[0] is a linkURL itself
+    if (this.URLs.length <= 1 ||
+        (!this.preset && !this.separators.length)) {
       this.clear();
       return false;
     }
@@ -188,8 +192,9 @@ function hideContextMenu(aEvent) {
 function makeMenuItems(aEvent) {
   aEvent.stopPropagation();
   var popup = aEvent.target;
-  if (popup.hasChildNodes())
+  if (popup.hasChildNodes()) {
     return;
+  }
 
   if (mItemData.preset) {
     popup.appendChild($E('menuitem')).
@@ -245,8 +250,9 @@ function makeMenuItems(aEvent) {
 }
 
 function scanURL(aURL) {
-  if (!/^http/i.test(aURL))
+  if (!/^http/i.test(aURL)) {
     return false;
+  }
 
   return testPreset(aURL) || testSplittable(aURL);
 }
@@ -278,7 +284,7 @@ function testSplittable(aURL) {
   var URLs = splitIntoSchemes(aURL);
 
   while (URLs.length) {
-    // Mark for menuseparator.
+    // mark for menuseparator
     mItemData.separate();
 
     let base = unesc(URLs.shift());
@@ -294,13 +300,14 @@ function testSplittable(aURL) {
 function splitIntoSchemes(aURL) {
   var URLs = [];
 
-  // Splits aURL by '://'
+  // splits aURL by '://'
   // e.g. ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
   // [0][1][2] are surely not empty
   const delimiter = /((?:\:|%(?:25)?3A)(?:\/|%(?:25)?2F){2})/i;
   var splits = aURL.split(delimiter);
-  if (splits.length === 3)
+  if (splits.length === 3) {
     return [aURL];
+  }
 
   var slices, scheme = splits.shift() + splits.shift();
   while (splits.length > 1) {
@@ -330,9 +337,9 @@ function sliceScheme(aString) {
   if (!aString)
     return ['', ''];
 
-  // Scan scheme-like characters
-  // @note Allowable characters for scheme name, "+-.", are excluded because
-  // they are ambiguous within queries.
+  // scan scheme-like characters
+  // @note The allowable characters for scheme name, "+-.", are excluded
+  // because they are ambiguous within queries.
   const charRe = /[a-z0-9]/i, escapedRe = /%(?:25)?2D/i;
 
   var i = aString.length - 1;
@@ -374,11 +381,13 @@ function trimTrailing(aURL) {
 
 //********** Utilities
 
-function $ID(aId)
-  window.document.getElementById(aId);
+function $ID(aId) {
+  return window.document.getElementById(aId);
+}
 
-function $E(aTag)
-  window.document.createElement(aTag);
+function $E(aTag) {
+  return window.document.createElement(aTag);
+}
 
 function chr4key(aIndex) {
   const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -386,14 +395,16 @@ function chr4key(aIndex) {
   return chars[aIndex % chars.length];
 }
 
+
 //********** Imports
 
 function getContextMenu()
   window.ucjsUI.ContentArea.contextMenu;
 
 function setAction(aNode, aAction, aURL) {
-  if (!aAction || !aURL)
+  if (!aAction || !aURL) {
     return;
+  }
 
   var action;
   switch (aAction) {
@@ -416,23 +427,29 @@ function setAction(aNode, aAction, aURL) {
   );
 }
 
-function unesc(aStr)
-  window.ucjsUtil.unescapeURLCharacters(aStr);
+function unesc(aStr) {
+  return window.ucjsUtil.unescapeURLCharacters(aStr);
+}
 
-function url4ui(aURL)
-  window.ucjsUtil.unescapeURLForUI(aURL);
+function url4ui(aURL) {
+  return window.ucjsUtil.unescapeURLForUI(aURL);
+}
 
-function U(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function getPref(aKey)
-  window.ucjsUtil.getPref(aKey);
+function getPref(aKey) {
+  return window.ucjsUtil.getPref(aKey);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
+}
 
 
 //********** Entry point
