@@ -484,7 +484,7 @@ function $(aId) {
 }
 
 function $E(aTagName, aAttribute) {
-  var element = window.document.createElement(aTagName);
+  var node = window.document.createElement(aTagName);
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
@@ -492,12 +492,12 @@ function $E(aTagName, aAttribute) {
         [name, value] = value;
       }
       if (value !== null && value !== undefined) {
-        element.setAttribute(name, value);
+        node.setAttribute(name, value);
       }
     }
   }
 
-  return element;
+  return node;
 }
 
 function hideElement(aElement) {
