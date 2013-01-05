@@ -322,17 +322,21 @@ function commandForOpenURLs(aURLsArray) {
   return command.replace('%URLs%', URLs).replace('%inBG%', inBG);
 }
 
-function getURLBarContextMenu()
-  window.ucjsUI.URLBar.contextMenu;
+function getURLBarContextMenu() {
+  return window.ucjsUI.URLBar.contextMenu;
+}
 
-function U(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
+}
 
 
 //********** Entry point
