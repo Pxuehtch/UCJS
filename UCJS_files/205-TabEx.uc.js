@@ -210,19 +210,19 @@ var mTab = (function () {
    * called in the code is supported.
    */
   function SSdata(aClosedTabData, aKey) {
+    function getInt(aValue) {
+      return parseInt(aValue, 10);
+    }
+
     var id, getter;
     switch (aKey) {
       case 'open': // {integer}
         id = kID.OPENTIME;
-        getter = function(aValue) {
-          return parseInt(aValue, 10);
-        };
+        getter = getInt;
         break;
       case 'select': // {integer}
         id = kID.SELECTTIME;
-        getter = function(aValue) {
-          return parseInt(aValue, 10);
-        };
+        getter = getInt;
         break;
       default:
         throw new TypeError('unsupported aKey of a closed tab data');
