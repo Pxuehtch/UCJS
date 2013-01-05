@@ -116,6 +116,10 @@ var mMenu = (function() {
  */
 var mHistoryList = (function() {
 
+  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
+  const kTimeFormat = '%Y/%m/%d %H:%M:%S';
+  const kTitleFormat = ['[%time%] %title%', '%title%'];
+
   function build(aEvent) {
     aEvent.stopPropagation();
 
@@ -281,6 +285,19 @@ var mHistoryList = (function() {
   // convert microseconds into milliseconds
   function toMillisec(aMicrosec) {
     return aMicrosec / 1000;
+  }
+
+  function formatLabel(aValue) {
+    var {time, title} = aValue;
+
+    var form = time ? kTitleFormat[0] : kTitleFormat[1];
+
+    if (time) {
+      form = form.replace('%time%',
+        (new Date(time)).toLocaleFormat(kTimeFormat));
+    }
+
+    return form.replace('%title%', title);
   }
 
   return {
@@ -551,25 +568,6 @@ function makeDisabledMenuItem(aPopup, aLabel) {
 
 function makeMenuSeparator(aPopup) {
   aPopup.appendChild($E('menuseparator'));
-}
-
-function formatLabel(aValue) {
-  var {time, title} = aValue;
-
-  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
-  const kTimeFormat = '%Y-%m-%d %H:%M:%S';
-
-  const kFormTimeTitle = '[%time%] %title%',
-        kFormTitle = '%title%';
-
-  var form = time ? kFormTimeTitle : kFormTitle;
-
-  if (time) {
-    form = form.replace('%time%',
-      (new Date(time)).toLocaleFormat(kTimeFormat));
-  }
-
-  return form.replace('%title%', title);
 }
 
 function getPluralForm(aFormat, aCount, aLabels) {
