@@ -861,10 +861,6 @@ function registerChromeStyleSheet(aCSS) {
     replace('%DATA%', encodeURIComponent(css))
   );
 
-  stylesheet.getAttribute = function(name) {
-    return window.document.documentElement.getAttribute(name);
-  };
-
   return window.document.insertBefore(stylesheet,
     window.document.documentElement);
 }
