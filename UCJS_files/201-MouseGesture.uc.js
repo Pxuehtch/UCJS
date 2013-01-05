@@ -1102,7 +1102,7 @@ function openTab(aURL, aBG) {
   });
 }
 
-function log(aMsg)
+function log(aMsg) {
   return window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
 }
 
