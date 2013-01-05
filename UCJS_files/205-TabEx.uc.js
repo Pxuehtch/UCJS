@@ -306,6 +306,8 @@ var mSessionStore = {
   isRestoring: false,
 
   init: function() {
+    const {Cc, Ci} = window;
+
     this.SessionStore =
       Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
@@ -394,8 +396,8 @@ var mTabOpener = {
         let fromVisit;
         if (!aReferrerURI) {
           if (aRelatedToCurrent) {
-            fromVisit = /^https?:/.test(gBrowser.currentURI.spec) &&
-              gBrowser.currentURI.spec;
+            let currentURL = gBrowser.currentURI.spec;
+            fromVisit = /^https?:/.test(currentURL) && currentURL;
           } else {
             fromVisit = /^https?:/.test(aURI) &&
               mReferrer.getFromVisit(aURI);
