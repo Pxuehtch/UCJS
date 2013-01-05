@@ -23,8 +23,10 @@
  * the plural form of numbers is avalable;
  * '%key{None;A key;%key keys}' ->
  * key=0:'None', key=1:'A key', key=#(>=2):'# keys'
+ *
+ * @note |U()| converts UTF-8 chars into UTF-16 for proper display.
  */
-const kFormat = {
+const kFormat = U({
   GROUPS_MENU: 'Groups',
 
   UNTITLED_GROUP: '(Untitled)',
@@ -36,7 +38,7 @@ const kFormat = {
 
   TAB_TOOLTIP: '[%index/%count] %group\n%title',
   TABVIEW_TOOLTIP: 'Group: %group\nTab: %tab (Pinned: %pinned)'
-};
+});
 
 /**
  * Identifiers
@@ -503,9 +505,10 @@ function hideElement(aElement) {
 }
 
 /**
- * @return {string}
+ * String formatter
  * @param aFormat {string}
  * @param aAttribute {string}
+ * @return {string}
  *
  * @usage
  * format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
@@ -525,7 +528,7 @@ function format(aFormat, aAttribute) {
     }
     aFormat = aFormat.replace('%' + name, value);
   }
-  return U(aFormat);
+  return aFormat;
 }
 
 
