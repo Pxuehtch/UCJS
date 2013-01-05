@@ -204,7 +204,7 @@ function ScrollObserver() {
 
   function attach(aFindText) {
     if (aFindText) {
-      scanScrollables(gBrowser.contentWindow, aFindText);
+      scanScrollables(window.content, aFindText);
       return mScrollable.count > 0;
     }
     return false;
