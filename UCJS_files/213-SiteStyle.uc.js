@@ -681,7 +681,7 @@ function addEvent(aData)
 function setStyleSheet(aCSS, aDocument, aOption) {
   var {replace} = aOption || {};
   window.ucjsUtil.setContentStyleSheet(aCSS,
-    {doc: aDocument, id: kID.STYLESHEET, replace: replace});
+    {contentDocument: aDocument, id: kID.STYLESHEET, replace: replace});
 }
 
 function log(aMsg)

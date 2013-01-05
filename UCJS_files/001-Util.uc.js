@@ -870,9 +870,9 @@ function registerChromeStyleSheet(aCSS) {
 }
 
 function registerContentStyleSheet(aCSS, aOption) {
-  var {doc, id, replace} = aOption || {};
+  var {contentDocument, id, replace} = aOption || {};
 
-  var d = doc || getFocusedDocument();
+  var d = contentDocument || getFocusedDocument();
 
   var head = (d.getElementsByTagName('head') || [])[0];
   if (!head) {
