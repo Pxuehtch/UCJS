@@ -22,10 +22,9 @@ const kID = {
   PREFMENU: 'ucjs_sitestyle_prefmenu'
 };
 
-
 /**
  * Settings for UI
- * @note U() for display.
+ * @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
  */
 const kUI = {
   PREFMENU: {
@@ -34,7 +33,6 @@ const kUI = {
     disabledTip: U('登録サイトなし')
   }
 };
-
 
 /**
  * List of noisy URL of the search results
@@ -141,24 +139,25 @@ const kNoiseList = [
   //,
 ];
 
-
 /**
- * List of target site
- * @param disabled {boolean} [optional]
- *   true: this item is ignored and following items will be tested
- *   false [default]: this item is tested
- * @param name {string}
- * @param include {regExp|string}|{regexp[]|string[]}
- *   {string}: tests exact match
- * @param quickApply {boolean} [optional]
- *   true: command is applied as soon as location changes
- *   false [default]: not applied until document loads
- * @param wait {int} [optional] wait-time[ms] after document loads
- * @param command {function}
+ * Preset list of the site
+ * @key name {string}
+ *   this is displayed in the preference menu
+ * @key include {regexp|string}|{regexp[]|string[]}
+ *   describes the URL (or an array of URLs) that <command> should run
+ *   {string}: an exact match
+ * @key command {function}
+ *   @param aDocument {Document}
+ * @key quickApply {boolean} [optional]
+ *   true: command is applied as soon as a location changes
+ *   false [default]: not applied until a document loads
+ * @key wait {int} [optional]
+ *   the wait time[ms] after a document loads
+ * @key disabled {boolean} [optional]
  */
 const kSiteList = [
   {
-    // @note needed to put before 'Google Result'
+    // @note Needed to put before 'Google Result'
     name: 'Google Image Result',
     include: [
       /^https?:\/\/www\.google\.[a-z.]+\/[^#]*tb[ms]=isch[^#]*$/,
@@ -190,36 +189,38 @@ const kSiteList = [
       processResultItems();
       setPageCSS({
         // except for shopping, application, books, places
-        custom: !testMode(/shop|app|bks|plcs/),
+        custom: !testMode('shop|app|bks|plcs'),
         // except for shopping, places
-        multiColumn: !testMode(/shop|plcs/)
+        multiColumn: !testMode('shop|plcs')
       });
 
       function processResultItems() {
         // sanitize links
-        Array.forEach($S('li.g a', aDocument), function(a) {
-          a.removeAttribute('onmousedown');
+        Array.forEach($S('li.g a', aDocument), function(link) {
+          link.removeAttribute('onmousedown');
 
-          var url = /google\./.test(a.hostname) &&
-            /^\/url$/.test(a.pathname) &&
-            /[&?](?:q|url)=([^&]+)/.exec(a.search);
+          var url =
+            /google\./.test(link.hostname) &&
+            /^\/url$/.test(link.pathname) &&
+            /[&?](?:q|url)=([^&]+)/.exec(link.search);
           if (url) {
-            a.href = decodeURIComponent(url[1]);
+            link.href = decodeURIComponent(url[1]);
           }
         });
 
         var lastHost = null;
         Array.forEach($S('li.g', aDocument), function(item) {
           var link = $S1('.r>a, .ts a', item);
-          if (!link)
+          if (!link) {
             return;
+          }
 
           // weaken noisy item.
           if (mNoisyURLHandler.test(link.href)) {
             item.classList.add('ucjs_sitestyle_weaken');
           }
 
-          // emphasize same host item
+          // emphasize the same host item
           var host = link.hostname;
           if (host === lastHost) {
             item.classList.add('ucjs_sitestyle_samehost');
@@ -296,7 +297,7 @@ const kSiteList = [
             }';
         }
 
-        // replace the old CSS on ajax loading
+        // replace the old CSS on the ajax loading
         setStyleSheet(css, aDocument, {replace: true});
       }
     }
@@ -306,23 +307,26 @@ const kSiteList = [
     include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
     command: function(aDocument) {
       // sanitize links
-      Array.forEach($S('#contents a'), function(a) {
-        a.removeAttribute('onmousedown');
+      Array.forEach($S('#contents a'), function(link) {
+        link.removeAttribute('onmousedown');
 
-        var url = /yahoo\./.test(a.hostname) && /^\/\*\-/.test(a.pathname) &&
-          /\/\*\-([^?]+)/.exec(a.pathname);
+        var url =
+          /yahoo\./.test(link.hostname) &&
+          /^\/\*\-/.test(link.pathname) &&
+          /\/\*\-([^?]+)/.exec(link.pathname);
         if (url) {
-          a.href = decodeURIComponent(url[1]);
+          link.href = decodeURIComponent(url[1]);
         }
       });
 
       // process items
       Array.forEach($S('li'), function(item) {
         var link = $S1('.hd>h3>a', item);
-        if (!link)
+        if (!link) {
           return;
+        }
 
-        // weaken noisy item
+        // weaken a noisy item
         if (mNoisyURLHandler.test(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
@@ -402,15 +406,17 @@ const kSiteList = [
     // wait for DOM built
     wait: 500,
     command: function(aDocument) {
-      // exclude playlist mode
-      if (/[?&]list=/.test(aDocument.location.search))
+      // exclude the playlist mode
+      if (/[?&]list=/.test(aDocument.location.search)) {
         return;
+      }
 
       preventAutoplay();
 
       function preventAutoplay() {
         var player;
-        // Flash version.
+
+        // Flash version
         player = $S1('embed[id^="movie_player"]', aDocument);
         if (player) {
           let flashvars = player.getAttribute('flashvars');
@@ -420,7 +426,8 @@ const kSiteList = [
           }
           return;
         }
-        // HTML5 version.
+
+        // HTML5 version
         player = $S1('video', aDocument);
         if (player) {
           player.pause();
@@ -432,7 +439,6 @@ const kSiteList = [
   }
   //,
 ];
-
 
 /**
  * Page observer handler
@@ -481,14 +487,16 @@ var mPageObserver = (function() {
     onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation,
     aFlags) {
       var URL = aLocation.spec;
-      if (!/^https?/.test(URL))
+      if (!/^https?/.test(URL)) {
         return;
+      }
 
       mBrowserState.uninit(aBrowser);
 
       var site = matchSiteList(URL);
-      if (!site)
+      if (!site) {
         return;
+      }
 
       // 1st. test quick apply
       if (site.quickApply) {
@@ -507,12 +515,14 @@ var mPageObserver = (function() {
     onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags,
     aStatus) {
       var URL = aBrowser.currentURI.spec;
-      if (!/^https?/.test(URL))
+      if (!/^https?/.test(URL)) {
         return;
+      }
 
       var state = mBrowserState.get(aBrowser);
-      if (!state || state.URL !== URL)
+      if (!state || state.URL !== URL) {
         return;
+      }
 
       // aFlags: STATE_STOP=0x10, STATE_IS_REQUEST=0x10000,
       // STATE_IS_WINDOW=0x80000
@@ -540,9 +550,9 @@ var mPageObserver = (function() {
   function matchSiteList(aURL) {
     var site = null;
 
-    kSiteList.some(function(a) {
-      if (!a.disabled && testURL(a, aURL)) {
-        site = a;
+    kSiteList.some(function(item) {
+      if (!item.disabled && testURL(item, aURL)) {
+        site = item;
         return true;
       }
       return false;
@@ -554,12 +564,13 @@ var mPageObserver = (function() {
   function testURL(aSite, aTargetURL) {
     var {include} = aSite;
 
-    // test inclusion.
     if (!Array.isArray(include)) {
       include = [include];
     }
-    return include.some(function(a) {
-      return (typeof a === 'string') ? a === aTargetURL : a.test(aTargetURL);
+
+    return include.some(function(url) {
+      return (typeof url === 'string') ?
+        url === aTargetURL : url.test(aTargetURL);
     });
   }
 
@@ -584,7 +595,6 @@ var mPageObserver = (function() {
   };
 })();
 
-
 /**
  * Preference menu handler
  * @return {hash}
@@ -604,12 +614,12 @@ var mPrefMenu = (function() {
       let popup = $E('menupopup', {
         onpopupshowing: 'event.stopPropagation();'
       });
-      kSiteList.forEach(function(a, i) {
+      kSiteList.forEach(function(item, i) {
         popup.appendChild($E('menuitem', {
           value: i,
-          label: a.name,
+          label: item.name,
           type: 'checkbox',
-          checked: !a.disabled,
+          checked: !item.disabled,
           closemenu: 'none'
         }));
       });
@@ -625,8 +635,9 @@ var mPrefMenu = (function() {
   function doCommand(aEvent) {
     aEvent.stopPropagation();
     var item = aEvent.target;
-    if (!item.value)
+    if (!item.value) {
       return;
+    }
 
     kSiteList[+(item.value)].disabled = !item.hasAttribute('checked');
   }
@@ -636,7 +647,6 @@ var mPrefMenu = (function() {
   };
 })();
 
-
 /**
  * Noisy URL handler
  * @return {hash}
@@ -644,14 +654,15 @@ var mPrefMenu = (function() {
  */
 var mNoisyURLHandler = (function() {
   function test(aURL) {
-    if (!/^https?:/.test(aURL))
+    if (!/^https?:/.test(aURL)) {
       return false;
+    }
 
-    return kNoiseList.some(function(a) {
-      if (typeof a === 'string') {
-        return aURL.replace(/^https?:\/\/(?:www.)?/, '').indexOf(a) === 0;
+    return kNoiseList.some(function(item) {
+      if (typeof item === 'string') {
+        return aURL.replace(/^https?:\/\/(?:www.)?/, '').indexOf(item) === 0;
       }
-      return a.test(aURL);
+      return item.test(aURL);
     });
   }
 
@@ -663,20 +674,25 @@ var mNoisyURLHandler = (function() {
 
 //********** Imports
 
-function $E(aTagOrNode, aAttribute)
-  window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+}
 
-function $S(aSelector, aContext)
-  window.ucjsUtil.getNodesBySelector(aSelector, aContext);
+function $S(aSelector, aContext) {
+  return window.ucjsUtil.getNodesBySelector(aSelector, aContext);
+}
 
-function $S1(aSelector, aContext)
-  window.ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
+function $S1(aSelector, aContext) {
+  return window.ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
+}
 
-function U(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
 function setStyleSheet(aCSS, aDocument, aOption) {
   var {replace} = aOption || {};
@@ -684,8 +700,9 @@ function setStyleSheet(aCSS, aDocument, aOption) {
     {contentDocument: aDocument, id: kID.STYLESHEET, replace: replace});
 }
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
+}
 
 
 //********** Entry point
