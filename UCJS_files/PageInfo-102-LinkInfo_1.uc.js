@@ -107,9 +107,9 @@ function LI_doGrab(aIterator) {
 function grabLink(aNode) {
   if (aNode instanceof HTMLAnchorElement && aNode.href) {
     let imgs = aNode.getElementsByTagName('img');
-    let name = ((imgs && imgs.length) ? kNote.image : '') + getText(aNode);
+    let note = (imgs && imgs.length) ? kNote.image : '';
     addLink([
-      name,
+      note + getText(aNode),
       aNode.href,
       kType.a,
       aNode.target,
@@ -133,26 +133,27 @@ function grabLink(aNode) {
     ]);
   }
   else if ((aNode instanceof HTMLInputElement ||
-            aNode instanceof HTMLButtonElement) &&
-           aNode.type) {
-    let name = '', address = '', target = '';
-    switch (aNode.type.toLowerCase()) {
-      case 'image':
-        name = kNote.image;
-        // Fall through
-      case 'submit':
-        name += getText(aNode, aNode.alt || aNode.value || kType.submit);
-        if ('form' in aNode && aNode.form) {
-          address = aNode.form.action;
-          target = aNode.form.target;
-        }
-        addLink([
-          name,
-          address || kNote.error,
-          kType.submit,
-          target || ''
-        ]);
-        break;
+            aNode instanceof HTMLButtonElement) && aNode.type) {
+    let name, address, target;
+    let type = aNode.type.toLowerCase();
+    if (type === 'submit' || type === 'image') {
+      name = '';
+      if (type === 'image') {
+        name += kNote.image;
+      }
+      name += getText(aNode, aNode.alt || aNode.value || kType.submit);
+      if (aNode.form) {
+        address = aNode.form.action;
+        target = aNode.form.target;
+      }
+    }
+    if (name) {
+      addLink([
+        name,
+        address || kNote.error,
+        kType.submit,
+        target || ''
+      ]);
     }
   }
   else if (aNode instanceof HTMLAreaElement && aNode.href) {
@@ -172,14 +173,14 @@ function grabLink(aNode) {
     ]);
   }
   else if (aNode.hasAttributeNS(XLinkNS, 'href')) {
-    let address = '',
-        href = aNode.getAttributeNS(XLinkNS, 'href'),
-        charset = aNode.ownerDocument.characterSet;
+    let address;
+    let href = aNode.getAttributeNS(XLinkNS, 'href');
+    let charset = aNode.ownerDocument.characterSet;
     // @see resource:///modules/Services.jsm
     let io = window.Services.io;
     try {
-      let baseURI = Services.io.newURI(aNode.baseURI, charset, null);
-      address = Services.io.newURI(href, charset, baseURI).spec;
+      address = io.newURI(href, charset,
+        io.newURI(aNode.baseURI, charset, null)).spec;
     } catch (e) {
       address = kNote.error;
     }
@@ -197,8 +198,9 @@ function grabLink(aNode) {
 
 // @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
 function getText(aNode, aDefault) {
-  return (window.getValueText(aNode) || aNode.title || aDefault ||
-    kNote.error).substr(0, 50);
+  let text = window.getValueText(aNode) || aNode.title || aDefault ||
+    kNote.error;
+  return text.substr(0, 50);
 }
 
 function addLink(aValueArray) {
