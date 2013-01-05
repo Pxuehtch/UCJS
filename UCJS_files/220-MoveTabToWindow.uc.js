@@ -16,7 +16,7 @@
 
 /**
  * Settings for UI
- * @note U() converts unicode characters into readable string in UI.
+ * @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
  */
 const kBundle = {
   menu: {
@@ -72,8 +72,9 @@ function buildMenu() {
 
 function updateMenu(aEvent) {
   aEvent.stopPropagation();
-  if (aEvent.target !== getTabContextMenu())
+  if (aEvent.target !== getTabContextMenu()) {
     return;
+  }
 
   var menu = $ID(kBundle.menu.id);
 
@@ -120,18 +121,23 @@ function updateMenu(aEvent) {
 
 function doCommand(aEvent) {
   aEvent.stopPropagation();
-  if (aEvent.button !== 0)
+
+  if (aEvent.button !== 0) {
     return;
+  }
+
   var item = aEvent.target;
-  if (!item.value)
+  if (!item.value) {
     return;
+  }
 
   moveTabToOtherWindow(getContextTab(), getWindowAt(+(item.value)));
 }
 
 function getWindowsState(aTab) {
-  if (!aTab)
+  if (!aTab) {
     return;
+  }
 
   var wins = [];
 
@@ -144,10 +150,11 @@ function getWindowsState(aTab) {
     // Skip window which is closed, current, not browser, and popup
     if (win.closed ||
         win === window ||
-        win.document.documentElement.
-          getAttribute('windowtype') !== 'navigator:browser' ||
-        win.document.documentElement.getAttribute('chromehidden'))
+        win.document.documentElement.getAttribute('windowtype') !== 
+          'navigator:browser' ||
+        win.document.documentElement.getAttribute('chromehidden')) {
       continue;
+    }
 
     let tabbrowser = win.gBrowser;
     wins.push({
@@ -175,8 +182,10 @@ function getWindowAt(aIndex) {
 }
 
 function moveTabToOtherWindow(aTab, aWindow) {
-  if (!aTab || !aWindow)
+  if (!aTab || !aWindow) {
     return;
+  }
+
   var otherTabBrowser = aWindow.gBrowser;
 
   // @see chrome://browser/content/tabbrowser.xml::
@@ -196,6 +205,9 @@ function moveTabToOtherWindow(aTab, aWindow) {
   aWindow.focus();
 }
 
+
+//********** Utilities
+
 function getTabContextMenu() {
   return gBrowser.tabContextMenu;
 }
@@ -206,16 +218,14 @@ function getContextTab() {
 }
 
 function getWindowEnumerator() {
-  // Enumerator of all windows in order from front to back.
+  // enumerator of all windows in order from front to back
   // @see resource:///modules/Services.jsm
   return window.Services.wm.getZOrderDOMWindowEnumerator(null, true);
 }
 
-
-//********** Utilities
-
-function $ID(aId)
-  window.document.getElementById(aId);
+function $ID(aId) {
+  return window.document.getElementById(aId);
+}
 
 function $E(aTagOrNode, aAttribute) {
   var element = (typeof aTagOrNode === 'string') ?
@@ -235,14 +245,17 @@ function $E(aTagOrNode, aAttribute) {
 
 //********** Imports
 
-function U(aText)
-  window.ucjsUtil.toStringForUI(aText);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
+}
 
 
 //********** Entry point
