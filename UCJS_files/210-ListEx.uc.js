@@ -17,7 +17,7 @@
 /**
  * Numbers of the listed items
  * @value {Integer} If set to 0, all *unlimited* items will be listed.
- * *WARNING* It may be too long.
+ * *[WARNING: It may be too long]*
  */
 const kMaxListItems = 10;
 
@@ -72,11 +72,12 @@ var mMenu = (function() {
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
   // separators.
   function showContextMenu(aEvent) {
+    if (aEvent.target !== getContextMenu()) {
+      return;
+    }
+
     // @see chrome://browser/content/nsContextMenu.js
     const {gContextMenu} = window;
-
-    if (aEvent.target !== getContextMenu())
-      return;
 
     var hidden =
       gContextMenu.onLink ||
@@ -90,8 +91,9 @@ var mMenu = (function() {
   }
 
   function hideContextMenu(aEvent) {
-    if (aEvent.target !== getContextMenu())
+    if (aEvent.target !== getContextMenu()) {
       return;
+    }
 
     [kID.historyMenu, kID.openedMenu, kID.closedMenu].
     forEach(function(id) {
@@ -118,8 +120,9 @@ var mHistoryList = (function() {
     aEvent.stopPropagation();
 
     var popup = aEvent.target;
-    if (popup.hasChildNodes())
+    if (popup.hasChildNodes()) {
       return;
+    }
 
     if (!buildTabHistory(popup)) {
       makeDisabledMenuItem(popup, 'Tab: No history.');
@@ -142,8 +145,9 @@ var mHistoryList = (function() {
 
   function buildTabHistory(aPopup) {
     var sh = gBrowser.sessionHistory;
-    if (sh.count < 1)
+    if (sh.count < 1) {
       return false;
+    }
 
     var entry;
     var [index, count] = [sh.index, sh.count];
@@ -152,8 +156,9 @@ var mHistoryList = (function() {
 
     for (let i = end - 1; i >= start; i--) {
       entry = sh.getEntryAtIndex(i, false);
-      if (!entry)
+      if (!entry) {
         continue;
+      }
 
       className = ['menuitem-iconic'];
       action = null;
@@ -225,6 +230,10 @@ var mHistoryList = (function() {
   }
 
   function getLastVisitTime(aURI) {
+    if (aURI.schemeIs('about')) {
+      return 0;
+    }
+
     // @see resource:///modules/PlacesUtils.jsm
     const history = window.PlacesUtils.history;
     const {Ci} = window;
@@ -232,17 +241,14 @@ var mHistoryList = (function() {
     var query, options, root;
     var time;
 
-    if (aURI.schemeIs('about'))
-      return 0;
-
     query = history.getNewQuery();
     query.uri = aURI;
 
     options = history.getNewQueryOptions();
     options.queryType =
-      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY; // 0
+      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
     options.sortingMode =
-      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING; // 4
+      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
     options.maxResults = 1;
 
     root = history.executeQuery(query, options).root;
@@ -261,14 +267,12 @@ var mHistoryList = (function() {
     const {Ci} = window;
 
     var query, options;
-
     query = history.getNewQuery();
-
     options = history.getNewQueryOptions();
     options.queryType =
-      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY; // 0
+      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
     options.sortingMode =
-      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING; // 4
+      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
     options.maxResults = kMaxListItems;
 
     return history.executeQuery(query, options).root;
@@ -295,8 +299,9 @@ var mOpenedList = (function() {
     aEvent.stopPropagation();
 
     var popup = aEvent.target;
-    if (popup.hasChildNodes())
+    if (popup.hasChildNodes()) {
       return;
+    }
 
     buildOpenedTabs(popup);
     makeMenuSeparator(popup);
@@ -411,8 +416,9 @@ var mClosedList = (function() {
     aEvent.stopPropagation();
 
     var popup = aEvent.target;
-    if (popup.hasChildNodes())
+    if (popup.hasChildNodes()) {
       return;
+    }
 
     if (!buildClosedTabs(popup)) {
       makeDisabledMenuItem(popup, 'No closed tabs.');
@@ -427,18 +433,20 @@ var mClosedList = (function() {
 
   function buildClosedTabs(aPopup) {
     var ss = getSessionStore();
-    if (ss.getClosedTabCount(window) === 0)
+    if (ss.getClosedTabCount(window) === 0) {
       return false;
+    }
 
     var undoData = JSON.parse(ss.getClosedTabData(window)), data;
     var entries, history;
 
     for (let i = 0; i < undoData.length; i++) {
       data = undoData[i];
-      entries = data.state.entries
-      history =
-        [getPluralForm('[#1 History #2]',
-        entries.length, ['entry', 'entries'])];
+      entries = data.state.entries;
+      history = [
+        getPluralForm('[#1 History #2]',
+        entries.length, ['entry', 'entries'])
+      ];
 
       let [start, end] = getListRange(data.state.index, entries.length);
       for (let j = end - 1; j >= start; j--) {
@@ -459,8 +467,9 @@ var mClosedList = (function() {
 
   function buildClosedWindows(aPopup) {
     var ss = getSessionStore();
-    if (ss.getClosedWindowCount() === 0)
+    if (ss.getClosedWindowCount() === 0) {
       return false;
+    }
 
     var undoData = JSON.parse(ss.getClosedWindowData()), data;
     var tabs, tab;
@@ -511,8 +520,9 @@ var mClosedList = (function() {
 
 //********** Utilities
 
-function $ID(aID)
-  window.document.getElementById(aID);
+function $ID(aID) {
+  return window.document.getElementById(aID);
+}
 
 function $E(aTagName, aAttribute) {
   var element = window.document.createElement(aTagName);
@@ -562,8 +572,11 @@ function formatLabel(aValue) {
   return form.replace('%title%', title);
 }
 
-function getPluralForm(aFormat, aCount, aLabels)
-  aFormat.replace('#1', aCount).replace('#2', aLabels[(aCount < 2) ? 0 : 1]);
+function getPluralForm(aFormat, aCount, aLabels) {
+  return aFormat.
+    replace('#1', aCount).
+    replace('#2', aLabels[(aCount < 2) ? 0 : 1]);
+}
 
 function getListRange(aIndex, aCount) {
   var maxNum = kMaxListItems;
@@ -623,7 +636,8 @@ function getFavicon(aIcon, aPageURI) {
         } catch (e) {}
 
         if (ext) {
-          aIcon = 'moz-icon://.%EXT%?size=16'.replace('%EXT%', ext);
+          aIcon = 'moz-icon://.%EXT%?size=16'.
+            replace('%EXT%', ext);
         }
       }
     }
@@ -639,20 +653,26 @@ function getFavicon(aIcon, aPageURI) {
 
 //********** Imports
 
-function getContextMenu()
-  window.ucjsUI.ContentArea.contextMenu;
+function getContextMenu() {
+  return window.ucjsUI.ContentArea.contextMenu;
+}
 
-function setStateForUnreadTab(aMenuitem, aTab)
+function setStateForUnreadTab(aMenuitem, aTab) {
   window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
+}
 
-function focusWindowAtIndex(aIdx)
-  'ucjsUtil.focusWindowAtIndex(' + aIdx + ');';
+// @note For <oncommand> attribute.
+function focusWindowAtIndex(aIndex) {
+  return 'ucjsUtil.focusWindowAtIndex(' + aIndex + ');';
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('ListEx.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ListEx.uc.js', aMsg);
+}
 
 
 //********** Entry point
