@@ -162,4 +162,4 @@ function log(aMsg)
 ResetSearchPoint_init();
 
 
-})();
+})(this);
