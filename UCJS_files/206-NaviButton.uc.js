@@ -147,7 +147,7 @@ var mButton = {
  */
 var mBrowserProgressListener = {
   onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
-    var back = $(kID.BACK_BUTTON);
+    var back = $ID(kID.BACK_BUTTON);
 
     if (!gBrowser.canGoBack && mReferrer.exists()) {
       back.setAttribute(kID.REFERRER, true);
@@ -193,7 +193,7 @@ var mReferrer = {
  */
 var mTooltip = {
   init: function() {
-    this.tooltip = $('mainPopupSet').appendChild($E('tooltip'));
+    this.tooltip = $ID('mainPopupSet').appendChild($E('tooltip'));
     this.tooltip.id = kID.TOOLTIP;
   },
 
@@ -450,7 +450,7 @@ function openReferrer() {
   gBrowser.loadOneTab(referrer);
 }
 
-function $(aId) {
+function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
