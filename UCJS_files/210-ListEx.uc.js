@@ -525,24 +525,24 @@ function $ID(aID) {
 }
 
 function $E(aTagName, aAttribute) {
-  var element = window.document.createElement(aTagName);
+  var node = window.document.createElement(aTagName);
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       if (value !== null && value !== undefined) {
         if (name === 'icon') {
-          element.style.listStyleImage = 'url(' + value + ')';
+          node.style.listStyleImage = 'url(' + value + ')';
         } else if (name === 'action') {
-          element.setAttribute('oncommand', value);
-          element.setAttribute('onclick', 'checkForMiddleClick(this,event);');
+          node.setAttribute('oncommand', value);
+          node.setAttribute('onclick', 'checkForMiddleClick(this,event);');
         } else {
-          element.setAttribute(name, value);
+          node.setAttribute(name, value);
         }
       }
     }
   }
 
-  return element;
+  return node;
 }
 
 function makeDisabledMenuItem(aPopup, aLabel) {
@@ -630,14 +630,15 @@ function getFavicon(aIcon, aPageURI) {
       } catch (e) {}
 
       if (!aIcon && !/^https?:/.test(aPageURI.spec)) {
-        let ext;
+        let fileExtension;
         try {
-          ext = aPageURI.QueryInterface(window.Ci.nsIURL).fileExtension;
+          fileExtension =
+            aPageURI.QueryInterface(window.Ci.nsIURL).fileExtension;
         } catch (e) {}
 
-        if (ext) {
+        if (fileExtension) {
           aIcon = 'moz-icon://.%EXT%?size=16'.
-            replace('%EXT%', ext);
+            replace('%EXT%', fileExtension);
         }
       }
     }
