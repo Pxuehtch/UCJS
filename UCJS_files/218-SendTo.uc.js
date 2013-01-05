@@ -317,12 +317,10 @@ function setSeparators(aContextMenu, aReferenceNode) {
     aReferenceNode = null;
   }
 
-  [
-    $E('menuseparator', {id: kID.startSeparator}),
-    $E('menuseparator', {id: kID.endSeparator})
-  ].
-  forEach(function(separator) {
-    aContextMenu.insertBefore(separator, aReferenceNode);
+  [kID.startSeparator, kID.endSeparator].
+  forEach(function(id) {
+    aContextMenu.insertBefore(
+      $E('menuseparator', {id: id}), aReferenceNode);
   });
 }
 
