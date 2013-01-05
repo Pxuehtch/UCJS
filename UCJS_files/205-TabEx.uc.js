@@ -140,7 +140,9 @@ var mTab = (function () {
    *   set: a value that is set, null if removed.
    */
   function data(aTab, aKey, aValue) {
-    function getInt(aValue) parseInt(aValue, 10);
+    function getInt(aValue) {
+      return parseInt(aValue, 10);
+    }
 
     var id, getter, setter;
     switch (aKey) {
@@ -233,17 +235,17 @@ var mTab = (function () {
    * Gets/Sets the state of a tab
    */
   var state = {
-    // a user read a tab
+    // whether a user read a tab
     read: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.READ, aValue);
     },
 
-    // the loading of a tab is suspended
+    // whether the loading of a tab is suspended
     suspended: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.SUSPENDED, aValue);
     },
 
-    // duplicated/undo-closed is opening
+    // whether duplicated/undo-closed is opening
     restoring: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.RESTORING, aValue);
     }
@@ -254,20 +256,31 @@ var mTab = (function () {
    */
   var stateTest = {
     // whether a user read a tab
+    // @return {boolean}
     read: function(aTab) {
       return manageFlagAttribute(aTab, kID.READ);
     },
 
     // whether the loading of a tab is suspended
+    // @return {boolean}
     suspended: function(aTab) {
       return manageFlagAttribute(aTab, kID.SUSPENDED);
     }
   };
 
+
+  /**
+   * Gets/Sets or Removes the key attribute of a tab
+   * @param aTab {Element}
+   * @param aKey {string}
+   * @param aValue {boolean} [optional]
+   * @return {boolean}
+   */
   function manageFlagAttribute(aTab, aKey, aValue) {
     var has = aTab.hasAttribute(aKey);
-    if (aValue === undefined)
+    if (aValue === undefined) {
       return has;
+    }
 
     if (has && aValue === false) {
       aTab.removeAttribute(aKey);
@@ -375,7 +388,7 @@ var mTabOpener = {
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
       } else {
-        // to URL string
+        // into URL string
         aReferrerURI = aReferrerURI && aReferrerURI.spec;
 
         let fromVisit;
@@ -390,12 +403,15 @@ var mTabOpener = {
         }
 
         let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
-        if (aAllowThirdPartyFixup)
+        if (aAllowThirdPartyFixup) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
-        if (aFromExternal)
+        }
+        if (aFromExternal) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-        if (aIsUTF8)
+        }
+        if (aIsUTF8) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
+        }
 
         // TODO: POST data handling. |aPostData| is a |nsIInputStream| object
         // that JSON does not support.
@@ -459,8 +475,9 @@ var mTabOpener = {
 var mReferrer = {
   getURL: function(aTab) {
     var query = mTab.data(aTab, 'query');
-    if (!query)
+    if (!query) {
       return null;
+    }
 
     return query.referrerURL || query.fromVisit;
   },
@@ -475,17 +492,20 @@ var mReferrer = {
 
   isRelatedToCurrent: function(aTab) {
     var query = mTab.data(aTab, 'query');
-    if (!query)
+    if (!query) {
       return null;
+    }
 
     return !!(query.referrerURL ||
       (query.relatedToCurrent && query.fromVisit));
   },
 
   getFromVisit: function(aURL) {
-    if (!aURL)
+    if (!aURL) {
       return null;
+    }
 
+    // @see http://www.forensicswiki.org/wiki/Mozilla_Firefox_3_History_File_Format
     var sql =
       "SELECT p1.url " +
       "FROM moz_places p1 " +
@@ -524,15 +544,17 @@ var mTabSelector = {
 
   select: function(aTab) {
     // in loading yet
-    if (aTab && aTab.hasAttribute('busy'))
+    if (aTab && aTab.hasAttribute('busy')) {
       return;
+    }
 
     this.clear();
 
     // cancel the dealing when the tab is removed or deselected while the timer
     // is waiting
-    if (!aTab || !aTab.selected)
+    if (!aTab || !aTab.selected) {
       return;
+    }
 
     this.update(aTab);
   },
@@ -589,8 +611,9 @@ var mTabSuspender = {
 
     // cancel suspending the tab when is removed or selected while the timer
     // is waiting
-    if (!aTab || aTab.selected)
+    if (!aTab || aTab.selected) {
       return;
+    }
 
     var [browser, loadingURL] = this.getBrowserForTab(aTab);
     var isBusy = aTab.hasAttribute('busy');
@@ -615,8 +638,9 @@ var mTabSuspender = {
 
     // pass only the visible and suspended tab
     if (!aTab || aTab.hidden || aTab.closing ||
-        !mTab.state.suspended(aTab))
+        !mTab.state.suspended(aTab)) {
       return;
+    }
 
     mTab.state.suspended(aTab, false);
 
@@ -753,8 +777,9 @@ var mTabEvent = {
   onTabSelect: function(aTab) {
     // handle a duplicated/undo-closed tab in |onSSTabRestored|
     // pass a startup restored tab
-    if (mTab.state.restoring(aTab))
+    if (mTab.state.restoring(aTab)) {
       return;
+    }
 
     mTabSelector.set(aTab);
 
@@ -785,8 +810,9 @@ var mTabEvent = {
   onSSTabRestored: function(aTab) {
     // handle a duplicated/undo-closed tab
     // do not pass a startup restored tab
-    if (!mTab.state.restoring(aTab))
+    if (!mTab.state.restoring(aTab)) {
       return;
+    }
 
     mTab.state.restoring(aTab, false);
 
@@ -887,7 +913,8 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
   }
 
   if (-1 < pos && pos !== tabPos) {
-    gBrowser.moveTabTo(aTab, getTabPos(gBrowser.tabs, tabs[pos]));
+    gBrowser.moveTabTo(aTab,
+      getTabPos(gBrowser.tabs, tabs[pos]));
   }
 }
 
@@ -962,8 +989,9 @@ function getFamilyTab(aBaseTab, aStatement) {
   // @note startPos is always 0 when the base tab is pinned and the state has
   // 'next'.
   if ((direction === 'prev' && --startPos < 0) ||
-      (direction === 'next' && ++startPos > activeTabs.length - 1))
+      (direction === 'next' && ++startPos > activeTabs.length - 1)) {
     return null;
+  }
 
   /**
    * Sets the comparator function
@@ -973,8 +1001,9 @@ function getFamilyTab(aBaseTab, aStatement) {
 
   if (family === 'ancestor') {
     // useless when no ancestors is examined
-    if (!baseAncs)
+    if (!baseAncs) {
       return null;
+    }
 
     isRelated = function(tab) {
       let id = mTab.data(tab, 'open');
@@ -985,8 +1014,9 @@ function getFamilyTab(aBaseTab, aStatement) {
     isRelated = function(tab) {
       let ancs = mTab.data(tab, 'ancestors');
       // this tab that has no ancestors does not related with the base tab
-      if (!ancs)
+      if (!ancs) {
         return false;
+      }
 
       // 1.this tab is a descendant of the base tab
       // 2.the parent of the base tab is an ancestor of this tab(sibling or
@@ -1009,8 +1039,9 @@ function getFamilyTab(aBaseTab, aStatement) {
     // get the farthest one of a sequence of tabs
     // @note No implementation for the unsupported 'prev farthest'.
     for (let i = startPos, l = activeTabs.length; i < l; i++) {
-      if (!isRelated(activeTabs[i]))
+      if (!isRelated(activeTabs[i])) {
         break;
+      }
       relatedPos = i;
     }
   }
@@ -1094,8 +1125,9 @@ function getPrevSelectedTab(aBaseTab, aOption) {
 
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
     tab = tabs[i];
-    if (tab === baseTab)
+    if (tab === baseTab) {
       continue;
+    }
     time = mTab.data(tab, 'select');
     if (time && time > recentTime) {
       recentTime = time;
@@ -1130,8 +1162,9 @@ function getPrevSelectedTab(aBaseTab, aOption) {
 }
 
 function getAdjacentTab(aBaseTab, aDirection) {
-  if (aDirection !== -1 && aDirection !== +1)
+  if (aDirection !== -1 && aDirection !== +1) {
     throw new TypeError('aDirection should be -1 or +1');
+  }
 
   // including the base tab
   var tabs = getTabs('active, pinned', aBaseTab);
@@ -1139,8 +1172,9 @@ function getAdjacentTab(aBaseTab, aDirection) {
   var basePos = getTabPos(tabs, aBaseTab);
   // no tabs in the direction
   if ((aDirection === -1 && basePos === 0) ||
-      (aDirection === +1 && basePos === tabs.length - 1))
+      (aDirection === +1 && basePos === tabs.length - 1)) {
     return null;
+  }
   return tabs[pos + aDirection];
 }
 
@@ -1153,8 +1187,9 @@ function closeRightTabs(aBaseTab) {
 }
 
 function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
-  if (aDirection !== -1 && aDirection !== +1)
+  if (aDirection !== -1 && aDirection !== +1) {
     throw new TypeError('aDirection should be -1 or +1');
+  }
 
   var baseTab = aBaseTab || gBrowser.selectedTab;
   // excluding pinned tabs
@@ -1165,8 +1200,9 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
   // 2.no tabs in the direction
   if (basePos < 0 ||
       (aDirection === -1 && basePos === 0) ||
-      (aDirection === +1 && basePos === tabs.length - 1))
+      (aDirection === +1 && basePos === tabs.length - 1)) {
     return;
+  }
 
   var top, last;
   // closing from the last tab
@@ -1214,10 +1250,12 @@ function getTabs(aStatement, aForcedTab) {
       active = !!statement.matchKey(['active']);
 
   return Array.filter(gBrowser.tabs, function(tab) {
-    if (tab === aForcedTab)
+    if (tab === aForcedTab) {
       return true;
-    if (tab.closing)
+    }
+    if (tab.closing) {
       return false;
+    }
     return (pinned && tab.pinned)  ||
            (active && !tab.pinned && !tab.hidden);
   });
@@ -1345,8 +1383,9 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 
   function matchKey(aSortOfKeys) {
     for (let i = 0; i < aSortOfKeys.length; i++) {
-      if (mKeys.indexOf(aSortOfKeys[i]) > -1)
+      if (mKeys.indexOf(aSortOfKeys[i]) > -1) {
         return aSortOfKeys[i];
+      }
     }
     return null;
   }
@@ -1359,23 +1398,29 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 
 //********** Imports
 
-function getPref(aKey)
-  window.ucjsUtil.getPref(aKey);
+function getPref(aKey) {
+  return window.ucjsUtil.getPref(aKey);
+}
 
-function setPref(aKey, aVal)
+function setPref(aKey, aVal) {
   window.ucjsUtil.setPref(aKey, aVal);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function openTab(aURL, aOption)
-  window.ucjsUtil.openTab(aURL, aOption);
+function openTab(aURL, aOption) {
+  return window.ucjsUtil.openTab(aURL, aOption);
+}
 
-function removeTab(aTab, aOption)
+function removeTab(aTab, aOption) {
   window.ucjsUtil.removeTab(aTab, aOption);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('TabEx.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('TabEx.uc.js', aMsg);
+}
 
 
 //********** Entry point
