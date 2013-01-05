@@ -1,18 +1,19 @@
 // ==UserScript==
 // @name        NaviButton.uc.js
-// @description Customizes the navigation buttons with a enhanced tooltip.
+// @description Customizes the navigation buttons with an enhanced tooltip.
 // @include     main
 // ==/UserScript==
 
-// @require Util.uc.js, TabEx.uc.js
-// @note Some default functions are modified. search @modified.
+// @require Util.uc.js
+// @require [optional][for referrer] TabEx.uc.js
+// @note Some default functions are modified. see @modified
 
 /**
  * @usage
- *   click: go back or forward a step
- *   click the back button with a referrer: a new tab opens
- *   shift+click: go to the border of the same domain of the current page
- *   ctrl+click: go to the stop of history
+ * click: go back or forward a step
+ * click the back button with a referrer: a new tab opens in a referrer URL
+ * shift+click: go to the border of the same domain of the current page
+ * ctrl+click: go to the stop of history
  * @note A new tab will open with 'middle button click'.
  * @see |mHistory.jump()|
  */
@@ -24,18 +25,23 @@
 "use strict";
 
 
-//********** Preferences
-
+/**
+ * Identifiers
+ */
 const kID = {
   // Default
-  BACK_BUTTON:    'back-button',
+  BACK_BUTTON: 'back-button',
   FORWARD_BUTTON: 'forward-button',
 
   // Custom
-  TOOLTIP:  'ucjs_navibutton_tooltip',
+  TOOLTIP: 'ucjs_navibutton_tooltip',
   REFERRER: 'ucjs_navibutton_referrer'
 };
 
+
+/**
+ * UI strings
+ */
 const kBundle = {
   title: {
     NOTITLE:   'No title',
@@ -59,21 +65,23 @@ const kBundle = {
   }
 };
 
+
+/**
+ * UI styles
+ */
 const kStyle = {
   title: 'font-weight:bold;',
   referrer: 'color:blue;'
 };
-
-
-//********** Handlers
 
 /**
  * Handler of a navigation button
  */
 var mButton = {
   init: function(aButton) {
-    if (!aButton)
+    if (!aButton) {
       return;
+    }
 
     aButton.removeAttribute('tooltip');
     aButton.removeAttribute('onclick');
@@ -87,8 +95,9 @@ var mButton = {
   },
 
   uninit: function(aButton) {
-    if (!aButton)
+    if (!aButton) {
       return;
+    }
 
     aButton.removeEventListener('mouseover', this, false);
     aButton.removeEventListener('mouseout', this, false);
@@ -123,14 +132,14 @@ var mButton = {
     window[command] = function(aEvent) {
       if (aEvent &&
           aEvent.sourceEvent &&
-          aEvent.sourceEvent.target.id === aButton.id)
+          aEvent.sourceEvent.target.id === aButton.id) {
         return;
+      }
 
       $func.apply(this, arguments);
     };
   }
 };
-
 
 /**
  * Progress listener
@@ -153,27 +162,31 @@ var mBrowserProgressListener = {
   onSecurityChange: function() {}
 };
 
-
 /**
  * Handler of referrer
- * @note Declared in TabEx.uc.js
+ * @require TabEx.uc.js
  */
 var mReferrer = {
   get ref() {
     delete this.ref;
-    return this.ref = (window.ucjsTabEx && window.ucjsTabEx.referrer);
+    return this.ref = window.ucjsTabEx && window.ucjsTabEx.referrer;
   },
 
-  exists: function()
-    this.ref && this.ref.exists(gBrowser.selectedTab),
+  exists: function() {
+    return this.ref &&
+      this.ref.exists(gBrowser.selectedTab);
+  },
 
-  getURL: function()
-    this.ref && this.ref.getURL(gBrowser.selectedTab),
+  getURL: function() {
+    return this.ref &&
+      this.ref.getURL(gBrowser.selectedTab);
+  },
 
-  getTitle: function()
-    this.ref && this.ref.getTitle(gBrowser.selectedTab)
+  getTitle: function() {
+    return this.ref &&
+      this.ref.getTitle(gBrowser.selectedTab);
+  }
 };
-
 
 /**
  * Handler of a tooltip panel
@@ -224,8 +237,9 @@ var mTooltip = {
     }, this);
 
     function setLabel(aVal, aTitle, aReferrer) {
-      if (!aVal)
+      if (!aVal) {
         return;
+      }
 
       var label = $E('label');
       label.setAttribute('value', aVal);
@@ -293,7 +307,6 @@ var mTooltip = {
   }
 };
 
-
 /**
  * Handler of history
  */
@@ -334,8 +347,9 @@ var mHistory = {
       idx = this.data.stop.index;
     }
 
-    if (idx < 0)
+    if (idx < 0) {
       return;
+    }
 
     if (aEvent.button === 1) {
       gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
@@ -348,10 +362,13 @@ var mHistory = {
     var data = this.initData(back, aReferrer);
     var sh = this.getSessionHistory();
 
-    if (!sh || aDisabled)
+    if (!sh || aDisabled) {
       return data;
-    if ((back && sh.index === 0) || (!back && sh.index === sh.count - 1))
+    }
+    if ((back && sh.index === 0) ||
+        (!back && sh.index === sh.count - 1)) {
       return data;
+    }
 
     var step = back ? -1 : 1;
     var border = sh.index + step;
@@ -360,8 +377,9 @@ var mHistory = {
     var host = sh.getEntryAt(sh.index).host;
 
     for (; within(border); border += step) {
-      if (host !== sh.getEntryAt(border).host)
+      if (host !== sh.getEntryAt(border).host) {
         break;
+      }
     }
 
     [
@@ -385,7 +403,11 @@ var mHistory = {
   getSessionHistory: function() {
     var sh = gBrowser.sessionHistory;
     if (sh) {
-      return {index: sh.index, count: sh.count, getEntryAt: getEntryAt};
+      return {
+        index: sh.index,
+        count: sh.count,
+        getEntryAt: getEntryAt
+      };
     }
     return null;
 
@@ -428,23 +450,27 @@ function openReferrer() {
   gBrowser.loadOneTab(referrer);
 }
 
-function $(aId)
-  window.document.getElementById(aId);
+function $(aId) {
+  return window.document.getElementById(aId);
+}
 
-function $E(aTag)
-  window.document.createElement(aTag);
+function $E(aTag) {
+  return window.document.createElement(aTag);
+}
 
 
 //********** Imports
 
-function log(aStr)
-  window.ucjsUtil.logMessage('NaviButton.uc.js', aStr);
+function log(aStr) {
+  return window.ucjsUtil.logMessage('NaviButton.uc.js', aStr);
+}
 
 
 //********** Entry point
 
 function NaviButton_init() {
-  var back = $(kID.BACK_BUTTON), forward = $(kID.FORWARD_BUTTON);
+  var back = $ID(kID.BACK_BUTTON),
+      forward = $ID(kID.FORWARD_BUTTON);
 
   mButton.init(back);
   mButton.init(forward);
