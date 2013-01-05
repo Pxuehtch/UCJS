@@ -5,21 +5,21 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @require [for commands] Util.uc.js, NaviLink.uc.js, TabEx.uc.js,
-// WebService.uc.js, UI.uc.js
+// @require [optional][for commands] Util.uc.js, UI.uc.js, NaviLink.uc.js,
+// TabEx.uc.js, WebService.uc.js
 
 /**
- * @usage;
- *  *Normal mode: gestures or wheel rotations holding down the right mouse
- *   button.
- *  *Drag&Drop mode: gestures dragging a selected text or a link or an image.
- *  *'Shift' key and 'Ctrl' key are supported.
+ * @usage
+ * *Normal mode: gestures or wheel rotations holding down the right mouse
+ *  button.
+ * *Drag&Drop mode: gestures dragging a selected text or a link or an image.
+ * *'Shift' key and 'Ctrl' key are supported.
  *
- * @note;
- *  *The gestures is only available within the inner frame of the content
- *   area. The default width of the frame is 16px. see inGestureArea()
- *  *The max number of signs(directions and wheel rotations) per gesture is 10.
- *   see GestureManager()
+ * @note
+ * *The gestures is only available within the inner frame of the content area,
+ *  and the default width of the frame is 16px. see |inGestureArea()|
+ * *The max number of signs(directions and wheel rotations) per gesture is 10.
+ *  see |GestureManager()|
  */
 
 
@@ -48,7 +48,7 @@ const kGestureSign = {
 
 /**
  * Gestures setting
- * @key gestures {string[]} combination of kGestureSign
+ * @key gestures {string[]} combination of |kGestureSign|
  * @key name {string}
  * @key command {function}
  *   @param {hash}
@@ -464,8 +464,9 @@ function MouseGesture() {
   // TODO: Prevent the drop event when a right mouse button is pressed down
   // while dragging. At present the drop event fires.
   function onDrop(aEvent) {
-    if (mState !== kState.DRAG)
+    if (mState !== kState.DRAG) {
       return;
+    }
 
     if (inEditable(aEvent)) {
       cancelGesture();
@@ -676,8 +677,9 @@ function GestureManager() {
 
     if (aEvent.type === 'dragstart') {
       let info = getDragInfo(aEvent);
-      if (!info.type || !info.data)
+      if (!info.type || !info.data) {
         return false;
+      }
 
       mDragType = info.type;
       mDragData = info.data;
@@ -718,8 +720,9 @@ function GestureManager() {
   }
 
   function update(aEvent) {
-    if (mError)
+    if (mError) {
       return;
+    }
 
     if (mQuickShot) {
       clearGesture();
@@ -825,8 +828,9 @@ function GestureManager() {
     var currentGesture = mChain.length && buildGesture();
     if (currentGesture) {
       kGestureSet.some(function(item) {
-        if (item.disabled)
+        if (item.disabled) {
           return false;
+        }
 
         return item.gestures.some(function(gesture) {
           var isQuickShot = gesture.indexOf(kGestureSign.quickShot) > -1;
@@ -883,7 +887,7 @@ function GestureManager() {
 
     if (mError) {
       // HACK: Display the status after its values have been cleared.
-      setTimeout(function(s) updateStatusbarText(s), 0, str);
+      setTimeout(function(value) updateStatusbarText(value), 0, str);
     } else {
       updateStatusbarText(str);
     }
@@ -895,6 +899,10 @@ function GestureManager() {
     updateStatusbarText('');
   }
 
+  /**
+   * Creates a display string
+   * @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
+   */
   function toString() {
     const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
 
@@ -1055,8 +1063,9 @@ function doCmd(aCommand) {
   }
 }
 
-function $(aId)
-  window.document.getElementById(aId);
+function $(aId) {
+  return window.document.getElementById(aId);
+}
 
 
 //********** Imports
@@ -1073,14 +1082,17 @@ function updateStatusbarText(aText) {
   window.ucjsUI.StatusField.update(aText);
 }
 
-function U(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function addEvent(aData)
-  window.ucjsUtil.setEventListener(aData);
+function addEvent(aData) {
+  return window.ucjsUtil.setEventListener(aData);
+}
 
-function getSelectionAtCursor(aOption)
-  window.ucjsUtil.getSelectionAtCursor(aOption);
+function getSelectionAtCursor(aOption) {
+  return window.ucjsUtil.getSelectionAtCursor(aOption);
+}
 
 function openTab(aURL, aBG) {
   window.ucjsUtil.openTab(aURL, {
@@ -1091,7 +1103,8 @@ function openTab(aURL, aBG) {
 }
 
 function log(aMsg)
-  window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
+  return window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
+}
 
 
 //********** Entry point
