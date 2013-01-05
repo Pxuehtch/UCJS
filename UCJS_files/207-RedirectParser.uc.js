@@ -175,7 +175,7 @@ function showContextMenu(aEvent) {
   if (aEvent.target === getContextMenu()) {
     // @see chrome://browser/content/nsContextMenu.js
     window.gContextMenu.showItem($ID(kBundle.menu.id),
-      scanURL(gContextMenu.linkURL));
+      scanURL(window.gContextMenu.linkURL));
   }
 }
 
