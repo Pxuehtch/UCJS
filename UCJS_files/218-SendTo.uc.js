@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @require [for preset] WebService.uc.js
+// @require [optional][for preset] WebService.uc.js
 // @usage Access to items in the main context menu.
 
 
@@ -19,8 +19,8 @@
  * Identifiers
  */
 const kID = {
-  startSeparator: 'ucjs_sendTo_start_sep',
-  endSeparator: 'ucjs_sendTo_end_sep'
+  startSeparator: 'ucjs_sendTo_startsep',
+  endSeparator: 'ucjs_sendTo_endsep'
 };
 
 /**
@@ -266,9 +266,9 @@ function getAvailableItems() {
 }
 
 function makeItem(aType, aData, aService) {
-  var URL =
-  AliasFixup.create(
-    (typeof aService.URL === 'function') ? aService.URL(aData) : aService.URL,
+  let URL = AliasFixup.create(
+    (typeof aService.URL === 'function') ?
+      aService.URL(aData) : aService.URL,
     aData
   );
 
@@ -303,7 +303,7 @@ function testExtension(aExtensions, aURL) {
 
   // Case: http://www.example.com/path/file1.ext?key=file2.ext
   // Examines file2.ext, and then file1.ext
-  return targets.some(function(el) aExtensions.indexOf(el) > -1);
+  return targets.some(function(item) aExtensions.indexOf(item) > -1);
 }
 
 // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
@@ -326,8 +326,9 @@ function getSeparators() {
   return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
 }
 
-function $ID(aID)
-  window.document.getElementById(aID);
+function $ID(aID) {
+  return window.document.getElementById(aID);
+}
 
 function $E(aTag, aAttribute) {
   let node = window.document.createElement(aTag);
@@ -361,23 +362,27 @@ function getContextMenu()
   window.ucjsUI.ContentArea.contextMenu;
 
 function commandForOpenURL(aURL) {
-  var command = 'ucjsUtil.openTab("%URL%"' +
-    ',{inBackground:event.button===1,relatedToCurrent:true});';
+  let command = 'ucjsUtil.openTab("%URL%",' +
+    '{inBackground:event.button===1,relatedToCurrent:true});';
 
   return command.replace('%URL%', aURL);
 }
 
-function U(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function U(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function getSelectionAtCursor()
-  window.ucjsUtil.getSelectionAtCursor();
+function getSelectionAtCursor() {
+  return window.ucjsUtil.getSelectionAtCursor();
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('SendTo.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('SendTo.uc.js', aMsg);
+}
 
 
 //********** Entry point
