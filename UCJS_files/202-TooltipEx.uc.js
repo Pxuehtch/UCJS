@@ -61,7 +61,7 @@ const kScanAttribute = {
  */
 const kID = {
   PANEL: 'ucjs_tooltipex_panel',
-  TIP_DATA: 'ucjs_tooltipex_tipdata'
+  TIP_TEXT: 'ucjs_tooltipex_tiptext'
 };
 
 /**
@@ -337,7 +337,7 @@ var TooltipHandler = {
 
     var item = $E('label');
     item.setAttribute('style', kPanelStyle.TIP_ITEM);
-    item.setAttribute(kID.TIP_DATA, raw);
+    item[kID.TIP_TEXT] = raw;
 
     var accent = $E('label');
     accent.setAttribute('style', kPanelStyle.TIP_ACCENT + 'margin:0;');
@@ -362,7 +362,7 @@ var TooltipHandler = {
     var info = [];
 
     Array.forEach(this.mBox.childNodes, function(node) {
-      info.push(node.getAttribute(kID.TIP_DATA));
+      info.push(node[kID.TIP_TEXT]);
     });
 
     copyToClipboard(info.join('\n'));
