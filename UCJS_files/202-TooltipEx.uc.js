@@ -322,22 +322,32 @@ var TooltipHandler = {
     }
 
     if (!aRest) {
-      return [aHead, aHead, '', false];
+      return {
+        text: aHead,
+        head: aHead,
+        rest: '',
+        cropped: false
+      };
     }
 
-    var raw = (aHead + aRest).trim().replace(/\s+/g, ' ');
-    var [text, cropped] = process(raw);
+    var rawText = (aHead + aRest).trim().replace(/\s+/g, ' ');
+    var [cookedText, cropped] = process(rawText);
 
-    return [raw, aHead, text.substr(aHead.length), cropped];
+    return {
+      text: rawText,
+      head: aHead,
+      rest: cookedText.substr(aHead.length),
+      cropped: cropped
+    };
   },
 
   buildTipItem: function(aTipData) {
     // the data equals the return value of |makeTipData|
-    var [raw, head, rest, cropped] = aTipData;
+    let {text, head, rest, cropped} = aTipData;
 
     var item = $E('label');
     item.setAttribute('style', kPanelStyle.TIP_ITEM);
-    item[kID.TIP_TEXT] = raw;
+    item[kID.TIP_TEXT] = text;
 
     var accent = $E('label');
     accent.setAttribute('style', kPanelStyle.TIP_ACCENT + 'margin:0;');
@@ -349,7 +359,7 @@ var TooltipHandler = {
     if (cropped) {
       let crop = $E('label');
       crop.setAttribute('style', kPanelStyle.TIP_CROP + 'margin:0;');
-      crop.setAttribute('tooltiptext', raw);
+      crop.setAttribute('tooltiptext', text);
       crop.appendChild($T(kTipForm.ellipsis));
 
       item.appendChild(crop);
