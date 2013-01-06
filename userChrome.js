@@ -14,12 +14,10 @@
 "use strict";
 
 
-//********** Generic variables
-
+/**
+ * Generic variables
+ */
 const {document} = window;
-
-
-//********** Preferences
 
 /**
  * User configurations
@@ -73,7 +71,6 @@ const kSystem = {
 };
 
 
-
 //********** Entry point
 
 // initialize the common utility and the console logger
@@ -103,7 +100,6 @@ function ucjsScriptLoader_init() {
     scriptLoader.uninit();
   }
 }
-
 
 /**
  * ScriptLoader handler
@@ -202,14 +198,13 @@ function ScriptLoader() {
       kConfig.blockXULs.some(function(s) testURL(s, URL));
   }
 
-  // expose
+  //********** expose
   return {
     init: init,
     uninit: uninit,
     getScriptList: getScriptList
   };
 }
-
 
 /**
  * ScriptList handler
@@ -378,7 +373,6 @@ function ScriptList() {
     }
   }
 
-
   /**
    * UserScript class
    */
@@ -428,7 +422,6 @@ function ScriptList() {
   UserScript.prototype.getMetaList = function UserScript_getMetaList() {
     return MetaData_getList(this.meta);
   };
-
 
   /**
    * MetaData handlers
@@ -491,7 +484,7 @@ function ScriptList() {
   }
 
 
-  // expose
+  //********** expose
   return {
     init: init,
     uninit: uninit,
@@ -499,7 +492,6 @@ function ScriptList() {
     run: runData
   };
 }
-
 
 /**
  * Common utility function
@@ -646,7 +638,7 @@ function Util() {
     );
   }
 
-  // expose
+  //********** expose
   return {
     getLastModifiedTime: getLastModifiedTime,
     readFile: readFile,
@@ -663,7 +655,6 @@ function Util() {
     log: log
   };
 }
-
 
 /**
  * Logger to the error console
