@@ -152,19 +152,22 @@ var TooltipHandler = {
   },
 
   create: function() {
-    var panel = $E('panel');
-    panel.id = kID.PANEL;
-    panel.setAttribute('style', kPanelStyle.BASE + 'white-space:pre;');
+    var panel = $E('panel', {
+      id: kID.PANEL,
+      style: kPanelStyle.BASE + 'white-space:pre;',
+      backdrag: true
+    });
     panel.style.maxWidth = kMaxPanelWidth + 'em';
-    panel.setAttribute('backdrag', true);
 
     // context menu
-    var copymenu = $E('menuitem');
-    copymenu.setAttribute('label', 'Copy');
+    var copymenu = $E('menuitem', {
+      label: 'Copy'
+    });
     addEvent([copymenu, 'command', this, false]);
 
-    var popup = $E('menupopup');
-    popup.setAttribute('onpopuphiding', 'event.stopPropagation();');
+    var popup = $E('menupopup', {
+      onpopuphiding: 'event.stopPropagation();'
+    });
     popup.appendChild(copymenu);
 
     panel.contextMenu = '_child';
@@ -345,21 +348,24 @@ var TooltipHandler = {
     // the data equals the return value of |makeTipData|
     let {text, head, rest, cropped} = aTipData;
 
-    var item = $E('label');
-    item.setAttribute('style', kPanelStyle.TIP_ITEM);
-    item[kID.TIP_TEXT] = text;
+    let item = $E('label', {
+      style: kPanelStyle.TIP_ITEM,
+      'tiptext': text
+    });
 
-    var accent = $E('label');
-    accent.setAttribute('style', kPanelStyle.TIP_ACCENT + 'margin:0;');
+    let accent = $E('label', {
+      style: kPanelStyle.TIP_ACCENT + 'margin:0;'
+    });
     accent.appendChild($T(head));
 
     item.appendChild(accent);
     item.appendChild($T(rest));
 
     if (cropped) {
-      let crop = $E('label');
-      crop.setAttribute('style', kPanelStyle.TIP_CROP + 'margin:0;');
-      crop.setAttribute('tooltiptext', text);
+      let crop = $E('label', {
+        style: kPanelStyle.TIP_CROP + 'margin:0;',
+        tooltiptext: text
+      });
       crop.appendChild($T(kTipForm.ellipsis));
 
       item.appendChild(crop);
@@ -420,12 +426,27 @@ function copyToClipboard(aText) {
   copyString(aText);
 }
 
-function $ID(aId) {
-  return window.document.getElementById(aId);
+function $E(aTagOrNode, aAttribute) {
+  let node = (typeof aTagOrNode === 'string') ?
+    window.document.createElement(aTagOrNode) : aTagOrNode;
+
+  if (!!aAttribute) {
+    for (let [name, value] in Iterator(aAttribute)) {
+      if (value !== null && value !== undefined) {
+        if (name === 'tiptext') {
+          node[kID.TIP_TEXT] = value;
+        } else {
+          node.setAttribute(name, value);
+        }
+      }
+    }
+  }
+
+  return node;
 }
 
-function $E(aTag) {
-  return window.document.createElement(aTag);
+function $ID(aId) {
+  return window.document.getElementById(aId);
 }
 
 function $T(aText) {
