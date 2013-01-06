@@ -124,7 +124,7 @@ const kSiblingScanType = U({
 
 /**
  * Strings format
- * @see |format()|
+ * @see |F()|
  * @note U() for UI display.
  */
 const kFormat = U({
@@ -282,7 +282,7 @@ var mMenu = (function() {
 
     var menu = $E('menu', {
       'id': kID.upper,
-      'label': format(kFormat.upper),
+      'label': F(kFormat.upper),
       'disabled': list === null || null
     });
     menu.appendChild(popup);
@@ -330,7 +330,7 @@ var mMenu = (function() {
 
     $E(element, {
       'id': kID[aDirection],
-      'label': format(kFormat[aDirection],
+      'label': F(kFormat[aDirection],
         {'scanType': kSiblingScanType[scanType]})
     });
 
@@ -384,13 +384,13 @@ var mMenu = (function() {
 
           itemCount = childPopup.childElementCount;
           if (censored) {
-            tooltip = format(kFormat.tooManyItems,
+            tooltip = F(kFormat.tooManyItems,
               {'count': itemCount, 'total': list[type].length});
           }
         }
 
         popup.appendChild($E(child, {
-          'label': format(kFormat.type,
+          'label': F(kFormat.type,
             {'title': kNaviLink[type] || type, 'count': itemCount}),
           'tooltiptext': tooltip
         }));
@@ -398,7 +398,7 @@ var mMenu = (function() {
     });
 
     var menu = $E('menu',
-      {'id': kID.naviLink, 'label': format(kFormat.naviLink)});
+      {'id': kID.naviLink, 'label': F(kFormat.naviLink)});
     menu.appendChild(popup);
 
     return menu;
@@ -419,7 +419,7 @@ var mMenu = (function() {
           childPopup.appendChild($E('menuitem', {
             'closemenu': 'none',
             'label': getFormedText(text, {'metaContent': URL}),
-            'tooltiptext': URL || format(kFormat.noMetaContent)
+            'tooltiptext': URL || F(kFormat.noMetaContent)
           }));
         });
       } else {
@@ -436,13 +436,13 @@ var mMenu = (function() {
       let child = $E('menu');
       child.appendChild(childPopup);
       popup.appendChild($E(child, {
-        'label': format(kFormat.type,
+        'label': F(kFormat.type,
           {'title': kPageInfo[type], 'count': childPopup.childElementCount})
       }));
     }
 
     var menu = $E('menu',
-      {'id': kID.pageInfo, 'label': format(kFormat.pageInfo)});
+      {'id': kID.pageInfo, 'label': F(kFormat.pageInfo)});
     menu.appendChild(popup);
 
     return menu;
@@ -454,29 +454,29 @@ var mMenu = (function() {
     if ('siblingScanType' in aOption) {
       switch (aOption.siblingScanType) {
         case 'preset':
-          return format(kFormat.preset,
+          return F(kFormat.preset,
             {'name': aText[0], 'title': aText[1]});
         case 'official':
-          return format(kFormat.official,
+          return F(kFormat.official,
             {'title': aText[0]});
         case 'searching':
-          return format(kFormat.searching,
+          return F(kFormat.searching,
             {'title': aText[0], 'score': trimFigures(aText[1])});
         case 'numbering':
-          return format(kFormat.numbering,
+          return F(kFormat.numbering,
             {'old': aText[0], 'new': aText[1]});
       }
       return null;
     }
 
     if ('metaContent' in aOption) {
-      return format(kFormat.item, {
+      return F(kFormat.item, {
         'title': formatAttributes([[aText[0], aOption.metaContent]]),
         'attributes': null
       });
     }
 
-    return format(kFormat.item, {
+    return F(kFormat.item, {
       'title': aText[0], 'attributes': formatAttributes(aText[1])
     });
   }
@@ -501,7 +501,7 @@ var mMenu = (function() {
       if (Array.isArray(value)) {
         value = value.join(kValuesDelimiter);
       }
-      attributes.push(format(kAttributeFormat,
+      attributes.push(F(kAttributeFormat,
         {'name': name, 'value': value}));
     });
 
@@ -1350,61 +1350,42 @@ function submitForm(aSubmitInput) {
 }
 
 /**
- * Formats string
- * @param aFormat {string} |kFormat|
- * @param aAttribute {hash} {name, value}
- * @return {string} a formatted string
- * @usage
- *   aFormat:'%key% has %num% letters' and aAttribute:{key:'ABC',num:3} into
- *   'ABC has 3 letters'
- * @usage A conditional replacement;
- *   aFormat:'%num%{%(>1)% letters}' and aAttribute:{num:#} into
- *   #>1 -> '# letters', otherwise -> ''
+ * String formatter
+ * @param aFormat {string|string[]} see |kFormat|
+ * @param aReplacement {hash}
+ * @return {string}
  */
-function format(aFormat, aAttribute) {
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      name = '%' + name + '%';
-
-      // the match word will be removed when value is null or undefined or ''
-      if (value === null || value === undefined) {
-        value = '';
-      }
-
-      let [conditional, condition] =
-        aFormat.match(RegExp(name + '\{(.+?)\}')) || [];
-
-      if (conditional) {
-        let result = '';
-
-        if (value !== '') {
-          let [target, expression] = condition.match(/%(.*?)%/) || [];
-
-          if (target) {
-            let right = true;
-
-            if (expression) {
-              let val = (typeof value === 'string') ?
-                '"' + value + '"' : value;
-              try {
-                right = Function('return ' + val + expression)();
-              } catch (e) {
-                right = false;
-              }
-            }
-
-            if (right) {
-              result = condition.replace(target, name);
-            }
-          }
-        }
-        aFormat = aFormat.replace(conditional, result);
-      }
-      aFormat = aFormat.replace(name, value);
+function F(aFormat, aReplacement) {
+  // filter items that its value is |null| or |undefined|
+  let replacement = {};
+  for (let [name, value] in Iterator(aReplacement)) {
+    if (value !== null && value !== undefined) {
+      replacement['%' + name + '%'] = value;
     }
   }
 
-  return trim(aFormat);
+  if (!Array.isArray(aFormat)) {
+    aFormat = [aFormat];
+  }
+
+  // retreive a format that has all aliases of the name of replacements
+  let format;
+  let names = Object.keys(replacement);
+  for (let i = 0, l = aFormat.length; i < l; i++) {
+    if (names.every(function(name) aFormat[i].indexOf(name) > -1)) {
+      format = aFormat[i];
+      break;
+    }
+  }
+
+  if (!format) {
+    return aFormat[0];
+  }
+
+  for (let [name, value] in Iterator(replacement)) {
+    format = format.replace(name, value);
+  }
+  return format;
 }
 
 function getLeaf(aURL) {
