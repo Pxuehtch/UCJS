@@ -28,15 +28,17 @@ const kPref = {
 
 /**
  * User presets
- * @key name {string} Display name. U() for UI
+ * @key name {string}
+ *   a display name in the UI item
  * @key URL {RegExp}
- * @key submit {boolean}
- *   true: Scan form and submit
- *   false[default]: Scan link and open URL
+ *   a URL of a page that should be scan the navigations
  * @key prev {XPath}
- *   If submit is true, set xpath of <input>
- *   If submit is false, set xpath of element which has URL
  * @key next {XPath}
+ *   set xpath of an element for navigation
+ *   any element which has <href> attribute: opens its URL
+ *   <input> element: submits with its form
+ *
+ * @note |U()| for UI display.
  */
 const kPresetNavi = [
   {
@@ -48,7 +50,6 @@ const kPresetNavi = [
   {
     name: U('DuckDuckGo Search'),
     URL: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
-    submit: true,
     prev: '//input[@class="navbutton" and @value[contains(.,"Prev")]]',
     next: '//input[@class="navbutton" and @value[contains(.,"Next")]]'
   }
@@ -157,14 +158,14 @@ const kID = (function() {
   const prefix = 'ucjs_navilink_';
   const keys = [
     'upper', 'prev', 'next', 'naviLink', 'pageInfo',
-    'startSeparator', 'endSeparator', 'pageInfoSeparator'
+    'startSeparator', 'endSeparator', 'pageInfoSeparator',
+    'data'
   ];
 
-  var hash = {prefix: prefix};
+  let hash = {};
   keys.forEach(function(a) {
     hash[a] = prefix + a;
   });
-
   return hash;
 })();
 
@@ -183,22 +184,17 @@ var mMenu = (function() {
 
     addEvent([contextMenu, 'click', onCommand, false]);
     addEvent([contextMenu, 'popupshowing', onPopupShowing, false]);
+    addEvent([contextMenu, 'popuphiding', onPopupHiding, false]);
   }
 
   function onCommand(aEvent) {
     aEvent.stopPropagation();
-
     var item = aEvent.target;
 
-    // checks whether this event comes from an item of NaviLink
-    var contextMenu = getURLBarContextMenu();
-    var node = item, id = node.id;
-    while (node !== contextMenu && !id) {
-      node = node.parentNode;
-      id = node.id;
-    }
-    if (!id || id.indexOf(kID.prefix) !== 0)
+    let data = item[kID.data];
+    if (!data) {
       return;
+    }
 
     if (aEvent.button === 2)
       return;
@@ -208,15 +204,14 @@ var mMenu = (function() {
       window.closeMenus(item);
     }
 
-    if (!item.value)
-      return;
-
-    if (/^(?:https?|ftp|file):/.test(item.value)) {
-      let inTab = aEvent.button === 1, inBackground = aEvent.ctrlKey;
-      openURL(item.value, inTab,
-        {inBackground: inBackground, relatedToCurrent: true});
-    } else {
-      submitForm(item.value);
+    if (data.open) {
+      if (/^(?:https?|ftp|file):/.test(data.open)) {
+        let inTab = aEvent.button === 1, inBackground = aEvent.ctrlKey;
+        openURL(data.open, inTab,
+          {inBackground: inBackground, relatedToCurrent: true});
+      }
+    } else if (data.submit) {
+      data.submit.submit();
     }
   }
 
@@ -227,12 +222,7 @@ var mMenu = (function() {
     if (contextMenu !== getURLBarContextMenu())
       return;
 
-    var [sSep, eSep] = getSeparators();
-
-    // Remove existing items
-    for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
-      contextMenu.removeChild(item);
-    }
+    var [, eSep] = getSeparators();
 
     if (!/^(?:https?|ftp|file)$/.test(getCurrentURI().scheme))
       return;
@@ -250,6 +240,21 @@ var mMenu = (function() {
     forEach(function(item) {
       item && contextMenu.insertBefore(item, eSep);
     });
+  }
+
+  function onPopupHiding(aEvent) {
+    aEvent.stopPropagation();
+
+    var contextMenu = aEvent.target;
+    if (contextMenu !== getURLBarContextMenu()) {
+      return;
+    }
+
+    // remove existing items
+    var [sSep, eSep] = getSeparators();
+    for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
+      contextMenu.removeChild(item);
+    }
   }
 
   function setSeparators(aContextMenu) {
@@ -275,7 +280,7 @@ var mMenu = (function() {
         popup.appendChild($E('menuitem', {
           'crop': 'start',
           'label': URL,
-          'value': URL
+          'open': URL
         }));
       });
     }
@@ -311,7 +316,8 @@ var mMenu = (function() {
         'tooltiptext':
           makeTooltip(getFormedText(text,
             {'siblingScanType': scanType}), description),
-        'value': URL || submit
+        'open': URL,
+        'submit': submit
       });
     } else {
       let popup = $E('menupopup');
@@ -320,7 +326,7 @@ var mMenu = (function() {
         popup.appendChild($E('menuitem', {
           'label': getFormedText(text, {'siblingScanType': scanType}),
           'tooltiptext': URL,
-          'value': URL
+          'open': URL
         }));
       });
 
@@ -361,7 +367,7 @@ var mMenu = (function() {
 
           child = $E('menuitem', {
             'tooltiptext': makeTooltip(getFormedText(text), URL),
-            'value': URL
+            'open': URL
           });
         } else {
           let childPopup = $E('menupopup');
@@ -373,7 +379,7 @@ var mMenu = (function() {
               'crop': 'center',
               'label': getFormedText(text),
               'tooltiptext': URL,
-              'value': URL
+              'open': URL
             }));
 
             return censored && i >= kPref.maxNaviLinkItemsNum - 1;
@@ -428,7 +434,7 @@ var mMenu = (function() {
             'crop': 'center',
             'label': getFormedText(text),
             'tooltiptext': URL,
-            'value': URL
+            'open': URL
           }));
         });
       }
@@ -544,19 +550,21 @@ var mPresetNavi = (function() {
           URL: node.href,
           submit: null
         };
-      } else if (item.submit && node && node.value) {
+      }
+
+      if (node instanceof HTMLInputElement && node.form && node.value) {
         return {
           text: [item.name, trim(node.value)],
           URL: null,
-          submit: item[aDirection]
+          submit: node
         };
-      } else {
-        log('Match preset: %name% ->\n%dir%: \'%xpath%\' is not found.'.
-          replace('%name%', item.name).
-          replace('%dir%', aDirection).
-          replace('%xpath%', item[aDirection]));
-        return {error: true};
       }
+
+      log('Match preset: %name% ->\n%dir%: \'%xpath%\' is not found.'.
+        replace('%name%', item.name).
+        replace('%dir%', aDirection).
+        replace('%xpath%', item[aDirection]));
+      return {error: true};
     }
     return null;
   }
@@ -1317,19 +1325,33 @@ function createURI(aURI, aFlags) {
   };
 }
 
+/**
+ * Creates an element with the attributes
+ */
 function $E(aTagOrNode, aAttribute) {
-  var element = (typeof aTagOrNode === 'string') ?
+  var node = (typeof aTagOrNode === 'string') ?
     window.document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        element.setAttribute(name, value);
+      if (value === null || value === undefined) {
+        continue;
+      }
+
+      switch (name) {
+        case 'open':
+        case 'submit':
+          node[kID.data] = {};
+          node[kID.data][name] = value;
+          break;
+        default:
+          node.setAttribute(name, value);
+          break;
       }
     }
   }
 
-  return element;
+  return node;
 }
 
 function isVisible(aNode) {
