@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage Opens a tooltip panel with 'alt + ctrl + mousemove'.
+// @usage Opens a tooltip panel with 'Alt+Ctrl+MouseMove'.
 
 
 (function(window, undefined) {
@@ -14,11 +14,9 @@
 "use strict";
 
 
-//********** Preferences
-
 /**
  * Max width of tooltip panel
- * @value {int} Number of characters
+ * @value {integer} number of 1byte characters > 0
  */
 const kMaxPanelWidth = 40;
 
@@ -30,11 +28,11 @@ const kEllipsis = '...';
 
 /**
  * CSS of tooltip panel
- * @key BASE {CSS} Base appearance of tooltip panel
- * @key TIP_ITEM {CSS} Styles for each tip item
- * @key TIP_ACCENT {CSS} Accent in tip item
- *      Specifically, '<tag>', 'title-attribute=' and 'URL-attribute=scheme:'
- * @key TIP_CROP {CSS} Ellipsis of cropped long text in tip item
+ * @key BASE {CSS} base appearance of the tooltip panel
+ * @key TIP_ITEM {CSS} styles for each tip item
+ * @key TIP_ACCENT {CSS} accent in a tip item
+ *      specifically, '<tag>', 'title-attribute=' and 'URL-attribute=scheme:'
+ * @key TIP_CROP {CSS} ellipsis of a cropped long text in a tip item
  *      URL except 'javascript:' and 'data:' is not cropped
  */
 const kPanelStyle = {
@@ -45,7 +43,7 @@ const kPanelStyle = {
 };
 
 /**
- * Scanned attributes for tip item
+ * Attributes that is scanned for a tip item
  * @key titles {string[]}
  * @key URLs {string[]}
  */
@@ -64,21 +62,24 @@ const kID = {
   TITLE_BACKUP: 'ucjs_tooltipex_titlebackup'
 };
 
-
-//********** Components
-
 /**
  * Tooltip handler
  */
 var gTooltip = {
 
-  // Tooltip <panel>
+  /**
+   * Tooltip <panel>
+   */
   mPanel: null,
 
-  // Container <box> for tip items data
+  /**
+   * Container <box> for tip items data
+   */
   mBox: null,
 
-  // Target node which has tips
+  /**
+   * Target node which has tips
+   */
   get mTarget() {
     return this._mTarget;
   },
@@ -87,25 +88,28 @@ var gTooltip = {
     if (aNode !== null) {
       this._mTarget = aNode;
 
-      // Disable default tooltip
+      // disable the default tooltip
       storeTitles();
     } else {
-      // Enable default tooltip
+      // enable the default tooltip
       restoreTitles();
 
       delete this._mTarget;
     }
 
-    function storeTitles()
+    function storeTitles() {
       swap('title', kID.TITLE_BACKUP);
+    }
 
-    function restoreTitles()
+    function restoreTitles() {
       swap(kID.TITLE_BACKUP, 'title');
+    }
 
     function swap(aSrc, aDst) {
       for (let node = gTooltip.mTarget; node; node = node.parentNode) {
-        if (node.nodeType !== Node.ELEMENT_NODE)
+        if (node.nodeType !== Node.ELEMENT_NODE) {
           break;
+        }
 
         if (node.hasAttribute(aSrc)) {
           node.setAttribute(aDst, node.getAttribute(aSrc));
@@ -129,7 +133,6 @@ var gTooltip = {
           }
         }
         break;
-
       case 'popuphiding':
         gTooltip.clean();
         break;
@@ -143,7 +146,7 @@ var gTooltip = {
     panel.style.maxWidth = kMaxPanelWidth + 'em';
     panel.setAttribute('backdrag', true);
 
-    // context menu.
+    // context menu
     var copymenu = $E('menuitem');
     copymenu.setAttribute('label', 'Copy');
     addEvent([copymenu, 'command', gTooltip.copyTipInfo, false]);
@@ -156,7 +159,7 @@ var gTooltip = {
     panel.appendChild(popup);
 
     gTooltip.mBox = panel.appendChild($E('vbox'));
-    gTooltip.mPanel = $('mainPopupSet').appendChild(panel);
+    gTooltip.mPanel = $ID('mainPopupSet').appendChild(panel);
 
     return panel;
   },
@@ -178,8 +181,9 @@ var gTooltip = {
   },
 
   hide: function() {
-    if (gTooltip.mPanel.state !== 'open')
+    if (gTooltip.mPanel.state !== 'open') {
       return;
+    }
 
     gTooltip.mPanel.hidePopup();
   },
@@ -188,13 +192,16 @@ var gTooltip = {
     var tips = [];
 
     for (let node = aNode; node; node = node.parentNode) {
-      if (node.nodeType !== Node.ELEMENT_NODE)
+      if (node.nodeType !== Node.ELEMENT_NODE) {
         break;
+      }
 
       tips = tips.concat(gTooltip.getNodeTip(node));
     }
-    if (!tips.length)
+
+    if (!tips.length) {
       return false;
+    }
 
     gTooltip.mTarget = aNode;
 
@@ -225,20 +232,22 @@ var gTooltip = {
     });
 
     kScanAttribute.titles.forEach(function(name) {
-      // Skip only when null or undefined
-      if (attrs[name] == null)
+      let value = attrs[name];
+      if (value === null || value === undefined) {
         return;
+      }
 
       data.push(make(name + '=', attrs[name]));
     });
 
     kScanAttribute.URLs.forEach(function(name) {
-      // Skip only when null or undefined
-      if (attrs[name] == null)
+      let value = attrs[name];
+      if (value === null || value === undefined) {
         return;
+      }
 
-      if (attrs[name]) {
-        let [scheme, rest] = splitURL(attrs[name], aNode.baseURI);
+      if (value) {
+        let [scheme, rest] = splitURL(value, aNode.baseURI);
         // URL except 'javascript:' and 'data:' is displayed without cropped
         data.push(make(name + '=' + scheme, rest,
           !/^javascript:|^data:/.test(scheme)));
@@ -248,7 +257,7 @@ var gTooltip = {
     });
 
     for (let name in attrs) {
-      // Event attribute
+      // <event> attribute
       if (/^on/.test(name)) {
         data.push(make(name + '=', attrs[name]));
       }
@@ -264,14 +273,14 @@ var gTooltip = {
   },
 
   makeTipData: function(aHead, aRest, aUncrop) {
-    function process(aText) {
-      // Makes new lines of maxLen characters
+    function process(sourceText) {
+      // make new lines of the maxLen characters
       var maxLen = kMaxPanelWidth;
-      var text = aText, cropped = false;
+      var text = sourceText, cropped = false;
       var lines = [], last = 0;
 
-      for (let i = 0, count = 0; i < text.length; i++) {
-        // Count bytes.
+      for (let i = 0, l = text.length, count = 0; i < l; i++) {
+        // count bytes
         count += /[ -~]/.test(text[i]) ? 1 : 2;
         if (count > maxLen) {
           lines.push(text.substring(last, i).trim());
@@ -283,7 +292,7 @@ var gTooltip = {
       if (lines.length) {
         lines.push(text.substring(last).trim());
 
-        // Number of lines in the visible portion of the cropped text
+        // number of lines in the visible portion of the cropped text
         let visibleLines = 2;
         cropped = !aUncrop && lines.length > visibleLines;
         text = (cropped ? lines.slice(0, visibleLines) : lines).join('\n');
@@ -303,6 +312,7 @@ var gTooltip = {
   },
 
   buildTipItem: function(aTipData) {
+    // the data equals the return value of |makeTipData|
     var [raw, head, rest, cropped] = aTipData;
 
     var item = $E('label');
@@ -343,8 +353,8 @@ var gTooltip = {
 
 //********** Utilities
 
-function isHtmlDocument(aDoc) {
-  var mime = aDoc.contentType;
+function isHtmlDocument(aDocument) {
+  var mime = aDocument.contentType;
 
   return (
     mime === 'text/html' ||
@@ -366,7 +376,8 @@ function isLinkNode(aNode) {
 }
 
 function splitURL(aURL, aBaseURL) {
-  var URL = url4ui(aURL, aBaseURL), colon = URL.indexOf(':') + 1;
+  let URL = unescURLForUI(aURL, aBaseURL);
+  let colon = URL.indexOf(':') + 1;
 
   return [URL.substring(0, colon), URL.substring(colon)];
 }
@@ -379,27 +390,33 @@ function copyToClipboard(aText) {
   copyString(aText);
 }
 
-function $(aId)
-  window.document.getElementById(aId);
+function $ID(aId) {
+  return window.document.getElementById(aId);
+}
 
-function $E(aTag)
-  window.document.createElement(aTag);
+function $E(aTag) {
+  return window.document.createElement(aTag);
+}
 
-function $T(aText)
-  window.document.createTextNode(aText);
+function $T(aText) {
+  return window.document.createTextNode(aText);
+}
 
 
 //********** Imports
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function url4ui(aURL, aBaseURL)
-  window.ucjsUtil.unescapeURLForUI(
+function unescURLForUI(aURL, aBaseURL) {
+  return window.ucjsUtil.unescapeURLForUI(
     window.ucjsUtil.resolveURL(aURL, aBaseURL));
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
+}
 
 
 //********** Entry point
