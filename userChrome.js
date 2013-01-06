@@ -15,11 +15,6 @@
 
 
 /**
- * Generic variables
- */
-const {document} = window;
-
-/**
  * User configurations
  */
 const kConfig = {
@@ -117,6 +112,7 @@ function ScriptLoader() {
   }
 
   function init() {
+    const {document} = window;
     const {checkVersion} = Util;
 
     if (!checkVersion(kSystem.firefoxVersion)) {
@@ -146,6 +142,8 @@ function ScriptLoader() {
   }
 
   function watchSidebar() {
+    const {document} = window;
+
     document.addEventListener('load', initSidebar, true);
     window.addEventListener('unload', function onUnload() {
       document.removeEventListener('load', initSidebar, true);
