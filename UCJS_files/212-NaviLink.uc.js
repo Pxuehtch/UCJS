@@ -1421,21 +1421,6 @@ function trim(aText)
 function trimFigures(aNumber)
   (+aNumber).toFixed(5);
 
-/**
- * Converts 2-byte characters into UTF-16 in order to properly display UI
- * @param aData {string}|{hash}
- */
-function U(aData) {
-  if (typeof aData === 'string') {
-    return str4ui(aData);
-  }
-
-  for (let i in aData) {
-    aData[i] = str4ui(aData[i]);
-  }
-  return aData;
-}
-
 
 //********** Imports
 
@@ -1454,7 +1439,7 @@ function addEvent(aData)
 function unesc(aURL)
   window.ucjsUtil.unescapeURLCharacters(aURL);
 
-function str4ui(aText)
+function U(aText)
   window.ucjsUtil.toStringForUI(aText);
 
 function openURL(aURL, aInTab, aOption)
