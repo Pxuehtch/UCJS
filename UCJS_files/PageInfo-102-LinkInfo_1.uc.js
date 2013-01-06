@@ -40,27 +40,27 @@ const kNote = {
 
 //********** Handlers
 
-var gLinkView = null;
-var gLinkInfoBuilt = false;
+var mLinkView = null;
+var mLinkInfoBuilt = false;
 
 function init() {
-  if (!gLinkView) {
+  if (!mLinkView) {
     let tree = window.document.getElementById(kID.linkTree);
     let copyColumnIndex =
       tree.columns.getNamedColumn(kID.addressColumn).index;
 
     // @see chrome://browser/content/pageinfo/pageInfo.js::
     // pageInfoTreeView()
-    gLinkView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
-    tree.view = gLinkView;
+    mLinkView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
+    tree.view = mLinkView;
   }
 
   build();
 }
 
 function build() {
-  if (!gLinkInfoBuilt) {
-    gLinkInfoBuilt = true;
+  if (!mLinkInfoBuilt) {
+    mLinkInfoBuilt = true;
 
     try {
       // @see chrome://browser/content/pageinfo/pageInfo.js::
@@ -204,7 +204,7 @@ function getText(aNode, aDefault) {
 }
 
 function addLink(aValueArray) {
-  gLinkView.addRow([gLinkView.rowCount + 1].concat(aValueArray));
+  mLinkView.addRow([mLinkView.rowCount + 1].concat(aValueArray));
 }
 
 /**
