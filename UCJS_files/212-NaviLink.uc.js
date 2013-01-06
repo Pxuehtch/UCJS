@@ -145,9 +145,9 @@ const kFormat = U({
   submit: '<FORM> submit',
 
   // Sub items of NaviLink or PageInfo
-  type: '%title%%count%{ (%>1%)}',
+  type: ['%title%', '%title% (%count%)'],
   tooManyItems: '項目が多いので表示を制限 (%count%/%total%)',
-  item: '%title%%attributes%{ [%%]}',
+  item: ['%title%', '%title% [%attributes%]'],
   noMetaContent: '[No content]'
 });
 
