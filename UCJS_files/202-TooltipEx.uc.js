@@ -21,12 +21,6 @@
 const kMaxPanelWidth = 40;
 
 /**
- * Ellipsis of a cropped text
- * @value {string}
- */
-const kEllipsis = '...';
-
-/**
  * CSS of tooltip panel
  * @key BASE {CSS} base appearance of the tooltip panel
  * @key TIP_ITEM {CSS} styles for each tip item
@@ -40,6 +34,15 @@ const kPanelStyle = {
   TIP_ITEM: 'font:1em/1.2 monospace;',
   TIP_ACCENT: 'color:blue;font-weight:bold;',
   TIP_CROP: 'color:red;font-weight:bold;'
+};
+
+/**
+ * Format of a tip item
+ */
+const kTipForm = {
+  attribute: '%name%=',
+  tag: '<%tag%>',
+  ellipsis: '...'
 };
 
 /**
@@ -232,25 +235,33 @@ var TooltipHandler = {
   },
 
   getNodeTip: function(aNode) {
+    // helper functions
     var make = this.makeTipData;
-    var data = [];
-    var attrs = {};
+    var $attr = function(name) {
+      return kTipForm.attribute.replace('%name%', name);
+    };
+    var $tag = function(name) {
+      return kTipForm.tag.replace('%tag%', name);
+    };
 
-    Array.forEach(aNode.attributes, function(attr) {
-      attrs[attr.localName] = attr.value;
+    var data = [];
+    var attributes = {};
+
+    Array.forEach(aNode.attributes, function(attribute) {
+      attributes[attribute.localName] = attribute.value;
     });
 
     kScanAttribute.titles.forEach(function(name) {
-      let value = attrs[name];
+      let value = attributes[name];
       if (value === null || value === undefined) {
         return;
       }
 
-      data.push(make(name + '=', attrs[name]));
+      data.push(make($attr(name), value));
     });
 
     kScanAttribute.URLs.forEach(function(name) {
-      let value = attrs[name];
+      let value = attributes[name];
       if (value === null || value === undefined) {
         return;
       }
@@ -258,23 +269,23 @@ var TooltipHandler = {
       if (value) {
         let [scheme, rest] = splitURL(value, aNode.baseURI);
         // URL except 'javascript:' and 'data:' is displayed without cropped
-        data.push(make(name + '=' + scheme, rest,
-          !/^javascript:|^data:/.test(scheme)));
+        let cropped = /^javascript:|^data:/.test(scheme);
+        data.push(make($attr(name) + scheme, rest, !cropped));
       } else {
-        data.push(make(name + '=', ''));
+        data.push(make($attr(name), ''));
       }
     });
 
-    for (let name in attrs) {
+    for (let name in attributes) {
       // <event> attribute
       if (/^on/.test(name)) {
-        data.push(make(name + '=', attrs[name]));
+        data.push(make($attr(name), attributes[name]));
       }
     }
 
     if (data.length || isLinkNode(aNode)) {
-      // Add a tag name to the top of array
-      data.unshift(make('<' + aNode.localName + '>',
+      // add a tag name to the top of array
+      data.unshift(make($tag(aNode.localName),
         isLinkNode(aNode) ? aNode.textContent : ''));
     }
 
@@ -339,7 +350,7 @@ var TooltipHandler = {
       let crop = $E('label');
       crop.setAttribute('style', kPanelStyle.TIP_CROP + 'margin:0;');
       crop.setAttribute('tooltiptext', raw);
-      crop.appendChild($T(kEllipsis));
+      crop.appendChild($T(kTipForm.ellipsis));
 
       item.appendChild(crop);
     }
