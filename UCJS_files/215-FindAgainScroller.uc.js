@@ -45,33 +45,38 @@ const kConfig = {
  * Wrapper of gFindBar
  * @see chrome://global/content/bindings/findbar.xml
  */
-var TextFinder = {
-  get text() {
-    return gFindBar._findField.value;
-  },
+var TextFinder = (function() {
+  // @see chrome://browser/content/browser.js
+  const {gFindBar} = window;
 
-  get isResultFound() {
-    return gFindBar._foundEditable || gFindBar._currentWindow;
-  },
+  return {
+    get text() {
+      return gFindBar._findField.value;
+    },
 
-  get selectionController() {
-    var editable = gFindBar._foundEditable;
-    if (editable) {
-      try {
-        return editable.
-          QueryInterface(window.Ci.nsIDOMNSEditableElement).
-          editor.
-          selectionController;
-      } catch (e) {}
+    get isResultFound() {
+      return gFindBar._foundEditable || gFindBar._currentWindow;
+    },
+
+    get selectionController() {
+      var editable = gFindBar._foundEditable;
+      if (editable) {
+        try {
+          return editable.
+            QueryInterface(window.Ci.nsIDOMNSEditableElement).
+            editor.
+            selectionController;
+        } catch (e) {}
+        return null;
+      }
+
+      if (gFindBar._currentWindow) {
+        return gFindBar._getSelectionController(gFindBar._currentWindow);
+      }
       return null;
     }
-
-    if (gFindBar._currentWindow) {
-      return gFindBar._getSelectionController(gFindBar._currentWindow);
-    }
-    return null;
-  }
-};
+  };
+})();
 
 
 /**
@@ -88,6 +93,7 @@ function FindAgainScroller_init() {
 
   // @modified chrome://global/content/bindings/findbar.xml::
   // onFindAgainCommand
+  const {gFindBar} = window;
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
     var scrollable = mScrollObserver.attach(TextFinder.text);
