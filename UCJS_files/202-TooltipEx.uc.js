@@ -65,7 +65,7 @@ const kID = {
 /**
  * Tooltip handler
  */
-var gTooltip = {
+var TooltipHandler = {
 
   /**
    * Tooltip <panel>
@@ -106,7 +106,7 @@ var gTooltip = {
     }
 
     function swap(aSrc, aDst) {
-      for (let node = gTooltip.mTarget; node; node = node.parentNode) {
+      for (let node = this.mTarget; node; node = node.parentNode) {
         if (node.nodeType !== Node.ELEMENT_NODE) {
           break;
         }
@@ -120,8 +120,8 @@ var gTooltip = {
   },
 
   init: function() {
-    addEvent([gBrowser.mPanelContainer, 'mousemove', gTooltip, false]);
-    addEvent([gTooltip.create(), 'popuphiding', gTooltip, false]);
+    addEvent([gBrowser.mPanelContainer, 'mousemove', this, false]);
+    addEvent([this.create(), 'popuphiding', this, false]);
   },
 
   handleEvent: function(aEvent) {
@@ -129,12 +129,15 @@ var gTooltip = {
       case 'mousemove':
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
-            gTooltip.show(aEvent);
+            this.show(aEvent);
           }
         }
         break;
       case 'popuphiding':
-        gTooltip.clean();
+        this.clean();
+        break;
+      case 'command':
+        this.copyTipInfo();
         break;
     }
   },
@@ -149,7 +152,7 @@ var gTooltip = {
     // context menu
     var copymenu = $E('menuitem');
     copymenu.setAttribute('label', 'Copy');
-    addEvent([copymenu, 'command', gTooltip.copyTipInfo, false]);
+    addEvent([copymenu, 'command', this, false]);
 
     var popup = $E('menupopup');
     popup.setAttribute('onpopuphiding', 'event.stopPropagation();');
@@ -158,8 +161,8 @@ var gTooltip = {
     panel.contextMenu = '_child';
     panel.appendChild(popup);
 
-    gTooltip.mBox = panel.appendChild($E('vbox'));
-    gTooltip.mPanel = $ID('mainPopupSet').appendChild(panel);
+    this.mBox = panel.appendChild($E('vbox'));
+    this.mPanel = $ID('mainPopupSet').appendChild(panel);
 
     return panel;
   },
@@ -167,25 +170,25 @@ var gTooltip = {
   show: function(aEvent) {
     var target = aEvent.target;
 
-    if (gTooltip.mPanel.state === 'open' &&
-        gTooltip.mTarget !== target) {
-      gTooltip.hide();
-    } else if (gTooltip.mPanel.state !== 'closed') {
+    if (this.mPanel.state === 'open' &&
+        this.mTarget !== target) {
+      this.hide();
+    } else if (this.mPanel.state !== 'closed') {
       return;
     }
 
-    if (gTooltip.build(target)) {
-      gTooltip.mPanel.
+    if (this.build(target)) {
+      this.mPanel.
       openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
     }
   },
 
   hide: function() {
-    if (gTooltip.mPanel.state !== 'open') {
+    if (this.mPanel.state !== 'open') {
       return;
     }
 
-    gTooltip.mPanel.hidePopup();
+    this.mPanel.hidePopup();
   },
 
   build: function(aNode) {
@@ -196,34 +199,34 @@ var gTooltip = {
         break;
       }
 
-      tips = tips.concat(gTooltip.getNodeTip(node));
+      tips = tips.concat(this.getNodeTip(node));
     }
 
     if (!tips.length) {
       return false;
     }
 
-    gTooltip.mTarget = aNode;
+    this.mTarget = aNode;
 
-    var box = gTooltip.mBox;
+    var box = this.mBox;
     tips.forEach(function(tip) {
-      box.appendChild(gTooltip.buildTipItem(tip));
-    });
+      box.appendChild(this.buildTipItem(tip));
+    }, this);
 
     return true;
   },
 
   clean: function() {
-    var box = gTooltip.mBox;
+    var box = this.mBox;
     while (box.firstChild) {
       box.removeChild(box.firstChild);
     }
 
-    gTooltip.mTarget = null;
+    this.mTarget = null;
   },
 
   getNodeTip: function(aNode) {
-    var make = gTooltip.makeTipData;
+    var make = this.makeTipData;
     var data = [];
     var attrs = {};
 
@@ -341,7 +344,7 @@ var gTooltip = {
   copyTipInfo: function(aEvent) {
     var info = [];
 
-    Array.forEach(gTooltip.mBox.childNodes, function(node) {
+    Array.forEach(this.mBox.childNodes, function(node) {
       info.push(node.getAttribute(kID.TIP_DATA));
     });
 
@@ -422,7 +425,7 @@ function log(aMsg) {
 //********** Entry point
 
 function TooltipEx_init() {
-  gTooltip.init();
+  TooltipHandler.init();
 }
 
 TooltipEx_init();
