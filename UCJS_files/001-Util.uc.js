@@ -263,7 +263,7 @@ function trimText(aText, aMaxLength) {
  * Creates an element with the attributes
  * @param aTagOrNode {string|Element}
  *   {string}: set a <tagname>
- *   {Element}: only setting the attributes
+ *   {Element}: set a <element> only for setting the attributes
  * @param aAttribute {hash}
  *   set list of <attribute name>: <attribute value>
  *   an attribute will be ignored if the value is |null| or |undefined|
@@ -273,18 +273,18 @@ function trimText(aText, aMaxLength) {
  * TODO: Handle the namespace of a tag/attribute.
  */
 function createNode(aTagOrNode, aAttribute) {
-	let node = (typeof aTagOrNode === 'string') ?
-	  window.document.createElement(aTagOrNode) : aTagOrNode;
+  let node = (typeof aTagOrNode === 'string') ?
+    window.document.createElement(aTagOrNode) : aTagOrNode;
 
-	if (!!aAttribute) {
-		for (let [name, value] in Iterator(aAttribute)) {
-			if (value !== null && value !== undefined) {
-				node.setAttribute(name, value);
-			}
-		}
-	}
+  if (!!aAttribute) {
+    for (let [name, value] in Iterator(aAttribute)) {
+      if (value !== null && value !== undefined) {
+        node.setAttribute(name, value);
+      }
+    }
+  }
 
-	return node;
+  return node;
 }
 
 // @note Only for XUL element.
