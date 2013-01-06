@@ -839,7 +839,7 @@ var mSiblingNavi = (function() {
   function guessBySearching(aDirection) {
     var currentURI = getCurrentURI('NO_REF');
 
-    naviTester.init(currentURI.spec, aDirection);
+    NaviLinkTester.init(currentURI.spec, aDirection);
 
     var entries = getSearchEntries();
     var link, href, text, score;
@@ -852,7 +852,7 @@ var mSiblingNavi = (function() {
 
       for (text in getSearchTexts(link)) {
         text = trim(text);
-        score = text && naviTester.score(text, href);
+        score = text && NaviLinkTester.score(text, href);
 
         if (score && isVisible(link)) {
           entries.push(text, href, score);
@@ -940,199 +940,6 @@ var mSiblingNavi = (function() {
     }
   }
 
-  /**
-   * Evaluator of the navigation-like text and URL
-   */
-  var naviTester = (function() {
-
-    // Test for text
-    var textLike = (function() {
-      // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
-      // ←:\u2190
-      // &rsaquo;(>):\u203a, &raquo;(>>):\u00bb, ＞:\uff1e, ≫:\u226b,
-      // →:\u2192
-      const kNaviSign = {
-        prev: '<|\\u2039|\\u00ab|\\uff1c|\\u226a|\\u2190',
-        next: '>|\\u203a|\\u00bb|\\uff1e|\\u226b|\\u2192'
-      };
-
-      // 前:\u524D, 古い:\u53e4\u3044
-      // 次:\u6b21, 新し:\u65b0\u3057
-      const kNaviWord = {
-        prev: ['prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
-               '\\u524d|\\u53e4\\u3044'],
-        next: ['next|new(?:er)?|forward|more',
-               '\\u6b21|\\u65b0\\u3057']
-      };
-
-      // Weight of ratings
-      const kWeight = normalizeWeight({
-        matchSign: 50,
-        matchWord: 50,
-        unmatchOppositeWord: 20,
-        lessText: 30
-      });
-
-      var naviSign = null, oppositeSign = null,
-          naviWord = null, oppositeWord = null;
-
-      function init(aDirection) {
-        var opposite, sign, word;
-
-        opposite = (aDirection === 'prev') ? 'next' : 'prev';
-        oppositeSign = RegExp(kNaviSign[opposite]);
-
-        sign = kNaviSign[aDirection];
-        naviSign = RegExp('^(?:' + sign + ')+\\s*|\\s*(?:' +  sign + ')+$');
-
-        word = kNaviWord[opposite];
-        oppositeWord = RegExp(word[0] + '|' +  word[1], 'i');
-
-        word = kNaviWord[aDirection];
-        naviWord = RegExp('(?:^|^.{0,10}[\\s-_])(?:' + word[0] +
-          ')(?:$|[\\s-_.])|^(?:' +  word[1] + ')', 'i');
-      }
-
-      function score(aText) {
-        var point = 0;
-        var match;
-
-        if (!oppositeSign.test(aText) && (match = naviSign.exec(aText))) {
-          point += kWeight.matchSign;
-          aText = removeMatched(aText, match[0]);
-        }
-
-        if (aText && (match = naviWord.exec(aText))) {
-          point += kWeight.matchWord;
-          aText = removeMatched(aText, match[0]);
-
-          if (aText && !oppositeWord.test(aText)) {
-            point += kWeight.unmatchOppositeWord;
-          }
-        }
-
-        if (point) {
-          if (aText) {
-            let adjust = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
-            point += (kWeight.lessText * adjust);
-          } else {
-            // Exact match
-            point += kWeight.lessText;
-          }
-        }
-
-        return point;
-      }
-
-      function removeMatched(aText, aMatched)
-        aText.replace(aMatched, '').trim();
-
-      return {
-        init: init,
-        score: score
-      };
-    })();
-
-    // Test for URL
-    var URLLike = (function() {
-      const kWeight = normalizeWeight({
-        equalLength: 35,
-        overlapParts: 65
-      });
-
-      var srcURL = '';
-
-      function init(aURL) {
-        srcURL = unesc(aURL);
-      }
-
-      function score(aURL) {
-        var dstURL = unesc(aURL);
-
-        return (kWeight.equalLength * getEqualLengthRate(srcURL, dstURL)) +
-               (kWeight.overlapParts * getOverlapPartsRate(srcURL, dstURL));
-      }
-
-      function getEqualLengthRate(aSrc, aDst) {
-        var sLen = aSrc.length, dLen = aDst.length;
-
-        // Be less than (1.0)
-        return 1 - (Math.abs(sLen - dLen) / (sLen + dLen));
-      }
-
-      function getOverlapPartsRate(aSrc, aDst) {
-        var [sParts, dParts] =
-          [aSrc, aDst].map(function(a) a.split(/[/?&=#;]+/));
-
-        var overlaps = sParts.filter(function(part) {
-          if (part) {
-            let i = dParts.indexOf(part);
-            if (i > -1) {
-              dParts[i] = '';
-              return true;
-            }
-          }
-          return false;
-        });
-
-        // Be less than (1.0)
-        return overlaps.length / sParts.length;
-      }
-
-      return {
-        init: init,
-        score: score
-      };
-    })();
-
-    var workDirection = '',
-        workURL = '';
-
-    function init(aURL, aDirection) {
-      if (workURL !== aURL) {
-        workDirection = '';
-        workURL = aURL;
-
-        URLLike.init(aURL);
-      }
-
-      if (workDirection !== aDirection) {
-        workDirection = aDirection;
-
-        textLike.init(aDirection);
-      }
-    }
-
-    function score(aText, aURL) {
-      var point = textLike.score(aText);
-
-      if (point > 0) {
-        point += URLLike.score(aURL);
-      }
-
-      return (point > 1.0) ? point : 0;
-    }
-
-    function normalizeWeight(aWeights) {
-      var total = 0;
-      for (let key in aWeights) {
-        total += aWeights[key];
-      }
-
-      for (let key in aWeights) {
-        aWeights[key] /= total;
-      }
-
-      return aWeights;
-    }
-
-    return {
-      init: init,
-      score: score
-    };
-
-  })();
-
   function guessByNumbering(aDirection) {
     /**
      * Part like page numbers in URL
@@ -1178,6 +985,199 @@ var mSiblingNavi = (function() {
     getNextURL: function() getURL('next'),
     getPrevURL: function() getURL('prev'),
     getState: getState
+  };
+
+})();
+
+/**
+ * Evaluator of the navigation-like text and URL
+ */
+var NaviLinkTester = (function() {
+
+  // Test for text
+  var textLike = (function() {
+    // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
+    // ←:\u2190
+    // &rsaquo;(>):\u203a, &raquo;(>>):\u00bb, ＞:\uff1e, ≫:\u226b,
+    // →:\u2192
+    const kNaviSign = {
+      prev: '<|\\u2039|\\u00ab|\\uff1c|\\u226a|\\u2190',
+      next: '>|\\u203a|\\u00bb|\\uff1e|\\u226b|\\u2192'
+    };
+
+    // 前:\u524D, 古い:\u53e4\u3044
+    // 次:\u6b21, 新し:\u65b0\u3057
+    const kNaviWord = {
+      prev: ['prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
+             '\\u524d|\\u53e4\\u3044'],
+      next: ['next|new(?:er)?|forward|more',
+             '\\u6b21|\\u65b0\\u3057']
+    };
+
+    // Weight of ratings
+    const kWeight = normalizeWeight({
+      matchSign: 50,
+      matchWord: 50,
+      unmatchOppositeWord: 20,
+      lessText: 30
+    });
+
+    var naviSign = null, oppositeSign = null,
+        naviWord = null, oppositeWord = null;
+
+    function init(aDirection) {
+      var opposite, sign, word;
+
+      opposite = (aDirection === 'prev') ? 'next' : 'prev';
+      oppositeSign = RegExp(kNaviSign[opposite]);
+
+      sign = kNaviSign[aDirection];
+      naviSign = RegExp('^(?:' + sign + ')+\\s*|\\s*(?:' +  sign + ')+$');
+
+      word = kNaviWord[opposite];
+      oppositeWord = RegExp(word[0] + '|' +  word[1], 'i');
+
+      word = kNaviWord[aDirection];
+      naviWord = RegExp('(?:^|^.{0,10}[\\s-_])(?:' + word[0] +
+        ')(?:$|[\\s-_.])|^(?:' +  word[1] + ')', 'i');
+    }
+
+    function score(aText) {
+      var point = 0;
+      var match;
+
+      if (!oppositeSign.test(aText) && (match = naviSign.exec(aText))) {
+        point += kWeight.matchSign;
+        aText = removeMatched(aText, match[0]);
+      }
+
+      if (aText && (match = naviWord.exec(aText))) {
+        point += kWeight.matchWord;
+        aText = removeMatched(aText, match[0]);
+
+        if (aText && !oppositeWord.test(aText)) {
+          point += kWeight.unmatchOppositeWord;
+        }
+      }
+
+      if (point) {
+        if (aText) {
+          let adjust = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
+          point += (kWeight.lessText * adjust);
+        } else {
+          // Exact match
+          point += kWeight.lessText;
+        }
+      }
+
+      return point;
+    }
+
+    function removeMatched(aText, aMatched)
+      aText.replace(aMatched, '').trim();
+
+    return {
+      init: init,
+      score: score
+    };
+  })();
+
+  // Test for URL
+  var URLLike = (function() {
+    const kWeight = normalizeWeight({
+      equalLength: 35,
+      overlapParts: 65
+    });
+
+    var srcURL = '';
+
+    function init(aURL) {
+      srcURL = unesc(aURL);
+    }
+
+    function score(aURL) {
+      var dstURL = unesc(aURL);
+
+      return (kWeight.equalLength * getEqualLengthRate(srcURL, dstURL)) +
+             (kWeight.overlapParts * getOverlapPartsRate(srcURL, dstURL));
+    }
+
+    function getEqualLengthRate(aSrc, aDst) {
+      var sLen = aSrc.length, dLen = aDst.length;
+
+      // Be less than (1.0)
+      return 1 - (Math.abs(sLen - dLen) / (sLen + dLen));
+    }
+
+    function getOverlapPartsRate(aSrc, aDst) {
+      var [sParts, dParts] =
+        [aSrc, aDst].map(function(a) a.split(/[/?&=#;]+/));
+
+      var overlaps = sParts.filter(function(part) {
+        if (part) {
+          let i = dParts.indexOf(part);
+          if (i > -1) {
+            dParts[i] = '';
+            return true;
+          }
+        }
+        return false;
+      });
+
+      // Be less than (1.0)
+      return overlaps.length / sParts.length;
+    }
+
+    return {
+      init: init,
+      score: score
+    };
+  })();
+
+  var workDirection = '',
+      workURL = '';
+
+  function init(aURL, aDirection) {
+    if (workURL !== aURL) {
+      workDirection = '';
+      workURL = aURL;
+
+      URLLike.init(aURL);
+    }
+
+    if (workDirection !== aDirection) {
+      workDirection = aDirection;
+
+      textLike.init(aDirection);
+    }
+  }
+
+  function score(aText, aURL) {
+    var point = textLike.score(aText);
+
+    if (point > 0) {
+      point += URLLike.score(aURL);
+    }
+
+    return (point > 1.0) ? point : 0;
+  }
+
+  function normalizeWeight(aWeights) {
+    var total = 0;
+    for (let key in aWeights) {
+      total += aWeights[key];
+    }
+
+    for (let key in aWeights) {
+      aWeights[key] /= total;
+    }
+
+    return aWeights;
+  }
+
+  return {
+    init: init,
+    score: score
   };
 
 })();
