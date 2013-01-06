@@ -140,7 +140,7 @@ const kFormat = U({
   preset: '[%name%] %title%',
   official: '%title%',
   searching: '%title% (%score%)',
-  numbering: '%old% -> %new%',
+  numbering: '%here% -> %there%',
   // Tooltip of submit mode of preset
   submit: '<FORM> submit',
 
@@ -148,7 +148,7 @@ const kFormat = U({
   type: ['%title%', '%title% (%count%)'],
   tooManyItems: '項目が多いので表示を制限 (%count%/%total%)',
   item: ['%title%', '%title% [%attributes%]'],
-  noMetaContent: '[No content]'
+  meta: '%name%: %content%'
 });
 
 /**
@@ -296,11 +296,12 @@ var mMenu = (function() {
   }
 
   function buildSiblingNavi(aDirection) {
-    var state = mSiblingNavi.getState(aDirection);
-    if (!state)
+    var res = mSiblingNavi.getResult(aDirection);
+    if (!res) {
       return null;
+    }
 
-    var {list, scanType} = state;
+    var {list, scanType} = res;
     if ((scanType === 'searching' || scanType === 'numbering') &&
         list.length > kPref.maxGuessSiblingsNum) {
       list = list.slice(0, kPref.maxGuessSiblingsNum);
@@ -309,24 +310,29 @@ var mMenu = (function() {
     var element;
 
     if (list.length === 1) {
-      let {text, URL, submit} = list[0];
-      let description = submit ? kFormat.submit : URL;
+      let data = list[0];
+      let tooltip = formatTip(
+        formatText(data, {
+          siblingScanType: scanType
+        }),
+        data.form ? kFormat.submit : data.URL
+      );
 
       element = $E('menuitem', {
-        'tooltiptext':
-          makeTooltip(getFormedText(text,
-            {'siblingScanType': scanType}), description),
-        'open': URL,
-        'submit': submit
+        tooltiptext: tooltip,
+        'open': data.URL,
+        'submit': data.form
       });
     } else {
       let popup = $E('menupopup');
 
-      list.forEach(function({text, URL}) {
+      list.forEach(function(data) {
         popup.appendChild($E('menuitem', {
-          'label': getFormedText(text, {'siblingScanType': scanType}),
-          'tooltiptext': URL,
-          'open': URL
+          label: formatText(data, {
+            siblingScanType: scanType
+          }),
+          tooltiptext: data.URL,
+          'open': data.URL
         }));
       });
 
@@ -363,23 +369,23 @@ var mMenu = (function() {
         let itemCount = 0, tooltip = null;
 
         if (list[type].length === 1) {
-          let {text, URL} = list[type][0];
+          let data = list[type][0];
 
           child = $E('menuitem', {
-            'tooltiptext': makeTooltip(getFormedText(text), URL),
-            'open': URL
+            tooltiptext: formatTip(formatText(data), data.URL),
+            'open': data.URL
           });
         } else {
           let childPopup = $E('menupopup');
 
           let censored = list[type].length > kPref.maxNaviLinkItemsNum;
 
-          list[type].some(function({text, URL}, i) {
+          list[type].some(function(data, i) {
             childPopup.appendChild($E('menuitem', {
-              'crop': 'center',
-              'label': getFormedText(text),
-              'tooltiptext': URL,
-              'open': URL
+              crop: 'center',
+              label: formatText(data),
+              tooltiptext: data.URL,
+              'open': data.URL
             }));
 
             return censored && i >= kPref.maxNaviLinkItemsNum - 1;
@@ -421,20 +427,20 @@ var mMenu = (function() {
       let childPopup = $E('menupopup');
 
       if (type === 'meta') {
-        list[type].forEach(function({text, URL}) {
+        list[type].forEach(function(data) {
           childPopup.appendChild($E('menuitem', {
-            'closemenu': 'none',
-            'label': getFormedText(text, {'metaContent': URL}),
-            'tooltiptext': URL || F(kFormat.noMetaContent)
+            closemenu: 'none',
+            label: formatText(data, {meta: true}),
+            tooltiptext: data.content
           }));
         });
       } else {
-        list[type].forEach(function({text, URL}) {
+        list[type].forEach(function(data) {
           childPopup.appendChild($E('menuitem', {
-            'crop': 'center',
-            'label': getFormedText(text),
-            'tooltiptext': URL,
-            'open': URL
+            crop: 'center',
+            label: formatText(data),
+            tooltiptext: data.URL,
+            'open': data.URL
           }));
         });
       }
@@ -454,36 +460,44 @@ var mMenu = (function() {
     return menu;
   }
 
-  function getFormedText(aText, aOption) {
+  function formatText(aData, aOption) {
     aOption = aOption || {};
 
     if ('siblingScanType' in aOption) {
       switch (aOption.siblingScanType) {
         case 'preset':
-          return F(kFormat.preset,
-            {'name': aText[0], 'title': aText[1]});
+          return F(kFormat.preset, {
+            name: aData.name,
+            title: aData.title
+          });
         case 'official':
-          return F(kFormat.official,
-            {'title': aText[0]});
+          return F(kFormat.official, {
+            title: aData.title
+          });
         case 'searching':
-          return F(kFormat.searching,
-            {'title': aText[0], 'score': trimFigures(aText[1])});
+          return F(kFormat.searching, {
+            title: aData.title,
+            score: +(aData.score).toFixed(5)
+          });
         case 'numbering':
-          return F(kFormat.numbering,
-            {'old': aText[0], 'new': aText[1]});
+          return F(kFormat.numbering, {
+            here: aData.here,
+            there: aData.there
+          });
       }
       return null;
     }
 
-    if ('metaContent' in aOption) {
-      return F(kFormat.item, {
-        'title': formatAttributes([[aText[0], aOption.metaContent]]),
-        'attributes': null
+    if (aOption.meta) {
+      return F(kFormat.meta, {
+        name: aData.name,
+        content: aData.content
       });
     }
 
     return F(kFormat.item, {
-      'title': aText[0], 'attributes': formatAttributes(aText[1])
+      title: aData.title,
+      attributes: formatAttributes(aData.attributes) || null
     });
   }
 
@@ -514,8 +528,12 @@ var mMenu = (function() {
     return attributes.join(kAttributesDelimiter);
   }
 
-  function makeTooltip(aText, aURL)
-    (aText && aText !== getLeaf(aURL)) ? aText + '\n' + aURL : aURL;
+  function formatTip(aText, aURL) {
+    if (aText && aText !== getLeaf(aURL)) {
+      return aText + '\n' + aURL;
+    }
+    return aURL;
+  }
 
   return {
     init: init
@@ -529,7 +547,7 @@ var mMenu = (function() {
  */
 var mPresetNavi = (function() {
 
-  function getItem(aDirection) {
+  function getData(aDirection) {
     var item = null;
 
     var URL = getCurrentURI().spec;
@@ -546,17 +564,19 @@ var mPresetNavi = (function() {
 
       if (node && node.href) {
         return {
-          text: [item.name, trim(node.title) || trim(node.textContent) || ''],
-          URL: node.href,
-          submit: null
+          // <data> for a preset
+          name: item.name,
+          title: trim(node.title) || trim(node.textContent) || '',
+          URL: node.href
         };
       }
 
       if (node instanceof HTMLInputElement && node.form && node.value) {
         return {
-          text: [item.name, trim(node.value)],
-          URL: null,
-          submit: node
+          // <data> for a submit preset
+          name: item.name,
+          title: node.value,
+          form: node.form
         };
       }
 
@@ -570,7 +590,7 @@ var mPresetNavi = (function() {
   }
 
   return {
-    getItem: getItem
+    getData: getData
   };
 
 })();
@@ -602,13 +622,14 @@ var mNaviLink = (function() {
     }
   }
 
-  function getTypeItem(aList, aType) {
-    return aList && aList[aType] && aList[aType][0];
+  function getData(aType) {
+    var list = getNaviList();
+    return (list && list[aType] && list[aType][0]) || null;
   }
 
-  function getNaviList(aType) {
+  function getNaviList() {
     init();
-    return aType ? getTypeItem(mNaviList, aType) : mNaviList;
+    return mNaviList;
   }
 
   function getSubNaviList() {
@@ -655,12 +676,14 @@ var mNaviLink = (function() {
 
       var res = {};
 
-      list.forEach(function({type, text, URL}) {
+      list.forEach(function({type, data}) {
         !(type in res) && (res[type] = []);
 
-        if (!res[type].
-            some(function(a) a.text[0] === text[0] && a.URL === URL)) {
-          res[type].push({text: text, URL: URL});
+        let unique = !res[type].some(function(item) {
+          return JSON.stringify(item) === JSON.stringify(data);
+        });
+        if (unique) {
+          res[type].push(data);
         }
       });
 
@@ -695,22 +718,17 @@ var mNaviLink = (function() {
       });
     }
 
-    // @note Meta list member, {URL: content}, would be not a URL string.
-    metas.forEach(function(a, i) {
-      var name = a.name || a.httpEquiv || a.getAttribute('property');
-      if (name) {
-        aList.push(newItem(i, {title: name, href: a.content}, 'meta'));
-      }
+    metas.forEach(function(node, i) {
+      addItem(aList, i, 'meta', node);
     });
   }
 
   function scanScript(aList) {
     var d = gBrowser.contentDocument;
 
-    Array.forEach(d.getElementsByTagName('script'), function(node, i) {
-      if (node.src) {
-        aList.push(newItem(i, node, 'script'));
-      }
+    Array.forEach(d.getElementsByTagName('script'),
+    function(node, i) {
+      addItem(aList, i, 'script', node);
     });
   }
 
@@ -734,7 +752,7 @@ var mNaviLink = (function() {
     }
 
     if (type) {
-      aList.push(newItem(aIndex, aNode, type, attributes));
+      addItem(aList, aIndex, type, aNode, attributes);
       return true;
     }
     return false;
@@ -754,7 +772,7 @@ var mNaviLink = (function() {
       if (type in kNaviLink) {
         let others = (aRels.length > 1) ? [['rel', aRels.except(type)]] : [];
 
-        aList.push(newItem(aIndex, aNode, type, others.concat(attributes)));
+        addItem(aList, aIndex, type, aNode, attributes.concat(others));
       }
     }
 
@@ -767,33 +785,75 @@ var mNaviLink = (function() {
       if (!(type in kNaviLink)) {
         let others = (aRels.length > 1) ? [['rel', aRels.except(type)]] : [];
 
-        aList.push(newItem(aIndex, aNode, type, others));
+        addItem(aList, aIndex, type, aNode, others);
       }
     }
   }
 
-  /**
-   * Creates a new list item
-   * @param aIndex {int}
-   * @param aNode {Node}
-   * @param aType {kNaviLink|kPageInfo}
-   * @param aAttributes {array}
-   *   [['name1', 'value1'], ['name2', ['value1', 'value2']]]
-   * @return {hash}
-   */
-  function newItem(aIndex, aNode, aType, aAttributes) {
-    var hasContent = !/^(?:meta|script|link)$/.test(aNode.localName);
-    var URL = aNode.href || aNode.src;
-    var text = [
-      trim(aNode.title) ||
-      (hasContent && trim(aNode.textContent)) || getLeaf(URL) || '',
-      aAttributes
-    ];
+  function addItem(aList, aIndex, aType, aNode, aAttributes) {
+    let data;
+    if (aType === 'meta') {
+      data = getMetaData(aNode);
+    } else {
+      data = getNodeData(aNode, aAttributes);
+    }
 
-    return {index: aIndex, type: aType, text: text, URL: URL};
+    if (data) {
+      aList.push({
+        index: aIndex,
+        type: aType,
+        data: data
+      });
+    }
+  }
+
+  function getMetaData(aNode) {
+    let content = trim(aNode.content);
+    if (!content) {
+      return null;
+    }
+
+    let name =
+      trim(aNode.name) ||
+      trim(aNode.httpEquiv) ||
+      trim(aNode.getAttribute('property')) ||
+      trim(aNode.getAttribute('itemprop')) ;
+
+    if (name) {
+      return {
+        // <data> for a meta
+        name: name,
+        content: content
+      };
+    }
+    return null;
+  }
+
+  function getNodeData(aNode, aAttributes) {
+    let URL = trim(aNode.href) || trim(aNode.src);
+    if (!URL) {
+      return null;
+    }
+
+    let title =
+      trim(aNode.title) ||
+      (!/^(?:script|link)$/.test(aNode.localName) &&
+       trim(aNode.textContent)) ||
+      getLeaf(URL);
+
+    if (title) {
+      return {
+        // <data> for a script or rel
+        title: title,
+        attributes: aAttributes,
+        URL: URL
+      };
+    }
+    return null;
   }
 
   return {
+    getData: getData,
     getNaviList: getNaviList,
     getSubNaviList: getSubNaviList,
     getInfoList: getInfoList
@@ -808,38 +868,53 @@ var mNaviLink = (function() {
 var mSiblingNavi = (function() {
 
   function getURL(aDirection) {
-    var state = getState(aDirection);
+    var res = getResult(aDirection);
 
-    return (state && state.list[0].URL) || '';
+    return (res && res.list[0].URL) || '';
   }
 
-  function getState(aDirection) {
-    var res = null;
-    // Set keys of |kSiblingScanType|
-    var scanType = '';
+  /**
+   * Gets the information for the previous or next page
+   * @param aDirection {string} 'prev' or 'next'
+   * @return {hash|null}
+   * {
+   *   list: {<data>[]}
+   *   scanType: {string} see |kSiblingScanType|
+   * }
+   *
+   * <data> has the proper members assigned to |kSiblingScanType|
+   * {name:, title:, URL:} for a <preset>
+   * {name:, title:, form:} for a submit <preset>
+   * {name:, content:} for a meta of <official>
+   * {title:, attributes:, URL:} for a script or rel of <official>
+   * {title:, score:, URL:} for a sibling by <searching>
+   * {here:, there:, URL:} for a sibling by <numbering>
+   */
+  function getResult(aDirection) {
+    var data;
+    var scanType;
 
-    if (!res) {
-      res = mPresetNavi.getItem(aDirection);
-      scanType = 'preset';
-    }
+    [
+      ['preset', mPresetNavi.getData],
+      ['official', mNaviLink.getData],
+      ['searching', guessBySearching],
+      ['numbering', guessByNumbering]
+    ].
+    some(function([type, getter]) {
+      let res = getter(aDirection);
+      if (res) {
+        data = res;
+        scanType = type;
+        return true;
+      }
+      return false;
+    });
 
-    if (!res) {
-      res = mNaviLink.getNaviList(aDirection);
-      scanType = 'official';
-    }
-
-    if (!res) {
-      res = guessBySearching(aDirection);
-      scanType = 'searching';
-    }
-
-    if (!res) {
-      res = guessByNumbering(aDirection);
-      scanType = 'numbering';
-    }
-
-    if (res && !res.error) {
-      return {list: Array.isArray(res) ? res : [res], scanType: scanType};
+    if (data && !data.error) {
+      return {
+        list: Array.isArray(data) ? data : [data],
+        scanType: scanType
+      };
     }
     return null;
   }
@@ -897,7 +972,12 @@ var mSiblingNavi = (function() {
       entries.sort(function(a, b) b.score - a.score);
 
       var list = entries.map(function({text, URL, score}) {
-        return {text: [text, score], URL: URL};
+        return {
+          // <data> for a sibling by searching
+          title: text,
+          score: score,
+          URL: URL
+        };
       });
 
       detach();
@@ -981,7 +1061,12 @@ var mSiblingNavi = (function() {
           }
 
           let newVal = leading + newNum + (trailing || '');
-          list.push({text: [match, newVal], URL: URL.replace(match, newVal)});
+          list.push({
+            // <data> for a sibling by numbering
+            here: match,
+            there: newVal,
+            URL: URL.replace(match, newVal)
+          });
         }
       }
     });
@@ -992,7 +1077,7 @@ var mSiblingNavi = (function() {
   return {
     getNextURL: function() getURL('next'),
     getPrevURL: function() getURL('prev'),
-    getState: getState
+    getResult: getResult
   };
 
 })();
@@ -1420,9 +1505,6 @@ function getLeaf(aURL) {
 
 function trim(aText)
   aText ? aText.trim().replace(/\s+/g, ' ') : '';
-
-function trimFigures(aNumber)
-  (+aNumber).toFixed(5);
 
 
 //********** Imports
