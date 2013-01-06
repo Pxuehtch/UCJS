@@ -58,8 +58,7 @@ const kScanAttribute = {
  */
 const kID = {
   PANEL: 'ucjs_tooltipex_panel',
-  TIP_DATA: 'ucjs_tooltipex_tipdata',
-  TITLE_BACKUP: 'ucjs_tooltipex_titlebackup'
+  TIP_DATA: 'ucjs_tooltipex_tipdata'
 };
 
 /**
@@ -89,34 +88,41 @@ var TooltipHandler = {
       this._mTarget = aNode;
 
       // disable the default tooltip
-      storeTitles();
+      this.storeTitles();
     } else {
       // enable the default tooltip
-      restoreTitles();
+      this.restoreTitles();
 
       delete this._mTarget;
     }
+  },
 
-    function storeTitles() {
-      swap('title', kID.TITLE_BACKUP);
+  storeTitles: function() {
+    if (this._mTitleStore) {
+      this.restoreTitles();
     }
 
-    function restoreTitles() {
-      swap(kID.TITLE_BACKUP, 'title');
-    }
+    this._mTitleStore = new Map();
 
-    function swap(aSrc, aDst) {
-      for (let node = this.mTarget; node; node = node.parentNode) {
-        if (node.nodeType !== Node.ELEMENT_NODE) {
-          break;
-        }
-
-        if (node.hasAttribute(aSrc)) {
-          node.setAttribute(aDst, node.getAttribute(aSrc));
-          node.removeAttribute(aSrc);
+    for (let node = this.mTarget; node; node = node.parentNode) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.title) {
+          this._mTitleStore.set(node, node.title);
+          node.title = '';
         }
       }
     }
+  },
+
+  restoreTitles: function() {
+    for (let [node, title] of this._mTitleStore) {
+      if (node && !node.title) {
+        node.title = title;
+      }
+      this._mTitleStore.delete(node);
+    }
+
+    delete this._mTitleStore;
   },
 
   init: function() {
