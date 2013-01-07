@@ -1474,13 +1474,6 @@ function $E(aTagOrNode, aAttribute) {
   return node;
 }
 
-function submitForm(aSubmitInput) {
-  var input = $X1(aSubmitInput);
-  if (input) {
-    input.form.submit();
-  }
-}
-
 /**
  * String formatter
  * @param aFormat {string|string[]} see |kFormat|
