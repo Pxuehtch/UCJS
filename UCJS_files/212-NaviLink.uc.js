@@ -57,9 +57,11 @@ const kPresetNavi = [
 ];
 
 /**
- * Items of link navigations
- * @note Key is 'rel' attribute of <link> or linkable element.
- * @note Displayed in this order. U() for UI.
+ * Types of the link navigations
+ * @note The keys are values of the <rel> attribute of a linkable element like
+ * <link>.
+ * @note The values is displayed in this order.
+ * @note |U()| for UI display.
  */
 const kNaviLinkType = U({
   top:        'Top',
@@ -84,8 +86,8 @@ const kNaviLinkType = U({
 });
 
 /**
- * Synonymous keys
- * @note Value is in a key of kNaviLinkType.
+ * Synonymous keys of the link navigations
+ * @note The values are defined as the keys of |kNaviLinkType|.
  */
 const kNaviLinkTypeConversion = {
   home:     'top',
@@ -101,8 +103,9 @@ const kNaviLinkTypeConversion = {
 };
 
 /**
- * Items of page infomation
- * @note Displayed in this order. U() for UI.
+ * Types of the page information
+ * @note The values is displayed in this order.
+ * @note |U()| for UI display.
  */
 const kPageInfoType = U({
   meta:       'Meta',
@@ -113,8 +116,9 @@ const kPageInfoType = U({
 });
 
 /**
- * Types of a prev/next navigation
- * @note U() for UI display.
+ * Types of the prev/next navigation
+ * @note The values is displayed.
+ * @note |U()| for UI display.
  */
 const kSiblingScanType = U({
   preset:    'プリセット',
@@ -125,8 +129,8 @@ const kSiblingScanType = U({
 
 /**
  * Strings format
- * @see |F()|
- * @note U() for UI display.
+ * @note The values is displayed through |F()|.
+ * @note |U()| for UI display.
  */
 const kFormat = U({
   // Main categories
@@ -545,6 +549,16 @@ var mMenu = (function() {
  */
 var mPresetNavi = (function() {
 
+  /**
+   * Gets the preset data for the previous or next page
+   * @param aDirection {string} 'prev' or 'next'
+   * @return {hash|null}
+   * {
+   *   name:,
+   *   title:,
+   *   URL or form:
+   * }
+   */
   function getData(aDirection) {
     var item = null;
 
@@ -620,11 +634,37 @@ var mNaviLink = (function() {
     }
   }
 
+  /**
+   * Retrieves the first data of the list for the type
+   * @param aType {string} |kNaviLinkType| or |kPageInfoType|
+   * @return {hash|null} see |addItem()|
+   * {
+   *   title:,
+   *   attributes:,
+   *   URL:
+   * }
+   *
+   * for <meta>:
+   * {
+   *   name:,
+   *   content:
+   * }
+   */
   function getData(aType) {
     var list = getNaviList();
     return (list && list[aType] && list[aType][0]) || null;
   }
 
+  /**
+   * Retrieves the list for the types
+   * @return {hash|null}
+   * {
+   *   <type>: [<data>, ...],
+   *   ...
+   * }
+   * <type>: |kNaviLinkType| or |kPageInfoType|
+   * <data>: see |getData()|
+   */
   function getNaviList() {
     init();
     return mNaviList;
@@ -1297,6 +1337,10 @@ var NaviLinkTester = (function() {
  */
 var mUpperNavi = (function() {
 
+  /**
+   * Gets the list of the upper page URLs from parent to top in order
+   * @return {string[]}
+   */
   function getList() {
     var list = [];
 
