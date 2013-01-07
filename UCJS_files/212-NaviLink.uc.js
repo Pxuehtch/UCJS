@@ -1203,11 +1203,11 @@ var NaviLinkTester = (function() {
     var srcURL = '';
 
     function init(aURL) {
-      srcURL = unesc(aURL);
+      srcURL = unescURLChar(aURL);
     }
 
     function score(aURL) {
-      var dstURL = unesc(aURL);
+      var dstURL = unescURLChar(aURL);
 
       return (kWeight.equalLength * getEqualLengthRate(srcURL, dstURL)) +
              (kWeight.overlapParts * getOverlapPartsRate(srcURL, dstURL));
@@ -1539,7 +1539,7 @@ function $X1(aXPath)
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);
 
-function unesc(aURL)
+function unescURLChar(aURL)
   window.ucjsUtil.unescapeURLCharacters(aURL);
 
 function U(aText)
