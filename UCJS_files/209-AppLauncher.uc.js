@@ -8,12 +8,14 @@
 // @usage Access to items in the main context menu.
 
 // @note A resource file that is passed to the application will be saved in
-// your temporary folder. See doAction(), Util::getSavePath()
+// your temporary folder. See |doAction()|, |Util::getSavePath()|
 
 
 /**
  * Main function
  * @param Util {hash} utility functions
+ * @param window {hash} the global |Window| object
+ * @param undefined {undefined} the |undefined| constant
  */
 (function(Util, window, undefined) {
 
@@ -21,10 +23,8 @@
 "use strict";
 
 
-//********** Preferences
-
 /**
- * List of user applications
+ * Application list
  */
 const kAppList = [
   {
@@ -41,8 +41,8 @@ const kAppList = [
     path: '%ProgF%\\Internet Explorer\\iexplore.exe',
 
     // [optional] Commandline arguments
-    // %URL% is replaced with suitable URL for each action.
-    // When omitted or empty, equal to args:'%URL%'.
+    // %URL% is replaced with the proper URL of each action.
+    // If omitted or empty, it equals to <args: '%URL%'>.
     args: '-new %URL%',
 
     // [optional] This item is disabled
@@ -252,7 +252,7 @@ var FileUtil = {
       if (URI) {
         ext = URI.QueryInterface(window.Ci.nsIURL).fileExtension;
       }
-    } catch (e) {}
+    } catch (ex) {}
 
     if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
       return ext;
@@ -273,10 +273,9 @@ function AppLauncher_init() {
 }
 
 function initAppInfo() {
-  var apps = [];
-
-  apps = kAppList.filter(function(app) {
-    var {name, type, extensions, path, disabled} = app;
+  let apps =
+  kAppList.filter(function(app) {
+    let {name, type, extensions, path, disabled} = app;
 
     if (!disabled && name) {
       if (type in kTypeAction) {
@@ -403,8 +402,10 @@ function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
 }
 
 function doBrowse(aEvent) {
-  // XPath for useless separator that has no visible siblings or visible
-  // separator neighbor.
+  // XPath for the useless menu-separator
+  // 1.it is the first visible item in the menu
+  // 2.it is the last visible item in the menu
+  // 3.the next visible item is a menu-separator
   const uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
 
   function availableItem(actions) {
@@ -427,13 +428,13 @@ function doBrowse(aEvent) {
     }
   });
 
-  // Show menu items with available actions
+  // Show the menu items with available actions
   $X(availableItem(getAvailableActions()), popup).
   forEach(function(node) {
     node.hidden = false;
   });
 
-  // Hide useless separators
+  // Hide the useless separators
   $X(uselessSeparator, popup).
   forEach(function(node) {
     node.hidden = true;
@@ -641,11 +642,11 @@ function runApp(aApp, aURL, aSourceWindow)
 function U(aStr)
   Util.toStringForUI(aStr);
 
-function $X(aXPath, aNode)
-  Util.getNodesByXPath(aXPath, aNode);
-
 function addEvent(aData)
   Util.addEvent(aData);
+
+function $X(aXPath, aNode)
+  Util.getNodesByXPath(aXPath, aNode);
 
 function log(aMsg)
   Util.log(aMsg);
@@ -660,7 +661,7 @@ AppLauncher_init();
 
 
 /**
- * Arguments of the main function
+ * Argument of the main function
  * @return Util {hash} utility functions
  */
 ((function(window, undefined) {
@@ -668,8 +669,6 @@ AppLauncher_init();
 
 "use strict";
 
-
-//********** Preferences
 
 /**
  * Aliases for local special folders
@@ -687,9 +686,9 @@ const kSpecialFolderAliases = [
 ];
 
 
-//********** XPCOM settings
+//********** XPCOM handler
 
-const {classes: Cc, interfaces: Ci} = window.Components;
+const {Cc, Ci} = window;
 function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
 function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
 
@@ -726,8 +725,9 @@ function runApp(aApp, aURL, aSourceWindow) {
 }
 
 function getExecutable(aPath) {
-  if (!aPath)
+  if (!aPath) {
     return null;
+  }
 
   kSpecialFolderAliases.forEach(function(alias) {
     if (aPath.indexOf(alias) > -1) {
@@ -746,7 +746,7 @@ function getExecutable(aPath) {
     file.initWithPath(toStringForUI(aPath));
     if (file && file.exists() && file.isFile() && file.isExecutable())
       return file;
-  } catch (e) {}
+  } catch (ex) {}
   return null;
 }
 
@@ -759,7 +759,7 @@ function checkFile(aFilePath) {
     var file = LocalFile();
     file.initWithPath(aFilePath);
     return file && file.exists();
-  } catch (e) {}
+  } catch (ex) {}
   return false;
 }
 
@@ -781,12 +781,12 @@ function execute(aApp, aURL) {
 function saveAndExecute(aApp, aURL, aSourceWindow) {
   try {
     var savePath = getSavePath(aURL);
-    var source = IOService.newURI(aURL, null, null);
-    var target = LocalFile();
+    var sourceURI = IOService.newURI(aURL, null, null);
+    var targetFile = LocalFile();
 
-    target.initWithPath(savePath);
-  } catch (e) {
-    warn('Not downloaded', [e.message, aURL]);
+    targetFile.initWithPath(savePath);
+  } catch (ex) {
+    warn('Not downloaded', [ex.message, aURL]);
     return;
   }
 
@@ -811,7 +811,7 @@ function saveAndExecute(aApp, aURL, aSourceWindow) {
             httpChannel = aRequest.QueryInterface(Ci.nsIHttpChannel);
             requestSucceeded = httpChannel.requestSucceeded;
             responseStatus = httpChannel.responseStatus;
-          } catch (e) {
+          } catch (ex) {
             // @throws NS_ERROR_NOT_AVAILABLE;
             // |requestSucceeded| throws when an invalid URL is requested.
           }
@@ -845,7 +845,7 @@ function saveAndExecute(aApp, aURL, aSourceWindow) {
 function getSavePath(aURL) {
   const kFileNameForm = 'ucjsAL%NUM%_%LEAF%';
 
-  var leafName = '';
+  var leafName;
   var match;
   if (/^(?:https?|ftp):/.test(aURL)) {
     let path = aURL.replace(/[?#].*$/, '');
@@ -853,12 +853,13 @@ function getSavePath(aURL) {
     if (leafName.indexOf('.') === -1) {
       leafName += '.htm';
     }
-  } else if ((match = /^data:image\/(png|jpeg|gif)/.exec(aURL))) {
+  }
+  else if ((match = /^data:image\/(png|jpeg|gif)/.exec(aURL))) {
     leafName = 'data.' + match[1];
-  } else {
+  }
+  else {
     throw new Error('Unexpected scheme for download');
   }
-
   leafName = kFileNameForm.replace('%LEAF%', leafName);
 
   var dir = getSpecialDirectory('TmpD');
@@ -875,8 +876,9 @@ function getSavePath(aURL) {
 }
 
 function getAppArgs(aArgs, aURL) {
-  if (!aArgs)
+  if (!aArgs) {
     return [aURL];
+  }
 
   var args = aArgs.
     trim().replace(/\s+/g, ' ').
@@ -888,8 +890,9 @@ function getAppArgs(aArgs, aURL) {
   });
 }
 
-function getSpecialDirectory(aAlias)
-  DirectoryService.get(aAlias, Ci.nsIFile);
+function getSpecialDirectory(aAlias) {
+  return DirectoryService.get(aAlias, Ci.nsIFile);
+}
 
 function warn(aTitle, aMsg) {
   if (!Array.isArray(aMsg)) {
@@ -911,14 +914,14 @@ function warn(aTitle, aMsg) {
 function getContextMenu()
   window.ucjsUI.ContentArea.contextMenu;
 
-function getNodesByXPath(aXPath, aNode)
-  window.ucjsUtil.getNodesByXPath(aXPath, aNode);
+function toStringForUI(aStr)
+  window.ucjsUtil.toStringForUI(aStr);
 
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);
 
-function toStringForUI(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function getNodesByXPath(aXPath, aNode)
+  window.ucjsUtil.getNodesByXPath(aXPath, aNode);
 
 function log(aMsg)
   window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
@@ -930,9 +933,9 @@ return {
   getContextMenu: getContextMenu,
   isExecutable: isExecutable,
   runApp: runApp,
-  getNodesByXPath: getNodesByXPath,
-  addEvent: addEvent,
   toStringForUI: toStringForUI,
+  addEvent: addEvent,
+  getNodesByXPath: getNodesByXPath,
   log: log
 };
 
