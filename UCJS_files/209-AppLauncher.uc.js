@@ -115,19 +115,9 @@ const kAppList = [
     path: 'C:\\PF\\VxEditor\\VxEditor.exe'
   },
   {
-    name: 'CintaNotes',
+    name: 'KeePass2',
     type: 'tool',
-    path: 'C:\\PF\\CintaNotes\\CintaNotes.exe'
-  },
-  {
-    name: 'KeePass',
-    type: 'tool',
-    path: 'C:\\PF\\KeePass\\KeePass.exe'
-  },
-  {
-    name: 'VideoCacheView',
-    type: 'tool',
-    path: 'C:\\PF\\videocacheview\\VideoCacheView.exe'
+    path: 'C:\\PF\\KeePass2\\KeePass2.exe'
   }
 ];
 
