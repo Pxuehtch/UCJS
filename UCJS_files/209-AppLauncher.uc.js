@@ -630,26 +630,34 @@ function $E(aTagOrNode, aAttribute) {
 /**
  * Import from |Util| parameter
  */
-function getContextMenu()
-  Util.getContextMenu();
 
-function checkPath(aPath)
-  Util.isExecutable(aPath);
+function checkPath(aPath) {
+  return Util.isExecutable(aPath);
+}
 
-function runApp(aApp, aURL, aSourceWindow)
+function runApp(aApp, aURL, aSourceWindow) {
   Util.runApp(aApp, aURL, aSourceWindow);
+}
 
-function U(aStr)
-  Util.toStringForUI(aStr);
+function getContextMenu() {
+  return Util.getContextMenu();
+}
 
-function addEvent(aData)
+function U(aStr) {
+  return Util.toStringForUI(aStr);
+}
+
+function addEvent(aData) {
   Util.addEvent(aData);
+}
 
-function $X(aXPath, aNode)
-  Util.getNodesByXPath(aXPath, aNode);
+function $X(aXPath, aNode) {
+  return Util.getNodesByXPath(aXPath, aNode);
+}
 
-function log(aMsg)
-  Util.log(aMsg);
+function log(aMsg) {
+  return Util.log(aMsg);
+}
 
 
 //********** Entry Point
@@ -911,28 +919,33 @@ function warn(aTitle, aMsg) {
 
 //********** Import
 
-function getContextMenu()
-  window.ucjsUI.ContentArea.contextMenu;
+function getContextMenu() {
+  return window.ucjsUI.ContentArea.contextMenu;
+}
 
-function toStringForUI(aStr)
-  window.ucjsUtil.toStringForUI(aStr);
+function toStringForUI(aStr) {
+  return window.ucjsUtil.toStringForUI(aStr);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function getNodesByXPath(aXPath, aNode)
-  window.ucjsUtil.getNodesByXPath(aXPath, aNode);
+function getNodesByXPath(aXPath, aNode) {
+  return window.ucjsUtil.getNodesByXPath(aXPath, aNode);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
+}
 
 
 //********** Export
 
 return {
-  getContextMenu: getContextMenu,
   isExecutable: isExecutable,
   runApp: runApp,
+  getContextMenu: getContextMenu,
   toStringForUI: toStringForUI,
   addEvent: addEvent,
   getNodesByXPath: getNodesByXPath,
