@@ -265,8 +265,6 @@ var mMenu = (function() {
   }
 
   function getSeparators() {
-    function $ID(id) window.document.getElementById(id);
-
     return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
   }
 
@@ -1472,6 +1470,10 @@ function $E(aTagOrNode, aAttribute) {
   }
 
   return node;
+}
+
+function $ID(aID){
+  return window.document.getElementById(aID);
 }
 
 /**
