@@ -271,7 +271,7 @@ var mMenu = (function() {
   }
 
   function buildUpperNavi() {
-    var list = mUpperNavi.getURLList();
+    var list = mUpperNavi.getList();
 
     var popup = $E('menupopup');
 
@@ -869,7 +869,7 @@ var mNaviLink = (function() {
  */
 var mSiblingNavi = (function() {
 
-  function getURL(aDirection) {
+  function getURLFor(aDirection) {
     var res = getResult(aDirection);
 
     return (res && res.list[0].URL) || '';
@@ -1089,9 +1089,13 @@ var mSiblingNavi = (function() {
   }
 
   return {
-    getNextURL: function() getURL('next'),
-    getPrevURL: function() getURL('prev'),
-    getResult: getResult
+    getResult: getResult,
+    getPrev: function() {
+      return getURLFor('prev');
+    },
+    getNext: function() {
+      return getURLFor('next');
+    }
   };
 
 })();
@@ -1295,12 +1299,12 @@ var NaviLinkTester = (function() {
  */
 var mUpperNavi = (function() {
 
-  function getURLList() {
+  function getList() {
     var list = [];
 
     var URI = getURI('NO_QUERY');
     var URL;
-    while ((URL = guessParentURL(URI))) {
+    while ((URL = getParent(URI))) {
       list.push(URL);
 
       URI = createURI(URL);
@@ -1309,7 +1313,7 @@ var mUpperNavi = (function() {
     return list.length ? list : null;
   }
 
-  function guessParentURL(aURI) {
+  function getParent(aURI) {
     if (aURI.hasPath()) {
       let segments = aURI.path.replace(/\/(?:index\.html?)?$/i, '').split('/');
       segments.pop();
@@ -1317,18 +1321,18 @@ var mUpperNavi = (function() {
       let URL = aURI.prePath + segments.join('/') + '/';
       return (URL !== 'file:///') ? URL : '';
     }
-    return guessUpperHost(aURI);
+    return getUpperHost(aURI);
   }
 
-  function guessTopURL(aURI) {
+  function getTop(aURI) {
     if (aURI.scheme === 'file') {
       let match = /^(file:\/\/\/[a-z]:\/).+/i.exec(aURI.spec);
       return match ? match[1] : '';
     }
-    return aURI.hasPath() ? aURI.prePath + '/' : guessUpperHost(aURI);
+    return aURI.hasPath() ? aURI.prePath + '/' : getUpperHost(aURI);
   }
 
-  function guessUpperHost(aURI) {
+  function getUpperHost(aURI) {
     var host = aURI.host;
     if (!host)
       return '';
@@ -1355,11 +1359,13 @@ var mUpperNavi = (function() {
   }
 
   return {
-    getParentURL:
-      function() guessParentURL(getURI('NO_QUERY')),
-    getTopURL:
-      function() guessTopURL(getURI('NO_QUERY')),
-    getURLList: getURLList
+    getList: getList,
+    getParent: function() {
+      return getParent(getURI('NO_QUERY'));
+    },
+    getTop: function() {
+      return getTop(getURI('NO_QUERY'));
+    }
   };
 
 })();
@@ -1565,10 +1571,10 @@ NaviLink_init();
 //********** Expose
 
 return {
-  getNext:   mSiblingNavi.getNextURL,
-  getPrev:   mSiblingNavi.getPrevURL,
-  getParent: mUpperNavi.getParentURL,
-  getTop:    mUpperNavi.getTopURL
+  getNext:   mSiblingNavi.getNext,
+  getPrev:   mSiblingNavi.getPrev,
+  getParent: mUpperNavi.getParent,
+  getTop:    mUpperNavi.getTop
 };
 
 
