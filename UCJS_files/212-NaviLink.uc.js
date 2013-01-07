@@ -227,7 +227,7 @@ var mMenu = (function() {
     if (!/^(?:https?|ftp|file)$/.test(getURI().scheme))
       return;
 
-    var isHtmlDocument = gBrowser.contentDocument instanceof HTMLDocument;
+    var isHtmlDocument = getDocument() instanceof HTMLDocument;
 
     [
       buildUpperNavi(),
@@ -705,7 +705,7 @@ var mNaviLink = (function() {
   }
 
   function scanMeta(aList) {
-    var d = gBrowser.contentDocument;
+    var d = getDocument();
     var metas = Array.slice(d.getElementsByTagName('meta'));
 
     // Make sure that the meta list is not empty.
@@ -724,7 +724,7 @@ var mNaviLink = (function() {
   }
 
   function scanScript(aList) {
-    var d = gBrowser.contentDocument;
+    var d = getDocument();
 
     Array.forEach(d.getElementsByTagName('script'),
     function(node, i) {
@@ -738,7 +738,7 @@ var mNaviLink = (function() {
     if (aRels.feed || (aNode.type && aRels.alternate && !aRels.stylesheet)) {
       // @see chrome://browser/content/utilityOverlay.js::isValidFeed
       let feedType = window.isValidFeed(
-        aNode, gBrowser.contentDocument.nodePrincipal, aRels.feed);
+        aNode, getDocument().nodePrincipal, aRels.feed);
       if (feedType) {
         type = 'feed';
         attributes.push(['type', kFeedType[feedType] || 'RSS']);
@@ -995,7 +995,7 @@ var mSiblingNavi = (function() {
   function getSearchLinks() {
     const kScanLimit = 400;
 
-    var links = gBrowser.contentDocument.links;
+    var links = getDocument().links;
     var count = links.length;
 
     if (kScanLimit < count) {
@@ -1352,6 +1352,13 @@ var mUpperNavi = (function() {
 
 
 //********** Utilities
+
+/**
+ * Gets the document object of the current content
+ */
+function getDocument() {
+  return window.content.document;
+}
 
 /**
  * Gets the URI object of the current content
