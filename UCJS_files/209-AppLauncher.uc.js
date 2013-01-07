@@ -710,6 +710,8 @@ const DirectoryService =
   $S('@mozilla.org/file/directory_service;1', 'nsIProperties');
 const IOService =
   $S('@mozilla.org/network/io-service;1', 'nsIIOService');
+const PromptService =
+  $S('@mozilla.org/embedcomp/prompt-service;1', 'nsIPromptService');
 
 /**
  * Instances
@@ -910,7 +912,8 @@ function warn(aTitle, aMsg) {
   if (msg.length > 200) {
     msg = msg.substr(0, 200) + ' ...\n(see console log)';
   }
-  alert(msg);
+
+  PromptService.alert(null, null, msg);
 }
 
 
