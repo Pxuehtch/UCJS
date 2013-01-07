@@ -766,8 +766,7 @@ function checkFile(aFilePath) {
 function execute(aApp, aURL) {
   var exe = getExecutable(aApp.path);
   if (!exe) {
-    warn('Not executed',
-      ['Registered application is not available now', aApp.path]);
+    warn('Not executed', ['The application is not available now', aApp.path]);
     return;
   }
 
@@ -900,7 +899,7 @@ function warn(aTitle, aMsg) {
   var msg = log('Error: ' + aTitle + '\n' + aMsg.join('\n'));
 
   if (msg.length > 200) {
-    msg = msg.substr(0, 200) + ' ...\n(see console log)';
+    msg = msg.substr(0, 200) + '\n...(see console log)';
   }
 
   PromptService.alert(null, null, msg);
