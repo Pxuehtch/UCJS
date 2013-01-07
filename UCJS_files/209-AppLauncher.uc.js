@@ -156,9 +156,9 @@ const kLinkExt = {
 };
 
 /**
- * UI bundle strings
+ * String bundle
  */
-const kBundle = {
+const kString = {
   type: {
     tool:     'Tool',
     file:     'File(%1)',
@@ -194,20 +194,26 @@ const kBundle = {
     downloadBGImage: 'Download BG-Image with %1',
     openFTP:         'Open FTP in %1',
     noActions:       'No actions'
-  },
-
-  UI: {
-    mainMenuLabel: 'AppLauncher',
-    mainMenuAccesskey: 'L',
-    appMenuLabel: 'Applications'
-  },
-
-  ID: {
-    mainMenu:       'ucjs_applauncher_menu',
-    actionKey:      'ucjs_applauncher_action',
-    startSeparator: 'ucjs_applauncher_start_sep',
-    endSeparator:   'ucjs_applauncher_end_sep'
   }
+};
+
+/**
+ * UI
+ */
+const kUI = {
+  mainMenuLabel: 'AppLauncher',
+  mainMenuAccesskey: 'L',
+  appMenuLabel: 'Applications'
+};
+
+/**
+ * Identifier
+ */
+const kID = {
+  mainMenu: 'ucjs_applauncher_menu',
+  actionKey: 'ucjs_applauncher_action',
+  startSeparator: 'ucjs_applauncher_startsep',
+  endSeparator: 'ucjs_applauncher_endsep'
 };
 
 
@@ -251,12 +257,10 @@ function initAppInfo() {
 }
 
 function makeMainMenu(aAppInfo) {
-  var {UI, ID} = kBundle;
-
   var menu = $E('menu');
-  menu.id = ID.mainMenu;
-  setLabel(menu, UI.mainMenuLabel);
-  menu.setAttribute('accesskey', UI.mainMenuAccesskey);
+  menu.id = kID.mainMenu;
+  setLabel(menu, kUI.mainMenuLabel);
+  menu.setAttribute('accesskey', kUI.mainMenuAccesskey);
 
   var popup = $E('menupopup');
   addEvent([popup, 'popupshowing', doBrowse, false]);
@@ -267,16 +271,16 @@ function makeMainMenu(aAppInfo) {
   menu.appendChild(popup);
 
   var context = getContextMenu();
-  addSeparator(context).id = ID.startSeparator;
+  addSeparator(context).id = kID.startSeparator;
   context.appendChild(menu);
-  addSeparator(context).id = ID.endSeparator;
+  addSeparator(context).id = kID.endSeparator;
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
   // separators.
 }
 
 function makeAppMenu(aPopup, aAppInfo) {
   var menu = $E('menu');
-  setLabel(menu, kBundle.UI.appMenuLabel);
+  setLabel(menu, kUI.appMenuLabel);
 
   var popup = $E('menupopup');
   popup.setAttribute('onpopupshowing', 'event.stopPropagation();');
@@ -330,21 +334,21 @@ function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
 
   var label;
   if (aInAppMenu) {
-    label = kBundle.type[aApp.type];
+    label = kString.type[aApp.type];
     if (aApp.type === 'file') {
       label = label.replace('%1',
         gFileType.getExtArray(aApp.extensions).join(','));
     }
     label += ': ' + aApp.name;
   } else {
-    label = kBundle.action[gFileType.getBaseAction(aAction)];
+    label = kString.action[gFileType.getBaseAction(aAction)];
     if (aApp) {
       label = label.replace('%1', aApp.name);
     }
   }
   setLabel(item, label);
 
-  item.setAttribute(kBundle.ID.actionKey, aAction);
+  item.setAttribute(kID.actionKey, aAction);
 
   if (aApp) {
     addEvent([item, 'command', function() {
@@ -363,7 +367,7 @@ function doBrowse(aEvent) {
   const uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
 
   function availableItem(actions) {
-    var actionKey = '@' + kBundle.ID.actionKey + '="';
+    var actionKey = '@' + kID.actionKey + '="';
     return 'xul:menuitem[' +
       actionKey + actions.join('" or ' + actionKey) + '"]';
   }
