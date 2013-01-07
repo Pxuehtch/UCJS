@@ -152,6 +152,8 @@ const kTypeAction = {
  * String bundle
  */
 const kString = {
+  appMenuItem: '%type%: %name%',
+
   type: {
     tool:     'Tool',
     file:     'File(%1)',
