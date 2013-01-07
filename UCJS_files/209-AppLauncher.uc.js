@@ -285,8 +285,6 @@ function makeAppMenu(aPopup, aAppInfo) {
   });
 
   var popup = $E('menupopup');
-  popup.setAttribute('onpopupshowing', 'event.stopPropagation();');
-  popup.setAttribute('onpopuphiding', 'event.stopPropagation();');
 
   aAppInfo.forEach(function(app) {
     addMenuItem(popup, 'launchTool', app, true);
@@ -376,6 +374,9 @@ function doBrowse(aEvent) {
 
   aEvent.stopPropagation();
   var popup = aEvent.target;
+  if (popup.parentElement.id !== kID.mainMenu) {
+    return;
+  }
 
   // Hide all menu items and show the others
   Array.forEach(popup.childNodes, function(node) {
