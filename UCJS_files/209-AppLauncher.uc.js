@@ -50,14 +50,17 @@ const kAppList = [
   },
   {
     name: 'WMP',
-    // Open a link of the specific file extension
-    type: 'file=asx|wax|wvx',
+    // If <type> is 'file', and also set <extensions> to describe the file
+    // extensions of a link URL that is passed to the application.
+    type: 'file',
+    extensions: ['asx', 'wax', 'wvx'],
     path: '%ProgF%\\Windows Media Player\\wmplayer.exe',
     args: '/prefetch:1 %URL%'
   },
   {
     name: 'Foxit',
-    type: 'file=pdf',
+    type: 'file',
+    extensions: ['pdf'],
     path: 'C:\\PF\\FoxitReader\\Foxit Reader.exe'
   },
   {
@@ -146,16 +149,6 @@ const kTypeAction = {
 };
 
 /**
- * File extensions for each actions
- */
-const kLinkExt = {
-  file:  '', // [reserved] Put a empty string
-  text:  'css|js|txt|xml',
-  media: 'asf|asx|avi|flv|mid|mov|mp3|mp4|mpg|ogg|ogv|pls|ra|ram|rm|wav|wax|webm|wma|wmv|wvx',
-  image: 'bmp|gif|jpg|png'
-};
-
-/**
  * String bundle
  */
 const kString = {
@@ -198,6 +191,23 @@ const kString = {
 };
 
 /**
+ * File extensions for the action on a link
+ */
+const kLinkExtension = {
+  // for <openFile>
+  // @note Stay empty. This is created with |FileUtil::updateFileExt()|.
+  file:  [],
+  // for <viewLinkSource>
+  text:  ['css', 'js', 'txt', 'xml'],
+  // for <viewLinkImage>
+  image: ['bmp', 'gif', 'jpg', 'png'],
+  // for <openLinkMedia>
+  media: ['asf', 'asx', 'avi', 'flv', 'mid', 'mov', 'mp3', 'mp4', 'mpg','ogg',
+          'ogv', 'pls', 'ra', 'ram', 'rm', 'wav', 'wax', 'webm', 'wma', 'wmv',
+          'wvx']
+};
+
+/**
  * UI
  */
 const kUI = {
@@ -216,6 +226,49 @@ const kID = {
   endSeparator: 'ucjs_applauncher_endsep'
 };
 
+/**
+ * Utility for the file extensions
+ */
+var FileUtil = {
+  makeFileAction: function(aAction, aExt) {
+    return aAction + '_' + aExt;
+  },
+
+  getBaseAction: function(aAction) {
+    return aAction.replace(/_.+$/, '');
+  },
+
+  updateFileExt: function(aExtArray) {
+    let fileExts = kLinkExtension['file'].concat(aExtArray);
+
+    kLinkExtension['file'] =
+    fileExts.filter(function(element, index, array) {
+      return array.indexOf(element) === index;
+    });
+  },
+
+  matchExt: function(aURL, aType) {
+    if (!aURL) {
+      return null;
+    }
+
+    let ext;
+    try {
+      // @see chrome://global/content/contentAreaUtils.js::
+      // makeURI
+      let URI = window.makeURI(aURL, null, null);
+      if (URI) {
+        ext = URI.QueryInterface(window.Ci.nsIURL).fileExtension;
+      }
+    } catch (e) {}
+
+    if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
+      return ext;
+    }
+    return null;
+  }
+};
+
 
 //********** Functions
 
@@ -231,17 +284,17 @@ function initAppInfo() {
   var apps = [];
 
   apps = kAppList.filter(function(app) {
-    var {name, type, path, disabled} = app;
+    var {name, type, extensions, path, disabled} = app;
 
     if (!disabled && name) {
       if (type in kTypeAction) {
-        return checkPath(path);
-      }
-      let match = /^file=(.+)$/.exec(type);
-      if (match) {
-        app.type = 'file';
-        app.extensions = match[1];
-        return checkPath(path);
+        if (type !== 'file' || (extensions && extensions.length)) {
+          let check = checkPath(path);
+          if (check && type === 'file') {
+            FileUtil.updateFileExt(extensions);
+          }
+          return check;
+        }
       }
     }
     return false;
@@ -296,7 +349,7 @@ function makeAppMenu(aPopup, aAppInfo) {
 
 function makeActionItems(aPopup, aAppInfo) {
   var type, lastType = '';
-  var actions, exts;
+  var actions;
 
   aAppInfo.forEach(function(app) {
     type = app.type;
@@ -309,13 +362,9 @@ function makeActionItems(aPopup, aAppInfo) {
     actions = kTypeAction[type];
 
     if (type === 'file') {
-      exts = gFileType.getExtArray(app.extensions);
-
-      gFileType.setFileExt(exts);
-
       actions = actions.reduce(function(a, b) {
-        return a.concat(exts.map(function(ext) {
-          return gFileType.makeFileAction(b, ext);
+        return a.concat(app.extensions.map(function(ext) {
+          return FileUtil.makeFileAction(b, ext);
         }));
       }, []);
     }
@@ -332,14 +381,14 @@ function makeActionItems(aPopup, aAppInfo) {
 function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
   var label;
   if (aInAppMenu) {
-    label = kString.type[aApp.type];
+    let type = kString.type[aApp.type];
     if (aApp.type === 'file') {
-      label = label.replace('%1',
-        gFileType.getExtArray(aApp.extensions).join(','));
+      type = type.replace('%1', aApp.extensions.join(','));
     }
-    label += ': ' + aApp.name;
+    label = kString.appMenuItem.
+      replace('%type%', type).replace('%name%', aApp.name);
   } else {
-    label = kString.action[gFileType.getBaseAction(aAction)];
+    label = kString.action[FileUtil.getBaseAction(aAction)];
     if (aApp) {
       label = label.replace('%1', aApp.name);
     }
@@ -424,16 +473,16 @@ function getAvailableActions() {
   if (gContextMenu.onLink) {
     let URL = gContextMenu.linkURL;
 
-    let ext = gFileType.matchExt(URL, 'file');
+    let ext = FileUtil.matchExt(URL, 'file');
     if (ext) {
-      actions.push(gFileType.makeFileAction('openFile', ext));
+      actions.push(FileUtil.makeFileAction('openFile', ext));
     }
 
-    if (gFileType.matchExt(URL, 'text')) {
+    if (FileUtil.matchExt(URL, 'text')) {
       actions.push('viewLinkSource');
-    } else if (gFileType.matchExt(URL, 'image')) {
+    } else if (FileUtil.matchExt(URL, 'image')) {
       actions.push('viewLinkImage');
-    } else if (gFileType.matchExt(URL, 'media')) {
+    } else if (FileUtil.matchExt(URL, 'media')) {
       actions.push('openLinkMedia');
     }
 
@@ -484,7 +533,7 @@ function doAction(aApp, aAction) {
   var URL = '';
   var save = false;
 
-  switch (gFileType.getBaseAction(aAction)) {
+  switch (FileUtil.getBaseAction(aAction)) {
     case 'launchTool':
       break;
     case 'openPage':
@@ -549,57 +598,6 @@ function doAction(aApp, aAction) {
 
 
 //********** Utilities
-
-/**
- * File extensions handler
- * @see kLinkExt
- */
-var gFileType = {
-  makeFileAction: function(aAction, aExt) {
-    return aAction + '_' + aExt;
-  },
-
-  getBaseAction: function(aAction) {
-    return aAction.replace(/_.+$/, '');
-  },
-
-  getExtArray: function(aExt) {
-    return aExt.split('|');
-  },
-
-  setFileExt: function(aExtArray) {
-    var fileExts = this.getExtArray(kLinkExt['file']);
-
-    aExtArray.forEach(function(ext) {
-      if (fileExts.indexOf(ext) === -1) {
-        fileExts.push(ext);
-      }
-    });
-
-    kLinkExt['file'] = fileExts.join('|');
-  },
-
-  matchExt: function(aURL, aType) {
-    var ext = this.getExt(aURL);
-
-    if (ext &&
-        this.getExtArray(kLinkExt[aType]).indexOf(ext) > -1) {
-      return ext;
-    }
-    return '';
-  },
-
-  getExt: function(aURL) {
-    if (aURL) {
-      try {
-        // @see chrome://global/content/contentAreaUtils.js::makeURI
-        let URI = window.makeURI(aURL, null, null);
-        return URI ? URI.QueryInterface(window.Ci.nsIURL).fileExtension : '';
-      } catch (e) {}
-    }
-    return '';
-  }
-};
 
 
 function inImagePage() {
