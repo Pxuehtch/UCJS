@@ -16,13 +16,13 @@ var ucjsNaviLink = (function(window, undefined) {
 
 
 const kPref = {
-  // Show page information menu
+  // show the page information menu
   showPageInfo: true,
-  // Show unregistered navigation links
+  // show the unregistered navigation links
   showSubNaviLinks: true,
-  // Max number of guessed siblings
+  // max number of the guessed siblings
   maxGuessSiblingsNum: 3,
-  // Max number of items of each categories in navigation links
+  // max number of the items of each categories in the navigation links
   maxNaviLinkItemsNum: 30
 };
 
@@ -133,24 +133,24 @@ const kSiblingScanType = U({
  * @note |U()| for UI display.
  */
 const kFormat = U({
-  // Main categories
+  // for the main categories
   upper: '上の階層',
   prev: '前ページ - %scanType%',
   next: '次ページ - %scanType%',
   naviLink: 'Navi Link',
   pageInfo: 'Page Info',
 
-  // Title of siblings
+  // for the item of <Sibling Navi>
   preset: '[%name%] %title%',
   official: '%title%',
   searching: '%title% (%score%)',
   numbering: '%here% -> %there%',
-  // Tooltip of submit mode of preset
-  submit: '<FORM> submit',
+  // submit mode warning
+  submit: '<submit mode>',
 
-  // Sub items of NaviLink or PageInfo
-  type: ['%title%', '%title% (%count%)'],
+  // for the sub items of <Navi Link>/<Page Info>
   tooManyItems: '項目が多いので表示を制限 (%count%/%total%)',
+  type: ['%title%', '%title% (%count%)'],
   item: ['%title%', '%title% [%attributes%]'],
   meta: '%name%: %content%'
 });
@@ -160,29 +160,25 @@ const kFormat = U({
  */
 const kID = (function() {
   const prefix = 'ucjs_navilink_';
-  const keys = [
+  const names = [
     'upper', 'prev', 'next', 'naviLink', 'pageInfo',
     'startSeparator', 'endSeparator', 'pageInfoSeparator',
     'data'
   ];
 
   let hash = {};
-  keys.forEach(function(a) {
-    hash[a] = prefix + a;
+  names.forEach(function(name) {
+    hash[name] = prefix + name;
   });
   return hash;
 })();
 
-
-//********** Handlers
-
 /**
- * Handler of the menu settings
+ * Handler of the menu UI settings
  */
 var mMenu = (function() {
-
   function init() {
-    var contextMenu = getURLBarContextMenu();
+    let contextMenu = getURLBarContextMenu();
 
     setSeparators(contextMenu);
 
@@ -193,15 +189,16 @@ var mMenu = (function() {
 
   function onCommand(aEvent) {
     aEvent.stopPropagation();
-    var item = aEvent.target;
+    let item = aEvent.target;
 
     let data = item[kID.data];
     if (!data) {
       return;
     }
 
-    if (aEvent.button === 2)
+    if (aEvent.button === 2) {
       return;
+    }
     if (aEvent.button === 1) {
       // @see chrome://browser/content/utilityOverlay.js::
       // closeMenus
@@ -210,9 +207,9 @@ var mMenu = (function() {
 
     if (data.open) {
       if (/^(?:https?|ftp|file):/.test(data.open)) {
-        let inTab = aEvent.button === 1, inBackground = aEvent.ctrlKey;
+        let inTab = aEvent.button === 1, inBG = aEvent.ctrlKey;
         openURL(data.open, inTab,
-          {inBackground: inBackground, relatedToCurrent: true});
+          {inBackground: inBG, relatedToCurrent: true});
       }
     } else if (data.submit) {
       data.submit.submit();
@@ -223,26 +220,29 @@ var mMenu = (function() {
     aEvent.stopPropagation();
 
     var contextMenu = aEvent.target;
-    if (contextMenu !== getURLBarContextMenu())
+    if (contextMenu !== getURLBarContextMenu()) {
       return;
+    }
 
-    var [, eSep] = getSeparators();
-
-    if (!/^(?:https?|ftp|file)$/.test(getURI().scheme))
+    if (!/^(?:https?|ftp|file)$/.test(getURI().scheme)) {
       return;
+    }
 
     var isHtmlDocument = getDocument() instanceof HTMLDocument;
+    var [, eSep] = getSeparators();
 
     [
       buildUpperNavi(),
       isHtmlDocument && buildSiblingNavi('prev'),
       isHtmlDocument && buildSiblingNavi('next'),
       isHtmlDocument && buildNaviLink(),
-      kPref.showPageInfo && $E('menuseparator', {'id': kID.pageInfoSeparator}),
+      kPref.showPageInfo && $E('menuseparator', {id: kID.pageInfoSeparator}),
       kPref.showPageInfo && buildPageInfo()
     ].
     forEach(function(item) {
-      item && contextMenu.insertBefore(item, eSep);
+      if (item) {
+        contextMenu.insertBefore(item, eSep);
+      }
     });
   }
 
@@ -273,24 +273,24 @@ var mMenu = (function() {
   }
 
   function buildUpperNavi() {
-    var list = mUpperNavi.getList();
+    var URLList = mUpperNavi.getList();
 
     var popup = $E('menupopup');
 
-    if (list) {
-      list.forEach(function(URL) {
+    if (URLList) {
+      URLList.forEach(function(URL) {
         popup.appendChild($E('menuitem', {
-          'crop': 'start',
-          'label': URL,
+          crop: 'start',
+          label: URL,
           'open': URL
         }));
       });
     }
 
     var menu = $E('menu', {
-      'id': kID.upper,
-      'label': F(kFormat.upper),
-      'disabled': list === null || null
+      id: kID.upper,
+      label: kFormat.upper,
+      disabled: URLList === null || null
     });
     menu.appendChild(popup);
 
@@ -309,7 +309,7 @@ var mMenu = (function() {
       list = list.slice(0, kPref.maxGuessSiblingsNum);
     }
 
-    var element;
+    var node;
 
     if (list.length === 1) {
       let data = list[0];
@@ -320,7 +320,7 @@ var mMenu = (function() {
         data.form ? kFormat.submit : data.URL
       );
 
-      element = $E('menuitem', {
+      node = $E('menuitem', {
         tooltiptext: tooltip,
         'open': data.URL,
         'submit': data.form
@@ -338,37 +338,46 @@ var mMenu = (function() {
         }));
       });
 
-      element = $E('menu');
-      element.appendChild(popup);
+      node = $E('menu');
+      node.appendChild(popup);
     }
 
-    $E(element, {
-      'id': kID[aDirection],
-      'label': F(kFormat[aDirection],
-        {'scanType': kSiblingScanType[scanType]})
+    $E(node, {
+      id: kID[aDirection],
+      label: F(kFormat[aDirection], {
+        scanType: kSiblingScanType[scanType]
+      })
     });
 
-    return element;
+    return node;
   }
 
   function buildNaviLink() {
-    var naviList = mNaviLink.getNaviList(),
-        subNaviList =
-          kPref.showSubNaviLinks ? mNaviLink.getSubNaviList() : null;
-    if (!naviList && !subNaviList)
+    var naviList, subNaviList;
+    naviList = mNaviLink.getNaviList();
+    if (kPref.showSubNaviLinks) {
+      subNaviList = mNaviLink.getSubNaviList();
+    }
+
+    if (!naviList && !subNaviList) {
       return null;
+    }
 
     var popup = $E('menupopup');
 
     [naviList, subNaviList].forEach(function(list) {
-      if (!list)
+      if (!list) {
         return;
+      }
 
-      popup.hasChildNodes() && popup.appendChild($E('menuseparator'));
+      if (popup.hasChildNodes()) {
+        popup.appendChild($E('menuseparator'));
+      }
 
       for (let type in list) {
         let child;
-        let itemCount = 0, tooltip = null;
+        let itemCount;
+        let tooltip;
 
         if (list[type].length === 1) {
           let data = list[type][0];
@@ -398,21 +407,27 @@ var mMenu = (function() {
 
           itemCount = childPopup.childElementCount;
           if (censored) {
-            tooltip = F(kFormat.tooManyItems,
-              {'count': itemCount, 'total': list[type].length});
+            tooltip = F(kFormat.tooManyItems, {
+              count: itemCount,
+              total: list[type].length
+            });
           }
         }
 
         popup.appendChild($E(child, {
-          'label': F(kFormat.type,
-            {'title': kNaviLinkType[type] || type, 'count': itemCount}),
-          'tooltiptext': tooltip
+          label: F(kFormat.type, {
+            title: kNaviLinkType[type] || type,
+            count: (itemCount > 1) ? itemCount : null
+          }),
+          tooltiptext: tooltip || null
         }));
       }
     });
 
-    var menu = $E('menu',
-      {'id': kID.naviLink, 'label': F(kFormat.naviLink)});
+    var menu = $E('menu', {
+      id: kID.naviLink,
+      label: kFormat.naviLink
+    });
     menu.appendChild(popup);
 
     return menu;
@@ -420,8 +435,9 @@ var mMenu = (function() {
 
   function buildPageInfo() {
     var list = mNaviLink.getInfoList();
-    if (!list)
+    if (!list) {
       return null;
+    }
 
     var popup = $E('menupopup');
 
@@ -429,6 +445,7 @@ var mMenu = (function() {
       let childPopup = $E('menupopup');
 
       if (type === 'meta') {
+        // no command and only show <meta> informations
         list[type].forEach(function(data) {
           childPopup.appendChild($E('menuitem', {
             closemenu: 'none',
@@ -447,16 +464,21 @@ var mMenu = (function() {
         });
       }
 
+      let itemCount = childPopup.childElementCount;
       let child = $E('menu');
       child.appendChild(childPopup);
       popup.appendChild($E(child, {
-        'label': F(kFormat.type,
-          {'title': kPageInfoType[type], 'count': childPopup.childElementCount})
+        label: F(kFormat.type, {
+          title: kPageInfoType[type],
+          count: (itemCount > 1) ? itemCount : null
+        })
       }));
     }
 
-    var menu = $E('menu',
-      {'id': kID.pageInfo, 'label': F(kFormat.pageInfo)});
+    var menu = $E('menu', {
+      id: kID.pageInfo,
+      label: kFormat.pageInfo
+    });
     menu.appendChild(popup);
 
     return menu;
@@ -487,6 +509,7 @@ var mMenu = (function() {
             there: aData.there
           });
       }
+      // unreachable here, for avoiding warnings
       return null;
     }
 
@@ -504,9 +527,9 @@ var mMenu = (function() {
   }
 
   /**
-   * Formats attributes
-   * @param aAttributes {array}
-   *   [['name1', 'value1'], ['name2', ['value1', 'value2']]]
+   * Attributes formatter
+   * @param aAttributes {array} see |mNaviLink|
+   *   [['name', 'value'], ..., ['rel', ['value', 'value', ...]]]
    * @return {string}
    */
   function formatAttributes(aAttributes) {
@@ -514,8 +537,9 @@ var mMenu = (function() {
           kValuesDelimiter = ',',
           kAttributesDelimiter = ' ';
 
-    if (!aAttributes || !aAttributes.length)
+    if (!aAttributes || !aAttributes.length) {
       return '';
+    }
 
     var attributes = [];
 
@@ -523,8 +547,12 @@ var mMenu = (function() {
       if (Array.isArray(value)) {
         value = value.join(kValuesDelimiter);
       }
-      attributes.push(F(kAttributeFormat,
-        {'name': name, 'value': value}));
+      attributes.push(
+        F(kAttributeFormat, {
+          name: name,
+          value: value
+        })
+      );
     });
 
     return attributes.join(kAttributesDelimiter);
@@ -540,15 +568,12 @@ var mMenu = (function() {
   return {
     init: init
   };
-
 })();
 
-
 /**
- * Handler of the user preset navigation links
+ * Handler of the user preset of the navigation links
  */
 var mPresetNavi = (function() {
-
   /**
    * Gets the preset data for the previous or next page
    * @param aDirection {string} 'prev' or 'next'
@@ -560,60 +585,56 @@ var mPresetNavi = (function() {
    * }
    */
   function getData(aDirection) {
-    var item = null;
+    var item;
 
     var URL = getURI().spec;
-
     for (let i = 0; i < kPresetNavi.length; i++) {
       if (kPresetNavi[i].URL.test(URL)) {
         item = kPresetNavi[i];
         break;
       }
     }
-
-    if (item) {
-      let node = $X1(item[aDirection]);
-
-      if (node && node.href) {
-        return {
-          // <data> for a preset
-          name: item.name,
-          title: trim(node.title) || trim(node.textContent) || '',
-          URL: node.href
-        };
-      }
-
-      if (node instanceof HTMLInputElement && node.form && node.value) {
-        return {
-          // <data> for a submit preset
-          name: item.name,
-          title: node.value,
-          form: node.form
-        };
-      }
-
-      log('Match preset: %name% ->\n%dir%: \'%xpath%\' is not found.'.
-        replace('%name%', item.name).
-        replace('%dir%', aDirection).
-        replace('%xpath%', item[aDirection]));
-      return {error: true};
+    if (!item) {
+      return null;
     }
-    return null;
+
+    var node = $X1(item[aDirection]);
+
+    if (node && node.href) {
+      return {
+        // <data> for a preset
+        name: item.name,
+        title: trim(node.title) || trim(node.textContent) || '',
+        URL: node.href
+      };
+    }
+
+    if (node instanceof HTMLInputElement && node.form && node.value) {
+      return {
+        // <data> for a submit preset
+        name: item.name,
+        title: node.value,
+        form: node.form
+      };
+    }
+
+    log('Match preset: %name%\n%dir%: \'%xpath%\' is not found'.
+      replace('%name%', item.name).
+      replace('%dir%', aDirection).
+      replace('%xpath%', item[aDirection]));
+    return {error: true};
   }
 
   return {
     getData: getData
   };
-
 })();
 
-
 /**
- * Handler of the official navigation links according to the 'rel' attribute
+ * Handler of the official navigation links according to the <rel> attribute
  * @note [additional] Makes a list of the page information.
  */
 var mNaviLink = (function() {
-
   const kFeedType = {
     'application/rss+xml': 'RSS',
     'application/atom+xml': 'ATOM',
@@ -681,7 +702,7 @@ var mNaviLink = (function() {
   }
 
   function getLinkList() {
-    // Keep the order list of sort to the first item
+    // keep the order list of sort to the first item
     var naviList = [kNaviLinkType],
         subNaviList = [{}],
         infoList = [kPageInfoType];
@@ -691,8 +712,9 @@ var mNaviLink = (function() {
 
     Array.forEach($SA('[rel][href], [rev][href]'), function(node, i) {
       var rel = node.rel || node.rev;
-      if (!rel || !node.href || !/^(?:https?|mailto):/.test(node.href))
+      if (!rel || !node.href || !/^(?:https?|mailto):/.test(node.href)) {
         return;
+      }
 
       var rels = makeRels(rel);
 
@@ -702,22 +724,29 @@ var mNaviLink = (function() {
     });
 
     return [naviList, subNaviList, infoList].map(function(list) {
-      if (list.length === 1)
+      if (list.length === 1) {
         return null;
+      }
 
-      // Pick out the order list.
+      // pick out the order list
       var order = [i for (i in list.shift())];
       list.sort(order.length ?
-        function(a, b)
-          order.indexOf(a.type) - order.indexOf(b.type) || a.index - b.index :
-        function(a, b)
-          a.type.localeCompare(b.type) || a.index - b.index
+        function(a, b) {
+          return order.indexOf(a.type) - order.indexOf(b.type) ||
+                 a.index - b.index;
+        } :
+        function(a, b) {
+          return a.type.localeCompare(b.type) ||
+                 a.index - b.index;
+        }
       );
 
       var res = {};
 
       list.forEach(function({type, data}) {
-        !(type in res) && (res[type] = []);
+        if (!(type in res)) {
+          res[type] = [];
+        }
 
         let unique = !res[type].some(function(item) {
           return JSON.stringify(item) === JSON.stringify(data);
@@ -732,29 +761,37 @@ var mNaviLink = (function() {
   }
 
   function makeRels(aRelAttribute) {
-    var relVals = aRelAttribute.toLowerCase().split(/\s+/);
+    var relValues = aRelAttribute.toLowerCase().split(/\s+/);
 
     var rels = Object.create(null, {
-      length: {value: relVals.length},
-      except: {value: function(val) relVals.filter(function(a) a !== val)}
+      length: {
+        value: relValues.length
+      },
+      except: {
+        value: function(aValue) {
+          return relValues.filter(function(val) val !== aValue);
+        }
+      }
     });
 
-    relVals.forEach(function(a) {rels[a] = true});
+    relValues.forEach(function(val) {rels[val] = true});
 
     return rels;
   }
 
   function scanMeta(aList) {
-    var d = getDocument();
-    var metas = Array.slice(d.getElementsByTagName('meta'));
+    var doc = getDocument();
+    var metas = Array.slice(doc.getElementsByTagName('meta'));
 
-    // Make sure that the meta list is not empty.
-    if (!metas.
-        some(function(a) a.httpEquiv &&
-                         a.httpEquiv.toLowerCase() === 'content-type')) {
+    // be sure to add <content-type> so that the meta list is not empty
+    let empty = !metas.some(function(meta) {
+      return meta.httpEquiv &&
+             meta.httpEquiv.toLowerCase() === 'content-type';
+    });
+    if (empty) {
       metas.unshift({
         httpEquiv: 'Content-Type',
-        content: d.contentType + ';charset=' + d.characterSet
+        content: doc.contentType + ';charset=' + doc.characterSet
       });
     }
 
@@ -764,31 +801,38 @@ var mNaviLink = (function() {
   }
 
   function scanScript(aList) {
-    var d = getDocument();
+    var doc = getDocument();
 
-    Array.forEach(d.getElementsByTagName('script'),
+    Array.forEach(doc.getElementsByTagName('script'),
     function(node, i) {
       addItem(aList, i, 'script', node);
     });
   }
 
   function scanInfoLink(aList, aIndex, aNode, aRels) {
-    var type = '', attributes = [];
+    var type = '';
+    var attributes = [];
 
-    if (aRels.feed || (aNode.type && aRels.alternate && !aRels.stylesheet)) {
-      // @see chrome://browser/content/utilityOverlay.js::isValidFeed
+    if (aRels.feed ||
+        (aNode.type && aRels.alternate && !aRels.stylesheet)) {
+      // @see chrome://browser/content/utilityOverlay.js::
+      // isValidFeed
       let feedType = window.isValidFeed(
         aNode, getDocument().nodePrincipal, aRels.feed);
       if (feedType) {
         type = 'feed';
         attributes.push(['type', kFeedType[feedType] || 'RSS']);
       }
-    } else if (aRels.stylesheet) {
+    }
+    else if (aRels.stylesheet) {
       type = 'stylesheet';
       attributes.push(['media', aNode.media || 'all']);
-    } else if (aRels.icon) {
+    }
+    else if (aRels.icon) {
       type = 'favicon';
-      aNode.type && attributes.push(['type', aNode.type]);
+      if (aNode.type) {
+        attributes.push(['type', aNode.type]);
+      }
     }
 
     if (type) {
@@ -803,28 +847,34 @@ var mNaviLink = (function() {
     var attributes = [];
 
     if (aRels.alternate) {
-      aNode.media && attributes.push(['media', aNode.media]);
-      aNode.hreflang && attributes.push(['hreflang', aNode.hreflang]);
+      if (aNode.media) {
+        attributes.push(['media', aNode.media]);
+      }
+      if (aNode.hreflang) {
+        attributes.push(['hreflang', aNode.hreflang]);
+      }
     }
 
+    let plural = aRels.length > 1;
+    let others;
     for (let type in aRels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (type in kNaviLinkType) {
-        let others = (aRels.length > 1) ? [['rel', aRels.except(type)]] : [];
-
+        others = plural ? [['rel', aRels.except(type)]] : [];
         addItem(aList, aIndex, type, aNode, attributes.concat(others));
       }
     }
 
-    return (aList.length - startLen);
+    return aList.length - startLen > 0;
   }
 
   function scanSubNaviLink(aList, aIndex, aNode, aRels) {
+    let plural = aRels.length > 1;
+    let others;
     for (let type in aRels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (!(type in kNaviLinkType)) {
-        let others = (aRels.length > 1) ? [['rel', aRels.except(type)]] : [];
-
+        others = plural ? [['rel', aRels.except(type)]] : [];
         addItem(aList, aIndex, type, aNode, others);
       }
     }
@@ -898,18 +948,14 @@ var mNaviLink = (function() {
     getSubNaviList: getSubNaviList,
     getInfoList: getInfoList
   };
-
 })();
-
 
 /**
  * Handler of links to the sibling(prev/next) page
  */
 var mSiblingNavi = (function() {
-
   function getURLFor(aDirection) {
     var res = getResult(aDirection);
-
     return (res && res.list[0].URL) || '';
   }
 
@@ -960,31 +1006,32 @@ var mSiblingNavi = (function() {
   }
 
   function guessBySearching(aDirection) {
-    var currentURI = getURI('NO_REF');
+    var URI = getURI('NO_REF');
 
-    NaviLinkTester.init(currentURI.spec, aDirection);
+    NaviLinkTester.init(URI.spec, aDirection);
 
     var entries = getSearchEntries();
     var link, href, text, score;
 
     for (link in getSearchLinks()) {
       href = link.href;
-      if (!href || !/^https?:/.test(href) || currentURI.isSamePage(href) ||
-        entries.contains(href))
+      if (!href || !/^https?:/.test(href) || URI.isSamePage(href) ||
+        entries.contains(href)) {
         continue;
+      }
 
       for (text in getSearchTexts(link)) {
         text = trim(text);
         score = text && NaviLinkTester.score(text, href);
 
         if (score && isVisible(link)) {
-          entries.push(text, href, score);
+          entries.add(text, href, score);
           break;
         }
       }
     }
 
-    return entries.getResult();
+    return entries.collect();
   }
 
   function getSearchEntries() {
@@ -996,19 +1043,27 @@ var mSiblingNavi = (function() {
       URLs.length = 0;
     }
 
-    function push(aText, aURL, aScore) {
-      entries[entries.length] = {text: aText, URL: aURL, score: aScore};
+    function add(aText, aURL, aScore) {
+      entries[entries.length] = {
+        text: aText,
+        URL: aURL,
+        score: aScore
+      };
 
-      // Cache for contains()
+      // cache for |contains()|
       URLs[URLs.length] = aURL;
     }
 
-    function contains(aURL) URLs.indexOf(aURL) > -1;
+    function contains(aURL) {
+      return URLs.indexOf(aURL) > -1;
+    }
 
-    function getResult() {
-      if (!entries.length)
+    function collect() {
+      if (!entries.length) {
         return null;
+      }
 
+      // sort items in a descending of the score
       entries.sort(function(a, b) b.score - a.score);
 
       var list = entries.map(function({text, URL, score}) {
@@ -1026,9 +1081,9 @@ var mSiblingNavi = (function() {
     }
 
     return {
-      push: push,
+      add: add,
       contains: contains,
-      getResult: getResult
+      collect: collect
     };
   }
 
@@ -1082,7 +1137,7 @@ var mSiblingNavi = (function() {
 
   function guessByNumbering(aDirection) {
     /**
-     * Part like page numbers in URL
+     * Patterns like the page numbers in URL
      * @const kNumQuery {RegExp}
      *   Query with a numeric value; [?&]page=123 or [?&]123
      * @const kNumEndPath {RegExp}
@@ -1094,18 +1149,20 @@ var mSiblingNavi = (function() {
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
 
     var URI = getURI('NO_REF');
-    if (!URI.hasPath())
+    if (!URI.hasPath()) {
       return null;
+    }
 
+    var direction = (aDirection === 'next') ? 1 : -1;
     var list = [];
 
-    [kNumQuery, kNumEndPath].forEach(function(re) {
+    [kNumQuery, kNumEndPath].forEach(function(pattern) {
       var URL = URI.spec;
       var matches;
-      while ((matches = re.exec(URL))) {
+      while ((matches = pattern.exec(URL))) {
         let [match, leading , oldNum, trailing] = matches;
 
-        let newNum = parseInt(oldNum, 10) + ((aDirection === 'next') ? 1 : -1);
+        let newNum = parseInt(oldNum, 10) + direction;
         if (newNum > 0) {
           newNum = String(newNum);
           while (newNum.length < oldNum.length) {
@@ -1135,15 +1192,15 @@ var mSiblingNavi = (function() {
       return getURLFor('next');
     }
   };
-
 })();
 
 /**
  * Evaluator of the navigation-like text and URL
  */
 var NaviLinkTester = (function() {
-
-  // Test for text
+  /**
+   * Test for text
+   */
   var textLike = (function() {
     // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
     // ←:\u2190
@@ -1163,7 +1220,7 @@ var NaviLinkTester = (function() {
              '\\u6b21|\\u65b0\\u3057']
     };
 
-    // Weight of ratings
+    // score weighting
     const kWeight = normalizeWeight({
       matchSign: 50,
       matchWord: 50,
@@ -1214,7 +1271,7 @@ var NaviLinkTester = (function() {
           let adjust = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
           point += (kWeight.lessText * adjust);
         } else {
-          // Exact match
+          // exact match
           point += kWeight.lessText;
         }
       }
@@ -1231,7 +1288,9 @@ var NaviLinkTester = (function() {
     };
   })();
 
-  // Test for URL
+  /**
+   * Test for URL
+   */
   var URLLike = (function() {
     const kWeight = normalizeWeight({
       equalLength: 35,
@@ -1254,7 +1313,7 @@ var NaviLinkTester = (function() {
     function getEqualLengthRate(aSrc, aDst) {
       var sLen = aSrc.length, dLen = aDst.length;
 
-      // Be less than (1.0)
+      // be less than (1.0)
       return 1 - (Math.abs(sLen - dLen) / (sLen + dLen));
     }
 
@@ -1273,7 +1332,7 @@ var NaviLinkTester = (function() {
         return false;
       });
 
-      // Be less than (1.0)
+      // be less than (1.0)
       return overlaps.length / sParts.length;
     }
 
@@ -1328,15 +1387,12 @@ var NaviLinkTester = (function() {
     init: init,
     score: score
   };
-
 })();
 
-
 /**
- * Handler of links to the upper(top/parent) page
+ * Handler of the links to the upper(top/parent) page
  */
 var mUpperNavi = (function() {
-
   /**
    * Gets the list of the upper page URLs from parent to top in order
    * @return {string[]}
@@ -1348,7 +1404,6 @@ var mUpperNavi = (function() {
     var URL;
     while ((URL = getParent(URI))) {
       list.push(URL);
-
       URI = createURI(URL);
     }
 
@@ -1357,7 +1412,10 @@ var mUpperNavi = (function() {
 
   function getParent(aURI) {
     if (aURI.hasPath()) {
-      let segments = aURI.path.replace(/\/(?:index\.html?)?$/i, '').split('/');
+      let path = aURI.path.replace(/\/(?:index\.html?)?$/i, '')
+      let segments = path.split('/');
+
+      // remove the last one
       segments.pop();
 
       let URL = aURI.prePath + segments.join('/') + '/';
@@ -1376,17 +1434,18 @@ var mUpperNavi = (function() {
 
   function getUpperHost(aURI) {
     var host = aURI.host;
-    if (!host)
+    if (!host) {
       return '';
+    }
 
     var baseDomain = host;
     try {
       // @see resource:///modules/Services.jsm
       baseDomain = window.Services.eTLD.getBaseDomainFromHost(host);
-    } catch (e) {
-      // @throws NS_ERROR_UNEXPECTED host contains characters disallowed in
+    } catch (ex) {
+      // @throws NS_ERROR_UNEXPECTED: host contains characters disallowed in
       // URIs.
-      // @throws NS_ERROR_HOST_IS_IP_ADDRESS host is a numeric IPv4 or IPv6
+      // @throws NS_ERROR_HOST_IS_IP_ADDRESS: host is a numeric IPv4 or IPv6
       // address.
       return '';
     }
@@ -1394,7 +1453,6 @@ var mUpperNavi = (function() {
     if (baseDomain !== host) {
       let levels = host.split('.');
       levels.shift();
-
       return aURI.scheme + '://' + levels.join('.') + '/';
     }
     return '';
@@ -1409,7 +1467,6 @@ var mUpperNavi = (function() {
       return getTop(getURI('NO_QUERY'));
     }
   };
-
 })();
 
 
@@ -1491,7 +1548,7 @@ function createURI(aURI, aFlag) {
  * Creates an element with the attributes
  */
 function $E(aTagOrNode, aAttribute) {
-  var node = (typeof aTagOrNode === 'string') ?
+  let node = (typeof aTagOrNode === 'string') ?
     window.document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
@@ -1561,41 +1618,53 @@ function F(aFormat, aReplacement) {
 
 function getLeaf(aURL) {
   if (aURL) {
-    return aURL.slice(aURL.replace(/[?#].*$/, '').lastIndexOf('/') + 1) ||
-           aURL;
+    let lastSlash = aURL.replace(/[?#].*$/, '').lastIndexOf('/');
+    return aURL.slice(lastSlash + 1) || aURL;
   }
   return '';
 }
 
-function trim(aText)
-  aText ? aText.trim().replace(/\s+/g, ' ') : '';
+function trim(aText) {
+  if (aText) {
+    return aText.trim().replace(/\s+/g, ' ');
+  }
+  return '';
+}
 
 
 //********** Imports
 
-function getURLBarContextMenu()
-  window.ucjsUI.URLBar.contextMenu;
+function getURLBarContextMenu() {
+  return window.ucjsUI.URLBar.contextMenu;
+}
 
-function $SA(aSelector)
-  window.ucjsUtil.getNodesBySelector(aSelector);
+function $SA(aSelector) {
+  return window.ucjsUtil.getNodesBySelector(aSelector);
+}
 
-function $X1(aXPath)
-  window.ucjsUtil.getFirstNodeByXPath(aXPath);
+function $X1(aXPath) {
+  return window.ucjsUtil.getFirstNodeByXPath(aXPath);
+}
 
-function addEvent(aData)
+function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
 
-function unescURLChar(aURL)
-  window.ucjsUtil.unescapeURLCharacters(aURL);
+function unescURLChar(aURL) {
+  return window.ucjsUtil.unescapeURLCharacters(aURL);
+}
 
-function U(aText)
-  window.ucjsUtil.toStringForUI(aText);
+function U(aText) {
+  return window.ucjsUtil.toStringForUI(aText);
+}
 
-function openURL(aURL, aInTab, aOption)
+function openURL(aURL, aInTab, aOption) {
   window.ucjsUtil.openURLIn(aURL, aInTab, aOption);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
+}
 
 
 //********** Entry point
@@ -1610,10 +1679,10 @@ NaviLink_init();
 //********** Expose
 
 return {
-  getNext:   mSiblingNavi.getNext,
-  getPrev:   mSiblingNavi.getPrev,
+  getNext: mSiblingNavi.getNext,
+  getPrev: mSiblingNavi.getPrev,
   getParent: mUpperNavi.getParent,
-  getTop:    mUpperNavi.getTop
+  getTop: mUpperNavi.getTop
 };
 
 
