@@ -224,7 +224,7 @@ var mMenu = (function() {
 
     var [, eSep] = getSeparators();
 
-    if (!/^(?:https?|ftp|file)$/.test(getCurrentURI().scheme))
+    if (!/^(?:https?|ftp|file)$/.test(getURI().scheme))
       return;
 
     var isHtmlDocument = gBrowser.contentDocument instanceof HTMLDocument;
@@ -550,7 +550,7 @@ var mPresetNavi = (function() {
   function getData(aDirection) {
     var item = null;
 
-    var URL = getCurrentURI().spec;
+    var URL = getURI().spec;
 
     for (let i = 0; i < kPresetNavi.length; i++) {
       if (kPresetNavi[i].URL.test(URL)) {
@@ -614,7 +614,7 @@ var mNaviLink = (function() {
   var mNaviList, mSubNaviList, mInfoList;
 
   function init() {
-    var URI = getCurrentURI();
+    var URI = getURI();
 
     if (!URI.isSamePage(mWorkURL)) {
       mWorkURL = URI.spec;
@@ -920,7 +920,7 @@ var mSiblingNavi = (function() {
   }
 
   function guessBySearching(aDirection) {
-    var currentURI = getCurrentURI('NO_REF');
+    var currentURI = getURI('NO_REF');
 
     NaviLinkTester.init(currentURI.spec, aDirection);
 
@@ -1041,7 +1041,7 @@ var mSiblingNavi = (function() {
     const kNumEndPath =
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
 
-    var URI = getCurrentURI('NO_REF');
+    var URI = getURI('NO_REF');
     if (!URI.hasPath())
       return null;
 
@@ -1284,7 +1284,7 @@ var mUpperNavi = (function() {
   function getURLList() {
     var list = [];
 
-    var URI = getCurrentURI('NO_QUERY');
+    var URI = getURI('NO_QUERY');
     var URL;
     while ((URL = guessParentURL(URI))) {
       list.push(URL);
@@ -1342,9 +1342,9 @@ var mUpperNavi = (function() {
 
   return {
     getParentURL:
-      function() guessParentURL(getCurrentURI('NO_QUERY')),
+      function() guessParentURL(getURI('NO_QUERY')),
     getTopURL:
-      function() guessTopURL(getCurrentURI('NO_QUERY')),
+      function() guessTopURL(getURI('NO_QUERY')),
     getURLList: getURLList
   };
 
@@ -1354,57 +1354,65 @@ var mUpperNavi = (function() {
 //********** Utilities
 
 /**
- * Wrapper of URI object
+ * Gets the URI object of the current content
  */
-function getCurrentURI(aFlags)
-  createURI(gBrowser.currentURI, aFlags);
+function getURI(aFlag) {
+  return createURI(getDocument().documentURI, aFlag);
+}
 
-function createURI(aURI, aFlags) {
+/**
+ * URI object wrapper
+ */
+function createURI(aURI, aFlag) {
   if (!(aURI instanceof window.Ci.nsIURI)) {
-    // @see chrome://global/content/contentAreaUtils.js::makeURI
+    // @see chrome://global/content/contentAreaUtils.js::
+    // makeURI
     aURI = window.makeURI(aURI, null, null);
   }
 
-  var mHost;
-  var {scheme: mScheme, prePath: mPrePath, path: mPath, spec: mSpec} = aURI;
-
+  var {scheme, prePath, path, spec} = aURI;
+  var host;
   try {
     // returns an empty string for the host of 'file:///C:/...'
-    mHost = aURI.host;
-  } catch (e) {
-    mHost = aURI.spec.
+    host = aURI.host;
+  } catch (ex) {
+    host = aURI.spec.
       match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
   }
 
-  switch (aFlags) {
+  switch (aFlag) {
     case 'NO_QUERY':
-      mPath = removeQuery(mPath);
-      mSpec = removeQuery(mSpec);
-      // Fall through
+      path = removeQuery(path);
+      spec = removeQuery(spec);
+      // fall through
     case 'NO_REF':
-      mPath = removeRef(mPath);
-      mSpec = removeRef(mSpec);
+      path = removeRef(path);
+      spec = removeRef(spec);
       break;
   }
 
-  function removeQuery(URL)
-    URL.replace(/\?.*$/, '');
+  function removeQuery(aTargetURL) {
+    return aTargetURL.replace(/\?.*$/, '');
+  }
 
-  function removeRef(URL)
-    URL.replace(/#.*$/, '');
+  function removeRef(aTargetURL) {
+    return aTargetURL.replace(/#.*$/, '');
+  }
 
-  function hasPath()
-    mPath !== '/';
+  function hasPath() {
+    return path !== '/';
+  }
 
-  function isSamePage(URL)
-    removeRef(URL) === removeRef(mSpec);
+  function isSamePage(aTargetURL) {
+    return removeRef(aTargetURL) === removeRef(spec);
+  }
 
   return {
-    scheme: mScheme,
-    host: mHost,
-    prePath: mPrePath,
-    path: mPath,
-    spec: mSpec,
+    scheme: scheme,
+    host: host,
+    prePath: prePath,
+    path: path,
+    spec: spec,
     hasPath: hasPath,
     isSamePage: isSamePage
   };
