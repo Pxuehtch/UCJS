@@ -535,22 +535,23 @@ function doAction(aApp, aAction) {
 
   var URL = '';
   var save = false;
+  var sourceWindow = gContextMenu.target.ownerDocument.defaultView;
 
   switch (FileUtil.getBaseAction(aAction)) {
     case 'launchTool':
       break;
     case 'openPage':
-      URL = content.location.href;
+      URL = window.content.location.href;
       break;
     case 'viewPageSource':
-      URL = content.location.href;
+      URL = window.content.location.href;
       save = true;
       break;
     case 'openFrame':
-      URL = gContextMenu.target.ownerDocument.location.href;
+      URL = sourceWindow.location.href;
       break;
     case 'viewFrameSource':
-      URL = gContextMenu.target.ownerDocument.location.href;
+      URL = sourceWindow.location.href;
       save = true;
       break;
     case 'openLink':
@@ -577,7 +578,7 @@ function doAction(aApp, aAction) {
       } else if (gContextMenu.onCanvas) {
         URL = gContextMenu.target.toDataURL();
       } else {
-        URL = gContextMenu.target.ownerDocument.location.href;
+        URL = sourceWindow.location.href;
       }
       save = true;
       break;
@@ -596,7 +597,7 @@ function doAction(aApp, aAction) {
       break;
   }
 
-  runApp(aApp, URL, save);
+  runApp(aApp, URL, save ? sourceWindow : null);
 }
 
 
@@ -644,8 +645,8 @@ function getContextMenu()
 function checkPath(aPath)
   Util.isExecutable(aPath);
 
-function runApp(aApp, aURL, aSave)
-  Util.runApp(aApp, aURL, aSave);
+function runApp(aApp, aURL, aSourceWindow)
+  Util.runApp(aApp, aURL, aSourceWindow);
 
 function U(aStr)
   Util.toStringForUI(aStr);
@@ -724,9 +725,9 @@ function WebBrowserPersist()
 
 //********** Functions
 
-function runApp(aApp, aURL, aSave) {
-  if (aSave) {
-    saveAndExecute(aApp, aURL);
+function runApp(aApp, aURL, aSourceWindow) {
+  if (aSourceWindow) {
+    saveAndExecute(aApp, aURL, aSourceWindow);
   } else {
     execute(aApp, aURL);
   }
@@ -786,7 +787,7 @@ function execute(aApp, aURL) {
   process.run(false, args, args.length);
 }
 
-function saveAndExecute(aApp, aURL) {
+function saveAndExecute(aApp, aURL, aSourceWindow) {
   try {
     var savePath = getSavePath(aURL);
     var source = IOService.newURI(aURL, null, null);
@@ -797,6 +798,12 @@ function saveAndExecute(aApp, aURL) {
     warn('Not downloaded', [e.message, aURL]);
     return;
   }
+
+  var privacyContext =
+    aSourceWindow.top.
+    QueryInterface(Ci.nsIInterfaceRequestor).
+    getInterface(Ci.nsIWebNavigation).
+    QueryInterface(Ci.nsILoadContext);
 
   var persist = WebBrowserPersist();
 
@@ -840,7 +847,8 @@ function saveAndExecute(aApp, aURL) {
     onSecurityChange: function() {}
   };
 
-  persist.saveURI(source, null, null, null, null, target);
+  persist.saveURI(sourceURI, null, null, null, null, targetFile,
+    privacyContext);
 }
 
 function getSavePath(aURL) {
