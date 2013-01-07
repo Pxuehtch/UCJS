@@ -61,7 +61,7 @@ const kPresetNavi = [
  * @note Key is 'rel' attribute of <link> or linkable element.
  * @note Displayed in this order. U() for UI.
  */
-const kNaviLink = U({
+const kNaviLinkType = U({
   top:        'Top',
   up:         'Up',
   first:      'First',
@@ -85,9 +85,9 @@ const kNaviLink = U({
 
 /**
  * Synonymous keys
- * @note Value is in a key of kNaviLink.
+ * @note Value is in a key of kNaviLinkType.
  */
-const kNaviLinkConversion = {
+const kNaviLinkTypeConversion = {
   home:     'top',
   origin:   'top',
   start:    'top',
@@ -104,7 +104,7 @@ const kNaviLinkConversion = {
  * Items of page infomation
  * @note Displayed in this order. U() for UI.
  */
-const kPageInfo = U({
+const kPageInfoType = U({
   meta:       'Meta',
   feed:       'Feed',
   stylesheet: 'Stylesheet',
@@ -403,7 +403,7 @@ var mMenu = (function() {
 
         popup.appendChild($E(child, {
           'label': F(kFormat.type,
-            {'title': kNaviLink[type] || type, 'count': itemCount}),
+            {'title': kNaviLinkType[type] || type, 'count': itemCount}),
           'tooltiptext': tooltip
         }));
       }
@@ -449,7 +449,7 @@ var mMenu = (function() {
       child.appendChild(childPopup);
       popup.appendChild($E(child, {
         'label': F(kFormat.type,
-          {'title': kPageInfo[type], 'count': childPopup.childElementCount})
+          {'title': kPageInfoType[type], 'count': childPopup.childElementCount})
       }));
     }
 
@@ -644,7 +644,9 @@ var mNaviLink = (function() {
 
   function getLinkList() {
     // Keep the order list of sort to the first item
-    var naviList = [kNaviLink], subNaviList = [{}], infoList = [kPageInfo];
+    var naviList = [kNaviLinkType],
+        subNaviList = [{}],
+        infoList = [kPageInfoType];
 
     scanMeta(infoList);
     scanScript(infoList);
@@ -768,8 +770,8 @@ var mNaviLink = (function() {
     }
 
     for (let type in aRels) {
-      type = kNaviLinkConversion[type] || type;
-      if (type in kNaviLink) {
+      type = kNaviLinkTypeConversion[type] || type;
+      if (type in kNaviLinkType) {
         let others = (aRels.length > 1) ? [['rel', aRels.except(type)]] : [];
 
         addItem(aList, aIndex, type, aNode, attributes.concat(others));
@@ -781,8 +783,8 @@ var mNaviLink = (function() {
 
   function scanSubNaviLink(aList, aIndex, aNode, aRels) {
     for (let type in aRels) {
-      type = kNaviLinkConversion[type] || type;
-      if (!(type in kNaviLink)) {
+      type = kNaviLinkTypeConversion[type] || type;
+      if (!(type in kNaviLinkType)) {
         let others = (aRels.length > 1) ? [['rel', aRels.except(type)]] : [];
 
         addItem(aList, aIndex, type, aNode, others);
