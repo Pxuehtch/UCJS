@@ -455,8 +455,9 @@ function getAvailableActions() {
   var actions = [];
 
   var onMedia = false;
-
-  if (gContextMenu.onImage || gContextMenu.onCanvas || inImagePage()) {
+  if (gContextMenu.onImage ||
+      gContextMenu.onCanvas ||
+      isImageDocument(gContextMenu.target.ownerDocument)) {
     onMedia = true;
 
     actions.push('viewImage');
@@ -497,7 +498,7 @@ function getAvailableActions() {
       actions.push('readNews');
     }
   } else if (!onMedia && !gContextMenu.onTextInput) {
-    let inText = inTextPage();
+    let inText = isTextDocument(gContextMenu.target.ownerDocument);
 
     actions.push('openPage');
     if (inText) {
@@ -599,15 +600,14 @@ function doAction(aApp, aAction) {
 
 //********** Utilities
 
-
-function inImagePage() {
-  return window.gContextMenu.target.ownerDocument instanceof ImageDocument;
+function isImageDocument(aDocument) {
+  return aDocument instanceof ImageDocument;
 }
 
-function inTextPage() {
-  var mimeType = gContextMenu.target.ownerDocument.contentType;
-  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
-  return window.mimeTypeIsTextBased(mimeType);
+function isTextDocument(aDocument) {
+  // @see chrome://browser/content/browser.js::
+  // mimeTypeIsTextBased
+  return window.mimeTypeIsTextBased(aDocument.contentType);
 }
 
 function addSeparator(aPopup, aID) {
