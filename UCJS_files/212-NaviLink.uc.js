@@ -1030,6 +1030,18 @@ var mSiblingNavi = (function() {
     }
   }
 
+  function isVisible(aNode) {
+    if (aNode.hidden) {
+      return false;
+    }
+
+    var style = aNode.ownerDocument.defaultView.
+      getComputedStyle(aNode, '');
+
+    return style.visibility === 'visible' &&
+           style.display !== 'none';
+  }
+
   function guessByNumbering(aDirection) {
     /**
      * Part like page numbers in URL
@@ -1454,16 +1466,6 @@ function $E(aTagOrNode, aAttribute) {
   }
 
   return node;
-}
-
-function isVisible(aNode) {
-  if (aNode.hidden)
-    return false;
-
-  var style = (aNode.ownerDocument.defaultView || gBrowser.contentWindow).
-    getComputedStyle(aNode, '');
-
-  return style.visibility === 'visible' && style.display !== 'none';
 }
 
 function submitForm(aSubmitInput) {
