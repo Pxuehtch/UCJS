@@ -257,10 +257,11 @@ function initAppInfo() {
 }
 
 function makeMainMenu(aAppInfo) {
-  var menu = $E('menu');
-  menu.id = kID.mainMenu;
-  setLabel(menu, kUI.mainMenuLabel);
-  menu.setAttribute('accesskey', kUI.mainMenuAccesskey);
+  var menu = $E('menu', {
+    id: kID.mainMenu,
+    label: U(kUI.mainMenuLabel),
+    accesskey: kUI.mainMenuAccesskey
+  });
 
   var popup = $E('menupopup');
   addEvent([popup, 'popupshowing', doBrowse, false]);
@@ -270,17 +271,18 @@ function makeMainMenu(aAppInfo) {
 
   menu.appendChild(popup);
 
-  var context = getContextMenu();
-  addSeparator(context).id = kID.startSeparator;
-  context.appendChild(menu);
-  addSeparator(context).id = kID.endSeparator;
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
   // separators.
+  var context = getContextMenu();
+  addSeparator(context, kID.startSeparator);
+  context.appendChild(menu);
+  addSeparator(context, kID.endSeparator);
 }
 
 function makeAppMenu(aPopup, aAppInfo) {
-  var menu = $E('menu');
-  setLabel(menu, kUI.appMenuLabel);
+  var menu = $E('menu', {
+    label: U(kUI.appMenuLabel)
+  });
 
   var popup = $E('menupopup');
   popup.setAttribute('onpopupshowing', 'event.stopPropagation();');
@@ -330,8 +332,6 @@ function makeActionItems(aPopup, aAppInfo) {
 }
 
 function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
-  var item = $E('menuitem');
-
   var label;
   if (aInAppMenu) {
     label = kString.type[aApp.type];
@@ -346,16 +346,18 @@ function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
       label = label.replace('%1', aApp.name);
     }
   }
-  setLabel(item, label);
 
-  item.setAttribute(kID.actionKey, aAction);
+  var item = $E('menuitem', {
+    label: U(label),
+    user: [kID.actionKey, aAction]
+  });
 
   if (aApp) {
     addEvent([item, 'command', function() {
       doAction(aApp, aAction);
     }, false]);
   } else {
-    item.setAttribute('disabled', true);
+    $E(item, {disabled: true});
   }
 
   aPopup.appendChild(item);
@@ -609,17 +611,26 @@ function inTextPage() {
   return window.mimeTypeIsTextBased(mimeType);
 }
 
-function $(aId)
-  window.document.getElementById(aId);
+function addSeparator(aPopup, aID) {
+  return aPopup.appendChild($E('menuseparator', {id: aID}));
+}
 
-function $E(aTag)
-  window.document.createElement(aTag);
+function $E(aTagOrNode, aAttribute) {
+  let node = (typeof aTagOrNode === 'string') ?
+    window.document.createElement(aTagOrNode) : aTagOrNode;
 
-function addSeparator(aPopup)
-  aPopup.appendChild($E('menuseparator'));
+  if (!!aAttribute) {
+    for (let [name, value] in Iterator(aAttribute)) {
+      if (name === 'user') {
+        [name, value] = value;
+      }
+      if (value !== null && value !== undefined) {
+        node.setAttribute(name, value);
+      }
+    }
+  }
 
-function setLabel(aNode, aStr) {
-  aNode.setAttribute('label', Util.str4ui(aStr));
+  return node;
 }
 
 
@@ -634,6 +645,9 @@ function checkPath(aPath)
 
 function runApp(aApp, aURL, aSave)
   Util.runApp(aApp, aURL, aSave);
+
+function U(aStr)
+  Util.toStringForUI(aStr);
 
 function $X(aXPath, aNode)
   Util.getNodesByXPath(aXPath, aNode);
@@ -733,7 +747,9 @@ function getExecutable(aPath) {
 
   try {
     var file = LocalFile();
-    file.initWithPath(str4ui(aPath));
+    // @note |toStringForUI| converts 2bytes characters of |kAppList::path|
+    // into unicode ones so that |initWithPath| can accept them.
+    file.initWithPath(toStringForUI(aPath));
     if (file && file.exists() && file.isFile() && file.isExecutable())
       return file;
   } catch (e) {}
@@ -900,7 +916,7 @@ function getNodesByXPath(aXPath, aNode)
 function addEvent(aData)
   window.ucjsUtil.setEventListener(aData);
 
-function str4ui(aStr)
+function toStringForUI(aStr)
   window.ucjsUtil.toStringForUI(aStr);
 
 function log(aMsg)
@@ -915,7 +931,7 @@ return {
   runApp: runApp,
   getNodesByXPath: getNodesByXPath,
   addEvent: addEvent,
-  str4ui: str4ui,
+  toStringForUI: toStringForUI,
   log: log
 };
 
