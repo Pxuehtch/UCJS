@@ -49,7 +49,8 @@ const kSystem = {
   logging: false,
 
   // Required lowest version of Firefox
-  firefoxVersion: '4.0',
+  // fx15: rest parameters
+  firefoxVersion: '15.0',
 
   // Exposed property name in the global scope |window|
   loaderName: 'ucjsScriptLoader',
