@@ -7,7 +7,8 @@
 // @require Util.uc.js
 // @note Some about:config preferences are changed. see @pref
 // @note A default function is modified. see @modified
-// @note Some functions are exported (ucjsTabEx.XXX)
+// @note Some properties are exposed to the global scope.
+// |window.ucjsTabEx.XXX|
 
 
 var ucjsTabEx = (function(window, undefined) {
@@ -88,14 +89,14 @@ const kPref = {
 
   // which tab is selected after a *selected* tab is closed
   // @value {kPosType[]}
-  // @note The default selection works if no matches.
+  // @note The default selection works if no matches (may be the same as
+  // PREV_ADJACENT)
   SELECTPOS_TABCLOSE: [
     kPosType.NEXT_ADJACENT_EXTENDED_DESCENDANT,
     kPosType.PREV_ADJACENT_ANCESTOR,
     kPosType.NEXT_ADJACENT,
     kPosType.ANYWHERE_OPENER,
     kPosType.ANYWHERE_PREV_SELECTED
-    // if no matches, may be the same as PREV_ADJACENT
   ],
   // for closing a selected pinned tab
   SELECTPOS_PINNEDTABCLOSE: [
@@ -1316,7 +1317,7 @@ function getPageTitle(aURL) {
   try {
     // @see resource:///modules/PlacesUtils.jsm
     title = window.PlacesUtils.history.getPageTitle(makeURI(aURL));
-  } catch (e) {}
+  } catch (ex) {}
 
   return title || aURL;
 }
@@ -1325,7 +1326,7 @@ function makeURI(aURL) {
   try{
     // @see chrome://global/content/contentAreaUtils.js::makeURI
     return window.makeURI(aURL);
-  } catch (e) {}
+  } catch (ex) {}
   return null;
 }
 

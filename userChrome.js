@@ -193,7 +193,7 @@ function ScriptLoader() {
 
     var URL = location.href;
     return !/^chrome:.+\.xul$/i.test(URL) ||
-      kConfig.blockXULs.some(function(s) testURL(s, URL));
+      kConfig.blockXULs.some(function(xul) testURL(xul, URL));
   }
 
   //********** expose
@@ -274,7 +274,7 @@ function ScriptList() {
             directory.append(segment);
             return directory.exists() && directory.isDirectory() &&
               !directory.isHidden();
-          } catch (e) {}
+          } catch (ex) {}
         }
         return false;
       });
@@ -454,8 +454,9 @@ function ScriptList() {
 
     var browserURL = getBrowserURL();
 
-    var test = function(str)
-      testURL(str.replace(/^main$/i, browserURL), aURL);
+    var test = function(str) {
+      return testURL(str.replace(/^main$/i, browserURL), aURL);
+    }
 
     var exclude = aMetaData.exclude;
     if (exclude.length && exclude.some(test))
@@ -508,7 +509,7 @@ function Util() {
     try {
       lf.initWithPath(aFile.path);
       return lf.lastModifiedTime;
-    } catch (e) {}
+    } catch (ex) {}
     return '';
   }
 
@@ -694,7 +695,7 @@ function Log(aEnabled) {
       let json;
       try {
         json = JSON.stringify(aValue);
-      } catch (e) {
+      } catch (ex) {
         data = '<JSON error>';
       }
       // iterates over the properties of an object
@@ -712,7 +713,7 @@ function Log(aEnabled) {
     }
 
     if (Array.isArray(data)) {
-      log(data.map(function(a) indent + a).join('\n'));
+      log(data.map(function(item) indent + item).join('\n'));
     } else {
       log(indent + data);
     }
