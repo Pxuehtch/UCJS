@@ -68,7 +68,10 @@ const kPosType = {
   ANYWHERE_OPENER: 9,
   // tab that has been selected most recently before the closed tab
   // @note may be no match
-  ANYWHERE_PREV_SELECTED: 10
+  ANYWHERE_PREV_SELECTED: 10,
+  // the oldest opened tab of unread tabs
+  // @note may be no match
+  ANYWHERE_OLDEST_UNREAD: 11
 };
 
 /**
@@ -96,7 +99,9 @@ const kPref = {
     kPosType.PREV_ADJACENT_ANCESTOR,
     kPosType.NEXT_ADJACENT,
     kPosType.ANYWHERE_OPENER,
-    kPosType.ANYWHERE_PREV_SELECTED
+    kPosType.ANYWHERE_PREV_SELECTED,
+    kPosType.ANYWHERE_OLDEST_UNREAD,
+    kPosType.FIRST_END
   ],
   // for closing a selected pinned tab
   SELECTPOS_PINNEDTABCLOSE: [
@@ -946,6 +951,8 @@ function selectTabAt(aBaseTab, aPosTypes) {
         return !!selectOpenerTab(aBaseTab);
       case kPosType.ANYWHERE_PREV_SELECTED:
         return !!selectPrevSelectedTab(aBaseTab, {traceBack: true});
+      case kPosType.ANYWHERE_OLDEST_UNREAD:
+        return !!selectOldestUnreadTab();
       default:
         throw 'unknown kPosType for SELECTPOS';
     }
@@ -1161,6 +1168,36 @@ function getPrevSelectedTab(aBaseTab, aOption) {
   }
 
   // not found
+  return null;
+}
+
+function selectOldestUnreadTab(aOption) {
+  return selectTab(getOldestUnreadTab(aOption));
+}
+
+function getOldestUnreadTab(aOption) {
+  let {includePinned} = aOption || {};
+
+  let tabs = getTabs(includePinned ? 'active, pinned' : 'active');
+
+  let time, oldTime = getTime();
+  let pos = -1;
+
+  for (let i = 0, l = tabs.length, tab; i < l; i++) {
+    tab = tabs[i];
+    if (mTab.state.read(tab)) {
+      continue;
+    }
+    time = mTab.data(tab, 'open');
+    if (time && time < oldTime) {
+      oldTime = time;
+      pos = i;
+    }
+  }
+
+  if (-1 < pos) {
+    return tabs[pos];
+  }
   return null;
 }
 
