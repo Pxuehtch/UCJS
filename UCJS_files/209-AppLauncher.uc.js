@@ -851,33 +851,45 @@ function saveAndExecute(aApp, aURL, aSourceWindow) {
 }
 
 function getSavePath(aURL) {
-  const kFileNameForm = 'ucjsAL%NUM%_%LEAF%';
+  const kFileNameForm = 'ucjsAL%NUM%_%HOST%_%LEAF%';
 
-  var leafName;
-  var match;
+  function normalize(str) {
+    return str.substr(0, 16).replace(/^[._]+|[._]+$/g, '') || 'tmp';
+  }
+
+  let host, leaf;
   if (/^(?:https?|ftp):/.test(aURL)) {
-    let path = aURL.replace(/[?#].*$/, '');
-    leafName = path.substr(path.lastIndexOf('/') + 1).substr(-32) || 'index';
-    if (leafName.indexOf('.') === -1) {
-      leafName += '.htm';
+    let parts = aURL.replace(/^\w+:\/\/(?:www\.)?|[?#].*$/g, '').split('/');
+    host = parts.shift();
+    leaf = parts.pop() || 'index';
+    if (leaf.indexOf('.') < 0) {
+      leaf += '.htm';
     }
   }
-  else if ((match = /^data:image\/(png|jpeg|gif)/.exec(aURL))) {
-    leafName = 'data.' + match[1];
+  else if (aURL.startsWith('data:image/')) {
+    let match = /\/([a-z]+);/.exec(aURL);
+    if (match) {
+      host = 'data';
+      leaf = 'image.' + match[1];
+    }
   }
-  else {
-    throw new Error('Unexpected scheme for download');
-  }
-  leafName = kFileNameForm.replace('%LEAF%', leafName);
 
-  var dir = getSpecialDirectory('TmpD');
+  if (!host) {
+    throw new Error('unexpected URL form for download');
+  }
+
+  let fileName = kFileNameForm.
+    replace('%HOST%', normalize(host)).
+    replace('%LEAF%', normalize(leaf));
+
+  let dir = getSpecialDirectory('TmpD');
   // @see chrome://global/content/contentAreaUtils.js::
   // validateFileName()
-  dir.append(window.validateFileName(leafName.replace('%NUM%', '')));
+  dir.append(window.validateFileName(fileName.replace('%NUM%', '')));
 
-  var uniqueNum = 0;
+  let uniqueNum = 0;
   while (dir.exists()) {
-    dir.leafName = leafName.replace('%NUM%', ++uniqueNum);
+    dir.leafName = fileName.replace('%NUM%', ++uniqueNum);
   }
 
   return dir.path;
