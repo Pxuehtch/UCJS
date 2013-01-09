@@ -93,22 +93,37 @@
  */
 (function() {
 
-  // @see chrome://browser/content/browser.xul::
-  // <tooltip id="urlTooltip">
-  $ID('urlTooltip').removeAttribute('crop');
+  var tooltip = $ID('mainPopupSet').appendChild(
+    $E('tooltip', {
+      id: 'ucjs_misc_urltooltip'
+    })
+  );
+
+  let tooltipTimer = null;
 
   // @modified chrome://browser/content/urlbarBindings.xml::
   // _initURLTooltip
   $ID('urlbar')._initURLTooltip = function() {
-    if (this.focused || !this._contentIsCropped || this._tooltipTimer) {
+    if (this.focused || !this._contentIsCropped || tooltipTimer) {
       return;
     }
 
-    this._tooltipTimer = setTimeout(function() {
-      this._urlTooltip.firstChild.textContent = this.value;
-      this._urlTooltip.maxWidth = this.boxObject.width;
-      this._urlTooltip.openPopup(this, 'after_start', 0, 0, false, false);
+    tooltipTimer = setTimeout(function() {
+      tooltip.label = this.value;
+      tooltip.maxWidth = this.boxObject.width;
+      tooltip.openPopup(this, 'after_start', 0, 0, false, false);
     }.bind(this), 500);
+  };
+
+  // @modified chrome://browser/content/urlbarBindings.xml::
+  // _hideURLTooltip
+  $ID('urlbar')._hideURLTooltip = function() {
+    if (tooltipTimer) {
+      clearTimeout(tooltipTimer);
+      tooltipTimer = null;
+    }
+    tooltip.hidePopup();
+    tooltip.label = '';
   };
 
 })();
