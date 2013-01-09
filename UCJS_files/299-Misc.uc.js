@@ -30,34 +30,6 @@
 })();
 
 /**
- * When the search bar is hidden, calling the <web search> command puts a
- * quick alias in the address bar
- * @note Alias is set as a keyword of the default engine at a search engines
- * manager.
- * @see http://d.hatena.ne.jp/Griever/20110603/1307109954
- */
-(function() {
-
-  // @modified chrome://browser/content/browser.js::
-  // BrowserSearch::webSearch
-  Function('BrowserSearch.webSearch = ' +
-    window.BrowserSearch.webSearch.toString().replace(
-      '} else {',
-      '\
-      } else if (isElementVisible(gURLBar) &&\
-                 Services.search.defaultEngine.alias) {\
-        gURLBar.value = Services.search.defaultEngine.alias + " ";\
-        gURLBar.focus();\
-        let len = gURLBar.value.length;\
-        gURLBar.inputField.setSelectionRange(len, len);\
-      } else {\
-      '.
-      replace(/\s+/g, ' ')
-  ))();
-
-})();
-
-/**
  * Modify the title of a bookmark/history item
  */
 (function() {
