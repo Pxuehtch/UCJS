@@ -854,7 +854,7 @@ function getSavePath(aURL) {
   const kFileNameForm = 'ucjsAL%NUM%_%HOST%_%LEAF%';
 
   function normalize(str) {
-    return str.substr(0, 16).replace(/^[._]+|[._]+$/g, '') || 'tmp';
+    return str.substr(-16).replace(/^[._]+|[._]+$/g, '') || 'tmp';
   }
 
   let host, leaf;
