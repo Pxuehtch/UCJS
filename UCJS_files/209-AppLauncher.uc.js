@@ -770,12 +770,13 @@ function execute(aApp, aURL) {
     return;
   }
 
-  var args = getAppArgs(aApp.args, aURL);
-
+  // @note |toStringForUI| converts 2bytes characters of |kAppList::args|
+  // into unicode ones for system internal using
+  var args = getAppArgs(toStringForUI(aApp.args), aURL);
   var process = Process();
-
   process.init(exe);
-  process.run(false, args, args.length);
+  // @note Use 'wide string' version for Unicode arguments.
+  process.runwAsync(args, args.length);
 }
 
 function saveAndExecute(aApp, aURL, aSourceWindow) {
