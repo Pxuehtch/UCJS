@@ -278,14 +278,14 @@ function initAppInfo() {
   kAppList.filter(function(app) {
     let {name, type, extensions, path, disabled} = app;
 
-    if (!disabled && name) {
+    if (!disabled && name && type && path) {
       if (type in kTypeAction) {
         if (type !== 'file' || (extensions && extensions.length)) {
-          let check = checkPath(path);
-          if (check && type === 'file') {
+          let isValid = checkApp(app);
+          if (isValid && type === 'file') {
             FileUtil.updateFileExt(extensions);
           }
-          return check;
+          return isValid;
         }
       }
     }
@@ -642,8 +642,8 @@ function $E(aTagOrNode, aAttribute) {
  * Import from |Util| parameter
  */
 
-function checkPath(aPath) {
-  return Util.isExecutable(aPath);
+function checkApp(aApp) {
+  return Util.checkApp(aApp);
 }
 
 function runApp(aApp, aTargetURL, aSaveInfo) {
@@ -735,6 +735,41 @@ function WebBrowserPersist()
 
 //********** Functions
 
+function checkApp(aApp) {
+  // @note |toStringForUI| converts 2bytes characters of |kAppList::path|
+  // into unicode ones for system internal using
+  let path = toStringForUI(aApp.path);
+  kSpecialFolderAliases.forEach(function(alias) {
+    if (path.indexOf(alias) > -1) {
+      path = path.replace(
+        RegExp(alias, 'g'),
+        getSpecialDirectory(alias.replace(/%/g, '')).
+        path.replace(/\\/g, '\\\\')
+      );
+    }
+  });
+
+  let appFile = getAppFile(path);
+  if (appFile) {
+    aApp.path = path;
+    return true;
+  }
+  return false;
+}
+
+function getAppFile(aFilePath) {
+  try {
+    let file = makeFile(aFilePath);
+    if (file &&
+        file.exists() &&
+        file.isFile() &&
+        file.isExecutable()) {
+      return file;
+    }
+  } catch (ex) {}
+  return null;
+}
+
 function runApp(aApp, aTargetURL, aSaveInfo) {
   if (aSaveInfo) {
     saveAndExecute(aApp, aTargetURL, aSaveInfo);
@@ -743,39 +778,9 @@ function runApp(aApp, aTargetURL, aSaveInfo) {
   }
 }
 
-function getExecutable(aPath) {
-  if (!aPath) {
-    return null;
-  }
-
-  kSpecialFolderAliases.forEach(function(alias) {
-    if (aPath.indexOf(alias) > -1) {
-      aPath = aPath.replace(
-        RegExp(alias, 'g'),
-        getSpecialDirectory(alias.replace(/%/g, '')).
-        path.replace(/\\/g, '\\\\')
-      );
-    }
-  });
-
-  try {
-    // @note |toStringForUI| converts 2bytes characters of |kAppList::path|
-    // into unicode ones for system internal using
-    aPath = toStringForUI(aPath);
-    let file = makeFile(aPath);
-    if (file && file.exists() && file.isFile() && file.isExecutable())
-      return file;
-  } catch (ex) {}
-  return null;
-}
-
-function isExecutable(aPath) {
-  return !!getExecutable(aPath);
-}
-
 function execute(aApp, aURL) {
-  var exe = getExecutable(aApp.path);
-  if (!exe) {
+  var appFile = getAppFile(aApp.path);
+  if (!appFile) {
     warn('Not executed', ['The application is not available now', aApp.path]);
     return;
   }
@@ -784,7 +789,7 @@ function execute(aApp, aURL) {
   // into unicode ones for system internal using
   var args = getAppArgs(toStringForUI(aApp.args), aURL);
   var process = Process();
-  process.init(exe);
+  process.init(appFile);
   // @note Use 'wide string' version for Unicode arguments.
   process.runwAsync(args, args.length);
 }
@@ -1012,7 +1017,7 @@ function log(aMsg) {
 //********** Export
 
 return {
-  isExecutable: isExecutable,
+  checkApp: checkApp,
   runApp: runApp,
   getContextMenu: getContextMenu,
   toStringForUI: toStringForUI,
