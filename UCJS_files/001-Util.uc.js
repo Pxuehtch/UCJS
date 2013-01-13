@@ -732,6 +732,10 @@ function convertToUTF16(aStr, aCharset) {
  * value should be a string.
  */
 function toStringForUI(aData) {
+  if (!aData) {
+    return aData;
+  }
+
   if (typeof aData === 'string') {
     return convertToUTF16(aData, 'UTF-8');
   }
@@ -747,7 +751,7 @@ function toStringForUI(aData) {
     return aData;
   }
 
-  return '';
+  return aData;
 }
 
 function getWindowList(aType) {
