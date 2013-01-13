@@ -525,71 +525,81 @@ function doAction(aApp, aAction) {
   // @see chrome://browser/content/nsContextMenu.js
   const {gContextMenu} = window;
 
-  var URL = '';
-  var save = false;
-  var sourceWindow = gContextMenu.target.ownerDocument.defaultView;
+  let save = false;
+  let sourceDocument = gContextMenu.target.ownerDocument;
+  let targetDocument;
+  let targetURL;
 
   switch (FileUtil.getBaseAction(aAction)) {
     case 'launchTool':
       break;
     case 'openPage':
-      URL = window.content.location.href;
+      targetURL = window.content.document.location.href;
       break;
     case 'viewPageSource':
-      URL = window.content.location.href;
       save = true;
+      targetDocument = window.content.document;
+      targetURL = targetDocument.location.href;
       break;
     case 'openFrame':
-      URL = sourceWindow.location.href;
+      targetURL = sourceDocument.location.href;
       break;
     case 'viewFrameSource':
-      URL = sourceWindow.location.href;
       save = true;
+      targetDocument = sourceDocument;
+      targetURL = targetDocument.location.href;
       break;
     case 'openLink':
     case 'sendMail':
     case 'readNews':
     case 'downloadLink':
     case 'openFTP':
-      URL = gContextMenu.linkURL;
+      targetURL = gContextMenu.linkURL;
       break;
     case 'openFile':
     case 'viewLinkSource':
     case 'openLinkMedia':
     case 'viewLinkImage':
-      URL = gContextMenu.linkURL;
       save = true;
+      targetURL = gContextMenu.linkURL;
       break;
     case 'openMedia':
-      URL = gContextMenu.mediaURL;
       save = true;
+      targetURL = gContextMenu.mediaURL;
       break;
     case 'viewImage':
-      if (gContextMenu.onImage) {
-        URL = gContextMenu.imageURL;
-      } else if (gContextMenu.onCanvas) {
-        URL = gContextMenu.target.toDataURL();
-      } else {
-        URL = sourceWindow.location.href;
-      }
       save = true;
+      if (gContextMenu.onImage) {
+        targetURL = gContextMenu.imageURL;
+      } else if (gContextMenu.onCanvas) {
+        targetURL = gContextMenu.target.toDataURL();
+      } else {
+        targetURL = sourceDocument.location.href;
+      }
       break;
     case 'viewBGImage':
-      URL = gContextMenu.bgImageURL;
       save = true;
+      targetURL = gContextMenu.bgImageURL;
       break;
     case 'downloadMedia':
-      URL = gContextMenu.mediaURL;
+      targetURL = gContextMenu.mediaURL;
       break;
     case 'downloadImage':
-      URL = gContextMenu.imageURL;
+      targetURL = gContextMenu.imageURL;
       break;
     case 'downloadBGImage':
-      URL = gContextMenu.bgImageURL;
+      targetURL = gContextMenu.bgImageURL;
       break;
   }
 
-  runApp(aApp, URL, save ? sourceWindow : null);
+  let saveInfo = null;
+  if (save) {
+    saveInfo = {
+      sourceDocument: sourceDocument,
+      targetDocument: targetDocument
+    };
+  }
+  runApp(aApp, targetURL, saveInfo);
 }
 
 
@@ -636,8 +646,8 @@ function checkPath(aPath) {
   return Util.isExecutable(aPath);
 }
 
-function runApp(aApp, aURL, aSourceWindow) {
-  Util.runApp(aApp, aURL, aSourceWindow);
+function runApp(aApp, aTargetURL, aSaveInfo) {
+  Util.runApp(aApp, aTargetURL, aSaveInfo);
 }
 
 function getContextMenu() {
@@ -725,11 +735,11 @@ function WebBrowserPersist()
 
 //********** Functions
 
-function runApp(aApp, aURL, aSourceWindow) {
-  if (aSourceWindow) {
-    saveAndExecute(aApp, aURL, aSourceWindow);
+function runApp(aApp, aTargetURL, aSaveInfo) {
+  if (aSaveInfo) {
+    saveAndExecute(aApp, aTargetURL, aSaveInfo);
   } else {
-    execute(aApp, aURL);
+    execute(aApp, aTargetURL);
   }
 }
 
@@ -779,9 +789,9 @@ function execute(aApp, aURL) {
   process.runwAsync(args, args.length);
 }
 
-function saveAndExecute(aApp, aURL, aSourceWindow) {
+function saveAndExecute(aApp, aURL, aSaveInfo) {
   try {
-    var savePath = getSavePath(aURL);
+    var savePath = getSavePath(aURL, aSaveInfo.targetDocument);
     var sourceURI = makeURI(aURL);
     var targetFile = makeFile(savePath);
   } catch (ex) {
@@ -789,7 +799,7 @@ function saveAndExecute(aApp, aURL, aSourceWindow) {
     return;
   }
 
-  var privacyContext = getPrivacyContextFor(aSourceWindow);
+  var privacyContext = getPrivacyContextFor(aSaveInfo.sourceDocument);
 
   var persist = WebBrowserPersist();
 
@@ -837,10 +847,10 @@ function saveAndExecute(aApp, aURL, aSourceWindow) {
     privacyContext);
 }
 
-function getSavePath(aURL) {
+function getSavePath(aURL, aDocument) {
   const kFileNameForm = 'ucjsAL%NUM%_%FILENAME%';
 
-  let fileName = makeFileName(aURL);
+  let fileName = makeFileName(aURL, aDocument);
   if (!fileName) {
     throw new Error('Unexpected URL for download');
   }
@@ -860,29 +870,42 @@ function getSavePath(aURL) {
   return dir.path;
 }
 
-function makeFileName(aURL) {
+function makeFileName(aURL, aDocument) {
   const kMaxBaseNameNums = 32;
   const kDefaultBaseName = 'TMP';
 
   let fileName, extension;
   if (/^(?:https?|ftp):/.test(aURL)) {
-    let parts = aURL.replace(/^\w+:\/\/(?:www\.)?|[?#].*$/g, '').split('/');
-    let host = parts.shift();
-    let leaf
-    while (!leaf && parts.length) {
-      leaf = parts.pop();
+    if (aDocument) {
+      try {
+        let URI = makeURI(aURL, aDocument);
+        // @see chrome://global/content/contentAreaUtils.js::
+        // getDefaultFileName()
+        fileName = window.getDefaultFileName('', URI, aDocument);
+        // @see chrome://global/content/contentAreaUtils.js::
+        // getDefaultExtension()
+        extension = window.getDefaultExtension('', URI, aDocument.contentType);
+      } catch (ex) {}
     }
-    if (leaf) {
-      let lastDot = leaf.lastIndexOf('.');
-      if (lastDot < 0) {
-        fileName = leaf;
-      } else {
-        fileName = leaf.slice(0, lastDot);
-        extension = leaf.slice(lastDot + 1);
+    if (!fileName) {
+      let parts = aURL.replace(/^\w+:\/\/(?:www\.)?|[?#].*$/g, '').split('/');
+      let host = parts.shift();
+      let leaf
+      while (!leaf && parts.length) {
+        leaf = parts.pop();
       }
-    } else {
-      fileName = host;
-      extension = 'htm';
+      if (leaf) {
+        let lastDot = leaf.lastIndexOf('.');
+        if (lastDot < 0) {
+          fileName = leaf;
+        } else {
+          fileName = leaf.slice(0, lastDot);
+          extension = leaf.slice(lastDot + 1);
+        }
+      } else {
+        fileName = host;
+        extension = 'htm';
+      }
     }
   }
   else if (aURL.startsWith('data:image/')) {
