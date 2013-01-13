@@ -118,7 +118,7 @@ const kAppList = [
   {
     name: 'KeePass2',
     type: 'tool',
-    path: 'C:\\PF\\KeePass2\\KeePass2.exe'
+    path: 'C:\\PF\\KeePass2\\KeePass.exe'
   }
 ];
 
