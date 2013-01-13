@@ -43,7 +43,8 @@ const kAppList = [
     // [optional] Commandline arguments
     // %URL% is replaced with the proper URL of each action.
     // If omitted or empty, it equals to <args: '%URL%'>.
-    args: '-new %URL%',
+    // If launched as tool, arguments that have %URL% are removed.
+    args: ['-new', '%URL%'],
 
     // [optional] This item is disabled
     disabled: true
@@ -55,7 +56,7 @@ const kAppList = [
     type: 'file',
     extensions: ['asx', 'wax', 'wvx'],
     path: '%ProgF%\\Windows Media Player\\wmplayer.exe',
-    args: '/prefetch:1 %URL%'
+    args: ['/prefetch:1', '%URL%']
   },
   {
     name: 'Foxit',
@@ -87,7 +88,7 @@ const kAppList = [
     name: 'TB',
     type: 'news',
     path: '%ProgF%\\Mozilla Thunderbird\\thunderbird.exe',
-    args: '-news %URL%',
+    args: ['-news', '%URL%']
   },
   {
     name: 'MassiGra',
@@ -897,16 +898,20 @@ function getSavePath(aURL) {
 
 function getAppArgs(aArgs, aURL) {
   if (!aArgs) {
-    return [aURL];
+    return aURL ? [aURL] : [];
   }
 
-  var args = aArgs.
-    trim().replace(/\s+/g, ' ').
-    replace(/".+?"/g, function($0) $0.replace(/ /g, '%SPC%')).
-    split(' ');
-
-  return args.map(function(arg) {
-    return arg.replace(/%SPC%/g, ' ').replace(/%URL%/g, aURL);
+  return aArgs.map(function(arg) {
+    if (aURL) {
+      return arg.replace(/%URL%/g, aURL);
+    }
+    // remove argument that has %URL% when the application is launched as tool
+    if (arg.indexOf('%URL%') > -1) {
+      return undefined;
+    }
+    return arg;
+  }).filter(function(arg) {
+    return arg !== undefined;
   });
 }
 
