@@ -763,15 +763,6 @@ function isExecutable(aPath) {
   return !!getExecutable(aPath);
 }
 
-function checkFile(aFilePath) {
-  try {
-    var file = LocalFile();
-    file.initWithPath(aFilePath);
-    return file && file.exists();
-  } catch (ex) {}
-  return false;
-}
-
 function execute(aApp, aURL) {
   var exe = getExecutable(aApp.path);
   if (!exe) {
@@ -826,7 +817,7 @@ function saveAndExecute(aApp, aURL, aSourceWindow) {
           }
         }
 
-        if (!checkFile(savePath)) {
+        if (!targetFile || !targetFile.exists()) {
           warn('Not downloaded', ['Something wrong', aRequest.name]);
           return;
         }
