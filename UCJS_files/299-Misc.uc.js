@@ -232,43 +232,71 @@
 })();
 
 /**
- * Disables Alt+Click on a link
- * @note Fx default function: downloading of a link.
+ * Content area link click handler
  */
 (function() {
 
-  addEvent([gBrowser.mPanelContainer, 'click',
-  function(event) {
-    if (event.altKey && event.button === 0 && getLink(event.target)) {
-      event.preventDefault();
-      event.stopPropagation();
+  addEvent([gBrowser.mPanelContainer, 'mousedown', onMouseDown, false]);
+  addEvent([gBrowser.mPanelContainer, 'click', onClickCaptured, true]);
+
+  function onMouseDown(aEvent) {
+    let node = aEvent.target;
+
+    if (!isHtmlDocument(node.ownerDocument)) {
+      return;
     }
-  }, true]);
 
-})();
+    let link = getLink(node);
 
-/**
- * Gets rid of target="_blank" links
- */
-(function() {
-
-  addEvent([gBrowser.mPanelContainer,
-    'mousedown', handleEvent, false]);
-
-  function handleEvent(aEvent) {
-    var node = aEvent.target;
-
-    if (checkDocument(node.ownerDocument)) {
-      let link = getLink(node);
-
-      if (link && /^(?:_blank|_new|blank|new)$/i.test(link.target)) {
-        link.target = "_top";
-      }
+    /**
+     * Gets rid of target="_blank" links
+     */
+    if (link && /^(?:_blank|_new|blank|new)$/i.test(link.target)) {
+      link.target = '_top';
     }
   }
 
-  function checkDocument(aDocument)
-    aDocument instanceof HTMLDocument && /^https?/.test(aDocument.URL);
+  function onClickCaptured(aEvent) {
+    /**
+     * Disables Alt+Click on a link
+     * @note Fx default function: downloading of a link.
+     */
+    if (aEvent.altKey && aEvent.button === 0 &&
+        isHtmlDocument(aEvent.target.ownerDocument) &&
+        getLink(aEvent.target)) {
+      aEvent.preventDefault();
+      aEvent.stopPropagation();
+    }
+  }
+
+  function isHtmlDocument(aDocument) {
+    if (aDocument instanceof HTMLDocument &&
+        /^https?/.test(aDocument.URL)) {
+      let mime = aDocument.contentType;
+
+      return (
+        mime === 'text/html' ||
+        mime === 'text/xml' ||
+        mime === 'application/xml' ||
+        mime === 'application/xhtml+xml'
+      );
+    }
+    return false
+  }
+
+  function getLink(aNode) {
+    while (aNode) {
+      if (aNode.nodeType === Node.ELEMENT_NODE &&
+           (aNode instanceof HTMLAnchorElement ||
+            aNode instanceof HTMLAreaElement ||
+            aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
+            'simple'))
+        break;
+
+      aNode = aNode.parentNode;
+    }
+    return aNode;
+  }
 
 })();
 
@@ -426,21 +454,6 @@
 
 
 //********** Utilities
-
-function getLink(aNode) {
-  while (aNode) {
-    if (aNode.nodeType === Node.ELEMENT_NODE &&
-         (aNode instanceof HTMLAnchorElement ||
-          aNode instanceof HTMLAreaElement ||
-          aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
-          'simple'))
-      break;
-
-    aNode = aNode.parentNode;
-  }
-
-  return aNode;
-}
 
 function $ID(aId) {
   return window.document.getElementById(aId);
