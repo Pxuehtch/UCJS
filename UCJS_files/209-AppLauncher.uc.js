@@ -8,7 +8,7 @@
 // @usage Access to items in the main context menu.
 
 // @note A resource file that is passed to the application will be saved in
-// your temporary folder. See |doAction()|, |Util::getSavePath()|
+// your temporary folder. See |doAction()|, |Util::getSaveFilePath()|
 
 
 /**
@@ -778,7 +778,7 @@ function runApp(aApp, aTargetURL, aSaveInfo) {
   }
 }
 
-function execute(aApp, aURL) {
+function execute(aApp, aTargetURL) {
   var appFile = getAppFile(aApp.path);
   if (!appFile) {
     warn('Not executed', ['The application is not available now', aApp.path]);
@@ -787,26 +787,29 @@ function execute(aApp, aURL) {
 
   // @note |toStringForUI| converts 2bytes characters of |kAppList::args|
   // into unicode ones for system internal using
-  var args = getAppArgs(toStringForUI(aApp.args), aURL);
+  var args = getAppArgs(toStringForUI(aApp.args), aTargetURL);
   var process = Process();
   process.init(appFile);
   // @note Use 'wide string' version for Unicode arguments.
   process.runwAsync(args, args.length);
 }
 
-function saveAndExecute(aApp, aURL, aSaveInfo) {
+function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
+  let sourceURI, saveFilePath, saveFile, privacyContext;
+  let persist;
+
   try {
-    var savePath = getSavePath(aURL, aSaveInfo.targetDocument);
-    var sourceURI = makeURI(aURL);
-    var targetFile = makeFile(savePath);
+    sourceURI = makeURI(aTargetURL);
+    saveFilePath = getSaveFilePath(aTargetURL, aSaveInfo.targetDocument);
+    saveFile = makeFile(saveFilePath);
   } catch (ex) {
-    warn('Not downloaded', [ex.message, aURL]);
+    warn('Not downloaded', [ex.message, aTargetURL]);
     return;
   }
 
-  var privacyContext = getPrivacyContextFor(aSaveInfo.sourceDocument);
+  privacyContext = getPrivacyContextFor(aSaveInfo.sourceDocument);
 
-  var persist = WebBrowserPersist();
+  persist = WebBrowserPersist();
 
   persist.persistFlags =
     Ci.nsIWebBrowserPersist.PERSIST_FLAGS_CLEANUP_ON_FAILURE |
@@ -833,12 +836,12 @@ function saveAndExecute(aApp, aURL, aSaveInfo) {
           }
         }
 
-        if (!targetFile || !targetFile.exists()) {
+        if (!saveFile || !saveFile.exists()) {
           warn('Not downloaded', ['Something wrong', aRequest.name]);
           return;
         }
 
-        execute(aApp, savePath);
+        execute(aApp, saveFilePath);
       }
     },
 
@@ -848,11 +851,11 @@ function saveAndExecute(aApp, aURL, aSaveInfo) {
     onSecurityChange: function() {}
   };
 
-  persist.saveURI(sourceURI, null, null, null, null, targetFile,
+  persist.saveURI(sourceURI, null, null, null, null, saveFile,
     privacyContext);
 }
 
-function getSavePath(aURL, aDocument) {
+function getSaveFilePath(aURL, aDocument) {
   const kFileNameForm = 'ucjsAL%NUM%_%FILENAME%';
 
   let fileName = makeFileName(aURL, aDocument);
