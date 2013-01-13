@@ -749,10 +749,10 @@ function getExecutable(aPath) {
   });
 
   try {
-    var file = LocalFile();
     // @note |toStringForUI| converts 2bytes characters of |kAppList::path|
-    // into unicode ones so that |initWithPath| can accept them.
-    file.initWithPath(toStringForUI(aPath));
+    // into unicode ones for system internal using
+    aPath = toStringForUI(aPath);
+    let file = makeFile(aPath);
     if (file && file.exists() && file.isFile() && file.isExecutable())
       return file;
   } catch (ex) {}
@@ -790,20 +790,14 @@ function execute(aApp, aURL) {
 function saveAndExecute(aApp, aURL, aSourceWindow) {
   try {
     var savePath = getSavePath(aURL);
-    var sourceURI = IOService.newURI(aURL, null, null);
-    var targetFile = LocalFile();
-
-    targetFile.initWithPath(savePath);
+    var sourceURI = makeURI(aURL);
+    var targetFile = makeFile(savePath);
   } catch (ex) {
     warn('Not downloaded', [ex.message, aURL]);
     return;
   }
 
-  var privacyContext =
-    aSourceWindow.top.
-    QueryInterface(Ci.nsIInterfaceRequestor).
-    getInterface(Ci.nsIWebNavigation).
-    QueryInterface(Ci.nsILoadContext);
+  var privacyContext = getPrivacyContextFor(aSourceWindow);
 
   var persist = WebBrowserPersist();
 
@@ -917,6 +911,27 @@ function getAppArgs(aArgs, aURL) {
 
 function getSpecialDirectory(aAlias) {
   return DirectoryService.get(aAlias, Ci.nsIFile);
+}
+
+function makeURI(aURL, aDocument) {
+  let characterSet = aDocument ? aDocument.characterSet : null;
+  return IOService.newURI(aURL, characterSet, null);
+}
+
+function makeFile(aFilePath) {
+  let file = LocalFile();
+  file.initWithPath(aFilePath);
+  return file;
+}
+
+function getPrivacyContextFor(aDocument) {
+  try {
+    return aDocument.defaultView.
+      QueryInterface(Ci.nsIInterfaceRequestor).
+      getInterface(Ci.nsIWebNavigation).
+      QueryInterface(Ci.nsILoadContext);
+  } catch (ex) {}
+  return null;
 }
 
 function warn(aTitle, aMsg) {
