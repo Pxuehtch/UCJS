@@ -838,36 +838,14 @@ function saveAndExecute(aApp, aURL, aSourceWindow) {
 }
 
 function getSavePath(aURL) {
-  const kFileNameForm = 'ucjsAL%NUM%_%HOST%_%LEAF%';
+  const kFileNameForm = 'ucjsAL%NUM%_%FILENAME%';
 
-  function normalize(str) {
-    return str.substr(-16).replace(/^[._]+|[._]+$/g, '') || 'tmp';
+  let fileName = makeFileName(aURL);
+  if (!fileName) {
+    throw new Error('Unexpected URL for download');
   }
 
-  let host, leaf;
-  if (/^(?:https?|ftp):/.test(aURL)) {
-    let parts = aURL.replace(/^\w+:\/\/(?:www\.)?|[?#].*$/g, '').split('/');
-    host = parts.shift();
-    leaf = parts.pop() || 'index';
-    if (leaf.indexOf('.') < 0) {
-      leaf += '.htm';
-    }
-  }
-  else if (aURL.startsWith('data:image/')) {
-    let match = /\/([a-z]+);/.exec(aURL);
-    if (match) {
-      host = 'data';
-      leaf = 'image.' + match[1];
-    }
-  }
-
-  if (!host) {
-    throw new Error('unexpected URL form for download');
-  }
-
-  let fileName = kFileNameForm.
-    replace('%HOST%', normalize(host)).
-    replace('%LEAF%', normalize(leaf));
+  fileName = kFileNameForm.replace('%FILENAME%', fileName);
 
   let dir = getSpecialDirectory('TmpD');
   // @see chrome://global/content/contentAreaUtils.js::
@@ -880,6 +858,50 @@ function getSavePath(aURL) {
   }
 
   return dir.path;
+}
+
+function makeFileName(aURL) {
+  const kMaxBaseNameNums = 32;
+  const kDefaultBaseName = 'TMP';
+
+  let fileName, extension;
+  if (/^(?:https?|ftp):/.test(aURL)) {
+    let parts = aURL.replace(/^\w+:\/\/(?:www\.)?|[?#].*$/g, '').split('/');
+    let host = parts.shift();
+    let leaf
+    while (!leaf && parts.length) {
+      leaf = parts.pop();
+    }
+    if (leaf) {
+      let lastDot = leaf.lastIndexOf('.');
+      if (lastDot < 0) {
+        fileName = leaf;
+      } else {
+        fileName = leaf.slice(0, lastDot);
+        extension = leaf.slice(lastDot + 1);
+      }
+    } else {
+      fileName = host;
+      extension = 'htm';
+    }
+  }
+  else if (aURL.startsWith('data:image/')) {
+    let match = /\/([a-z]+);/.exec(aURL);
+    if (match) {
+      fileName = 'data_image';
+      extension = match[1];
+    }
+  }
+
+  if (fileName) {
+    fileName = fileName.substr(0, kMaxBaseNameNums).
+      replace(/^[._]+|[._]+$/g, '') || kDefaultBaseName;
+    if (extension) {
+      fileName += '.' + extension;
+    }
+    return fileName;
+  }
+  return null;
 }
 
 function getAppArgs(aArgs, aURL) {
