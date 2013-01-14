@@ -16,7 +16,7 @@
 
 /**
  * Max width of tooltip panel
- * @value {integer} number of 1byte characters > 0
+ * @value {integer} [em] number of characters > 0
  */
 const kMaxPanelWidth = 40;
 
@@ -303,7 +303,7 @@ var TooltipHandler = {
       var lines = [], last = 0;
 
       for (let i = 0, l = text.length, count = 0; i < l; i++) {
-        // count bytes
+        // count character width
         count += /[ -~]/.test(text[i]) ? 1 : 2;
         if (count > maxLen) {
           lines.push(text.substring(last, i).trim());

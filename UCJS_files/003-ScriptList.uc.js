@@ -17,7 +17,7 @@
 
 /**
  * UI bundle
- * @note |U()| for UI display.
+ * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kUIBundle = {
   menu: U({

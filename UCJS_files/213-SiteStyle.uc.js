@@ -24,7 +24,7 @@ const kID = {
 
 /**
  * Settings for UI
- * @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
+ * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kUI = {
   PREFMENU: {

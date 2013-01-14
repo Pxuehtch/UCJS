@@ -24,7 +24,7 @@ const kID = {
 
 /**
  * UI strings
- * @note |U()| for UI display.
+ * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kString = U({
   warnParameter: '注意：パラメータ付 URL',

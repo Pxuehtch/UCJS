@@ -24,7 +24,7 @@
  * '%key{None;A key;%key keys}' ->
  * key=0:'None', key=1:'A key', key=#(>=2):'# keys'
  *
- * @note |U()| converts UTF-8 chars into UTF-16 for proper display.
+ * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kFormat = U({
   GROUPS_MENU: 'Groups',

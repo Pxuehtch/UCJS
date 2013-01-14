@@ -39,7 +39,6 @@ const kItemType = {
 
 /**
  * Preset items
- * @note <key> name must consist of 1-byte character [A-Za-z0-9_] only.
  * @param disabled {boolean} [optional]
  *   true: this item is ignored
  * @param tabMode {boolean} [optional]
@@ -50,6 +49,9 @@ const kItemType = {
  * @param description {string} tooltip text
  * @param checked {boolean} [for type <checkbox>] checkbox state
  * @param command {function} button command
+ *
+ * @note <key> name must consist of only ASCII characters [A-Za-z0-9_] for
+ * using as <id> attribute.
  */
 var mPreset = {
   'ToggleCSS_Tab': {

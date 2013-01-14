@@ -280,7 +280,6 @@ function makeItem(aType, aData, aService) {
   let tooltip = kString.tooltip.
     replace('%URL%', URL).replace('%DATA%', aData);
 
-  // @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
   let item = $E('menuitem', {
     label: U(label),
     tooltiptext: tooltip,
@@ -369,6 +368,7 @@ function commandForOpenURL(aURL) {
   return command.replace('%URL%', aURL);
 }
 
+// |U()| converts embedded chars in the code for displaying properly.
 function U(aStr) {
   return window.ucjsUtil.toStringForUI(aStr);
 }

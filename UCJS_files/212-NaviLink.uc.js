@@ -38,7 +38,7 @@ const kPref = {
  *   any element which has <href> attribute: opens its URL
  *   <input> element: submits with its form
  *
- * @note |U()| for UI display.
+ * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kPresetNavi = [
   {

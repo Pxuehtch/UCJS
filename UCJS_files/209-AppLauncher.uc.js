@@ -266,14 +266,14 @@ var FileUtil = {
 //********** Functions
 
 function AppLauncher_init() {
-  var appInfo = initAppInfo();
+  var appList = initAppList();
 
-  if (appInfo) {
-    makeMainMenu(appInfo);
+  if (appList) {
+    makeMainMenu(appList);
   }
 }
 
-function initAppInfo() {
+function initAppList() {
   let apps =
   kAppList.filter(function(app) {
     let {name, type, extensions, path, disabled} = app;
@@ -301,7 +301,7 @@ function initAppInfo() {
   return apps.length ? apps : null;
 }
 
-function makeMainMenu(aAppInfo) {
+function makeMainMenu(aAppList) {
   var menu = $E('menu', {
     id: kID.mainMenu,
     label: U(kUI.mainMenuLabel),
@@ -311,8 +311,8 @@ function makeMainMenu(aAppInfo) {
   var popup = $E('menupopup');
   addEvent([popup, 'popupshowing', doBrowse, false]);
 
-  makeAppMenu(popup, aAppInfo);
-  makeActionItems(popup, aAppInfo);
+  makeAppMenu(popup, aAppList);
+  makeActionItems(popup, aAppList);
 
   menu.appendChild(popup);
 
@@ -324,14 +324,14 @@ function makeMainMenu(aAppInfo) {
   addSeparator(context, kID.endSeparator);
 }
 
-function makeAppMenu(aPopup, aAppInfo) {
+function makeAppMenu(aPopup, aAppList) {
   var menu = $E('menu', {
     label: U(kUI.appMenuLabel)
   });
 
   var popup = $E('menupopup');
 
-  aAppInfo.forEach(function(app) {
+  aAppList.forEach(function(app) {
     addMenuItem(popup, 'launchTool', app, true);
   });
 
@@ -339,11 +339,11 @@ function makeAppMenu(aPopup, aAppInfo) {
   aPopup.appendChild(menu);
 }
 
-function makeActionItems(aPopup, aAppInfo) {
+function makeActionItems(aPopup, aAppList) {
   var type, lastType = '';
   var actions;
 
-  aAppInfo.forEach(function(app) {
+  aAppList.forEach(function(app) {
     type = app.type;
 
     if (type !== lastType) {
@@ -654,6 +654,7 @@ function getContextMenu() {
   return Util.getContextMenu();
 }
 
+// |U()| converts embedded chars in the code for displaying properly.
 function U(aStr) {
   return Util.toStringForUI(aStr);
 }
@@ -736,8 +737,8 @@ function WebBrowserPersist()
 //********** Functions
 
 function checkApp(aApp) {
-  // @note |toStringForUI| converts 2bytes characters of |kAppList::path|
-  // into unicode ones for system internal using
+  // @note |toStringForUI| converts embedded characters of |kAppList::path|
+  // for system internal using
   let path = toStringForUI(aApp.path);
   kSpecialFolderAliases.forEach(function(alias) {
     if (path.indexOf(alias) > -1) {
@@ -785,8 +786,8 @@ function execute(aApp, aTargetURL) {
     return;
   }
 
-  // @note |toStringForUI| converts 2bytes characters of |kAppList::args|
-  // into unicode ones for system internal using
+  // @note |toStringForUI| converts embedded characters of |kAppList::args|
+  // for system internal using
   var args = getAppArgs(toStringForUI(aApp.args), aTargetURL);
   var process = Process();
   process.init(appFile);

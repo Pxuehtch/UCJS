@@ -470,6 +470,7 @@ function $ANONID(aId, aNode) {
   return window.ucjsUtil.getNodeByAnonid(aId, aNode);
 }
 
+// |U()| converts embedded chars in the code for displaying properly.
 function U(aText) {
   return window.ucjsUtil.toStringForUI(aText);
 }

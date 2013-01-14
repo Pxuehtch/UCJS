@@ -435,6 +435,7 @@ function unescURLforUI(aURL) {
   return window.ucjsUtil.unescapeURLForUI(aURL);
 }
 
+// |U()| converts embedded chars in the code for displaying properly.
 function U(aStr) {
   return window.ucjsUtil.toStringForUI(aStr);
 }

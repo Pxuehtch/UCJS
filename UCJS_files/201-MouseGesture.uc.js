@@ -901,7 +901,7 @@ function GestureManager() {
 
   /**
    * Creates a display string
-   * @note |U()| converts UTF-8 chars into UTF-16 for displaying properly.
+   * @note |U()| converts embedded chars in the code for displaying properly.
    */
   function toString() {
     const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
