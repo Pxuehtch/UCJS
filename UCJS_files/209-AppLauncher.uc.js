@@ -245,18 +245,12 @@ var FileUtil = {
       return null;
     }
 
-    let ext;
-    try {
-      // @see chrome://global/content/contentAreaUtils.js::
-      // makeURI
-      let URI = window.makeURI(aURL, null, null);
-      if (URI) {
-        ext = URI.QueryInterface(window.Ci.nsIURL).fileExtension;
+    let URL = makeURIURL(aURL);
+    if (URL) {
+      let ext = URL.fileExtension;
+      if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
+        return ext;
       }
-    } catch (ex) {}
-
-    if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
-      return ext;
     }
     return null;
   }
@@ -650,6 +644,10 @@ function runApp(aApp, aTargetURL, aSaveInfo) {
   Util.runApp(aApp, aTargetURL, aSaveInfo);
 }
 
+function makeURIURL(aURL) {
+  return Util.makeURIURL(aURL);
+}
+
 function getContextMenu() {
   return Util.getContextMenu();
 }
@@ -964,6 +962,13 @@ function makeURI(aURL, aDocument) {
   return IOService.newURI(aURL, characterSet, null);
 }
 
+function makeURIURL(aURL) {
+  try {
+    return makeURI(aURL).QueryInterface(Ci.nsIURL);
+  } catch (ex) {}
+  return null;
+}
+
 function makeFile(aFilePath) {
   let file = LocalFile();
   file.initWithPath(aFilePath);
@@ -1023,6 +1028,7 @@ function log(aMsg) {
 return {
   checkApp: checkApp,
   runApp: runApp,
+  makeURIURL: makeURIURL,
   getContextMenu: getContextMenu,
   toStringForUI: toStringForUI,
   addEvent: addEvent,
