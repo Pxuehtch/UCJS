@@ -789,19 +789,20 @@ function execute(aApp, aTargetURL) {
 }
 
 function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
+  let {sourceDocument, targetDocument} = aSaveInfo;
   let sourceURI, saveFilePath, saveFile, privacyContext;
   let persist;
 
   try {
     sourceURI = makeURI(aTargetURL);
-    saveFilePath = getSaveFilePath(sourceURI, aSaveInfo.targetDocument);
+    saveFilePath = getSaveFilePath(sourceURI, targetDocument);
     saveFile = makeFile(saveFilePath);
   } catch (ex) {
     warn('Not downloaded', [ex.message, aTargetURL]);
     return;
   }
 
-  privacyContext = getPrivacyContextFor(aSaveInfo.sourceDocument);
+  privacyContext = getPrivacyContextFor(sourceDocument);
 
   persist = WebBrowserPersist();
 
