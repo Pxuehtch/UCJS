@@ -799,7 +799,7 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
 
   try {
     sourceURI = makeURI(aTargetURL);
-    saveFilePath = getSaveFilePath(aTargetURL, aSaveInfo.targetDocument);
+    saveFilePath = getSaveFilePath(sourceURI, aSaveInfo.targetDocument);
     saveFile = makeFile(saveFilePath);
   } catch (ex) {
     warn('Not downloaded', [ex.message, aTargetURL]);
@@ -854,10 +854,10 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     privacyContext);
 }
 
-function getSaveFilePath(aURL, aDocument) {
+function getSaveFilePath(aURI, aDocument) {
   const kFileNameForm = 'ucjsAL%NUM%_%FILENAME%';
 
-  let fileName = makeFileName(aURL, aDocument);
+  let fileName = makeFileName(aURI, aDocument);
   if (!fileName) {
     throw new Error('Unexpected URL for download');
   }
@@ -877,61 +877,56 @@ function getSaveFilePath(aURL, aDocument) {
   return dir.path;
 }
 
-function makeFileName(aURL, aDocument) {
-  const kMaxBaseNameNums = 32;
-  const kDefaultBaseName = 'TMP';
+function makeFileName(aURI, aDocument) {
+  const kMaxFileNameLen = 32;
+  const kDataImageFileName = 'data_image';
 
   let fileName, extension;
-  if (/^(?:https?|ftp):/.test(aURL)) {
-    if (aDocument) {
-      try {
-        let URI = makeURI(aURL, aDocument);
-        // @see chrome://global/content/contentAreaUtils.js::
-        // getDefaultFileName()
-        fileName = window.getDefaultFileName('', URI, aDocument);
-        // @see chrome://global/content/contentAreaUtils.js::
-        // getDefaultExtension()
-        extension = window.getDefaultExtension('', URI, aDocument.contentType);
-      } catch (ex) {}
+  if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
+    // @see chrome://global/content/contentAreaUtils.js::
+    // getDefaultFileName()
+    fileName = window.getDefaultFileName('', aURI, aDocument);
+
+    // @see chrome://global/content/contentAreaUtils.js::
+    // getDefaultExtension()
+    let contentType = aDocument ? aDocument.contentType : null;
+    extension = window.getDefaultExtension('', aURI, contentType);
+
+    if (extension && fileName.endsWith('.' + extension)) {
+      fileName = fileName.slice(0, fileName.lastIndexOf('.'));
     }
-    if (!fileName) {
-      let parts = aURL.replace(/^\w+:\/\/(?:www\.)?|[?#].*$/g, '').split('/');
-      let host = parts.shift();
-      let leaf
-      while (!leaf && parts.length) {
-        leaf = parts.pop();
-      }
-      if (leaf) {
-        let lastDot = leaf.lastIndexOf('.');
-        if (lastDot < 0) {
-          fileName = leaf;
-        } else {
-          fileName = leaf.slice(0, lastDot);
-          extension = leaf.slice(lastDot + 1);
-        }
-      } else {
-        fileName = host;
-        extension = 'htm';
-      }
+    if (!extension && aDocument && /^https?:/.test(aURI.scheme)) {
+      extension = 'htm';
     }
   }
-  else if (aURL.startsWith('data:image/')) {
-    let match = /\/([a-z]+);/.exec(aURL);
+  else if (/^data$/.test(aURI.scheme)) {
+    let match = /image\/([a-z]+);/.exec(aURI.path);
     if (match) {
-      fileName = 'data_image';
+      fileName = kDataImageFileName;
       extension = match[1];
     }
   }
 
   if (fileName) {
-    fileName = fileName.substr(0, kMaxBaseNameNums).
-      replace(/^[._]+|[._]+$/g, '') || kDefaultBaseName;
+    fileName = crop(fileName, kMaxFileNameLen);
     if (extension) {
       fileName += '.' + extension;
     }
     return fileName;
   }
   return null;
+}
+
+function crop(aStr, aLen) {
+  function trim(str) {
+    return str.trim().replace(/[\s-_]+/g, '_');
+  }
+
+  if (aStr.length > aLen) {
+    let half = Math.floor(aLen / 2);
+    return trim(aStr.substr(0, half) + '_' + aStr.substr(-half));
+  }
+  return aStr;
 }
 
 function getAppArgs(aArgs, aURL) {
