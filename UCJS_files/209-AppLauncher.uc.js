@@ -706,30 +706,25 @@ const kSpecialFolderAliases = [
 
 //********** XPCOM handler
 
-const {Cc, Ci} = window;
-function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
-function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
+// @see resource:///modules/Services.jsm
+const {Cc, Ci, Services} = window;
 
-/**
- * Services
- */
-const DirectoryService =
-  $S('@mozilla.org/file/directory_service;1', 'nsIProperties');
-const IOService =
-  $S('@mozilla.org/network/io-service;1', 'nsIIOService');
-const PromptService =
-  $S('@mozilla.org/embedcomp/prompt-service;1', 'nsIPromptService');
+function $I(aCID, aIID) {
+  return Cc[aCID].createInstance(Ci[aIID]);
+}
 
-/**
- * Instances
- */
-function LocalFile()
-  $I('@mozilla.org/file/local;1', 'nsIFile');
-function Process()
-  $I('@mozilla.org/process/util;1', 'nsIProcess');
-function WebBrowserPersist()
-  $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1',
+function LocalFile() {
+  return $I('@mozilla.org/file/local;1', 'nsIFile');
+}
+
+function Process() {
+  return $I('@mozilla.org/process/util;1', 'nsIProcess');
+}
+
+function WebBrowserPersist() {
+  return $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1',
     'nsIWebBrowserPersist');
+}
 
 
 //********** Functions
@@ -949,12 +944,12 @@ function getAppArgs(aArgs, aURL) {
 }
 
 function getSpecialDirectory(aAlias) {
-  return DirectoryService.get(aAlias, Ci.nsIFile);
+  return Services.dirsvc.get(aAlias, Ci.nsIFile);
 }
 
 function makeURI(aURL, aDocument) {
   let characterSet = aDocument ? aDocument.characterSet : null;
-  return IOService.newURI(aURL, characterSet, null);
+  return Services.io.newURI(aURL, characterSet, null);
 }
 
 function makeURIURL(aURL) {
@@ -991,7 +986,7 @@ function warn(aTitle, aMsg) {
     msg = msg.substr(0, 200) + '\n...(see console log)';
   }
 
-  PromptService.alert(null, null, msg);
+  Services.prompt.alert(null, null, msg);
 }
 
 
