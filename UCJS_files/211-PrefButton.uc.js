@@ -116,7 +116,7 @@ var mPreset = {
       var plugin = null;
 
       for (let i = 0; i < plugins.length; i++) {
-        if (plugins[i].name.indexOf('Java(TM)') > -1) {
+        if (plugins[i].name.contains('Java(TM)')) {
           plugin = plugins[i];
           break;
         }

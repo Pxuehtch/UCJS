@@ -424,7 +424,7 @@ const kSiteList = [
         player = $S1('embed[id^="movie_player"]', aDocument);
         if (player) {
           let flashvars = player.getAttribute('flashvars');
-          if (flashvars.indexOf('autoplay=0') < 0) {
+          if (!flashvars.contains('autoplay=0')) {
             player.setAttribute('flashvars', flashvars + '&autoplay=0');
             player.src += '#';
           }

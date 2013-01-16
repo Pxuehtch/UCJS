@@ -1607,7 +1607,7 @@ function F(aFormat, aReplacement) {
   let format;
   let names = Object.keys(replacement);
   for (let i = 0, l = aFormat.length; i < l; i++) {
-    if (names.every(function(name) aFormat[i].indexOf(name) > -1)) {
+    if (names.every(function(name) aFormat[i].contains(name))) {
       format = aFormat[i];
       break;
     }

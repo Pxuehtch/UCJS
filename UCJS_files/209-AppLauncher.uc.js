@@ -730,7 +730,7 @@ function checkApp(aApp) {
   // for system internal using
   let path = toStringForUI(aApp.path);
   kSpecialFolderAliases.forEach(function(alias) {
-    if (path.indexOf(alias) > -1) {
+    if (path.contains(alias)) {
       path = path.replace(
         RegExp(alias, 'g'),
         getSpecialDirectory(alias.replace(/%/g, '')).
