@@ -232,20 +232,16 @@ var FileUtil = {
   },
 
   updateFileExt: function(aExtArray) {
+    // add new extensions
     let fileExts = kLinkExtension['file'].concat(aExtArray);
 
+    // update array with the unique extensions
     kLinkExtension['file'] =
-    fileExts.filter(function(element, index, array) {
-      return array.indexOf(element) === index;
-    });
+    fileExts.filter(function(ext, i, array) array.indexOf(ext) === i);
   },
 
   matchExt: function(aURL, aType) {
-    if (!aURL) {
-      return null;
-    }
-
-    let URL = makeURIURL(aURL);
+    let URL = aURL && makeURIURL(aURL);
     if (URL) {
       let ext = URL.fileExtension;
       if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
@@ -932,18 +928,12 @@ function getAppArgs(aArgs, aURL) {
     return aURL ? [aURL] : [];
   }
 
-  return aArgs.map(function(arg) {
-    if (aURL) {
-      return arg.replace(/%URL%/g, aURL);
-    }
-    // remove argument that has %URL% when the application is launched as tool
-    if (arg.indexOf('%URL%') > -1) {
-      return undefined;
-    }
-    return arg;
-  }).filter(function(arg) {
-    return arg !== undefined;
-  });
+  if (aURL) {
+    return aArgs.map(function(arg) arg.replace(/%URL%/g, aURL));
+  }
+
+  // remove arguments with %URL% when the application is launched as tool
+  return aArgs.filter(function(arg) !arg.contains('%URL%'));
 }
 
 function getSpecialDirectory(aAlias) {
