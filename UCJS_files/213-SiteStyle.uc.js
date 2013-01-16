@@ -664,7 +664,7 @@ var mNoisyURLHandler = (function() {
 
     return kNoiseList.some(function(item) {
       if (typeof item === 'string') {
-        return aURL.replace(/^https?:\/\/(?:www.)?/, '').indexOf(item) === 0;
+        return aURL.replace(/^https?:\/\/(?:www.)?/, '').startsWith(item);
       }
       return item.test(aURL);
     });
