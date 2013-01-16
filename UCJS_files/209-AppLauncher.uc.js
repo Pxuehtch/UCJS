@@ -889,7 +889,9 @@ function makeFileName(aURI, aDocument) {
     extension = window.getDefaultExtension('', aURI, contentType);
 
     if (extension && fileName.endsWith('.' + extension)) {
-      fileName = fileName.slice(0, fileName.lastIndexOf('.'));
+      // @see chrome://global/content/contentAreaUtils.js::
+      // getFileBaseName()
+      fileName = window.getFileBaseName(fileName);
     }
     if (!extension && aDocument && /^https?$/.test(aURI.scheme)) {
       extension = 'htm';
