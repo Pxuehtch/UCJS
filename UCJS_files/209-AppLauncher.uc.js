@@ -891,7 +891,7 @@ function makeFileName(aURI, aDocument) {
     if (extension && fileName.endsWith('.' + extension)) {
       fileName = fileName.slice(0, fileName.lastIndexOf('.'));
     }
-    if (!extension && aDocument && /^https?:/.test(aURI.scheme)) {
+    if (!extension && aDocument && /^https?$/.test(aURI.scheme)) {
       extension = 'htm';
     }
   }
