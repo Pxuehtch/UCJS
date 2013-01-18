@@ -245,10 +245,12 @@ var mTabBarClickEvent = {
  */
 function makeCustomFunctions() {
   // cycle-select tabs with the wheel scroll on a tab or tabbar
+  // @note Disables the default scrolling.
   addEvent([gBrowser.tabContainer, 'wheel', function(event) {
     gBrowser.tabContainer.
     advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
     event.stopPropagation();
+    event.preventDefault();
   }, true]);
 }
 
