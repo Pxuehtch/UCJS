@@ -245,7 +245,7 @@ var mTabBarClickEvent = {
  */
 function makeCustomFunctions() {
   // cycle-select tabs with the wheel scroll on a tab or tabbar
-  // @note Disables the default scrolling.
+  // @note Disables the default scrolling at overflowed.
   addEvent([gBrowser.tabContainer, 'wheel', function(event) {
     gBrowser.tabContainer.
     advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
@@ -262,7 +262,7 @@ function addEvent(aData) {
 }
 
 function log(aMsg) {
-  return window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
+  return window.ucjsUtil.logMessage('TabHandler.uc.js', aMsg);
 }
 
 
