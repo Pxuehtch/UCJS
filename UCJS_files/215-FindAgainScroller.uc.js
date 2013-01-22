@@ -40,7 +40,6 @@ const kConfig = {
   foundBlink: true
 };
 
-
 /**
  * Wrapper of gFindBar
  * @see chrome://global/content/bindings/findbar.xml
@@ -77,7 +76,6 @@ var TextFinder = (function() {
     }
   };
 })();
-
 
 /**
  * Main function
@@ -122,7 +120,6 @@ function FindAgainScroller_init() {
     mScrollObserver.detach();
   };
 }
-
 
 /**
  * Observer of the scrollable elements
@@ -294,6 +291,7 @@ function ScrollObserver() {
 
 
   //********** Expose
+
   return {
     attach: attach,
     detach: detach,
@@ -301,7 +299,6 @@ function ScrollObserver() {
     getScrolledState: mScrollable.getScrolledState
   };
 }
-
 
 /**
  * Handler for skipping a found result that a user can not see
@@ -404,11 +401,11 @@ function SkipInvisible() {
 
 
   //********** Expose
+
   return {
     test: test
   };
 }
-
 
 /**
  * Handler for the alignment of the position of a found text
@@ -475,12 +472,12 @@ function AlignPosition() {
 
 
   //********** Expose
+
   return {
     get alwaysAlign() kOption.alwaysAlign,
     align: align
   };
 }
-
 
 /**
  * Handler for scrolling an element smoothly
@@ -682,6 +679,7 @@ function SmoothScroll() {
 
 
   //********** Expose
+
   return {
     start: function({node, start, goal}) {
       mState.init(node, start, goal);
@@ -691,7 +689,6 @@ function SmoothScroll() {
     }
   };
 }
-
 
 /**
  * Blinking a found text between on and off a selection
@@ -714,14 +711,13 @@ function FoundBlink() {
   const kOption = {
     // Duration of blinking (millisecond)
     duration: 2000,
-    // The number of times to blink should be even
+    // The number of times to blink (even number)
     // * 6 steps mean on->off->on->off->on->off->on
     steps: 6
   };
 
   var mTimerID;
   var mSelectionController;
-
 
   // Attach a cleaner when the selection is removed by clicking
   addEvent([gBrowser.mPanelContainer, 'mousedown', uninit, false]);
@@ -762,20 +758,21 @@ function FoundBlink() {
     var range = getRange();
 
     mTimerID = setInterval(function() {
-      // Check whether the selection is into the view within trial limits
+      // do nothing until the selection is into the view
       if (blinks === 0 && limits-- > 0 && !isRangeIntoView(range)) {
         return;
       }
 
-      // Break when blinks end or trial is expired
+      // break when blinks end or the trial limit is expired
       if (blinks === steps || limits <= 0) {
         uninit();
         return;
       }
 
-      setDisplay(!!(blinks % 2));
-      blinks++;
-    }, parseInt(duration / steps, 10));
+      // |blinks| odd: on, even: off
+      setDisplay(!!(blinks++ % 2));
+    },
+    parseInt(duration / steps, 10));
   }
 
   function isRangeIntoView(aRange) {
@@ -785,30 +782,31 @@ function FoundBlink() {
   }
 
   function getRange() {
-    const {Ci} = window;
+    const {SELECTION_NORMAL} = window.Ci.nsISelectionController;
 
     return mSelectionController.
-      getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
+      getSelection(SELECTION_NORMAL).
       getRangeAt(0);
   }
 
   function setDisplay(aShow) {
-    const {Ci} = window;
+    const {
+      SELECTION_NORMAL,
+      SELECTION_OFF,
+      SELECTION_ON
+    } = window.Ci.nsISelectionController;
+
+    let type = aShow ? SELECTION_ON : SELECTION_OFF;
 
     try {
-      mSelectionController.setDisplaySelection(
-        aShow ?
-        Ci.nsISelectionController.SELECTION_ON :
-        Ci.nsISelectionController.SELECTION_OFF
-      );
-
-      mSelectionController.
-      repaintSelection(Ci.nsISelectionController.SELECTION_NORMAL);
-    } catch (e) {}
+      mSelectionController.setDisplaySelection(type);
+      mSelectionController.repaintSelection(SELECTION_NORMAL);
+    } catch (ex) {}
   }
 
 
   //********** Expose
+
   return {
     start: start
   };
