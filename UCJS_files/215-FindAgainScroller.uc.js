@@ -735,6 +735,7 @@ function FoundBlink() {
     }
 
     if (mSelectionController) {
+      setDisplay(true);
       mSelectionController = null;
     }
   }
