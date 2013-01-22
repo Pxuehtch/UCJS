@@ -694,9 +694,21 @@ function SmoothScroll() {
 
 
 /**
- * Handler for blinking a found text
+ * Blinking a found text between on and off a selection
  * @return {hash}
  *   start: {function}
+ *
+ * @note The selection becomes harder to see accoding to the page style. So I
+ * have set the selection style in <userContent.css>.
+ * ::-moz-selection {
+ *   color: white !important;
+ *   background: blue !important;
+ * }
+ *
+ * TODO: Use nsISelectionController::SELECTION_ATTENTION.
+ * If the style of a found text selection (white text on green back) is changed
+ * by the page style, I don't know how to fix it because <::-moz-selection> is
+ * not applied to it.
  */
 function FoundBlink() {
   const kOption = {
@@ -786,7 +798,7 @@ function FoundBlink() {
     try {
       mSelectionController.setDisplaySelection(
         aShow ?
-        Ci.nsISelectionController.SELECTION_ATTENTION :
+        Ci.nsISelectionController.SELECTION_ON :
         Ci.nsISelectionController.SELECTION_OFF
       );
 
