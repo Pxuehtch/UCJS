@@ -508,7 +508,7 @@ function SmoothScroll() {
     // divided by 8
     // far: The goal is out of the current view
     // near: The goal is into the view
-    pitch: {far: 8, near: 2}
+    pitch: {far: 8, near: 4}
   };
 
   var mTimerID;
@@ -729,7 +729,7 @@ function FoundBlink() {
     duration: 2000,
     // The number of times to blink (even number)
     // * 6 steps mean on->off->on->off->on->off->on
-    steps: 6
+    steps: 12
   };
 
   var mTimerID;
