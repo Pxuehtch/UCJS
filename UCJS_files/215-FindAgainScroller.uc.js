@@ -15,6 +15,22 @@
 
 
 /**
+ * Imports
+ */
+const {
+  TimerHandler: {
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval
+  },
+  getNodesByXPath: $X,
+  setEventListener: addEvent
+} = window.ucjsUtil;
+// for debug
+const log = window.ucjsUtil.logMessage.bind(null, 'FindAgainScroller.uc.js');
+
+/**
  * Configurations
  */
 const kConfig = {
@@ -810,21 +826,6 @@ function FoundBlink() {
   return {
     start: start
   };
-}
-
-
-//********** Imports
-
-function $X(aXPath, aNode) {
-  return window.ucjsUtil.getNodesByXPath(aXPath, aNode);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
 }
 
 

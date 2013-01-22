@@ -18,6 +18,25 @@ var ucjsTabEx = (function(window, undefined) {
 
 
 /**
+ * Imports
+ */
+const {
+  TimerHandler: {
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval
+  },
+  setEventListener: addEvent,
+  openTab,
+  removeTab,
+  getPref,
+  setPref
+} = window.ucjsUtil;
+// for debug
+const log = window.ucjsUtil.logMessage.bind(null, 'TabEx.uc.js');
+
+/**
  * Identifier
  */
 const kID = {
@@ -1433,33 +1452,6 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
   return {
     matchKey: matchKey
   };
-}
-
-
-//********** Imports
-
-function getPref(aKey) {
-  return window.ucjsUtil.getPref(aKey);
-}
-
-function setPref(aKey, aVal) {
-  window.ucjsUtil.setPref(aKey, aVal);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function openTab(aURL, aOption) {
-  return window.ucjsUtil.openTab(aURL, aOption);
-}
-
-function removeTab(aTab, aOption) {
-  window.ucjsUtil.removeTab(aTab, aOption);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TabEx.uc.js', aMsg);
 }
 
 

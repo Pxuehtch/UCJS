@@ -15,6 +15,19 @@
 
 
 /**
+ * Imports
+ */
+const {
+  TimerHandler: {
+    setTimeout,
+    clearTimeout
+  },
+  setEventListener: addEvent
+} = window.ucjsUtil;
+// for debug
+const log = window.ucjsUtil.logMessage.bind(null, 'TabHandler.uc.js');
+
+/**
  * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
  * click
  * @value {integer} millisecond
@@ -252,17 +265,6 @@ function makeCustomFunctions() {
     event.stopPropagation();
     event.preventDefault();
   }, true]);
-}
-
-
-//********** Imports
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TabHandler.uc.js', aMsg);
 }
 
 

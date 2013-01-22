@@ -20,8 +20,9 @@ var ucjsUtil = (function(window, undefined) {
 "use strict";
 
 
-//********** XPCOM handler
-
+/**
+ * XPCOM handler
+ */
 var mXPCOM = (function() {
   const {Cc, Ci} = window;
   function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
@@ -108,6 +109,53 @@ var mXPCOM = (function() {
       return $I('@mozilla.org/supports-PRBool;1', 'nsISupportsPRBool');
     }
   }
+})();
+
+/**
+ * Timer handler
+ * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
+ */
+let TimerHandler = (function() {
+  const {Components, Ci} = window;
+  const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = Ci.nsITimer;
+  const Timer = Components.Constructor('@mozilla.org/timer;1', 'nsITimer');
+
+  let timers = {};
+  let lastID = 0;
+
+  function setTimer(aType, aCallback, aDelay) {
+    let id = ++lastID;
+    let timer = timers[id] = Timer();
+    let args = Array.slice(arguments, 3);
+
+    timer.initWithCallback({
+      notify: function notify() {
+        try {
+          if (aType === TYPE_ONE_SHOT) {
+            delete timers[id];
+          }
+          aCallback.apply(null, args);
+        } catch (ex) {}
+      }
+    }, aDelay || 0, aType);
+
+    return id;
+  }
+
+  function unsetTimer(aID) {
+    let timer = timers[aID];
+    delete timers[aID];
+    if (timer) {
+      timer.cancel();
+    }
+  }
+
+  return {
+    setTimeout: setTimer.bind(null, TYPE_ONE_SHOT),
+    setInterval: setTimer.bind(null, TYPE_REPEATING_SLACK),
+    clearTimeout: unsetTimer.bind(null),
+    clearInterval: unsetTimer.bind(null)
+  };
 })();
 
 
@@ -1031,6 +1079,8 @@ function log(aMessage) {
 //********** Export
 
 return {
+  TimerHandler: TimerHandler,
+
   setEventListener: setEventListener,
   getSelectionAtCursor: getSelectionAtCursor,
   getFocusedWindow: getFocusedWindow,
