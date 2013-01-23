@@ -24,13 +24,23 @@ var ucjsUtil = (function(window, undefined) {
  * XPCOM handler
  */
 var mXPCOM = (function() {
-  const {Cc, Ci} = window;
-  function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
-  function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
+  function $S(aCID, aIID) {
+    return window.Cc[aCID].getService(window.Ci[aIID]);
+  }
+
+  function $I(aCID, aIID) {
+    return window.Cc[aCID].createInstance(window.Ci[aIID]);
+  }
+
+  function $C(aCID, aIID) {
+    return window.Components.Constructor(aCID, aIID);
+  }
 
   return {
-    //********** Services
-
+    /*
+     * Service
+     * @getter
+     */
     get WindowMediator() {
       delete this.WindowMediator;
       return this.WindowMediator =
@@ -92,9 +102,10 @@ var mXPCOM = (function() {
         $S('@mozilla.org/xre/app-info;1', 'nsIXULRuntime');
     },
 
-
-    //**********Instances
-
+    /*
+     * Instance
+     * @function
+     */
     DocumentEncoder: function(aType) {
       return $I('@mozilla.org/layout/documentEncoder;1?type=' + aType,
         'nsIDocumentEncoder');
@@ -107,18 +118,28 @@ var mXPCOM = (function() {
 
     SupportsPRBool: function() {
       return $I('@mozilla.org/supports-PRBool;1', 'nsISupportsPRBool');
-    }
-  }
+    },
+
+    /*
+     * Instance constructor
+     * @function
+     */
+    Timer: function() {
+      return $C('@mozilla.org/timer;1', 'nsITimer');
+    } //,
+  };
 })();
 
 /**
  * Timer handler
+ * Alternative native timers
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
  */
 let TimerHandler = (function() {
-  const {Components, Ci} = window;
-  const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = Ci.nsITimer;
-  const Timer = Components.Constructor('@mozilla.org/timer;1', 'nsITimer');
+  const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = window.Ci.nsITimer;
+
+  // instance constructor
+  const Timer = mXPCOM.Timer();
 
   let timers = {};
   let lastID = 0;
