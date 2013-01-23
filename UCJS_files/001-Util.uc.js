@@ -950,10 +950,6 @@ function registerContentStyleSheet(aCSS, aOption) {
 }
 
 function normalizeCSS(aCSS) {
-  if (typeof aCSS === 'xml') {
-    aCSS = aCSS.toString();
-  }
-
   return aCSS.
     // remove consecutive white spaces
     // @note the delimiter of shorthand properties should be a SINGLE white
