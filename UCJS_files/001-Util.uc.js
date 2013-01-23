@@ -963,17 +963,6 @@ function normalizeCSS(aCSS) {
     replace(/\s*\/\*.*?\*\/\s*/g, '');
 }
 
-function loadOverlay(aOverlay) {
-  if (typeof aOverlay === 'xml') {
-    aOverlay = aOverlay.toXMLString();
-  }
-
-  var overlay = 'data:application/vnd.mozilla.xul+xml;charset=utf-8,' +
-    encodeURIComponent(aOverlay);
-
-  window.document.loadOverlay(overlay, null);
-}
-
 function getPref(aKey, aDef) {
   const pb = mXPCOM.PrefBranch;
 
@@ -1115,7 +1104,6 @@ return {
   setChromeStyleSheet: registerChromeStyleSheet,
   setContentStyleSheet: registerContentStyleSheet,
 
-  loadOverlay: loadOverlay,
   getPref: getPref,
   setPref: setPref,
 
