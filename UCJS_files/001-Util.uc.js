@@ -41,10 +41,10 @@ var mXPCOM = (function() {
      * Service
      * @getter
      */
-    get WindowMediator() {
-      delete this.WindowMediator;
-      return this.WindowMediator =
-        $S('@mozilla.org/appshell/window-mediator;1', 'nsIWindowMediator');
+    get AppStartup() {
+      delete this.AppStartup;
+      return this.AppStartup =
+        $S('@mozilla.org/toolkit/app-startup;1', 'nsIAppStartup');
     },
 
     get BrowserGlue() {
@@ -57,19 +57,6 @@ var mXPCOM = (function() {
       delete this.ConsoleService;
       return this.ConsoleService =
         $S('@mozilla.org/consoleservice;1', 'nsIConsoleService');
-    },
-
-    get StyleSheetService() {
-      delete this.StyleSheetService;
-      return this.StyleSheetService =
-        $S('@mozilla.org/content/style-sheet-service;1',
-          'nsIStyleSheetService');
-    },
-
-    get TextToSubURI() {
-      delete this.TextToSubURI;
-      return this.TextToSubURI =
-        $S('@mozilla.org/intl/texttosuburi;1', 'nsITextToSubURI');
     },
 
     get IOService() {
@@ -90,10 +77,23 @@ var mXPCOM = (function() {
         $S('@mozilla.org/preferences;1', 'nsIPrefBranch');
     },
 
-    get AppStartup() {
-      delete this.AppStartup;
-      return this.AppStartup =
-        $S('@mozilla.org/toolkit/app-startup;1', 'nsIAppStartup');
+    get StyleSheetService() {
+      delete this.StyleSheetService;
+      return this.StyleSheetService =
+        $S('@mozilla.org/content/style-sheet-service;1',
+          'nsIStyleSheetService');
+    },
+
+    get TextToSubURI() {
+      delete this.TextToSubURI;
+      return this.TextToSubURI =
+        $S('@mozilla.org/intl/texttosuburi;1', 'nsITextToSubURI');
+    },
+
+    get WindowMediator() {
+      delete this.WindowMediator;
+      return this.WindowMediator =
+        $S('@mozilla.org/appshell/window-mediator;1', 'nsIWindowMediator');
     },
 
     get XULRuntime() {
@@ -277,7 +277,7 @@ function getSelectionController(aNode) {
     try {
       return aNode.QueryInterface(window.Ci.nsIDOMNSEditableElement).
         editor.selection;
-    } catch (e) {}
+    } catch (ex) {}
     return null;
   }
   // 2. get a window selection
@@ -454,7 +454,7 @@ function evaluateXPath(aXPath, aContext, aType) {
   var defaultNS = null;
   try {
     defaultNS = base.lookupNamespaceURI(null);
-  } catch (e) {}
+  } catch (ex) {}
 
   if (defaultNS) {
     let tmpPrefix = '__NS__';
@@ -472,7 +472,7 @@ function evaluateXPath(aXPath, aContext, aType) {
   var result = null;
   try {
     result = doc.evaluate(aXPath, base, resolver, aType, null);
-  } catch (e) {}
+  } catch (ex) {}
   return result;
 }
 
@@ -770,24 +770,24 @@ function convertFromUTF16(aStr, aCharset) {
     return null;
   }
 
-  var suc = mXPCOM.ScriptableUnicodeConverter();
+  var converter = mXPCOM.ScriptableUnicodeConverter();
 
-  suc.charset = aCharset;
+  converter.charset = aCharset;
 
   try {
-    return suc.ConvertFromUnicode(aStr);
-  } catch (e) {}
+    return converter.ConvertFromUnicode(aStr);
+  } catch (ex) {}
   return aStr;
 }
 
 function convertToUTF16(aStr, aCharset) {
-  var suc = mXPCOM.ScriptableUnicodeConverter();
+  var converter = mXPCOM.ScriptableUnicodeConverter();
 
-  suc.charset = aCharset || 'UTF-8';
+  converter.charset = aCharset || 'UTF-8';
 
   try {
-    return suc.ConvertToUnicode(aStr);
-  } catch (e) {}
+    return converter.ConvertToUnicode(aStr);
+  } catch (ex) {}
   return aStr;
 }
 
@@ -865,20 +865,20 @@ function restartApp(aPurgeCaches) {
     mXPCOM.XULRuntime.invalidateCachesOnRestart();
   }
 
-  const as = mXPCOM.AppStartup;
-  as.quit(as.eRestart | as.eAttemptQuit);
+  const {quit, eRestart, eAttemptQuit} = mXPCOM.AppStartup;
+  quit(eRestart | eAttemptQuit);
 }
 
 function canQuitApp() {
-  const os = mXPCOM.ObserverService;
+  const observerService = mXPCOM.ObserverService;
 
   var cancel = mXPCOM.SupportsPRBool();
-  os.notifyObservers(cancel, 'quit-application-requested', null);
+  observerService.notifyObservers(cancel, 'quit-application-requested', null);
   if (cancel.data) {
     return false;
   }
 
-  os.notifyObservers(null, 'quit-application-granted', null);
+  observerService.notifyObservers(null, 'quit-application-granted', null);
 
   var wins = getWindowList(null), win;
   while (wins.hasMoreElements()) {
@@ -907,18 +907,20 @@ function registerGlobalStyleSheet(aCSS, aAgent, aRegister) {
 
     var URI = mXPCOM.IOService.
       newURI('data:text/css,' + encodeURIComponent(css), null, null);
-  } catch (e) {
+  } catch (ex) {
     return;
   }
 
-  const sss = mXPCOM.StyleSheetService;
-  var type = aAgent ? sss.AGENT_SHEET : sss.USER_SHEET;
-  var registered = sss.sheetRegistered(URI, type);
+  const styleSheetService = mXPCOM.StyleSheetService;
+  var type = aAgent ?
+    styleSheetService.AGENT_SHEET :
+    styleSheetService.USER_SHEET;
+  var registered = styleSheetService.sheetRegistered(URI, type);
 
   if (aRegister && !registered) {
-    sss.loadAndRegisterSheet(URI, type);
+    styleSheetService.loadAndRegisterSheet(URI, type);
   } else if (!aRegister && registered) {
-    sss.unregisterSheet(URI, type);
+    styleSheetService.unregisterSheet(URI, type);
   }
 }
 
@@ -931,7 +933,7 @@ function registerChromeStyleSheet(aCSS) {
   var stylesheet = window.document.createProcessingInstruction(
     'xml-stylesheet',
     'type="text/css" href="data:text/css,%DATA%"'.
-    replace('%DATA%', encodeURIComponent(css))
+      replace('%DATA%', encodeURIComponent(css))
   );
 
   return window.document.insertBefore(stylesheet,
@@ -962,6 +964,7 @@ function registerContentStyleSheet(aCSS, aOption) {
   }
 
   var style = d.createElement('style');
+  style.type = 'text/css';
   if (id) {
     style.id = id;
   }
@@ -981,41 +984,41 @@ function normalizeCSS(aCSS) {
 }
 
 function getPref(aKey, aDef) {
-  const pb = mXPCOM.PrefBranch;
+  const prefBranch = mXPCOM.PrefBranch;
 
   try {
-    switch (pb.getPrefType(aKey)) {
-      case pb.PREF_BOOL:
-        return pb.getBoolPref(aKey);
-      case pb.PREF_INT:
-        return pb.getIntPref(aKey);
-      case pb.PREF_STRING:
-        return pb.getCharPref(aKey);
+    switch (prefBranch.getPrefType(aKey)) {
+      case prefBranch.PREF_BOOL:
+        return prefBranch.getBoolPref(aKey);
+      case prefBranch.PREF_INT:
+        return prefBranch.getIntPref(aKey);
+      case prefBranch.PREF_STRING:
+        return prefBranch.getCharPref(aKey);
     }
-  } catch (e) {}
+  } catch (ex) {}
   return aDef || null;
 }
 
 function setPref(aKey, aVal) {
-  const pb = mXPCOM.PrefBranch;
+  const prefBranch = mXPCOM.PrefBranch;
 
   try {
     if (aVal === null) {
-      pb.clearUserPref(aKey);
+      prefBranch.clearUserPref(aKey);
       return;
     }
 
     if (getPref(aKey) !== aVal) {
       switch (typeof aVal) {
         case 'boolean':
-          pb.setBoolPref(aKey, aVal);
+          prefBranch.setBoolPref(aKey, aVal);
         case 'number':
-          pb.setIntPref(aKey, aVal);
+          prefBranch.setIntPref(aKey, aVal);
         case 'string':
-          pb.setCharPref(aKey, aVal);
+          prefBranch.setCharPref(aKey, aVal);
       };
     }
-  } catch (e) {}
+  } catch (ex) {}
 }
 
 
