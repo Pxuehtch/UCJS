@@ -943,34 +943,34 @@ function registerChromeStyleSheet(aCSS) {
 function registerContentStyleSheet(aCSS, aOption) {
   var {contentDocument, id, replace} = aOption || {};
 
-  var d = contentDocument || getFocusedDocument();
-
-  var head = (d.getElementsByTagName('head') || [])[0];
-  if (!head) {
-    return;
-  }
-
-  var old = id && d.getElementById(id);
-  if (old) {
-    if (!replace) {
-      return;
-    }
-    head.removeChild(old);
-  }
-
   var css = normalizeCSS(aCSS);
   if (!css) {
     return;
   }
 
-  var style = d.createElement('style');
+  var doc = contentDocument || getFocusedDocument();
+  if (!doc.head) {
+    return;
+  }
+
+  if (id) {
+    let old = doc.getElementById(id);
+    if (old) {
+      if (!replace || old.textContent === css) {
+        return;
+      }
+      old.parentNode.removeChild(old);
+    }
+  }
+
+  var style = doc.createElement('style');
   style.type = 'text/css';
   if (id) {
     style.id = id;
   }
-  style.appendChild(d.createTextNode(css));
+  style.textContent = css;
 
-  return head.appendChild(style);
+  return doc.head.appendChild(style);
 }
 
 function normalizeCSS(aCSS) {
