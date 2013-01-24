@@ -1012,10 +1012,13 @@ function setPref(aKey, aVal) {
       switch (typeof aVal) {
         case 'boolean':
           prefBranch.setBoolPref(aKey, aVal);
+          break;
         case 'number':
           prefBranch.setIntPref(aKey, aVal);
+          break;
         case 'string':
           prefBranch.setCharPref(aKey, aVal);
+          break;
       };
     }
   } catch (ex) {}
