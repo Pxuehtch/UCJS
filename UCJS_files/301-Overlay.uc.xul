@@ -41,6 +41,9 @@
 
 <!-- key -->
 <keyset id="mainKeyset">
+  <!--
+   @note |window.moveTo(0,1)| for my own windows theme.
+   -->
   <key id="ucjs_key_Resize1"
     key="1" modifiers="alt"
     oncommand="window.moveTo(0,1);window.resizeTo(800,600);"/>
@@ -50,8 +53,16 @@
     oncommand="window.moveTo(0,1);window.resizeTo(1280,800);"/>
 
   <key id="ucjs_key_ResizeMax"
-    key="0" modifiers="alt"
+    key="3" modifiers="alt"
     oncommand="window.moveTo(0,1);window.outerHeight=screen.availHeight-1;window.outerWidth=screen.availWidth;"/>
+
+  <!--
+   @note Workaround for my own windows theme.
+   @see Misc.uc.js::setMainWindowStyle
+   -->
+  <key id="ucjs_key_ResetMargin"
+    key="0" modifiers="alt"
+    oncommand="document.getElementById('main-window').setAttribute('chromemargin','0,0,0,0');"/>
 
   <key id="ucjs_key_RestartApp"
     key="[" modifiers="control,alt"
