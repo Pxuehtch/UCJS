@@ -282,7 +282,7 @@ const kSiteList = [
         if (multiColumn) {
           css += '\
             /* hide right pane */\
-            #rhs,#rhscol{\
+            #rhs,#rhscol,#leftnav+td+td{\
               display:none!important;\
             }\
             #cnt,#res,.s,#mn{\
@@ -290,6 +290,9 @@ const kSiteList = [
               max-width:100%!important;\
               margin:0!important;\
               padding:0!important;\
+            }\
+            #leftnav+td{\
+              width:100%!important;\
             }\
             #center_col{\
               width:auto!important;\
@@ -369,6 +372,9 @@ const kSiteList = [
     command: function(aDocument) {
       setStyleSheet('\
         /* multi-column */\
+        #results_area{\
+          width:100%!important;\
+        }\
         #content, .sa_cc{\
           max-width:100%!important;\
           padding-right:0!important;\
@@ -394,7 +400,7 @@ const kSiteList = [
         }\
         .references li:target{\
           position:fixed;\
-          left:155px;\
+          left:170px;\
           right:13px;\
           bottom:0;\
           border:1px solid black;\
