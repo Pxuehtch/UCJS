@@ -144,15 +144,21 @@ const kNoiseList = [
  * @key name {string}
  *   this is displayed in the preference menu
  * @key include {regexp|string}|{regexp[]|string[]}
- *   describes the URL (or an array of URLs) that <command> should run
+ *   describe the URL (or an array of URLs) that commands should run
  *   {string}: an exact match
- * @key command {function}
+ *
+ * define one or more commands
+ * @key quickScript {function} [optional]
+ *   run the script as soon as a location changes
  *   @param aDocument {Document}
- * @key quickApply {boolean} [optional]
- *   true: command is applied as soon as a location changes
- *   false [default]: not applied until a document loads
- * @key wait {int} [optional]
- *   the wait time[ms] after a document loads
+ * @key script {function} [optional]
+ *   run the script after the document loaded
+ *   @param aDocument {Document}
+ * @key style {function} [optional]
+ *   make CSS to apply to the document
+ *   @param aDocument {Document}
+ *   @return {CSS}
+ *
  * @key disabled {boolean} [optional]
  */
 const kSiteList = [
@@ -164,8 +170,7 @@ const kSiteList = [
       /^https?:\/\/www\.google\.[a-z.]+\/.*#.*tb[ms]=isch/,
       /^https?:\/\/images\.google\.[a-z.]+\/search\?.+/
     ],
-    quickApply: true,
-    command: function(aDocument) {
+    quickScript: function(aDocument) {
       var location = aDocument.location;
       // switch to the old mode
       if (!/[?&#]sout=1/.test(location.href)) {
@@ -176,7 +181,42 @@ const kSiteList = [
   {
     name: 'Google Result',
     include: /^https?:\/\/www\.google\.[a-z.]+\/.*q=/,
-    command: function(aDocument) {
+    script: function(aDocument) {
+      // sanitize links
+      Array.forEach($S('li.g a', aDocument), function(link) {
+        link.removeAttribute('onmousedown');
+
+        var url =
+          /google\./.test(link.hostname) &&
+          /^\/url$/.test(link.pathname) &&
+          /[&?](?:q|url)=([^&]+)/.exec(link.search);
+        if (url) {
+          link.href = decodeURIComponent(url[1]);
+        }
+      });
+
+      var lastHost = null;
+      Array.forEach($S('li.g', aDocument), function(item) {
+        var link = $S1('.r>a, .ts a', item);
+        if (!link) {
+          return;
+        }
+
+        // weaken noisy item.
+        if (NoisyURLHandler.test(link.href)) {
+          item.classList.add('ucjs_sitestyle_weaken');
+        }
+
+        // emphasize the same host item
+        var host = link.hostname;
+        if (host === lastHost) {
+          item.classList.add('ucjs_sitestyle_samehost');
+        } else {
+          lastHost = host;
+        }
+      });
+    },
+    style: function(aDocument) {
       let testMode = (function() {
         let params = aDocument.location.hash || aDocument.location.search;
         let [, mode] = /[?&#]tb[ms]=([^&]+)/.exec(params) || [];
@@ -190,128 +230,86 @@ const kSiteList = [
         };
       })();
 
-      processResultItems();
-      setPageCSS({
-        // except for shopping, application, books, places
-        custom: !testMode('shop|app|bks|plcs'),
-        // except for shopping, places
-        multiColumn: !testMode('shop|plcs')
-      });
+      // common styles
+      let css = '\
+        /* block items */\
+        .nrgt>tbody>tr>td,.ts>tbody>tr>td{\
+          float:left!important;\
+          width:auto!important;\
+        }\
+        /* sub contents items */\
+        .nrgt,.nrgt *,.r~div{\
+          width:auto!important;\
+          margin-top:0!important;\
+          margin-left:0!important;\
+          padding-top:0!important;\
+          padding-left:0!important;\
+        }\
+        .nrgt .l{\
+          font-size:small!important;\
+        }\
+        /* footer navi */\
+        #foot{\
+          width:auto!important;\
+          margin:0!important;\
+        }';
 
-      function processResultItems() {
-        // sanitize links
-        Array.forEach($S('li.g a', aDocument), function(link) {
-          link.removeAttribute('onmousedown');
-
-          var url =
-            /google\./.test(link.hostname) &&
-            /^\/url$/.test(link.pathname) &&
-            /[&?](?:q|url)=([^&]+)/.exec(link.search);
-          if (url) {
-            link.href = decodeURIComponent(url[1]);
-          }
-        });
-
-        var lastHost = null;
-        Array.forEach($S('li.g', aDocument), function(item) {
-          var link = $S1('.r>a, .ts a', item);
-          if (!link) {
-            return;
-          }
-
-          // weaken noisy item.
-          if (NoisyURLHandler.test(link.href)) {
-            item.classList.add('ucjs_sitestyle_weaken');
-          }
-
-          // emphasize the same host item
-          var host = link.hostname;
-          if (host === lastHost) {
-            item.classList.add('ucjs_sitestyle_samehost');
-          } else {
-            lastHost = host;
-          }
-        });
-      }
-
-      function setPageCSS(aOption) {
-        var {custom, multiColumn} = aOption || {};
-
-        var css = '\
-          /* block items */\
-          .nrgt>tbody>tr>td,.ts>tbody>tr>td{\
-            float:left!important;\
-            width:auto!important;\
+      // each item styles
+      // except for shopping, application, books, places
+      if (!testMode('shop|app|bks|plcs')) {
+        css += '\
+          .ucjs_sitestyle_samehost cite::before{\
+            content:"=";\
+            font-weight:bold;\
+            color:red;\
+            margin-right:2px;\
           }\
-          /* sub contents items */\
-          .nrgt,.nrgt *,.r~div{\
-            width:auto!important;\
-            margin-top:0!important;\
-            margin-left:0!important;\
-            padding-top:0!important;\
-            padding-left:0!important;\
-          }\
-          .nrgt .l{\
+          .ucjs_sitestyle_weaken h3{\
             font-size:small!important;\
           }\
-          /* footer navi */\
-          #foot{\
+          .ucjs_sitestyle_weaken h3~*{\
+            opacity:.2!important;\
+          }\
+          .ucjs_sitestyle_weaken *:hover{\
+            opacity:1!important;\
+            transition:opacity .5s!important;\
+          }';
+      }
+
+      // multi-column
+      // except for shopping, places
+      if (!testMode('shop|plcs')) {
+        css += '\
+          /* hide right pane */\
+          #rhs,#rhscol,#leftnav+td+td{\
+            display:none!important;\
+          }\
+          #cnt,#res,.s,#mn{\
+            max-width:100%!important;\
             width:auto!important;\
             margin:0!important;\
+            padding:0!important;\
+          }\
+          #leftnav+td{\
+            width:100%!important;\
+          }\
+          #center_col{\
+            width:auto!important;\
+            margin:0 2em!important;\
+          }\
+          h2.hd+div>ol,#mn #ires>ol{\
+            -moz-column-count:2;\
+            -moz-column-gap:1em;\
           }';
-
-        if (custom) {
-          css += '\
-            .ucjs_sitestyle_samehost cite::before{\
-              content:"=";\
-              font-weight:bold;\
-              color:red;\
-              margin-right:2px;\
-            }\
-            .ucjs_sitestyle_weaken h3{\
-              font-size:small!important;\
-            }\
-            .ucjs_sitestyle_weaken h3~*{\
-              opacity:.2!important;\
-            }\
-            .ucjs_sitestyle_weaken *:hover{\
-              opacity:1!important;\
-              transition:opacity .5s!important;\
-            }';
-        }
-        if (multiColumn) {
-          css += '\
-            /* hide right pane */\
-            #rhs,#rhscol,#leftnav+td+td{\
-              display:none!important;\
-            }\
-            #cnt,#res,.s,#mn{\
-              width:auto!important;\
-              max-width:100%!important;\
-              margin:0!important;\
-              padding:0!important;\
-            }\
-            #leftnav+td{\
-              width:100%!important;\
-            }\
-            #center_col{\
-              width:auto!important;\
-              margin:0 2em!important;\
-            }\
-            h2.hd+div>ol,#mn #ires>ol{\
-              -moz-column-count:2;\
-              -moz-column-gap:1em;\
-            }';
-        }
-
-        setStyleSheet(css, aDocument);
       }
+
+      return css;
     }
   },
   {
     name: 'Yahoo!JAPAN Result',
     include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
-    command: function(aDocument) {
+    script: function(aDocument) {
       // sanitize links
       Array.forEach($S('#contents a'), function(link) {
         link.removeAttribute('onmousedown');
@@ -337,9 +335,9 @@ const kSiteList = [
           item.classList.add('ucjs_sitestyle_weaken');
         }
       });
-
-      // set page CSS
-      setStyleSheet('\
+    },
+    style: function(aDocument) {
+      let css = '\
         /* custom class */\
         .ucjs_sitestyle_weaken h3{\
           font-size:small!important;\
@@ -362,15 +360,16 @@ const kSiteList = [
         #WS2m>ul{\
           -moz-column-count:2;\
           -moz-column-gap:1em;\
-        }',
-      aDocument);
+        }';
+
+      return css;
     }
   },
   {
     name: 'bing Result',
     include: /^http:\/\/www\.bing\.com\/search/,
-    command: function(aDocument) {
-      setStyleSheet('\
+    style: function(aDocument) {
+      let css = '\
         /* multi-column */\
         #results_area{\
           width:100%!important;\
@@ -385,15 +384,16 @@ const kSiteList = [
         }\
         #wg0>li{\
           float:inherit!important;\
-        }',
-      aDocument);
+        }';
+
+      return css;
     }
   },
   {
     name: 'Wikipedia Article',
     include: /^https?:\/\/[a-z]+\.wikipedia\.org\/wiki/,
-    command: function(aDocument) {
-      setStyleSheet('\
+    style: function(aDocument) {
+      let css = '\
         /* popup reference */\
         .references li{\
           list-style-type:none;\
@@ -405,24 +405,28 @@ const kSiteList = [
           bottom:0;\
           border:1px solid black;\
           background-color:khaki!important;\
-        }',
-      aDocument);
+        }';
+
+      return css;
     }
   },
   {
     name: 'Youtube Player',
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|user\/|\w+$)/,
-    // wait for DOM built
-    wait: 500,
-    command: function(aDocument) {
+    script: function(aDocument) {
       // exclude the playlist mode
       if (/[?&]list=/.test(aDocument.location.search)) {
         return;
       }
 
-      preventAutoplay();
+      // wait for the player ready
+      setTimeout(preventAutoplay, 1000);
 
       function preventAutoplay() {
+        if (!aDocument) {
+          return;
+        }
+
         var player;
 
         // Flash version
@@ -471,7 +475,7 @@ var PageObserver = (function() {
     },
 
     onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation,
-    aFlags) {
+      aFlags) {
       var URL = aLocation.spec;
       if (!/^https?/.test(URL)) {
         return;
@@ -484,25 +488,32 @@ var PageObserver = (function() {
         return;
       }
 
-      // 1st. test quick apply
-      if (site.quickApply) {
-        apply(aBrowser, site);
-        return;
+      // 1. apply the stylesheet
+      if (site.style) {
+        let css = site.style(aBrowser.contentDocument);
+        PageCSS.set(aBrowser.contentDocument, css);
       }
 
-      // 2nd. wait document loading
-      // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
-      var observing = (aFlags & 0x1) ?
-        'FIRST_STOP_REQUEST' : 'FIRST_STOP_WINDOW';
-      mBrowserState.set(aBrowser, {
-        URL: URL,
-        site: site,
-        observing: observing
-      });
+      // 2. run the quick script before the document loading
+      if (site.quickScript) {
+        site.quickScript(aBrowser.contentDocument);
+      }
+
+      // 3. wait the document loads and run the script
+      if (site.script) {
+        // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
+        let observing = (aFlags & 0x1) ?
+          'FIRST_STOP_REQUEST' : 'FIRST_STOP_WINDOW';
+        mBrowserState.set(aBrowser, {
+          URL: URL,
+          site: site,
+          observing: observing
+        });
+      }
     },
 
     onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags,
-    aStatus) {
+      aStatus) {
       var URL = aBrowser.currentURI.spec;
       if (!/^https?/.test(URL)) {
         return;
@@ -524,7 +535,7 @@ var PageObserver = (function() {
            (aFlags & 0x10) && (aFlags & 0x10000) &&
            aRequest.name === 'about:document-onload-blocker')
       ) {
-        apply(aBrowser, state.site);
+        state.site.script(aBrowser.contentDocument);
         mBrowserState.delete(aBrowser);
       }
     },
@@ -561,18 +572,6 @@ var PageObserver = (function() {
       return (typeof url === 'string') ?
         url === aTargetURL : url.test(aTargetURL);
     });
-  }
-
-  function apply(aBrowser, aSite) {
-    if (aSite.wait) {
-      setTimeout(function() {
-        if (aBrowser) {
-          aSite.command(aBrowser.contentDocument);
-        }
-      }, aSite.wait);
-    } else {
-      aSite.command(aBrowser.contentDocument);
-    }
   }
 
   function init() {
@@ -661,6 +660,32 @@ var NoisyURLHandler = (function() {
 })();
 
 
+/**
+ * Page CSS handler
+ * @return {hash}
+ *   @member set {function}
+ */
+var PageCSS = (function() {
+  function set(aDocument, aCSS) {
+    if (/^(?:complete|interactive)$/.test(aDocument.readyState)) {
+      setContentStyleSheet(aDocument, aCSS);
+      return;
+    }
+
+    aDocument.addEventListener('DOMContentLoaded',
+    function onReady() {
+      aDocument.removeEventListener('DOMContentLoaded', onReady, false);
+
+      setContentStyleSheet(aDocument, aCSS);
+    }, false);
+  }
+
+  return {
+    set: set
+  };
+})();
+
+
 //********** Imports
 
 function $E(aTagOrNode, aAttribute) {
@@ -683,7 +708,7 @@ function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
 }
 
-function setStyleSheet(aCSS, aDocument, aOption) {
+function setContentStyleSheet(aDocument, aCSS) {
   window.ucjsUtil.setContentStyleSheet(aCSS, {
     document: aDocument,
     id: kID.STYLESHEET
