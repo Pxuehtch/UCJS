@@ -449,36 +449,13 @@ const kSiteList = [
  *   @member init {function}
  */
 var mPageObserver = (function() {
-  /**
-   * Handler for the cache of browsers on progress listener
-   */
-  var mBrowserState = (function() {
-    var browsers = new WeakMap();
-
-    function init(aBrowser, aState) {
-      browsers.set(aBrowser, aState);
-    }
-
-    function uninit(aBrowser) {
-      browsers.delete(aBrowser);
-    }
-
-    function get(aBrowser) {
-      return browsers.get(aBrowser, null);
-    }
-
-    return {
-      init: init,
-      uninit: uninit,
-      get: get
-    };
-  })();
+  let mBrowserState = new WeakMap();
 
   var mProgressListener = {
     init: function() {
       addEvent([gBrowser.tabContainer, 'TabClose', function(aEvent) {
         var browser = aEvent.target.linkedBrowser;
-        mBrowserState.uninit(browser);
+        mBrowserState.delete(browser);
       }, false]);
 
       gBrowser.addTabsProgressListener(mProgressListener);
@@ -494,7 +471,7 @@ var mPageObserver = (function() {
         return;
       }
 
-      mBrowserState.uninit(aBrowser);
+      mBrowserState.delete(aBrowser);
 
       var site = matchSiteList(URL);
       if (!site) {
@@ -511,8 +488,11 @@ var mPageObserver = (function() {
       // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
       var observing = (aFlags & 0x1) ?
         'FIRST_STOP_REQUEST' : 'FIRST_STOP_WINDOW';
-      mBrowserState.init(aBrowser,
-        {URL: URL, site: site, observing: observing});
+      mBrowserState.set(aBrowser, {
+        URL: URL,
+        site: site,
+        observing: observing
+      });
     },
 
     onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags,
@@ -522,7 +502,7 @@ var mPageObserver = (function() {
         return;
       }
 
-      var state = mBrowserState.get(aBrowser);
+      var state = mBrowserState.get(aBrowser, null);
       if (!state || state.URL !== URL) {
         return;
       }
@@ -539,7 +519,7 @@ var mPageObserver = (function() {
            aRequest.name === 'about:document-onload-blocker')
       ) {
         apply(aBrowser, state.site);
-        mBrowserState.uninit(aBrowser);
+        mBrowserState.delete(aBrowser);
       }
     },
 
