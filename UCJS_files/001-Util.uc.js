@@ -901,13 +901,14 @@ function removeGlobalStyleSheet(aCSS, aType) {
 function registerGlobalStyleSheet(aCSS, aType, aOption) {
   let {remove} = aOption || {};
 
-  try {
-    var css = normalizeCSS(aCSS);
-    if (!css) {
-      return;
-    }
+  let css = normalizeCSS(aCSS);
+  if (!css) {
+    return;
+  }
 
-    var URI = mXPCOM.IOService.
+  let URI;
+  try {
+    URI = mXPCOM.IOService.
       newURI('data:text/css,' + encodeURIComponent(css), null, null);
   } catch (ex) {
     return;
@@ -926,17 +927,18 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
       return;
   }
 
-  var registered = styleSheetService.sheetRegistered(URI, type);
+  let registered = styleSheetService.sheetRegistered(URI, type);
 
   if (!remove && !registered) {
     styleSheetService.loadAndRegisterSheet(URI, type);
-  } else if (remove && registered) {
+  }
+  else if (remove && registered) {
     styleSheetService.unregisterSheet(URI, type);
   }
 }
 
 function registerChromeStyleSheet(aCSS) {
-  var css = normalizeCSS(aCSS);
+  let css = normalizeCSS(aCSS);
   if (!css) {
     return;
   }
@@ -956,19 +958,19 @@ function registerChromeStyleSheet(aCSS) {
     'type="text/css" href="%dataURI%"'.replace('%dataURI%', dataURI)
   );
 
-  return window.document.insertBefore(stylesheet,
-    window.document.documentElement);
+  return window.document.
+    insertBefore(newStyleSheet, window.document.documentElement);
 }
 
 function registerContentStyleSheet(aCSS, aOption) {
-  var {document, id} = aOption || {};
+  let {document, id} = aOption || {};
 
-  var css = normalizeCSS(aCSS);
+  let css = normalizeCSS(aCSS);
   if (!css) {
     return;
   }
 
-  var doc = document || getFocusedDocument();
+  let doc = document || getFocusedDocument();
   if (!doc.head) {
     return;
   }
@@ -983,7 +985,7 @@ function registerContentStyleSheet(aCSS, aOption) {
     }
   }
 
-  var style = doc.createElement('style');
+  let style = doc.createElement('style');
   style.type = 'text/css';
   if (id) {
     style.id = id;
