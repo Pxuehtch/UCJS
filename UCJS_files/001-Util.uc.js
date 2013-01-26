@@ -891,14 +891,16 @@ function canQuitApp() {
 }
 
 function setGlobalStyleSheet(aCSS, aType) {
-  return registerGlobalStyleSheet(aCSS, aType, true);
+  return registerGlobalStyleSheet(aCSS, aType);
 }
 
 function removeGlobalStyleSheet(aCSS, aType) {
-  return registerGlobalStyleSheet(aCSS, aType, false);
+  return registerGlobalStyleSheet(aCSS, aType, {remove: true});
 }
 
-function registerGlobalStyleSheet(aCSS, aType, aRegister) {
+function registerGlobalStyleSheet(aCSS, aType, aOption) {
+  let {remove} = aOption || {};
+
   try {
     var css = normalizeCSS(aCSS);
     if (!css) {
@@ -926,9 +928,9 @@ function registerGlobalStyleSheet(aCSS, aType, aRegister) {
 
   var registered = styleSheetService.sheetRegistered(URI, type);
 
-  if (aRegister && !registered) {
+  if (!remove && !registered) {
     styleSheetService.loadAndRegisterSheet(URI, type);
-  } else if (!aRegister && registered) {
+  } else if (remove && registered) {
     styleSheetService.unregisterSheet(URI, type);
   }
 }
