@@ -961,14 +961,14 @@ function registerChromeStyleSheet(aCSS) {
 }
 
 function registerContentStyleSheet(aCSS, aOption) {
-  var {contentDocument, id} = aOption || {};
+  var {document, id} = aOption || {};
 
   var css = normalizeCSS(aCSS);
   if (!css) {
     return;
   }
 
-  var doc = contentDocument || getFocusedDocument();
+  var doc = document || getFocusedDocument();
   if (!doc.head) {
     return;
   }

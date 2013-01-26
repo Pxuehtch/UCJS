@@ -699,7 +699,7 @@ function addEvent(aData) {
 
 function setStyleSheet(aCSS, aDocument, aOption) {
   window.ucjsUtil.setContentStyleSheet(aCSS, {
-    contentDocument: aDocument,
+    document: aDocument,
     id: kID.STYLESHEET
   });
 }
