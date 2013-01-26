@@ -301,8 +301,7 @@ const kSiteList = [
             }';
         }
 
-        // replace the old CSS on the ajax loading
-        setStyleSheet(css, aDocument, {replace: true});
+        setStyleSheet(css, aDocument);
       }
     }
   },
@@ -699,9 +698,10 @@ function addEvent(aData) {
 }
 
 function setStyleSheet(aCSS, aDocument, aOption) {
-  var {replace} = aOption || {};
-  window.ucjsUtil.setContentStyleSheet(aCSS,
-    {contentDocument: aDocument, id: kID.STYLESHEET, replace: replace});
+  window.ucjsUtil.setContentStyleSheet(aCSS, {
+    contentDocument: aDocument,
+    id: kID.STYLESHEET
+  });
 }
 
 function log(aMsg) {

@@ -950,7 +950,7 @@ function registerChromeStyleSheet(aCSS) {
 }
 
 function registerContentStyleSheet(aCSS, aOption) {
-  var {contentDocument, id, replace} = aOption || {};
+  var {contentDocument, id} = aOption || {};
 
   var css = normalizeCSS(aCSS);
   if (!css) {
@@ -965,7 +965,7 @@ function registerContentStyleSheet(aCSS, aOption) {
   if (id) {
     let old = doc.getElementById(id);
     if (old) {
-      if (!replace || old.textContent === css) {
+      if (old.textContent === css) {
         return;
       }
       old.parentNode.removeChild(old);
