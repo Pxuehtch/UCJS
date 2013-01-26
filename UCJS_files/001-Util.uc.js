@@ -941,10 +941,19 @@ function registerChromeStyleSheet(aCSS) {
     return;
   }
 
-  var stylesheet = window.document.createProcessingInstruction(
+  let dataURI = 'data:text/css,' + encodeURIComponent(css);
+
+  let styleSheets = window.document.styleSheets;
+  let exists = Array.some(styleSheets, function(styleSheet) {
+    return styleSheet.href === dataURI;
+  });
+  if (exists) {
+    return;
+  }
+
+  let newStyleSheet = window.document.createProcessingInstruction(
     'xml-stylesheet',
-    'type="text/css" href="data:text/css,%DATA%"'.
-      replace('%DATA%', encodeURIComponent(css))
+    'type="text/css" href="%dataURI%"'.replace('%dataURI%', dataURI)
   );
 
   return window.document.insertBefore(stylesheet,
