@@ -220,7 +220,7 @@ const kSiteList = [
           }
 
           // weaken noisy item.
-          if (mNoisyURLHandler.test(link.href)) {
+          if (NoisyURLHandler.test(link.href)) {
             item.classList.add('ucjs_sitestyle_weaken');
           }
 
@@ -333,7 +333,7 @@ const kSiteList = [
         }
 
         // weaken a noisy item
-        if (mNoisyURLHandler.test(link.href)) {
+        if (NoisyURLHandler.test(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
       });
@@ -454,7 +454,7 @@ const kSiteList = [
  * @return {hash}
  *   @member init {function}
  */
-var mPageObserver = (function() {
+var PageObserver = (function() {
   let mBrowserState = new WeakMap();
 
   var mProgressListener = {
@@ -589,7 +589,7 @@ var mPageObserver = (function() {
  * @return {hash}
  *   @member init {function}
  */
-var mPrefMenu = (function() {
+var PrefMenu = (function() {
   function init() {
     var menu = window.document.getElementById('menu_ToolsPopup').
     appendChild($E('menu', {
@@ -641,7 +641,7 @@ var mPrefMenu = (function() {
  * @return {hash}
  *   @member test {function}
  */
-var mNoisyURLHandler = (function() {
+var NoisyURLHandler = (function() {
   function test(aURL) {
     if (!/^https?:/.test(aURL)) {
       return false;
@@ -698,8 +698,8 @@ function log(aMsg) {
 //********** Entry point
 
 function SiteStyle_init() {
-  mPageObserver.init();
-  mPrefMenu.init();
+  PageObserver.init();
+  PrefMenu.init();
 }
 
 SiteStyle_init();
