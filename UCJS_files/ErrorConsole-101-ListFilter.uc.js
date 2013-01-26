@@ -82,9 +82,9 @@ function addEvent(aData) {
 
 function toggleCSS(aCSS, aHidden) {
   if (aHidden) {
-    window.ucjsUtil.setGlobalStyleSheet(aCSS);
+    window.ucjsUtil.setGlobalStyleSheet(aCSS, 'USER_SHEET');
   } else {
-    window.ucjsUtil.removeGlobalStyleSheet(aCSS);
+    window.ucjsUtil.removeGlobalStyleSheet(aCSS, 'USER_SHEET');
   }
 }
 

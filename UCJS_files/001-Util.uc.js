@@ -890,15 +890,15 @@ function canQuitApp() {
   return true;
 }
 
-function setGlobalStyleSheet(aCSS, aAgent) {
-  return registerGlobalStyleSheet(aCSS, aAgent, true);
+function setGlobalStyleSheet(aCSS, aType) {
+  return registerGlobalStyleSheet(aCSS, aType, true);
 }
 
-function removeGlobalStyleSheet(aCSS, aAgent) {
-  return registerGlobalStyleSheet(aCSS, aAgent, false);
+function removeGlobalStyleSheet(aCSS, aType) {
+  return registerGlobalStyleSheet(aCSS, aType, false);
 }
 
-function registerGlobalStyleSheet(aCSS, aAgent, aRegister) {
+function registerGlobalStyleSheet(aCSS, aType, aRegister) {
   try {
     var css = normalizeCSS(aCSS);
     if (!css) {
@@ -912,9 +912,18 @@ function registerGlobalStyleSheet(aCSS, aAgent, aRegister) {
   }
 
   const styleSheetService = mXPCOM.StyleSheetService;
-  var type = aAgent ?
-    styleSheetService.AGENT_SHEET :
-    styleSheetService.USER_SHEET;
+
+  let type;
+  switch (aType) {
+    case 'AGENT_SHEET':
+    case 'USER_SHEET':
+    case 'AUTHOR_SHEET':
+      type = styleSheetService[aType];
+      break;
+    default:
+      return;
+  }
+
   var registered = styleSheetService.sheetRegistered(URI, type);
 
   if (aRegister && !registered) {

@@ -483,7 +483,7 @@ function setChromeCSS(aCSS) {
 }
 
 function setGlobalAgentCSS(aCSS) {
-  return window.ucjsUtil.setGlobalStyleSheet(aCSS, true);
+  return window.ucjsUtil.setGlobalStyleSheet(aCSS, 'AGENT_SHEET');
 }
 
 function addEvent(aData) {
