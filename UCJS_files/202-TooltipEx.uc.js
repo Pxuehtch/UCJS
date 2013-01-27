@@ -88,10 +88,10 @@ var TooltipHandler = {
 
   set mTarget(aNode) {
     if (aNode !== null) {
-      this._mTarget = aNode;
-
       // disable the default tooltip
-      this.storeTitles();
+      this.storeTitles(aNode);
+
+      this._mTarget = aNode;
     } else {
       // enable the default tooltip
       this.restoreTitles();
@@ -100,14 +100,10 @@ var TooltipHandler = {
     }
   },
 
-  storeTitles: function() {
-    if (this._mTitleStore) {
-      this.restoreTitles();
-    }
-
+  storeTitles: function(aNode) {
     this._mTitleStore = new Map();
 
-    for (let node = this.mTarget; node; node = node.parentNode) {
+    for (let node = aNode; node; node = node.parentNode) {
       if (node.nodeType === Node.ELEMENT_NODE) {
         if (node.title) {
           this._mTitleStore.set(node, node.title);
