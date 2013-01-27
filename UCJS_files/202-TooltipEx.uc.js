@@ -92,9 +92,16 @@ var TooltipHandler = {
       this.storeTitles(aNode);
 
       this._mTarget = aNode;
+
+      // cleanup when the document with a opened tooltip is unloaded
+      this._mTarget.ownerDocument.defaultView.
+      addEventListener('unload', this, false);
     } else {
       // enable the default tooltip
       this.restoreTitles();
+
+      this._mTarget.ownerDocument.defaultView.
+      removeEventListener('unload', this, false);
 
       delete this._mTarget;
     }
@@ -137,6 +144,10 @@ var TooltipHandler = {
             this.show(aEvent);
           }
         }
+        break;
+      // cleanup when the document with a opened tooltip is unloaded
+      case 'unload':
+        this.hide();
         break;
       case 'popuphiding':
         this.clean();
