@@ -68,7 +68,6 @@ const kID = {
  * Tooltip handler
  */
 var TooltipHandler = {
-
   /**
    * Tooltip <panel>
    */
@@ -138,6 +137,7 @@ var TooltipHandler = {
 
   handleEvent: function(aEvent) {
     switch (aEvent.type) {
+      // trigger of the showing a tooltip
       case 'mousemove':
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
@@ -149,9 +149,11 @@ var TooltipHandler = {
       case 'unload':
         this.hide();
         break;
+      // cleanup when a tooltip hides
       case 'popuphiding':
         this.clean();
         break;
+      // command of the context menu of a tooltip
       case 'command':
         this.copyTipInfo();
         break;
@@ -189,10 +191,12 @@ var TooltipHandler = {
   show: function(aEvent) {
     var target = aEvent.target;
 
+    // close a existing tooltip of the different target and open a new tooltip
     if (this.mPanel.state === 'open' &&
         this.mTarget !== target) {
       this.hide();
-    } else if (this.mPanel.state !== 'closed') {
+    }
+    else if (this.mPanel.state !== 'closed') {
       return;
     }
 
@@ -207,6 +211,7 @@ var TooltipHandler = {
       return;
     }
 
+    // |popuphiding| will be dispatched
     this.mPanel.hidePopup();
   },
 
@@ -390,7 +395,6 @@ var TooltipHandler = {
 
     copyToClipboard(info.join('\n'));
   }
-
 };
 
 
