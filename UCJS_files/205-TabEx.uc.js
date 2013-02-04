@@ -74,6 +74,8 @@ const kPosType = {
 
   // after the far end tab of the sequential followings that are descendants of
   // the base tab from its next adjacent, or at the next adjacent
+  // @note The family relation is kept even if the base tab changes its
+  // location.
   NEXT_INCREMENT_DESCENDANT: 6,
 
   //***** SELECTPOS only
@@ -100,22 +102,22 @@ const kPosType = {
  * User preference
  */
 const kPref = {
-  // where a new tab is opened
+  // where a new tab is opened to
   // @value {kPosType}
   // @note The count of positioning starts from the first *un*pinned tab.
-  // @note OPENPOS_LINKED works when the tab is opened by a link in the
-  // content area or a command with 'relatedToCurrent', otherwise
-  // OPENPOS_UNLINKED.
+  // @note |OPENPOS_LINKED| works when the tab is opened by a link in the
+  // content area or |addTab| with |relatedToCurrent| option, otherwise
+  // |OPENPOS_UNLINKED|.
   OPENPOS_LINKED:    kPosType.NEXT_INCREMENT_DESCENDANT,
   OPENPOS_UNLINKED:  kPosType.LAST_END,
   OPENPOS_DUPLICATE: kPosType.NEXT_ADJACENT,
   // DEFAULT: a tab reopens at the same position where it closed
   OPENPOS_UNDOCLOSE: kPosType.DEFAULT,
 
-  // which tab is selected after a *selected* tab is closed
+  // which tab is selected after the *selected* tab is closed
   // @value {kPosType[]}
   // @note The default selection works if no matches (may be the same as
-  // PREV_ADJACENT)
+  // |PREV_ADJACENT|)
   SELECTPOS_TABCLOSE: [
     kPosType.NEXT_ADJACENT_EXTENDED_DESCENDANT,
     kPosType.PREV_ADJACENT_ANCESTOR,
@@ -132,7 +134,7 @@ const kPref = {
   // delayed-stops the loading of a tab that is opened in background
   // @value {boolean}
   //   false: the same as the default 'tabs on demand' behavior
-  //   true: stops the loading of the tab after SUSPEND_DELAY passes
+  //   true: stops the loading of the tab after |SUSPEND_DELAY| passes
   SUSPEND_LOADING: true,
   // the delay time until the loading is suspended
   // @value {integer} millisecond
@@ -1653,7 +1655,7 @@ function getPageTitle(aURL) {
 }
 
 function makeURI(aURL) {
-  try{
+  try {
     // @see chrome://global/content/contentAreaUtils.js::makeURI
     return window.makeURI(aURL);
   } catch (ex) {}
