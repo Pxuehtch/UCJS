@@ -61,7 +61,7 @@ const kBundle = {
     fastforward: '>>',
     start:       '|<',
     end:         '>|',
-    referrer:    'Ref:'
+    referrer:    'From:'
   }
 };
 
