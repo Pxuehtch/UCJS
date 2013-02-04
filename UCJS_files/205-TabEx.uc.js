@@ -157,6 +157,7 @@ const kPref = {
   // @value {boolean}
   // @note The indicator is hidden if the location changes from where the tab
   // has been opened.
+  // XXX: This feature is experimental. It may be removed.
   showTabColor: true
 };
 
@@ -169,9 +170,12 @@ const kPref = {
  * sets the attribute of the color index to tabs
  *   index=0: the default color (gray)
  *   index=[1..kColorsNum]: the preset colors
- * disables coloring if index<0
+ *
+ * TODO: Do a smart handling to disable the coloring instead of touching the
+ * value of attribute.
  *
  * XXX: The colorings are adjusted to the themes of my Firefox.
+ * XXX: This feature is experimental. It may be removed.
  */
 const TabColor = (function() {
   /**
@@ -201,11 +205,14 @@ const TabColor = (function() {
       Array.some(gBrowser.tabs, function(tab) {
         if (tab.linkedBrowser === aBrowser) {
           // toggle showing the parent color when a page location changed
+          // TODO: Do handle it more smartly.
           if (tab.hasAttribute(kID.PARENTCOLOR)) {
             let index = tab.getAttribute(kID.PARENTCOLOR);
-            if ((aBrowser.canGoBack && 0 <= index) ||
-                (!aBrowser.canGoBack && index < 0)) {
-              tab.setAttribute(kID.PARENTCOLOR, -index);
+            let disabled = index.startsWith('-');
+            if ((aBrowser.canGoBack && !disabled) ||
+                (!aBrowser.canGoBack && disabled)) {
+              index = disabled ? index.substr(1) : '-' + index;
+              tab.setAttribute(kID.PARENTCOLOR, index);
             }
           }
 
