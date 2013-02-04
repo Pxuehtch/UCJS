@@ -30,6 +30,7 @@ const {
   setEventListener: addEvent,
   openTab,
   removeTab,
+  setChromeStyleSheet,
   getPref,
   setPref
 } = window.ucjsUtil;
@@ -47,7 +48,9 @@ const kID = {
   OPENQUERY: 'ucjs_tabex_openquery',
   SUSPENDED: 'ucjs_tabex_suspended',
   READ: 'ucjs_tabex_read',
-  RESTORING: 'ucjs_tabex_restoring'
+  RESTORING: 'ucjs_tabex_restoring',
+  TABCOLOR: 'ucjs_tabex_tabcolor',
+  PARENTCOLOR: 'ucjs_tabex_parentcolor'
 };
 
 /**
@@ -147,8 +150,267 @@ const kPref = {
   // @value {integer} millisecond
   // @note The marking is canceled when the other tab is selected in a short
   // time. (e.g. while flipping tabs with a shortcut key or mouse wheeling)
-  SELECTED_DELAY: 1000
+  SELECTED_DELAY: 1000,
+
+  // colors tabs to indicate the parent tab
+  // @value {boolean}
+  // @note The indicator is hidden if the location changes from where the tab
+  // has been opened.
+  showTabColor: true
 };
+
+/**
+ * Utility for coloring tabs
+ * @return {hash}
+ *   setParentColor: {function}
+ *
+ * @note
+ * sets the attribute of the color index to tabs
+ *   index=0: the default color (gray)
+ *   index=[1..kColorsNum]: the preset colors
+ * disables coloring if index<0
+ */
+const TabColor = (function() {
+  /**
+   * the number of tab colors
+   * @value {integer}
+   *   a number that just divides 360 degrees of the hue in the HSL color form
+   */
+  const kColorsNum = 8;
+
+  /**
+   * Listener for tab icon ready
+   */
+  const ProgressListener = {
+    init: function() {
+      gBrowser.addTabsProgressListener(ProgressListener);
+      addEvent([window, 'unload', function() {
+        gBrowser.removeTabsProgressListener(ProgressListener);
+      }, false]);
+    },
+
+    onLinkIconAvailable: function(aBrowser, aIconURL) {
+      // skip an about: page or a background tab on pending to load
+      if (aBrowser.currentURI.schemeIs('about') && !aIconURL) {
+        return;
+      }
+
+      Array.some(gBrowser.tabs, function(tab) {
+        if (tab.linkedBrowser === aBrowser) {
+          // toggle showing the parent color when a page location changed
+          if (tab.hasAttribute(kID.PARENTCOLOR)) {
+            let index = tab.getAttribute(kID.PARENTCOLOR);
+            if ((aBrowser.canGoBack && 0 <= index) ||
+                (!aBrowser.canGoBack && index < 0)) {
+              tab.setAttribute(kID.PARENTCOLOR, -index);
+            }
+          }
+
+          setTabColor(tab, aIconURL);
+          return true;
+        }
+        return false;
+      });
+    }
+  };
+
+  /**
+   * Cache of the color index for icon URL
+   */
+  const IndexCache = {
+    kMaxCount: 50,
+    list: [],
+
+    has: function(aIconURL) {
+      return this.list.some(function(item) {
+        return item.iconURL === aIconURL;
+      });
+    },
+
+    get: function(aIconURL) {
+      for (let i = 0, l = this.list.length; i < l; i++) {
+        if (this.list[i].iconURL === aIconURL) {
+          let index = this.list[i].index;
+          if (i > 0) {
+            // score up and move to the first
+            this.list.unshift(this.list.splice(i, 1));
+          }
+          return index;
+        }
+      }
+      return 0;
+    },
+
+    set: function(aIconURL, aIndex) {
+      if (this.has(aIconURL)) {
+        return;
+      }
+
+      // add to the first
+      this.list.unshift({
+        iconURL: aIconURL,
+        index: aIndex
+      });
+
+      if (this.list.length > this.kMaxCount) {
+        // 1.leave the newer items, only the same number as the number of tabs
+        // 2.delete the oldest item if the number of tabs is greater
+        if (gBrowser.tabs.length < this.list.length) {
+          this.list.splice(gBrowser.tabs.length);
+        } else {
+          this.list.pop();
+        }
+      }
+    }
+  };
+
+  /**
+   * Initialize
+   */
+  if (kPref.showTabColor) {
+    ProgressListener.init();
+    setStyleSheet();
+  }
+
+  function setStyleSheet() {
+    // index=0: the default color (gray)
+    const kTabColorGray =
+      '.tabbrowser-tab[' + kID.TABCOLOR + '="0"] .tab-icon-image{' +
+        'box-shadow:0 0 4px hsla(0,0%,50%,.9);' +
+      '}' +
+      '.tabbrowser-tab[' + kID.PARENTCOLOR + '="0"] .tab-label{' +
+        'box-shadow:-4px 0 2px -2px hsla(0,0%,50%,.9) inset;' +
+      '}';
+
+    // index=[1..kColorsNum]: the preset colors
+    const kTabColor =
+      '.tabbrowser-tab[' + kID.TABCOLOR + '="%index%"] .tab-icon-image{' +
+        'box-shadow:0 0 4px hsla(%hue%,100%,50%,.9);' +
+      '}' +
+      '.tabbrowser-tab[' + kID.PARENTCOLOR + '="%index%"] .tab-label{' +
+        'box-shadow:-4px 0 2px -2px hsla(%hue%,100%,50%,.9) inset;' +
+      '}';
+
+    let css = [kTabColorGray];
+    let unitAngle = Math.floor(360 / kColorsNum);
+    for (let i = 1; i <= kColorsNum; i++) {
+      css.push(kTabColor.
+        replace(/%index%/g, i).
+        replace(/%hue%/g, (i - 1) * unitAngle));
+    }
+
+    setChromeStyleSheet(css.join(''));
+  }
+
+  function getColorIndex(aRGB) {
+    let [H, S, L] = RGBToHSL(aRGB);
+
+    // changes gray-tone/dark/light color to the default color
+    if (S < 10 || L < 10 || 90 < L) {
+      return 0;
+    }
+
+    let unitAngle = Math.floor(360 / kColorsNum);
+    let index = Math.round(H / unitAngle) + 1;
+    if (index > kColorsNum) {
+      index = 1;
+    }
+
+    return index;
+  }
+
+  function setParentColor(aTab, aParentTab) {
+    let index = aParentTab.getAttribute(kID.TABCOLOR);
+    aTab.setAttribute(kID.PARENTCOLOR, index || 0);
+  }
+
+  function setTabColor(aTab, aIconURL) {
+    function setAttribute(aTab, aIndex) {
+      aTab.setAttribute(kID.TABCOLOR, aIndex);
+    }
+
+    if (!aIconURL) {
+      // set the default color
+      setAttribute(aTab, 0);
+    }
+    else if (IndexCache.has(aIconURL)) {
+      setAttribute(aTab, IndexCache.get(aIconURL));
+    }
+    else {
+      const {Cc, Ci} = window;
+      const ColorAnalyzer =
+        Cc['@mozilla.org/places/colorAnalyzer;1'].
+        getService(Ci.mozIColorAnalyzer);
+      try {
+        // @note The image loading error will raise when aIconURL is a
+        // non-existent '/favicon.ico' that is guessed by |useDefaultIcon|. It
+        // is just a report not exception.
+        // @see chrome://browser/content/tabbrowser.xml::useDefaultIcon
+        // @see resource://gre/components/ColorAnalyzer.js::onImageError
+        ColorAnalyzer.findRepresentativeColor(makeURI(aIconURL),
+          function(success, color) {
+            let index = success ? getColorIndex(color) : 0;
+            IndexCache.set(aIconURL, index);
+            setAttribute(aTab, index);
+          }
+        );
+      } catch (ex) {
+        IndexCache.set(aIconURL, 0);
+        setAttribute(aTab, 0);
+      }
+    }
+  }
+
+  /**
+   * converts RGB into HSL
+   * @param aRGB {integer}
+   *   0x012DEF: the representative color as an integer in RGB form
+   * @return {integer[]} [H, S, L]
+   *   H: hue [degrees]
+   *   S: saturation [percent]
+   *   L: lightness [percent]
+   *
+   * @see http://en.wikipedia.org/wiki/HSL_and_HSV#Formal_derivation
+   */
+  function RGBToHSL(aRGB) {
+    let [R, G, B] = [(aRGB >> 16) & 255, (aRGB >> 8) & 255, aRGB & 255];
+
+    R /= 255; G /= 255; B /= 255;
+
+    let max = Math.max(R, G, B), min = Math.min(R, G, B);
+    let sum = max + min, diff = max - min;
+    let hue, saturation, lightness = sum / 2;
+
+    if (diff === 0) {
+      return [0, 0, lightness * 100];
+    }
+
+    if (lightness <= 0.5) {
+      saturation = diff / sum;
+    } else {
+      saturation = diff / (2 - sum);
+    }
+
+    switch (max) {
+      case R:
+        hue = (G - B) / diff + (G < B ? 6 : 0);
+        break;
+      case G:
+        hue = (B - R) / diff + 2;
+        break;
+      case B:
+        hue = (R - G) / diff + 4;
+        break;
+    }
+    hue *= 60;
+
+    return [hue, saturation * 100, lightness * 100];
+  }
+
+  return {
+    setParentColor: setParentColor
+  };
+})();
 
 /**
  * Tab data manager
@@ -337,13 +599,22 @@ var mSessionStore = {
       Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
 
-    [
+    let savedAttributes = [
       kID.OPENTIME,
       kID.READTIME,
       kID.SELECTTIME,
       kID.ANCESTORS,
       kID.OPENQUERY
-    ].forEach(function(key) {
+    ];
+
+    if (kPref.showTabColor) {
+      savedAttributes.push(
+        kID.TABCOLOR,
+        kID.PARENTCOLOR
+      );
+    }
+
+    savedAttributes.forEach(function(key) {
       this.SessionStore.persistTabAttribute(key);
     }.bind(this));
 
@@ -481,6 +752,10 @@ var mTabOpener = {
           let open = mTab.data(parent, 'open');
           let ancs = mTab.data(parent, 'ancestors') || [];
           mTab.data(aTab, 'ancestors', [open].concat(ancs));
+
+          if (kPref.showTabColor) {
+            TabColor.setParentColor(aTab, parent);
+          }
         }
         break;
       case 'DuplicatedTab':
