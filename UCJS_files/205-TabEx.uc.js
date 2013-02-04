@@ -1753,8 +1753,46 @@ function modifySystemSetting() {
   });
 }
 
+/**
+ * Customizes the tab tooltip
+ */
+function customizeTabTooltip() {
+  // @see chrome://browser/content/tabbrowser.xml::createTooltip
+  addEvent([
+    window.document.getElementById('tabbrowser-tab-tooltip'),
+    'popupshowing',
+    onPopup,
+    false
+  ]);
+
+  function onPopup(aEvent) {
+    aEvent.stopPropagation();
+    let tooltip = aEvent.target;
+    let tab = window.document.tooltipNode;
+    if (tab.localName !== 'tab' || tab.mOverCloseButton) {
+      return;
+    }
+
+    // WORKAROUND: The tooltip is delayed-shown after a tab with a cursor is
+    // removed (e.g. clicking the middle button of mouse). Then, the tooltip
+    // is useless.
+    if (!tab.linkedBrowser) {
+      return;
+    }
+
+    // add the information of the parent tab to a tab which is newly opened
+    if (!tab.linkedBrowser.canGoBack && mReferrer.exists(tab)) {
+      // |createTooltip| would set the title of the tab by default
+      let label = tooltip.label;
+      label += '\n\nFrom: ' + mReferrer.getTitle(tab);
+      tooltip.setAttribute('label', label);
+    }
+  }
+}
+
 function TabEx_init() {
   modifySystemSetting();
+  customizeTabTooltip();
 
   mTabEvent.init();
   mSessionStore.init();
