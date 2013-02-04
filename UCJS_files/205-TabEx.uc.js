@@ -170,6 +170,8 @@ const kPref = {
  *   index=0: the default color (gray)
  *   index=[1..kColorsNum]: the preset colors
  * disables coloring if index<0
+ *
+ * XXX: The colorings are adjusted to the themes of my Firefox.
  */
 const TabColor = (function() {
   /**
@@ -286,10 +288,10 @@ const TabColor = (function() {
     // index=[1..kColorsNum]: the preset colors
     const kTabColor =
       '.tabbrowser-tab[' + kID.TABCOLOR + '="%index%"] .tab-icon-image{' +
-        'box-shadow:0 0 4px hsla(%hue%,100%,50%,.9);' +
+        'box-shadow:0 0 4px hsla(%hue%,80%,50%,.9);' +
       '}' +
       '.tabbrowser-tab[' + kID.PARENTCOLOR + '="%index%"] .tab-label{' +
-        'box-shadow:-4px 0 2px -2px hsla(%hue%,100%,50%,.9) inset;' +
+        'box-shadow:-4px 0 2px -2px hsla(%hue%,80%,50%,.9) inset;' +
       '}';
 
     let css = [kTabColorGray];
