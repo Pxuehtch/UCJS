@@ -49,6 +49,7 @@ const kID = {
   ALLTABS_BUTTON: 'alltabs-button',
   ALLTABS_POPUP: 'alltabs-popup',
   ALLTABS_POPUP_SEPARATOR: 'alltabs-popup-separator',
+  TAB_TOOLTIP: 'tabbrowser-tab-tooltip',
 
   // Custom id
   TABVIEW_TOOLTIP: 'ucjs_alltabs_tabview_tooltip',
@@ -207,30 +208,24 @@ function customizeTabViewButtonTooltip() {
 }
 
 function customizeTabTooltip() {
-  // @modified chrome://browser/content/tabbrowser.xml::
-  // createTooltip
-  gBrowser.createTooltip = function(event) {
+  // @see chrome://browser/content/tabbrowser.xml::createTooltip
+  addEvent([$(kID.TAB_TOOLTIP), 'popupshowing', function(event) {
     event.stopPropagation();
-    var tab = window.document.tooltipNode;
-    if (tab.localName != 'tab') {
-      event.preventDefault();
+    let tab = window.document.tooltipNode;
+    if (tab.localName !== 'tab' || tab.mOverCloseButton) {
       return;
     }
 
-    var label;
-    if (tab.mOverCloseButton) {
-      label = tab.getAttribute('closetabtext');
-    } else {
-      label = format(kFormat.TAB_TOOLTIP, {
-        index: Array.indexOf(this.visibleTabs, tab) + 1,
-        count: this.visibleTabs.length,
-        group: mTabView.activeGroupName || kFormat.UNTITLED_GROUP,
-        title: tab.getAttribute('label')
-      });
-    }
-
-    event.target.setAttribute('label', label);
-  };
+    let tooltip = event.target;
+    let label = format(kFormat.TAB_TOOLTIP, {
+      index: gBrowser.visibleTabs.indexOf(tab) + 1,
+      count: gBrowser.visibleTabs.length,
+      group: mTabView.activeGroupName || kFormat.UNTITLED_GROUP,
+      // |createTooltip| would set the title of the tab by default
+      title: tooltip.label
+    });
+    tooltip.setAttribute('label', label);
+  }, false]);
 }
 
 function initAllTabsMenu() {
