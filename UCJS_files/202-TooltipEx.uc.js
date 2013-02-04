@@ -386,7 +386,7 @@ var TooltipHandler = {
     return item;
   },
 
-  copyTipInfo: function(aEvent) {
+  copyTipInfo: function() {
     var info = [];
 
     Array.forEach(this.mBox.childNodes, function(node) {
