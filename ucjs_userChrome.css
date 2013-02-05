@@ -3,7 +3,9 @@
  */
 
 
-/* [NaviButton.uc.js] backward button with referrer */
+/**
+ * [NaviButton.uc.js] backward button with a referrer
+ */
 #back-button[ucjs_navibutton_referrer] {
   background-image:linear-gradient(to right,hsl(215,60%,88%),hsl(215,58%,84%))!important;
   box-shadow:0 0 1px 1px hsla(215,54%,33%,.1) inset!important;
@@ -12,22 +14,26 @@
   opacity:1!important;
 }
 
-
-/* [TabEx.uc.js] unread tab */
+/**
+ * [TabEx.uc.js] unread tab
+ */
 .tabbrowser-tab:not([ucjs_tabex_read]),
 /* menuitem */
 .ucjs_ui_menuitem_unreadTab {
   color:brown!important;
 }
 
-
-/* [TabEx.uc.js] suspended loading tab */
+/**
+ * [TabEx.uc.js] suspended loading tab
+ */
 .tabbrowser-tab[ucjs_tabex_suspended] {
   font-style:italic!important;
 }
 
-
-/* [AllTabs.uc.js] all tabs menupopup - menuitem about an overflowed tab on tabstrip */
+/**
+ * [AllTabs.uc.js] all tabs menupopup
+ * menuitem about an overflowed tab on tabstrip
+ */
 .alltabs-item[tabIsVisible] {
   box-shadow:none!important;
 }
