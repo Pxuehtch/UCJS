@@ -268,9 +268,9 @@ const kSiteList = [
             font-size:small!important;\
           }\
           .ucjs_sitestyle_weaken h3~*{\
-            opacity:.2!important;\
+            opacity:.3!important;\
           }\
-          .ucjs_sitestyle_weaken *:hover{\
+          .ucjs_sitestyle_weaken:hover *{\
             opacity:1!important;\
             transition:opacity .5s!important;\
           }';
@@ -324,7 +324,7 @@ const kSiteList = [
       });
 
       // process items
-      Array.forEach($S('li'), function(item) {
+      Array.forEach($S('.w'), function(item) {
         var link = $S1('.hd>h3>a', item);
         if (!link) {
           return;
@@ -342,52 +342,23 @@ const kSiteList = [
         .ucjs_sitestyle_weaken h3{\
           font-size:small!important;\
         }\
-        .ucjs_sitestyle_weaken .hd~*{\
+        .ucjs_sitestyle_weaken .hd~*,\
+        .ucjs_sitestyle_weaken h3~*\
+        {\
           opacity:.3!important;\
         }\
-        .ucjs_sitestyle_weaken *:hover{\
+        .ucjs_sitestyle_weaken:hover *{\
           opacity:1!important;\
           transition:opacity .5s!important;\
-        }\
-        /* multi-column */\
-        #wrapper, .size2of3, #WS2m .w, .dd{\
-          width:100%!important;\
-          overflow-x:hidden;\
-        }\
-        .nws .noimg{\
-          margin-left:0!important;\
-        }\
-        #WS2m>ul{\
-          -moz-column-count:2;\
-          -moz-column-gap:1em;\
         }';
 
       return css;
     }
   },
   {
+    disabled: true,
     name: 'bing Result',
-    include: /^http:\/\/www\.bing\.com\/search/,
-    style: function(aDocument) {
-      let css = '\
-        /* multi-column */\
-        #results_area{\
-          width:100%!important;\
-        }\
-        #content, .sa_cc{\
-          max-width:100%!important;\
-          padding-right:0!important;\
-        }\
-        #wg0{\
-          -moz-column-count:2;\
-          -moz-column-gap:1em;\
-        }\
-        #wg0>li{\
-          float:inherit!important;\
-        }';
-
-      return css;
-    }
+    include: /^http:\/\/www\.bing\.com\/search/
   },
   {
     name: 'Wikipedia Article',
