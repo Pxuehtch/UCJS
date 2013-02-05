@@ -602,12 +602,12 @@ var PrefMenu = (function() {
       let popup = $E('menupopup', {
         onpopupshowing: 'event.stopPropagation();'
       });
-      kSiteList.forEach(function(item, i) {
+      kSiteList.forEach(function({name, disabled}, i) {
         popup.appendChild($E('menuitem', {
           value: i,
-          label: item.name,
+          label: name + (disabled ? ' [disabled]' : ''),
           type: 'checkbox',
-          checked: !item.disabled,
+          checked: !disabled,
           closemenu: 'none'
         }));
       });
