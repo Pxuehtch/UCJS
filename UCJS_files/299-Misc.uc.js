@@ -240,7 +240,6 @@
 (function() {
 
   addEvent([gBrowser.mPanelContainer, 'mousedown', onMouseDown, false]);
-  addEvent([gBrowser.mPanelContainer, 'click', onClickCaptured, true]);
 
   function onMouseDown(aEvent) {
     let node = aEvent.target;
@@ -256,19 +255,6 @@
      */
     if (link && /^(?:_blank|_new|blank|new)$/i.test(link.target)) {
       link.target = '_top';
-    }
-  }
-
-  function onClickCaptured(aEvent) {
-    /**
-     * Disables Alt+Click on a link
-     * @note Fx default function: downloading of a link.
-     */
-    if (aEvent.altKey && aEvent.button === 0 &&
-        isHtmlDocument(aEvent.target.ownerDocument) &&
-        getLink(aEvent.target)) {
-      aEvent.preventDefault();
-      aEvent.stopPropagation();
     }
   }
 
