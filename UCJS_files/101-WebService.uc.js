@@ -131,15 +131,32 @@ var AliasFixup = (function() {
 /**
  * XMLHttpRequest handler
  */
-var mRequestHandler = (function() {
+const RequestHandler = (function() {
   // The minimum time for waiting a request
   // @value {integer} milliseconds > 0
   const kMinCooldownTime = 2000;
 
-  var lastRequestTime = Date.now();
+  // the request time for each host
+  const RequestTime = {
+    mRequestTimeList: {},
+
+    update: function(aURL) {
+      // @note Supposing that |URL| of a item of kPreset is valid.
+      let host = (/^https?:\/\/([^\/]+)/.exec(aURL))[1];
+
+      let lastRequestTime = this.mRequestTimeList[host] || 0;
+      let requestTime = Date.now();
+      let remainTime = kMinCooldownTime - (requestTime - lastRequestTime);
+
+      this.mRequestTimeList[host] = requestTime;
+
+      // returns the cooldown time for the next request
+      return Math.max(remainTime, 0)
+    }
+  };
 
   function request(aURL, aFunc) {
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open('GET', aURL, true);
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
@@ -154,11 +171,9 @@ var mRequestHandler = (function() {
       }
     };
 
-    var remainTime = kMinCooldownTime - (Date.now() - lastRequestTime);
-    var cooldownTime = Math.max(remainTime, 0)
+    let cooldownTime = RequestTime.update(aURL);
 
     setTimeout(function() {
-      lastRequestTime = Date.now();
       xhr.send(null);
     }, cooldownTime);
   }
@@ -208,7 +223,7 @@ function get(aOption) {
     return;
   }
 
-  mRequestHandler.request(
+  RequestHandler.request(
     result.URL,
     function(response, status) {
       if (result.parse) {
