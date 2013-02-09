@@ -391,13 +391,15 @@ const kSiteList = [
       }
 
       // wait for the player ready
-      setTimeout(preventAutoplay, 1000);
+      // TODO: Use a certain observer.
+      setTimeout(function(doc) {
+        try {
+          // WORKAROUND: check whether the document object is alive
+          doc.readyState && preventAutoplay(doc);
+        } catch (ex) {}
+      }, 1000, aDocument);
 
-      function preventAutoplay() {
-        if (!aDocument) {
-          return;
-        }
-
+      function preventAutoplay(aDocument) {
         var player;
 
         // Flash version
