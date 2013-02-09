@@ -839,7 +839,12 @@ var mTabSelector = {
   currentSelectedTime: 0,
 
   set: function(aTab) {
+    // TODO: Clear the interval timer properly.
+    // At the present, the timer is cleared every |onTabSelect|. This is on
+    // the premise that the other tab is *surely* selected after the tab is
+    // closed.
     this.clear();
+
     // repeatly observes a tab until its document completely loads while the
     // tab is selected
     this.timer = setInterval(function(tab) {
