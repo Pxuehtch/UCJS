@@ -643,12 +643,19 @@ var PageCSS = (function() {
       return;
     }
 
-    aDocument.addEventListener('DOMContentLoaded',
-    function onReady() {
+    aDocument.addEventListener('DOMContentLoaded', onReady, false);
+    aDocument.defaultView.addEventListener('unload', cleanup, false);
+
+    function cleanup() {
       aDocument.removeEventListener('DOMContentLoaded', onReady, false);
+      aDocument.defaultView.removeEventListener('unload', cleanup, false);
+    }
+
+    function onReady() {
+      cleanup();
 
       setContentStyleSheet(aDocument, aCSS);
-    }, false);
+    }
   }
 
   return {
