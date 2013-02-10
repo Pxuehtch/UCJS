@@ -119,10 +119,10 @@ function FindAgainScroller_init() {
 
     if (TextFinder.isResultFound) {
       if (mHCentered && mScrollObserver.isScrolled()) {
-        mHCentered.align(mScrollObserver.getScrolledState());
+        mHCentered.align(mScrollObserver.scrollState);
       }
       if (mSmoothScroll && mScrollObserver.isScrolled()) {
-        mSmoothScroll.start(mScrollObserver.getScrolledState());
+        mSmoothScroll.start(mScrollObserver.scrollState);
       }
     }
 
@@ -140,7 +140,7 @@ function FindAgainScroller_init() {
  *   attach: {function}
  *   detach: {function}
  *   isScrolled: {function}
- *   getScrolledState: {function}
+ *   scrollState: {hash}
  */
 function ScrollObserver() {
   var mScrollable = Scrollable();
@@ -150,7 +150,7 @@ function ScrollObserver() {
 
   function Scrollable() {
     var mItems = new Map();
-    var mScrolledState = null;
+    var mScrollState = null;
 
     // TODO: In Fx19 |Map::clear| will be available.
     // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
@@ -159,11 +159,11 @@ function ScrollObserver() {
         mItems.delete(node);
       }
 
-      if (mScrolledState !== null) {
-        delete mScrolledState.node;
-        delete mScrolledState.start;
-        delete mScrolledState.goal;
-        mScrolledState = null;
+      if (mScrollState !== null) {
+        delete mScrollState.node;
+        delete mScrollState.start;
+        delete mScrollState.goal;
+        mScrollState = null;
       }
     }
 
@@ -176,19 +176,19 @@ function ScrollObserver() {
     }
 
     function isScrolled() {
-      updateScrolledState();
-      return !!mScrolledState;
+      updateScrollState();
+      return !!mScrollState;
     }
 
-    function updateScrolledState() {
-      mScrolledState = null;
+    function updateScrollState() {
+      mScrollState = null;
 
       for (let [node, scroll] of mItems) {
         let now = getScroll(node);
         if (now.x !== scroll.x || now.y !== scroll.y) {
-          // @note |mScrolledState| is used as the parameters of
+          // @note |mScrollState| is used as the parameters of
           // |SmoothScroll::start|, |HorizontalCentered::align|.
-          mScrolledState = {
+          mScrollState = {
             node: node,
             start: scroll,
             goal: now
@@ -203,7 +203,7 @@ function ScrollObserver() {
       hasItem: hasItem,
       addItem: addItem,
       isScrolled: isScrolled,
-      getScrolledState: mScrolledState
+      get scrollState() mScrollState
     };
   }
 
@@ -310,7 +310,7 @@ function ScrollObserver() {
     attach: attach,
     detach: detach,
     isScrolled: mScrollable.isScrolled,
-    getScrolledState: mScrollable.getScrolledState
+    get scrollState() mScrollable.scrollState
   };
 }
 
