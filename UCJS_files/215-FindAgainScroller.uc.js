@@ -495,7 +495,7 @@ function SmoothScroll() {
     // divided by 8
     // far: The goal is out of the current view
     // near: The goal is into the view
-    pitch: {far: 12, near: 4}
+    pitch: {far: 10, near: 5}
   };
 
   var mTimerID;
