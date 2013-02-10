@@ -41,11 +41,12 @@ const kConfig = {
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
   skipInvisible: true,
 
-  // Align the scroll position of a found text
-  // AlignPosition() has the detail setting
-  // @note The result is scrolled at the center as Fx default.
+  // Center a found text horizontally
+  // @note The result is scrolled *vertically* centered by default. WORKAROUND
+  // for horizontally.
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=171237
-  alignPosition: true,
+  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=743103
+  horizontalCentered: true,
 
   // Scroll smoothly to a found text
   // SmoothScroll() has the detail setting
@@ -101,7 +102,7 @@ function FindAgainScroller_init() {
 
   // Optional functions
   var mSkipInvisible = kConfig.skipInvisible && SkipInvisible();
-  var mAlignPosition = kConfig.alignPosition && AlignPosition();
+  var mHCentered = kConfig.horizontalCentered && HorizontalCentered();
   var mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
   var mFoundBlink = kConfig.foundBlink && FoundBlink();
 
@@ -118,9 +119,8 @@ function FindAgainScroller_init() {
 
     if (TextFinder.isResultFound) {
       if (scrollable) {
-        if (mAlignPosition &&
-            (mAlignPosition.alwaysAlign || mScrollObserver.isScrolled())) {
-          mAlignPosition.align(aFindPrevious);
+        if (mHCentered && mScrollObserver.isScrolled()) {
+          mHCentered.align(mScrollObserver.getScrolledState());
         }
         if (mSmoothScroll && mScrollObserver.isScrolled()) {
           mSmoothScroll.start(mScrollObserver.getScrolledState());
@@ -440,42 +440,15 @@ function SkipInvisible() {
 }
 
 /**
- * Handler for the alignment of the position of a found text
+ * Handler for the centering horizontally of a found text
  * @return {hash}
- *   alwaysAlign: {boolean}
  *   align: {function}
  */
-function AlignPosition() {
-  const kOption = {
-    // How to align the frame of the found text in percentage
-    // * -1 means move the frame the minimum amount necessary in order
-    // for the entire frame to be visible (if possible)
-    vPosition: 50, // (%) 0:top, 50:center, 100:bottom, -1:minimum
-    hPosition: -1, // (%) 0:left, 50:center, 100:right, -1:minimum
-
-    // true: Reverse the position on 'Find previous' mode
-    reversePositionOnFindPrevious: false,
-
-    // true: Try to align when the match text is found into the current view
-    // false: No scrolling in the same view
-    alwaysAlign: false
-  };
-
-
-  //********** Functions
-
-  function align(aFindPrevious) {
-    var selection = getSelection();
-
+function HorizontalCentered() {
+  function align({node}) {
+    let selection = getSelection();
     if (selection) {
-      let v = kOption.vPosition, h = kOption.hPosition;
-
-      if (kOption.reversePositionOnFindPrevious && aFindPrevious) {
-        if (v > -1) v = 100 - v;
-        if (h > -1) h = 100 - h;
-      }
-
-      scrollSelection(selection, v, h);
+      scrollSelection(selection, node);
     }
   }
 
@@ -489,24 +462,41 @@ function AlignPosition() {
       getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
   }
 
-  function scrollSelection(aSelection, aVPosition, aHPosition) {
-    const {Ci} = window;
+  function scrollSelection(aSelection, aView) {
+    let range = aSelection.getRangeAt(0);
+    let {left, right, width} = range.getBoundingClientRect();
+    let viewWidth, center;
 
-    aSelection.
-    QueryInterface(Ci.nsISelectionPrivate).
-    scrollIntoView(
-      Ci.nsISelectionController.SELECTION_ANCHOR_REGION,
-      true,
-      aVPosition,
-      aHPosition
-    );
+    if (aView instanceof Window) {
+      viewWidth = aView.innerWidth;
+    } else {
+      let {left: viewLeft} = aView.getBoundingClientRect();
+      left -= viewLeft;
+      right -= viewLeft;
+      viewWidth = aView.clientWidth;
+    }
+
+    center = (viewWidth - width) / 2;
+    if (right < center) {
+      doCentering(aView, right - center);
+    }
+    else if (left > center) {
+      doCentering(aView, left - center);
+    }
+  }
+
+  function doCentering(aView, aX) {
+    if (aView instanceof Window) {
+      aView.scrollBy(aX, 0);
+    } else {
+      aView.scrollLeft += aX;
+    }
   }
 
 
   //********** Expose
 
   return {
-    get alwaysAlign() kOption.alwaysAlign,
     align: align
   };
 }
