@@ -111,25 +111,23 @@ function FindAgainScroller_init() {
   const {gFindBar} = window;
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
-    var scrollable = mScrollObserver.attach(TextFinder.text);
+    mScrollObserver.attach(TextFinder.text);
 
     do {
       $onFindAgainCommand.apply(this, arguments);
     } while (mSkipInvisible && mSkipInvisible.test());
 
     if (TextFinder.isResultFound) {
-      if (scrollable) {
-        if (mHCentered && mScrollObserver.isScrolled()) {
-          mHCentered.align(mScrollObserver.getScrolledState());
-        }
-        if (mSmoothScroll && mScrollObserver.isScrolled()) {
-          mSmoothScroll.start(mScrollObserver.getScrolledState());
-        }
+      if (mHCentered && mScrollObserver.isScrolled()) {
+        mHCentered.align(mScrollObserver.getScrolledState());
       }
+      if (mSmoothScroll && mScrollObserver.isScrolled()) {
+        mSmoothScroll.start(mScrollObserver.getScrolledState());
+      }
+    }
 
-      if (mFoundBlink) {
-        mFoundBlink.start();
-      }
+    if (mFoundBlink) {
+      mFoundBlink.start();
     }
 
     mScrollObserver.detach();
@@ -154,23 +152,17 @@ function ScrollObserver() {
     var mItems = new Map();
     var mScrolledState = null;
 
-    // TODO: In Fx19 |Map::size| will change from a method to a property.
-    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
-    function itemsCount() mItems.size();
-
     // TODO: In Fx19 |Map::clear| will be available.
     // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
     function cleanup() {
-      if (itemsCount()) {
-        for (let [node] of mItems) {
-          mItems.delete(node);
-        }
+      for (let [node] of mItems) {
+        mItems.delete(node);
       }
 
       if (mScrolledState !== null) {
-        mScrolledState.node = null;
-        mScrolledState.start = null;
-        mScrolledState.goal = null;
+        delete mScrolledState.node;
+        delete mScrolledState.start;
+        delete mScrolledState.goal;
         mScrolledState = null;
       }
     }
@@ -188,13 +180,6 @@ function ScrollObserver() {
       return !!mScrolledState;
     }
 
-    function getScrolledState() {
-      if (!mScrolledState) {
-        updateScrolledState();
-      }
-      return mScrolledState;
-    }
-
     function updateScrolledState() {
       mScrolledState = null;
 
@@ -202,7 +187,7 @@ function ScrollObserver() {
         let now = getScroll(node);
         if (now.x !== scroll.x || now.y !== scroll.y) {
           // @note |mScrolledState| is used as the parameters of
-          // |SmoothScroll::start|.
+          // |SmoothScroll::start|, |HorizontalCentered::align|.
           mScrolledState = {
             node: node,
             start: scroll,
@@ -214,21 +199,18 @@ function ScrollObserver() {
     }
 
     return {
-      get count() itemsCount(),
       cleanup: cleanup,
       addItem: hasItem,
       addItem: addItem,
       isScrolled: isScrolled,
-      getScrolledState: getScrolledState
+      getScrolledState: mScrolledState
     };
   }
 
   function attach(aFindText) {
     if (aFindText) {
       scanScrollables(window.content, aFindText);
-      return mScrollable.count > 0;
     }
-    return false;
   }
 
   function detach() {
