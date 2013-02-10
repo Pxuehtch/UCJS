@@ -505,7 +505,6 @@ function HorizontalCentered() {
  * Handler for scrolling an element smoothly
  * @return {hash}
  *   start: {function}
- *   stop: {function}
  */
 function SmoothScroll() {
   const kOption = {
@@ -521,34 +520,30 @@ function SmoothScroll() {
   var mStartTime;
 
   var mState = {
-    init: function(aNode, aStart, aGoal) {
+    init: function({node, goal}) {
       if (this.goal) {
         this.uninit(true);
       }
 
-      if (aGoal === undefined) {
-        return;
+      if (goal === undefined) {
+        return false;
       }
 
-      var scrollable = testScrollable(aNode);
+      var scrollable = testScrollable(node);
       if (!scrollable) {
-        return;
+        return false;
       }
 
       this.view = scrollable.view;
-      this.node = aNode;
-      this.goal = aGoal;
+      this.node = node;
+      this.goal = goal;
 
-      startScroll(aStart);
+      return true;
     },
 
-    uninit: function(aForceGoal, aOnScrollStopped) {
+    uninit: function() {
       if (!this.goal) {
         return;
-      }
-
-      if (!aOnScrollStopped) {
-        stopScroll(aForceGoal);
       }
 
       delete this.view;
@@ -560,13 +555,18 @@ function SmoothScroll() {
 
   //********** Functions
 
-  function startScroll(aStart) {
-    if (aStart) {
-      doScrollTo(aStart);
+  function startScroll(aState) {
+    if (!mState.init(aState)) {
+      return;
+    }
+
+    let start = aState.start;
+    if (start) {
+      doScrollTo(start);
     }
 
     mStartTime = Date.now();
-    doStep(getStep(aStart || getScroll().position), mStartTime);
+    doStep(getStep(start || getScroll().position), mStartTime);
   }
 
   function doStep(aStep, aLastTime) {
@@ -578,13 +578,15 @@ function SmoothScroll() {
     if (currentTime - mStartTime > 1000 || currentTime - aLastTime > 100) {
       // it takes too much time. stop stepping and jump to goal
       stopScroll(true);
-    } else if (
+    }
+    else if (
       (was.position.x === now.position.x || was.inside.x !== now.inside.x) &&
       (was.position.y === now.position.y || was.inside.y !== now.inside.y)
     ) {
       // goal or go over a bit. stop stepping at here
       stopScroll();
-    } else {
+    }
+    else {
       mTimerID = setTimeout(doStep, 0, getStep(now.position), currentTime);
     }
   }
@@ -602,7 +604,7 @@ function SmoothScroll() {
       doScrollTo(mState.goal);
     }
 
-    mState.uninit(false, true);
+    mState.uninit();
   }
 
   function getStep(aPosition) {
@@ -715,12 +717,7 @@ function SmoothScroll() {
   //********** Expose
 
   return {
-    start: function({node, start, goal}) {
-      mState.init(node, start, goal);
-    },
-    stop: function({forceGoal}) {
-      mState.uninit(forceGoal);
-    }
+    start: startScroll
   };
 }
 
