@@ -200,7 +200,7 @@ function ScrollObserver() {
 
     return {
       cleanup: cleanup,
-      addItem: hasItem,
+      hasItem: hasItem,
       addItem: addItem,
       isScrolled: isScrolled,
       getScrolledState: mScrolledState
