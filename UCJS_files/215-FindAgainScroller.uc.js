@@ -175,10 +175,12 @@ function ScrollObserver() {
       }
     }
 
+    function hasItem(aNode) {
+      return mItems.has(aNode);
+    }
+
     function addItem(aNode) {
-      if (!mItems.has(aNode)) {
-        mItems.set(aNode, getScroll(aNode));
-      }
+      mItems.set(aNode, getScroll(aNode));
     }
 
     function isScrolled() {
@@ -214,6 +216,7 @@ function ScrollObserver() {
     return {
       get count() itemsCount(),
       cleanup: cleanup,
+      addItem: hasItem,
       addItem: addItem,
       isScrolled: isScrolled,
       getScrolledState: getScrolledState
@@ -252,9 +255,9 @@ function ScrollObserver() {
       mScrollable.addItem(aWindow);
     }
 
-    // scan the elements that can be scrolled
+    // scan the textnodes that can be scrolled
     var text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
-    var xpath = 'descendant-or-self::*[contains(normalize-space(),"' + text +
+    var xpath = 'descendant::text()[contains(normalize-space(),"' + text +
       '")]|descendant::textarea';
     $X(xpath, root).forEach(function(node) {
       let item = testScrollable(node);
@@ -270,12 +273,26 @@ function ScrollObserver() {
 
     while (aNode) {
       if (aNode instanceof Element) {
+        // registered node
+        if (mScrollable.hasItem(aNode)) {
+          break;
+        }
+
+        // scrollable textbox
         if (aNode instanceof HTMLTextAreaElement &&
             aNode.scrollHeight > aNode.clientHeight) {
           return aNode;
         }
 
         style = getComputedStyle(aNode, '');
+
+        // hidden element
+        if (style.visibility !== 'visible' ||
+            style.display === 'none') {
+          break;
+        }
+
+        // scrollable element
         if (
           (/^(?:scroll|auto)$/.test(style.overflowY) &&
            aNode.scrollHeight > aNode.clientHeight) ||
