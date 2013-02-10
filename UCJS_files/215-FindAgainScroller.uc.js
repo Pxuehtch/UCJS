@@ -509,12 +509,12 @@ function HorizontalCentered() {
  */
 function SmoothScroll() {
   const kOption = {
-    // Pitch of the vertical scroll
+    // Pitch of the scroll
     // * 8 pitches mean approaching to the goal by each remaining distance
     // divided by 8
     // far: The goal is out of the current view
     // near: The goal is into the view
-    pitch: {far: 8, near: 4}
+    pitch: {far: 12, near: 4}
   };
 
   var mTimerID;
@@ -606,12 +606,24 @@ function SmoothScroll() {
   }
 
   function getStep(aPosition) {
-    var dX = mState.goal.x - aPosition.x,
-        dY = mState.goal.y - aPosition.y;
-    var pitchY = (Math.abs(dY) < mState.node.clientHeight) ?
-      kOption.pitch.far : kOption.pitch.near;
+    const {far, near} = kOption.pitch;
 
-    return Position(round(dX / 2), round(dY / pitchY));
+    let width, height;
+    if (mState.view) {
+      width = mState.view.innerWidth;
+      height = mState.view.innerHeight;
+    } else {
+      width = mState.node.clientWidth;
+      height = mState.node.clientHeight;
+    }
+
+    let dX = mState.goal.x - aPosition.x,
+        dY = mState.goal.y - aPosition.y;
+
+    let pitchX = (Math.abs(dX) < width) ? far : near,
+        pitchY = (Math.abs(dY) < height) ? far : near;
+
+    return Position(round(dX / pitchX), round(dY / pitchY));
   }
 
   function round(aValue) {
