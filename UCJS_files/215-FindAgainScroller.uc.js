@@ -122,10 +122,10 @@ function FindAgainScroller_init() {
     } while (mSkipInvisible && mSkipInvisible.test());
 
     if (TextFinder.isResultFound) {
-      if (mHCentered && mScrollObserver.isScrolled()) {
+      if (mHCentered && mScrollObserver.check()) {
         mHCentered.align(mScrollObserver.scrollState);
       }
-      if (mSmoothScroll && mScrollObserver.isScrolled()) {
+      if (mSmoothScroll && mScrollObserver.check()) {
         mSmoothScroll.start(mScrollObserver.scrollState);
       }
       if (mFoundBlink) {
@@ -142,7 +142,7 @@ function FindAgainScroller_init() {
  * @return {hash}
  *   attach: {function}
  *   detach: {function}
- *   isScrolled: {function}
+ *   check: {function}
  *   scrollState: {hash}
  */
 function ScrollObserver() {
@@ -152,12 +152,13 @@ function ScrollObserver() {
   //********** Functions
 
   function Scrollable() {
+    // TODO: Note |Map| in Fx19.
+    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
     var mItems = new Map();
     var mScrollState = null;
 
-    // TODO: In Fx19 |Map::clear| will be available.
-    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
     function cleanup() {
+      // TODO: |Map::clear| is available in Fx19.
       for (let [node] of mItems) {
         mItems.delete(node);
       }
@@ -178,14 +179,30 @@ function ScrollObserver() {
       mItems.set(aNode, getScroll(aNode));
     }
 
-    function isScrolled() {
+    function check() {
+      // TODO: |Map::size| changes to a property in Fx19.
+      if (!mItems.size()) {
+        return false;
+      }
+
       updateScrollState();
+
       return !!mScrollState;
     }
 
     function updateScrollState() {
-      mScrollState = null;
+      // update the goal
+      // once the scrolled node is found, we simply observe it.
+      if (mScrollState) {
+        let {node, goal} = mScrollState;
+        let now = getScroll(node);
+        if (now.x !== goal.x || now.y !== goal.y) {
+          mScrollState.goal = now;
+        }
+        return;
+      }
 
+      // first updating
       for (let [node, scroll] of mItems) {
         let now = getScroll(node);
         if (now.x !== scroll.x || now.y !== scroll.y) {
@@ -196,7 +213,7 @@ function ScrollObserver() {
             start: scroll,
             goal: now
           };
-          break;
+          return;
         }
       }
     }
@@ -205,7 +222,7 @@ function ScrollObserver() {
       cleanup: cleanup,
       hasItem: hasItem,
       addItem: addItem,
-      isScrolled: isScrolled,
+      check: check,
       get scrollState() mScrollState
     };
   }
@@ -336,7 +353,7 @@ function ScrollObserver() {
   return {
     attach: attach,
     detach: detach,
-    isScrolled: mScrollable.isScrolled,
+    check: mScrollable.check,
     get scrollState() mScrollable.scrollState
   };
 }
