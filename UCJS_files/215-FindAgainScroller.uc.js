@@ -74,6 +74,10 @@ var TextFinder = (function() {
       return gFindBar._foundEditable || gFindBar._currentWindow;
     },
 
+    get isCaseSensitive() {
+      return gFindBar.browser.fastFind.caseSensitive;
+    },
+
     get selectionController() {
       var editable = gFindBar._foundEditable;
       if (editable) {
@@ -236,11 +240,35 @@ function ScrollObserver() {
       mScrollable.addItem(aWindow);
     }
 
-    // scan the textnodes that can be scrolled
-    var text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
-    var xpath = 'descendant::text()[contains(normalize-space(),"' + text +
-      '")]|descendant::textarea';
-    $X(xpath, root).forEach(function(node) {
+    // grab <textarea>
+    let nodes = $X('descendant::textarea', root);
+
+    // testing small texts would be heavy
+    if (aFindText.length > 2) {
+      // grab the text nodes that have the find text
+      let text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
+      let xpath;
+      if (TextFinder.isCaseSensitive) {
+        xpath = 'descendant::text()[contains(normalize-space(),"' + text + '")]';
+      } else {
+        xpath = 'descendant::text()[contains(translate(normalize-space(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"' + text.toLowerCase() + '")]';
+      }
+      let textnodes = $X(xpath, root);
+
+      // WORKAROUND: filter too many nodes for performance
+      // Taking the top two out of the each separated would retrieve all
+      // scrollable elements that contain the find text.
+      let separation = Math.floor(textnodes.length / 10);
+      if (separation > 2) {
+        textnodes = textnodes.filter(function(node, i) {
+          return i % separation < 2;
+        });
+      }
+      nodes = nodes.concat(textnodes);
+    }
+
+    // scan the elements that can be scrolled
+    nodes.forEach(function(node) {
       let item = testScrollable(node);
       if (item) {
         mScrollable.addItem(item);
