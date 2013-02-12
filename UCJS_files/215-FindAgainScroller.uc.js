@@ -298,7 +298,7 @@ function ScrollObserver() {
     var style;
 
     while (aNode) {
-      if (aNode instanceof Element) {
+      if (aNode.nodeType === Node.ELEMENT_NODE) {
         // registered node
         if (mScrollable.hasItem(aNode)) {
           break;
@@ -435,7 +435,7 @@ function SkipInvisible() {
     var style;
 
     while (aNode) {
-      if (aNode instanceof Element) {
+      if (aNode.nodeType === Node.ELEMENT_NODE) {
         if (aNode.hidden) {
           return false;
         }
