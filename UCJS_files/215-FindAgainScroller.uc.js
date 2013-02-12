@@ -124,10 +124,9 @@ function FindAgainScroller_init() {
       if (mSmoothScroll && mScrollObserver.isScrolled()) {
         mSmoothScroll.start(mScrollObserver.scrollState);
       }
-    }
-
-    if (mFoundBlink) {
-      mFoundBlink.start();
+      if (mFoundBlink) {
+        mFoundBlink.start();
+      }
     }
 
     mScrollObserver.detach();
