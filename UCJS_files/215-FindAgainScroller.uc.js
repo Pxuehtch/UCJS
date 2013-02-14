@@ -252,24 +252,24 @@ function ScrollObserver() {
       return;
     }
 
-    // the document can be scrolled
+    // register the document can be scrolled
     if (aWindow.scrollMaxX || aWindow.scrollMaxY) {
       mScrollable.addItem(aWindow);
     }
 
-    // grab <textarea>
+    // grab all <textarea> because XPath can't find a text in <textarea>, and
+    // there would not be so much and not be heavy processing
     let nodes = $X('descendant::textarea', root);
 
-    // testing small texts would be heavy
+    // grab <text node> with the find text to check whether the container
+    // element is scrollable or not
+    // *typical scrollable element, <div>, <pre>, <ul>
+    // *avoid testing small texts because there would be so much and be heavy
     if (aFindText.length > 2) {
-      // grab the text nodes that have the find text
       let text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
-      let xpath;
-      if (TextFinder.isCaseSensitive) {
-        xpath = 'descendant::text()[contains(normalize-space(),"' + text + '")]';
-      } else {
-        xpath = 'descendant::text()[contains(translate(normalize-space(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"' + text.toLowerCase() + '")]';
-      }
+      let xpath = TextFinder.isCaseSensitive ?
+        'descendant::text()[contains(normalize-space(),"' + text + '")]' :
+        'descendant::text()[contains(translate(normalize-space(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"' + text.toLowerCase() + '")]';
       let textnodes = $X(xpath, root);
 
       // WORKAROUND: filter too many nodes for performance
@@ -281,10 +281,11 @@ function ScrollObserver() {
           return i % separation < 2;
         });
       }
+
       nodes = nodes.concat(textnodes);
     }
 
-    // scan the elements that can be scrolled
+    // register the elements that can be scrolled
     nodes.forEach(function(node) {
       let item = testScrollable(node);
       if (item) {
