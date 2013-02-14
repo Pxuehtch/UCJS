@@ -193,6 +193,9 @@ const RequestHandler = (function() {
  *   data: {string|number|[string|number]} [optional] the passed data
  *     @note Set the replaced values in the order in Array[] when a URL has
  *     multiple aliases.
+ *   tabOption: {hash} [optional] the option for a new tab
+ *     @see |ucjsUtil::openTab|
+ *     e.g. |tabOption: {inBackground: true}| opens tab in background
  */
 function open(aParams) {
   var result = getResult(aParams, 'open');
@@ -200,7 +203,7 @@ function open(aParams) {
     return;
   }
 
-  openTab(result.URL);
+  openTab(result.URL, result.tabOption);
 
   if (result.form) {
     setTimeout(inputAndSubmit, 500, result.form, result.data);
@@ -322,8 +325,8 @@ function reSubmit(aData, aSubmit, aLess) {
 
 //********** Imports
 
-function openTab(aURL) {
-  window.ucjsUtil.openTab(aURL, {inBackground: false});
+function openTab(aURL, aOption) {
+  window.ucjsUtil.openTab(aURL, aOption);
 }
 
 function $X1(aXPath, aContext) {
