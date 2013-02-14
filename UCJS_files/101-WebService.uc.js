@@ -260,27 +260,22 @@ function evaluate(aParams, aPreset) {
     result[key] = aPreset[key];
   }
 
-  // add or overwrite the option
+  // add the option
   for (let key in aParams) {
     if (!(key in result)) {
       result[key] = aParams[key];
     }
   }
 
-  result.URL = buildURL(result.URL, result.data);
+  // build a URL
+  if (!result.URL) {
+    throw 'aPreset.URL is empty';
+  }
+  if (result.data) {
+    result.URL = AliasFixup.create(result.URL, result.data);
+  }
 
   return result;
-}
-
-function buildURL(aURL, aData) {
-  if (!aURL) {
-    throw 'aURL is empty';
-  }
-  if (!aData) {
-    return aURL;
-  }
-
-  return AliasFixup.create(aURL, aData);
 }
 
 function inputAndSubmit(aForm, aData) {
