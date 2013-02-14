@@ -66,7 +66,7 @@ const kString = {
  *     specify the file extensions for 'LINK' type
  *   @key command {function} [optional] a command that is executed at showing
  *   the menuitem
- *     @param aOption {hash}
+ *     @param aParams {hash}
  *       @key menuitem {Element}
  *       @key data {string}
  *   @key disabled {boolean} [optional]
@@ -86,8 +86,8 @@ const kPreset = [
       return entryURL + '%SCHEMELESS%';
     },
 
-    command: function(aOption) {
-      let {menuitem, data} = aOption;
+    command: function(aParams) {
+      let {menuitem, data} = aParams;
 
       function updateLabel(text) {
         if (menuitem) {
