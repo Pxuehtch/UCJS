@@ -187,15 +187,15 @@ const RequestHandler = (function() {
 //********** Functions
 
 /**
- * @usage ucjsWebService.open(aOption);
- * @param aOption {hash}
+ * @usage ucjsWebService.open(aParams);
+ * @param aParams {hash}
  *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
  *     @note Set the replaced values in the order in Array[] when a URL has
  *     multiple aliases.
  */
-function open(aOption) {
-  var result = getResult(aOption, 'open');
+function open(aParams) {
+  var result = getResult(aParams, 'open');
   if (!result) {
     return;
   }
@@ -208,8 +208,8 @@ function open(aOption) {
 }
 
 /**
- * @usage ucjsWebService.get(aOption);
- * @param aOption {hash}
+ * @usage ucjsWebService.get(aParams);
+ * @param aParams {hash}
  *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
  *     @note Set the replaced values in the order in Array[] when a URL has
@@ -217,8 +217,8 @@ function open(aOption) {
  *   callback: {function} a method to get a response value
  *     @param response {string} a response text of request
  */
-function get(aOption) {
-  var result = getResult(aOption, 'get');
+function get(aParams) {
+  var result = getResult(aParams, 'get');
   if (!result) {
     return;
   }
@@ -234,16 +234,16 @@ function get(aOption) {
   );
 }
 
-function getResult(aOption, aType) {
-  if (!aOption.name) {
-    throw 'aOption.name is empty';
+function getResult(aParams, aType) {
+  if (!aParams.name) {
+    throw 'aParams.name is empty';
   }
 
   var result = null;
 
   kPresets.some(function(preset) {
-    if (preset.type === aType && preset.name === aOption.name) {
-      result = evaluate(aOption, preset);
+    if (preset.type === aType && preset.name === aParams.name) {
+      result = evaluate(aParams, preset);
       return true;
     }
     return false;
@@ -252,7 +252,7 @@ function getResult(aOption, aType) {
   return result;
 }
 
-function evaluate(aOption, aPreset) {
+function evaluate(aParams, aPreset) {
   var result = {};
 
   // copy the preset
@@ -261,9 +261,9 @@ function evaluate(aOption, aPreset) {
   }
 
   // add or overwrite the option
-  for (let key in aOption) {
+  for (let key in aParams) {
     if (!(key in result)) {
-      result[key] = aOption[key];
+      result[key] = aParams[key];
     }
   }
 
