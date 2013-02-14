@@ -5,7 +5,8 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage Access to functions through the global scope, |ucjsWebService.XXX|.
+// @usage Access to functions through the global scope,
+// |window.ucjsWebService.XXX|.
 
 
 var ucjsWebService = (function(window, undefined) {
@@ -187,7 +188,8 @@ const RequestHandler = (function() {
 //********** Functions
 
 /**
- * @usage ucjsWebService.open(aParams);
+ * Opens a new tab with the service
+ * @usage window.ucjsWebService.open(aParams);
  * @param aParams {hash}
  *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
@@ -211,13 +213,14 @@ function open(aParams) {
 }
 
 /**
- * @usage ucjsWebService.get(aParams);
+ * Gets the response of request to the service
+ * @usage window.ucjsWebService.get(aParams);
  * @param aParams {hash}
  *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
  *     @note Set the replaced values in the order in Array[] when a URL has
  *     multiple aliases.
- *   callback: {function} a method to get a response value
+ *   callback: {function} a method to handle a response value
  *     @param response {string} a response text of request
  */
 function get(aParams) {
