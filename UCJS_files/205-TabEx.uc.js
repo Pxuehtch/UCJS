@@ -1628,7 +1628,7 @@ function selectTab(aTab) {
 //********** Utilities
 
 /**
- * Makes an unique value with the current time
+ * Makes a unique value with the current time
  * @return {integer}
  */
 var getTime = (function() {

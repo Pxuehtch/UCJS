@@ -88,8 +88,9 @@ function toggleCSS(aCSS, aHidden) {
   }
 }
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
+}
 
 
 //********** Entry point

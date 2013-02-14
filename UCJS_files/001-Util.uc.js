@@ -1051,7 +1051,7 @@ function setPref(aKey, aVal) {
 
 function logMessage(aTarget, aMessage) {
   function U(value) {
-    return toStringForUI(value, 'UTF-8');
+    return toStringForUI(value);
   }
 
   const kMessageFormat = '[%target%]\n%msg%';

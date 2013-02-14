@@ -327,17 +327,21 @@ function reSubmit(aData, aSubmit, aLess) {
 
 //********** Imports
 
-function openTab(aURL)
+function openTab(aURL) {
   window.ucjsUtil.openTab(aURL, {inBackground: false});
+}
 
-function $X1(aXPath, aContext)
-  window.ucjsUtil.getFirstNodeByXPath(aXPath, aContext);
+function $X1(aXPath, aContext) {
+  return window.ucjsUtil.getFirstNodeByXPath(aXPath, aContext);
+}
 
-function $XA(aXPath, aContext)
-  window.ucjsUtil.getNodesByXPath(aXPath, aContext);
+function $XA(aXPath, aContext) {
+  return window.ucjsUtil.getNodesByXPath(aXPath, aContext);
+}
 
-function log(aMsg)
-  window.ucjsUtil.logMessage('WebService.uc.js', aMsg);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('WebService.uc.js', aMsg);
+}
 
 
 //********** Exports
@@ -345,10 +349,12 @@ function log(aMsg)
 return {
   open: open,
   get: get,
-  reSubmitLess:
-    function(aData, aSubmit) reSubmit(aData, aSubmit, true),
-  reSubmitMore:
-    function(aData, aSubmit) reSubmit(aData, aSubmit, false)
+  reSubmitLess: function(aData, aSubmit) {
+    return reSubmit(aData, aSubmit, true);
+  },
+  reSubmitMore: function(aData, aSubmit) {
+    return reSubmit(aData, aSubmit, false);
+  }
 };
 
 
