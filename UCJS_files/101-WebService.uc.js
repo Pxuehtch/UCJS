@@ -205,9 +205,13 @@ function open(aParams) {
     return;
   }
 
-  openTab(result.URL, result.tabOption);
+  let tab = openTab(result.URL, result.tabOption);
 
-  if (result.form) {
+  // TODO: Observe the document loaded to manage a form.
+  // WORKAROUND: Uses an easy delay for a selected tab. URL is only opened for
+  // a background tab.
+  // XXX: I'm unwilling to handle an observer for this.
+  if (tab.selected && result.form) {
     setTimeout(inputAndSubmit, 500, result.form, result.data);
   }
 }
@@ -329,7 +333,7 @@ function reSubmit(aData, aSubmit, aLess) {
 //********** Imports
 
 function openTab(aURL, aOption) {
-  window.ucjsUtil.openTab(aURL, aOption);
+  return window.ucjsUtil.openTab(aURL, aOption);
 }
 
 function $X1(aXPath, aContext) {
