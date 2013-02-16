@@ -66,16 +66,8 @@ var TextFinder = (function() {
   const {gFindBar} = window;
 
   return {
-    get text() {
-      return gFindBar._findField.value;
-    },
-
     get isResultFound() {
       return gFindBar._foundEditable || gFindBar._currentWindow;
-    },
-
-    get isCaseSensitive() {
-      return gFindBar.browser.fastFind.caseSensitive;
     },
 
     get selectionController() {
@@ -115,7 +107,8 @@ function FindAgainScroller_init() {
   const {gFindBar} = window;
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
-    mScrollObserver.attach(TextFinder.text);
+    // take a snapshot of the state of scroll before finding
+    mScrollObserver.attach();
 
     do {
       $onFindAgainCommand.apply(this, arguments);
@@ -227,20 +220,18 @@ function ScrollObserver() {
     };
   }
 
-  function attach(aFindText) {
-    if (aFindText) {
-      scanScrollables(window.content, aFindText);
-    }
+  function attach() {
+    scanScrollables(window.content);
   }
 
   function detach() {
     mScrollable.cleanup();
   }
 
-  function scanScrollables(aWindow, aFindText) {
+  function scanScrollables(aWindow) {
     if (aWindow.frames) {
       Array.forEach(aWindow.frames, function(frame) {
-        scanScrollables(frame, aFindText);
+        scanScrollables(frame);
       });
     }
 
@@ -252,84 +243,53 @@ function ScrollObserver() {
       return;
     }
 
-    // register the document can be scrolled
+    // register the document that can be scrolled
     if (aWindow.scrollMaxX || aWindow.scrollMaxY) {
       mScrollable.addItem(aWindow);
     }
 
-    // grab all <textarea> because XPath can't find a text in <textarea>, and
-    // there would not be so much and not be heavy processing
-    let nodes = $X('descendant::textarea', root);
+    // register the typical elements that can be scrolled
+    // There may be many <div> so that we grab the deepest <div> and test the
+    // scrollability to its ancestor.
+    const xpath = '//textarea|//pre|//ul|//ol|//div[not(descendant::div)]';
 
-    // grab <text node> with the find text to check whether the container
-    // element is scrollable or not
-    // *typical scrollable element, <div>, <pre>, <ul>
-    // *avoid testing small texts because there would be so much and be heavy
-    if (aFindText.length > 2) {
-      let text = aFindText.replace(/\"/g, '&quot;').replace(/\'/g, '&apos;');
-      let xpath = TextFinder.isCaseSensitive ?
-        'descendant::text()[contains(normalize-space(),"' + text + '")]' :
-        'descendant::text()[contains(translate(normalize-space(),"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"),"' + text.toLowerCase() + '")]';
-      let textnodes = $X(xpath, root);
-
-      // WORKAROUND: filter too many nodes for performance
-      // Taking the top two out of the each separated would retrieve all
-      // scrollable elements that contain the find text.
-      let separation = Math.floor(textnodes.length / 10);
-      if (separation > 2) {
-        textnodes = textnodes.filter(function(node, i) {
-          return i % separation < 2;
-        });
-      }
-
-      nodes = nodes.concat(textnodes);
-    }
-
-    // register the elements that can be scrolled
-    nodes.forEach(function(node) {
-      let item = testScrollable(node);
-      if (item) {
-        mScrollable.addItem(item);
+    $X(xpath, root).forEach(function(node) {
+      let testAncestor = node instanceof HTMLDivElement;
+      let scrollable = testScrollable(node, testAncestor);
+      if (scrollable) {
+        mScrollable.addItem(scrollable);
       }
     });
   }
 
-  function testScrollable(aNode) {
-    var getComputedStyle = aNode.ownerDocument.defaultView.getComputedStyle;
-    var style;
+  function testScrollable(aNode, aTestAncestor) {
+    function isRegistered(aNode) {
+      return mScrollable.hasItem(aNode);
+    }
 
-    while (aNode) {
-      if (aNode.nodeType === Node.ELEMENT_NODE) {
-        // registered node
-        if (mScrollable.hasItem(aNode)) {
-          break;
+    function isScrollable(aNode) {
+      return aNode.scrollHeight > aNode.clientHeight ||
+             aNode.scrollWidth > aNode.clientWidth;
+    }
+
+    if (aTestAncestor) {
+      while (aNode) {
+        if (aNode.nodeType === Node.ELEMENT_NODE) {
+          if (isRegistered(aNode)) {
+            return null;
+          }
+          if (isScrollable(aNode)) {
+            return aNode;
+          }
         }
-
-        // scrollable textbox
-        if (aNode instanceof HTMLTextAreaElement &&
-            aNode.scrollHeight > aNode.clientHeight) {
-          return aNode;
-        }
-
-        style = getComputedStyle(aNode, '');
-
-        // hidden element
-        if (style.visibility !== 'visible' ||
-            style.display === 'none') {
-          break;
-        }
-
-        // scrollable element
-        if (
-          (/^(?:scroll|auto)$/.test(style.overflowY) &&
-           aNode.scrollHeight > aNode.clientHeight) ||
-          (/^(?:scroll|auto)$/.test(style.overflowX) &&
-           aNode.scrollWidth > aNode.clientWidth)
-        ) {
-          return aNode;
-        }
+        aNode = aNode.parentNode;
       }
-      aNode = aNode.parentNode;
+      return null;
+    }
+
+    if (!isRegistered(aNode) &&
+        isScrollable(aNode)) {
+      return aNode;
     }
     return null;
   }
@@ -709,18 +669,10 @@ function SmoothScroll() {
       view = getWindow(aNode);
       scrollable = view.scrollMaxX || view.scrollMaxY;
     }
-    else if (aNode instanceof HTMLTextAreaElement) {
-      scrollable = aNode.scrollHeight > aNode.clientHeight;
-    }
     else if (aNode instanceof Element) {
-      let style = getWindow(aNode).getComputedStyle(aNode, '');
       scrollable =
-        style.overflowY === 'scroll' ||
-        style.overflowX === 'scroll' ||
-        (style.overflowY === 'auto' &&
-         aNode.scrollHeight > aNode.clientHeight) ||
-        (style.overflowX === 'auto' &&
-         aNode.scrollWidth > aNode.clientWidth);
+        aNode.scrollHeight > aNode.clientHeight ||
+        aNode.scrollWidth > aNode.clientWidth;
     }
 
     if (scrollable) {
