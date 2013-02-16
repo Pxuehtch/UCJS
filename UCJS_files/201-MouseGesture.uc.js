@@ -865,9 +865,9 @@ function GestureManager() {
           gesture: buildGesture(),
           dragData: mDragData
         });
-      } catch (e) {
+      } catch (ex) {
         mError = 'Command error';
-        log(showStatusText() + '\n' + e);
+        log(showStatusText() + '\n' + ex);
       }
     }
   }
@@ -1033,7 +1033,7 @@ function getLinkURL(aNode) {
       try {
         // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
         return window.makeURLAbsolute(node.baseURI, node.href.baseVal);
-      } catch (e) {}
+      } catch (ex) {}
     } else {
       return node.href;
     }
@@ -1046,7 +1046,7 @@ function getImageURL(aNode) {
     try {
       // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
       return window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
-    } catch (e) {}
+    } catch (ex) {}
   } else if (aNode instanceof HTMLImageElement) {
     return aNode.src;
   }

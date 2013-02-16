@@ -8,6 +8,10 @@
 // @usage Access to items in the URLbar context menu.
 // @note Some functions are exported to global (ucjsNaviLink.XXX).
 
+// TODO: The URLbar is initialized when the toolbar customization panel opens.
+// Observe it and fix our broken functions.
+// WORKAROUND: Restart Firefox after customizing.
+
 
 var ucjsNaviLink = (function(window, undefined) {
 

@@ -170,7 +170,7 @@ var mStatusField = (function() {
       var URI;
       try {
         URI = PlacesUtils._uri(url);
-      } catch (e) {}
+      } catch (ex) {}
 
       if (URI) {
         let visited;
@@ -268,7 +268,7 @@ var mStatusField = (function() {
     try {
       // convert microseconds into milliseconds
       time = root.getChild(0).time / 1000;
-    } catch (e) {}
+    } catch (ex) {}
     root.containerOpen = false;
 
     return time || 0;

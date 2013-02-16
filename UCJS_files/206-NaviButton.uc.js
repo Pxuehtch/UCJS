@@ -423,7 +423,7 @@ var mHistory = {
           info.URL = entry.URI.spec;
           try {
             info.host = entry.URI.host;
-          } catch (e) {
+          } catch (ex) {
             info.host = entry.URI.scheme;
           }
         }

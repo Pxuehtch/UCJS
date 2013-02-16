@@ -66,7 +66,7 @@ function build() {
       // @see chrome://browser/content/pageinfo/pageInfo.js::
       // goThroughFrames()
       window.goThroughFrames(window.gDocument, window.gWindow);
-    } catch (e) {
+    } catch (ex) {
       // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]:
       // gWindow.frames.length is undefined after closing the target page
       // which have frames.
@@ -181,7 +181,7 @@ function grabLink(aNode) {
     try {
       address = io.newURI(href, charset,
         io.newURI(aNode.baseURI, charset, null)).spec;
-    } catch (e) {
+    } catch (ex) {
       address = kNote.error;
     }
     addLink([

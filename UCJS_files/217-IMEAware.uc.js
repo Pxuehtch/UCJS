@@ -139,7 +139,7 @@ var mIMEAwareHandler = {
     try {
       return !!(this.textbox &&
         window.Cu.getWeakReference(this.textbox).get());
-    } catch (e) {}
+    } catch (ex) {}
     return false;
   },
 

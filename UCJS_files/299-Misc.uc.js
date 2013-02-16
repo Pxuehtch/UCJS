@@ -17,7 +17,7 @@
 
 /**
  * Sets style of Firefox window
- * @note This setting is for my own windows theme.
+ * @note This setting is for the themes of my Firefox and OS.
  *
  * TODO: |chromemargin| is reset after returning from the print-preview.
  * WORKAROUND: key command 'Alt+0', see Overlay.uc.xul::ucjs_key_ResetMargin
@@ -50,7 +50,7 @@
         PlacesUtils._uri(aNode.uri);
         // Use raw URL.
         title = aNode.uri;
-      } catch (e) {
+      } catch (ex) {
         // Use clipped URL for non-standard URIs (e.g. data:, javascript:).
         title = aNode.uri.substr(0, 32) + this.ellipsis;
       }
@@ -330,7 +330,10 @@
  * Show the status text in the URL bar
  * @note The default statusbar is used when the fullscreen mode.
  * @require UI.uc.js
- * TODO: When the toolbar is customized, the statusfield in the urlbar is lost.
+ *
+ * TODO: The URLbar is initialized when the toolbar customization panel opens.
+ * Observe it and fix our broken functions.
+ * WORKAROUND: Restart Firefox after customizing.
  */
 (function() {
   // move '#statusbar-display' before 'input.urlbar-input' to control them
@@ -413,7 +416,7 @@
 
 /**
  * Clear scrollbars
- * @note This setting is for my own windows theme.
+ * @note This setting is for the themes of my Firefox and OS.
  */
 (function() {
 

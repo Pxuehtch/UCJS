@@ -259,7 +259,7 @@ var mHistoryList = (function() {
     root.containerOpen = true;
     try {
       time = toMillisec(root.getChild(0).time);
-    } catch (e) {}
+    } catch (ex) {}
     root.containerOpen = false;
 
     return time || 0;
@@ -507,7 +507,7 @@ var mClosedList = (function() {
       icon = null;
       try {
         icon = data.tabs[data.selected - 1].attributes.image;
-      } catch (e) {}
+      } catch (ex) {}
 
       aPopup.appendChild($E('menuitem', {
         label: getTitle(data.title),
@@ -598,7 +598,7 @@ function getTitle(aTitle, aURL) {
       // @see chrome://global/content/contentAreaUtils.js::makeURI
       window.makeURI(aURL, null, null);
       aTitle = aURL;
-    } catch (e) {
+    } catch (ex) {
       // Clip non-standard URL. (e.g. data:, javascript:)
       aTitle = aURL.substr(0, 32) + '...';
     }
@@ -617,7 +617,7 @@ function getFavicon(aIcon, aPageURI) {
       try {
         // @see chrome://global/content/contentAreaUtils.js::makeURI
         aPageURI = window.makeURI(aPageURI, null, null);
-      } catch (e) {
+      } catch (ex) {
         aPageURI = null;
       }
     }
@@ -625,14 +625,14 @@ function getFavicon(aIcon, aPageURI) {
     if (aPageURI) {
       try {
         aIcon = favicons.getFaviconForPage(aPageURI).spec;
-      } catch (e) {}
+      } catch (ex) {}
 
       if (!aIcon && !/^https?:/.test(aPageURI.spec)) {
         let fileExtension;
         try {
           fileExtension =
             aPageURI.QueryInterface(window.Ci.nsIURL).fileExtension;
-        } catch (e) {}
+        } catch (ex) {}
 
         if (fileExtension) {
           aIcon = 'moz-icon://.%EXT%?size=16'.

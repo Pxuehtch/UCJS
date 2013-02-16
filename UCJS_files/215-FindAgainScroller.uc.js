@@ -78,7 +78,7 @@ var TextFinder = (function() {
             QueryInterface(window.Ci.nsIDOMNSEditableElement).
             editor.
             selectionController;
-        } catch (e) {}
+        } catch (ex) {}
         return null;
       }
 
