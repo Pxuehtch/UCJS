@@ -21,8 +21,7 @@ var ucjsUI = (function(window, undefined) {
  */
 var mContentArea = {
   get contextMenu() {
-    delete this.contextMenu;
-    return this.contextMenu = $ID('contentAreaContextMenu');
+    return $ID('contentAreaContextMenu');
   }
 };
 
@@ -30,104 +29,90 @@ var mContentArea = {
  * Location bar
  * @see chrome://browser/content/urlbarBindings.xml
  */
-var mURLBar = (function() {
-  // @see chrome://browser/content/browser.js
-  const {gURLbar} = window;
+var mURLBar = {
+  get textBox() {
+    return $ANONID('textbox-input-box', gURLBar);
+  },
 
-  return {
-    get textBox() {
-      delete this.textBox;
-      return this.textBox = $ANONID('textbox-input-box', gURLBar);
-    },
-
-    get contextMenu() {
-      delete this.contextMenu;
-      return this.contextMenu = $ANONID('input-box-contextmenu', this.textBox);
-    }
-  };
-})();
+  get contextMenu() {
+    return $ANONID('input-box-contextmenu', this.textBox);
+  }
+};
 
 /**
  * Find bar
  * @see chrome://global/content/bindings/findbar.xml
  */
-var mFindBar = (function() {
-  // @see chrome://browser/content/browser.js
-  const {gFindBar} = window;
+var mFindBar = {
+  get textBox() {
+    return gFindBar.getElement('findbar-textbox');
+  },
 
-  return {
-    get textBox() {
-      delete this.textBox;
-      return this.textBox = gFindBar.getElement('findbar-textbox');
-    },
+  get highlightButton() {
+    return gFindBar.getElement('highlight');
+  },
 
-    get highlightButton() {
-      delete this.highlightButton;
-      return this.highlightButton = gFindBar.getElement('highlight');
-    },
+  get text() {
+    return this.textBox.value;
+  },
 
-    get text() {
-      return this.textBox.value;
-    },
+  set text(aValue) {
+    aValue =  aValue || '';
 
-    set text(aValue) {
-      aValue =  aValue || '';
-
-      if (this.text !== aValue) {
-        this.textBox.value = aValue;
-      }
-
-      if (!gFindBar.hidden) {
-        this.textBox.focus();
-        this.textBox.select();
-      }
-    },
-
-    toggleFindbar: function() {
-      if (gFindBar.hidden) {
-        gFindBar.onFindCommand();
-      } else {
-        gFindBar.close();
-      }
-    },
-
-    toggleHighlight: function(aHighlight) {
-      gFindBar.toggleHighlight(aHighlight);
-
-      if (aHighlight) {
-        this.highlightButton.setAttribute('checked', 'true');
-      } else {
-        this.highlightButton.removeAttribute('checked');
-      }
-    },
-
-    findWith: function(aText, aHighlight) {
-      if (!aText) {
-        return;
-      }
-
-      if (this.text) {
-        this.clearText();
-      }
-
-      gFindBar.onFindCommand();
-      this.text = aText;
-      gFindBar.onFindAgainCommand();
-
-      if (aHighlight) {
-        this.toggleHighlight(true);
-      }
-    },
-
-    clearText: function() {
-      this.text = '';
-
-      if (this.highlightButton.checked) {
-        this.toggleHighlight(false);
-      }
+    if (this.text !== aValue) {
+      this.textBox.value = aValue;
     }
-  };
-})();
+
+    if (!gFindBar.hidden) {
+      this.textBox.focus();
+      this.textBox.select();
+    }
+  },
+
+  toggleFindbar: function() {
+    if (gFindBar.hidden) {
+      gFindBar.onFindCommand();
+    } else {
+      gFindBar.close();
+    }
+  },
+
+  toggleHighlight: function(aHighlight) {
+    gFindBar.toggleHighlight(aHighlight);
+
+    if (aHighlight) {
+      this.highlightButton.setAttribute('checked', 'true');
+    } else {
+      this.highlightButton.removeAttribute('checked');
+    }
+  },
+
+  findWith: function(aText, aHighlight) {
+    if (!aText) {
+      return;
+    }
+
+    if (this.text) {
+      this.clearText();
+    }
+
+    gFindBar.onFindCommand();
+    this.text = aText;
+    gFindBar.onFindAgainCommand();
+
+    if (aHighlight) {
+      this.toggleHighlight(true);
+    }
+  },
+
+  clearText: function() {
+    this.text = '';
+
+    if (this.highlightButton.checked) {
+      this.toggleHighlight(false);
+    }
+  }
+};
 
 /**
  * Status bar
@@ -304,8 +289,7 @@ var mStatusField = (function() {
 
   return {
     get textBox() {
-      delete this.textBox;
-      return this.textBox = $ID('statusbar-display');
+      return $ID('statusbar-display');
     },
 
     // Gets statusbar text
