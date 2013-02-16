@@ -327,17 +327,21 @@
 })();
 
 /**
- * Show status text in URL bar
+ * Show the status text in the URL bar
  * @note The default statusbar is used when the fullscreen mode.
  * @require UI.uc.js
  * TODO: When the toolbar is customized, the statusfield in the urlbar is lost.
  */
 (function() {
-  // Move '#statusbar-display' before 'input.urlbar-input' to control them by
-  // CSS
-  var urlbarTextbox = window.ucjsUI.URLBar.textBox;
-  urlbarTextbox.insertBefore(ucjsUI.StatusField.textBox,
-    urlbarTextbox.firstChild);
+  // move '#statusbar-display' before 'input.urlbar-input' to control them
+  // by CSS
+  attachStatusField();
+  function attachStatusField() {
+    const {ucjsUI} = window;
+    let statusField = ucjsUI.StatusField.textBox;
+    let urlbarTextbox = ucjsUI.URLBar.textBox;
+    urlbarTextbox.insertBefore(statusField, urlbarTextbox.firstChild);
+  }
 
   // Set the position of a status display
   // @modified chrome://browser/content/browser.js::
