@@ -131,13 +131,17 @@ var mStatusField = (function() {
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
   const kLinkFormat = '%url% [%time%]';
 
+  function getTextBox() {
+    return XULBrowserWindow.statusTextField;
+  }
+
   /**
    * Show a message text
    */
   function showMessage(aText) {
     const {MESSAGE} = kStatusAttribute;
     let text = aText || '';
-    let textField = XULBrowserWindow.statusTextField;
+    let textField = getTextBox();
 
     XULBrowserWindow.setJSStatus(text);
 
@@ -218,7 +222,7 @@ var mStatusField = (function() {
     const $updateStatusField = XULBrowserWindow.updateStatusField;
     XULBrowserWindow.updateStatusField = function() {
       var {LINKSTATE} = kStatusAttribute;
-      var textField = XULBrowserWindow.statusTextField;
+      var textField = getTextBox();
 
       if (XULBrowserWindow.overLink && linkState) {
         textField.setAttribute(LINKSTATE, linkState);
@@ -316,7 +320,7 @@ var mStatusField = (function() {
 
   return {
     get textBox() {
-      return $ID('statusbar-display');
+      return getTextBox();
     },
 
     exists: function() {
