@@ -153,38 +153,35 @@ var mStatusField = (function() {
   }
 
   /**
-   * Toggle showing the statusbar text for a link URL under a cursor
+   * Handler of the state of a link under a cursor
    */
-  let toggleShowOverLink = (function() {
-    // @modified chrome://browser/content/browser.js::
-    // XULBrowserWindow::setOverLink
-    var $setOverLink = null;
+  const OverLink = (function() {
+    let disableSetOverLink = false;
+    let linkState = null;
 
-    return function(aEnabled) {
-      // only at first, set to the current |setOverLink|
-      if (!$setOverLink) {
-        $setOverLink = XULBrowserWindow.setOverLink;
+    /**
+     * Toggle the showing
+     */
+    function toggle(aShouldShow) {
+      if (!aShouldShow) {
+        // clear the former state
+        XULBrowserWindow.setOverLink('', null);
       }
 
-      if (aEnabled) {
-        XULBrowserWindow.setOverLink = $setOverLink;
-      } else {
-        XULBrowserWindow.setOverLink = function() {};
-      }
-    };
-  })();
+      disableSetOverLink = !aShouldShow;
+    }
 
-  /**
-   * Indicate the state of a link under a cursor
-   */
-  customizeOverLinkText();
-  function customizeOverLinkText() {
-    var linkState = null;
-
+    /**
+     * Customize the default functions
+     */
     // @modified chrome://browser/content/browser.js::
     // XULBrowserWindow::setOverLink
-    var $setOverLink = XULBrowserWindow.setOverLink;
+    const $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink = function(url, anchorElt) {
+      if (disableSetOverLink) {
+        return;
+      }
+
       // clear the message to hide the status after the cursor leaves
       showMessage('');
 
@@ -218,7 +215,7 @@ var mStatusField = (function() {
 
     // @modified chrome://browser/content/browser.js::
     // XULBrowserWindow::updateStatusField
-    var $updateStatusField = XULBrowserWindow.updateStatusField;
+    const $updateStatusField = XULBrowserWindow.updateStatusField;
     XULBrowserWindow.updateStatusField = function() {
       var {LINKSTATE} = kStatusAttribute;
       var textField = XULBrowserWindow.statusTextField;
@@ -233,76 +230,86 @@ var mStatusField = (function() {
       $updateStatusField.apply(this, arguments);
     };
 
-    // set CSS styles
-    var css = '\
-      .statuspanel-label{\
-        font-weight:bolder!important;\
-      }\
-      #statusbar-display:not([%%kStatusAttribute.LINKSTATE%%]) label{\
-        color:brown!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
-        color:green!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
-        color:purple!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
-        color:red!important;\
-      }\
-      #statusbar-display[%%kStatusAttribute.MESSAGE%%] label{\
-        color:blue!important;\
-      }\
-      #statusbar-display[inactive],\
-      #statusbar-display[label=""]{\
-        display:none!important;\
-      }\
-    ';
-    setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
-  }
-
-  function getLastVisitTime(aURI) {
-    if (aURI.schemeIs('about')) {
-      return 0;
+    /**
+     * Register the appearance
+     */
+    registerCSS();
+    function registerCSS() {
+      const css = '\
+        .statuspanel-label{\
+          font-weight:bolder!important;\
+        }\
+        #statusbar-display:not([%%kStatusAttribute.LINKSTATE%%]) label{\
+          color:brown!important;\
+        }\
+        #statusbar-display[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
+          color:green!important;\
+        }\
+        #statusbar-display[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
+          color:purple!important;\
+        }\
+        #statusbar-display[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
+          color:red!important;\
+        }\
+        #statusbar-display[%%kStatusAttribute.MESSAGE%%] label{\
+          color:blue!important;\
+        }\
+        #statusbar-display[inactive],\
+        #statusbar-display[label=""]{\
+          display:none!important;\
+        }\
+      ';
+      setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
     }
 
-    // @see resource:///modules/PlacesUtils.jsm
-    const history = window.PlacesUtils.history;
-    const {Ci} = window;
+    function getLastVisitTime(aURI) {
+      if (aURI.schemeIs('about')) {
+        return 0;
+      }
 
-    var query, options, root;
-    var time;
+      // @see resource:///modules/PlacesUtils.jsm
+      const history = window.PlacesUtils.history;
+      const {Ci} = window;
 
-    query = history.getNewQuery();
-    query.uri = aURI;
+      var query, options, root;
+      var time;
 
-    options = history.getNewQueryOptions();
-    options.queryType =
-      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
-    options.sortingMode =
-      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
-    options.maxResults = 1;
+      query = history.getNewQuery();
+      query.uri = aURI;
 
-    root = history.executeQuery(query, options).root;
-    root.containerOpen = true;
-    try {
-      // convert microseconds into milliseconds
-      time = root.getChild(0).time / 1000;
-    } catch (ex) {}
-    root.containerOpen = false;
+      options = history.getNewQueryOptions();
+      options.queryType =
+        Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
+      options.sortingMode =
+        Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
+      options.maxResults = 1;
 
-    return time || 0;
-  }
+      root = history.executeQuery(query, options).root;
+      root.containerOpen = true;
+      try {
+        // convert microseconds into milliseconds
+        time = root.getChild(0).time / 1000;
+      } catch (ex) {}
+      root.containerOpen = false;
 
-  function format(aUrl, aTime) {
-    if (!aTime) {
-      return aUrl;
+      return time || 0;
     }
 
-    return kLinkFormat.
-      replace('%url%', aUrl).
-      replace('%time%', (new Date(aTime)).toLocaleFormat(kTimeFormat));
-  }
+    function format(aUrl, aTime) {
+      if (!aTime) {
+        return aUrl;
+      }
+
+      return kLinkFormat.
+        replace('%url%', aUrl).
+        replace('%time%', (new Date(aTime)).toLocaleFormat(kTimeFormat));
+    }
+
+    // expose
+    return {
+      toggle: toggle
+    };
+  })();
 
 
   //********** Expose
@@ -318,9 +325,7 @@ var mStatusField = (function() {
 
     message: showMessage,
 
-    setOverLink: function(aEnabled) {
-      toggleShowOverLink(aEnabled);
-    }
+    setOverLink: OverLink.toggle
   };
 })();
 
