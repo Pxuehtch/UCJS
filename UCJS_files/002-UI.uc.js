@@ -322,13 +322,7 @@ var mStatusField = (function() {
     get textBox() {
       return getTextBox();
     },
-
-    exists: function() {
-      return this.textBox !== null;
-    },
-
     message: showMessage,
-
     setOverLink: OverLink.toggle
   };
 })();
