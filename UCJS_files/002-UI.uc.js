@@ -266,6 +266,7 @@ var mStatusField = (function() {
       setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
     }
 
+    // TODO: Get the time of a redirected URL
     function getLastVisitTime(aURI) {
       if (aURI.schemeIs('about')) {
         return 0;
@@ -299,14 +300,12 @@ var mStatusField = (function() {
       return time || 0;
     }
 
-    function format(aUrl, aTime) {
-      if (!aTime) {
-        return aUrl;
-      }
+    function format(aURL, aTime) {
+      let time = aTime ?
+        (new Date(aTime)).toLocaleFormat(kTimeFormat) :
+        'Redirected';
 
-      return kLinkFormat.
-        replace('%url%', aUrl).
-        replace('%time%', (new Date(aTime)).toLocaleFormat(kTimeFormat));
+      return kLinkFormat.replace('%url%', aURL).replace('%time%', time);
     }
 
     // expose
