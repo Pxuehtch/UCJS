@@ -210,7 +210,7 @@
     (function(){\
       var state = ucjsUtil.getPref("%kPrefTabFocus%") !== 1 ? 1 : 7;\
       ucjsUtil.setPref("%kPrefTabFocus%", state);\
-      ucjsUI.StatusField.update("TAB focus: " + (state === 1 ?\
+      ucjsUI.StatusField.message("TAB focus: " + (state === 1 ?\
       "text fields only." : "text fields, form elements, and links."));\
     })();\
   '

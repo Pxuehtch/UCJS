@@ -132,6 +132,27 @@ var mStatusField = (function() {
   const kLinkFormat = '%url% [%time%]';
 
   /**
+   * Show a message text
+   */
+  function showMessage(aText) {
+    const {MESSAGE} = kStatusAttribute;
+    let text = aText || '';
+    let textField = XULBrowserWindow.statusTextField;
+
+    XULBrowserWindow.setJSStatus(text);
+
+    if (text) {
+      if (!textField.hasAttribute(MESSAGE)) {
+        textField.setAttribute(MESSAGE, true);
+      }
+    } else {
+      if (textField.hasAttribute(MESSAGE)) {
+        textField.removeAttribute(MESSAGE);
+      }
+    }
+  }
+
+  /**
    * Toggle showing the statusbar text for a link URL under a cursor
    */
   let toggleShowOverLink = (function() {
@@ -292,51 +313,11 @@ var mStatusField = (function() {
       return $ID('statusbar-display');
     },
 
-    // Gets statusbar text
-    // @note Retrieves the raw value from "label" attribute because the label
-    // getter returns an empty string whenever the status field is inactive.
-    // @see chrome://browser/content/tabbrowser.xml::
-    // <binding id="statuspanel">::<property name="label">::<getter>
-    get text() {
-      return this.textBox.getAttribute('label');
-    },
-
-    // Sets statusbar text
-    // @note The label setter don't touch "label" attribute when an empty
-    // value is passed. So sets an empty string to "label" attribute to clear
-    // the statusbar.
-    // @see chrome://browser/content/tabbrowser.xml::
-    // <binding id="statuspanel">::<property name="label">::<setter>
-    set text(aVal) {
-      this.textBox.label = aVal;
-      if (!aVal && this.text) {
-        this.textBox.setAttribute('label', '');
-      }
-    },
-
     exists: function() {
       return this.textBox !== null;
     },
 
-    update: function(aText) {
-      var text = aText || '';
-      var field = this.textBox;
-
-      if (this.text !== text) {
-        this.text = text;
-      }
-
-      if (text) {
-        // add style as a message text
-        if (!field.hasAttribute(kStatusAttribute.MESSAGE)) {
-          field.setAttribute(kStatusAttribute.MESSAGE, true);
-        }
-      } else {
-        if (field.hasAttribute(kStatusAttribute.MESSAGE)) {
-          field.removeAttribute(kStatusAttribute.MESSAGE);
-        }
-      }
-    },
+    message: showMessage,
 
     setOverLink: function(aEnabled) {
       toggleShowOverLink(aEnabled);

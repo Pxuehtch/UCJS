@@ -1079,7 +1079,7 @@ function setOverLink(aEnabled) {
 }
 
 function updateStatusbarText(aText) {
-  window.ucjsUI.StatusField.update(aText);
+  window.ucjsUI.StatusField.message(aText);
 }
 
 function U(aStr) {
