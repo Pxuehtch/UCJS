@@ -185,6 +185,9 @@ var mStatusField = (function() {
     // XULBrowserWindow::setOverLink
     var $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink = function(url, anchorElt) {
+      // clear the message to hide the status after the cursor leaves
+      showMessage('');
+
       // @see resource:///modules/PlacesUtils.jsm
       const {PlacesUtils} = window;
 
@@ -217,7 +220,7 @@ var mStatusField = (function() {
     // XULBrowserWindow::updateStatusField
     var $updateStatusField = XULBrowserWindow.updateStatusField;
     XULBrowserWindow.updateStatusField = function() {
-      var {LINKSTATE, MESSAGE} = kStatusAttribute;
+      var {LINKSTATE} = kStatusAttribute;
       var textField = XULBrowserWindow.statusTextField;
 
       if (XULBrowserWindow.overLink && linkState) {
@@ -225,10 +228,6 @@ var mStatusField = (function() {
         linkState = null;
       } else if (textField.hasAttribute(LINKSTATE)) {
         textField.removeAttribute(LINKSTATE);
-      }
-
-      if (textField.hasAttribute(MESSAGE)) {
-        textField.removeAttribute(MESSAGE);
       }
 
       $updateStatusField.apply(this, arguments);
