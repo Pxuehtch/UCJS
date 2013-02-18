@@ -199,6 +199,8 @@ var mStatusField = (function() {
 
       if (URI) {
         let visited;
+        // TODO: Fix the character escaping problem
+        // see https://bugzilla.mozilla.org/show_bug.cgi?id=817374
         if (PlacesUtils.history.isVisited(URI)) {
           url = format(url, getLastVisitTime(URI));
           visited = true;
@@ -212,7 +214,9 @@ var mStatusField = (function() {
         }
       }
 
+      // disable the delayed showing
       this.hideOverLinkImmediately = true;
+      // @note use |call| for a updated |url|
       $setOverLink.call(this, url, anchorElt);
       this.hideOverLinkImmediately = false;
     };
