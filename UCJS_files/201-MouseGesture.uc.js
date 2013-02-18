@@ -92,7 +92,7 @@ const kGestureSet = [
     name: 'ページの履歴',
     command: function({event}) {
       $ID('backForwardMenu').
-      openPopupAtScreen(event.screenX, event.screenY, false);
+      openPopupAtScreen(event.screenX + 5, event.screenY + 5, false);
     }
   },
   {
@@ -348,6 +348,10 @@ function MouseGesture() {
     addEvent([pc, 'dragend', onDragEnd, false]);
     addEvent([pc, 'dragover', onDragOver, false]);
     addEvent([pc, 'drop', onDrop, false]);
+
+    // WORKAROUND: observe a XUL popup in the content area for cancelling the
+    // gestures on it
+    addEvent([window, 'mouseup', onGlobalMouseUp, false]);
   }
 
 
@@ -389,6 +393,27 @@ function MouseGesture() {
         stopGesture(aEvent);
       }
     }
+  }
+
+  // WORKAROUND: cancel the gestures on a XUL popup
+  function onGlobalMouseUp(aEvent) {
+    if (mState === kState.GESTURE &&
+        isPopupNode(aEvent.target)) {
+      cancelGesture();
+    }
+  }
+
+  function isPopupNode(aNode) {
+    if (aNode instanceof XULElement) {
+      while (aNode) {
+        if (aNode.popupBoxObject &&
+            aNode.popupBoxObject.popupState === 'open') {
+          return true;
+        }
+        aNode = aNode.parentNode;
+      }
+    }
+    return false;
   }
 
   function onMouseWheel(aEvent) {
