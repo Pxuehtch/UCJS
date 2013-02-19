@@ -16,12 +16,18 @@
 const kSORT_DIRECTION_ATTRIBUTE = 'sortDirection';
 const kSortDirections = ['ascending', 'descending', 'natural'];
 
-
 /**
  * Cache of the custom properties of a tree view
  */
 var mSortState = (function() {
   var mMap = new WeakMap();
+
+  function clear() {
+    // TODO: |WeakMap::clear| is supported in Fx20
+    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/WeakMap
+    // mMap.clear();
+    mMap = null;
+  }
 
   function get(aTreeView) {
     if (!mMap.has(aTreeView)) {
@@ -32,6 +38,7 @@ var mSortState = (function() {
 
   return {
     get: get,
+    clear: clear
   };
 })();
 
@@ -95,6 +102,14 @@ function sort(aData, aColumnIndex, aAscending) {
 // @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
 window.gMetaView.onPageMediaSort = function() {};
 window.gImageView.onPageMediaSort = function() {};
+
+/**
+ * Clean up when the Page Info window is closed
+ * @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
+ */
+window.onUnloadRegistry.push(function() {
+  mSortState.clear();
+});
 
 
 })(this);
