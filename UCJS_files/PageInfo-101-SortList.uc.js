@@ -13,14 +13,17 @@
 "use strict";
 
 
+/**
+ * Constant
+ */
 const kSORT_DIRECTION_ATTRIBUTE = 'sortDirection';
 const kSortDirections = ['ascending', 'descending', 'natural'];
 
 /**
  * Cache of the custom properties of a tree view
  */
-var mSortState = (function() {
-  var mMap = new WeakMap();
+const SortState = (function() {
+  let mMap = new WeakMap();
 
   function clear() {
     // TODO: |WeakMap::clear| is supported in Fx20
@@ -42,7 +45,6 @@ var mSortState = (function() {
   };
 })();
 
-
 /**
  * Implements the click handler of a header
  * @see chrome://browser/content/pageinfo/pageInfo.js
@@ -53,12 +55,12 @@ window.pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
     return;
   }
 
-  var element = aColumn.element;
-  var direction = element.getAttribute(kSORT_DIRECTION_ATTRIBUTE) || 'natural';
+  let element = aColumn.element;
+  let direction = element.getAttribute(kSORT_DIRECTION_ATTRIBUTE) || 'natural';
   direction = kSortDirections[(kSortDirections.indexOf(direction) + 1) % 3];
   element.setAttribute(kSORT_DIRECTION_ATTRIBUTE, direction);
 
-  var state = mSortState.get(this);
+  let state = SortState.get(this);
 
   if (state.sortColumn !== aColumn) {
     if (state.sortColumn) {
@@ -87,7 +89,7 @@ window.pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
 };
 
 function sort(aData, aColumnIndex, aAscending) {
-  var comparator = !isNaN(aData[0][aColumnIndex]) ?
+  let comparator = !isNaN(aData[0][aColumnIndex]) ?
     function(a, b) a - b :
     function(a, b) a.toLowerCase().localeCompare(b.toLowerCase());
 
@@ -97,9 +99,10 @@ function sort(aData, aColumnIndex, aAscending) {
   }
 }
 
-
-// Disables the default sort functions
-// @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
+/**
+ * Disables the default sort functions
+ * @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
+ */
 window.gMetaView.onPageMediaSort = function() {};
 window.gImageView.onPageMediaSort = function() {};
 
@@ -108,7 +111,7 @@ window.gImageView.onPageMediaSort = function() {};
  * @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
  */
 window.onUnloadRegistry.push(function() {
-  mSortState.clear();
+  SortState.clear();
 });
 
 
