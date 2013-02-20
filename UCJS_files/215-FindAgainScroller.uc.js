@@ -145,16 +145,11 @@ function ScrollObserver() {
   //********** Functions
 
   function Scrollable() {
-    // TODO: Note |Map| in Fx19.
-    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Map
     var mItems = new Map();
     var mScrollState = null;
 
     function cleanup() {
-      // TODO: |Map::clear| is available in Fx19.
-      for (let [node] of mItems) {
-        mItems.delete(node);
-      }
+      mItems.clear();
 
       if (mScrollState !== null) {
         delete mScrollState.node;
@@ -173,8 +168,7 @@ function ScrollObserver() {
     }
 
     function check() {
-      // TODO: |Map::size| changes to a property in Fx19.
-      if (!mItems.size()) {
+      if (!mItems.size) {
         return false;
       }
 
