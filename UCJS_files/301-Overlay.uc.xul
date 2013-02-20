@@ -29,7 +29,10 @@
     oncommand="ucjsUI.FindBar.toggleFindbar();"/>
 
   <command id="ucjs_cmd_RestartApp"
-    oncommand="ucjsUtil.restartApp(event.shiftKey);"/>
+    oncommand="ucjsUtil.restartApp();"/>
+
+  <command id="ucjs_cmd_RestartApp_PurgeCaches"
+    oncommand="ucjsUtil.restartApp({purgeCaches: true});"/>
 
   <command id="ucjs_cmd_ToggleTabbar"
     oncommand="(function(el){el.collapsed=!el.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked',!el.collapsed);})(document.getElementById('TabsToolbar'));"/>
@@ -68,9 +71,9 @@
     key="[" modifiers="control,alt"
     command="ucjs_cmd_RestartApp"/>
 
-  <key id="ucjs_key_RestartApp_PurgeCache"
+  <key id="ucjs_key_RestartApp_PurgeCaches"
     key="{" modifiers="control,alt,shift"
-    command="ucjs_cmd_RestartApp"/>
+    command="ucjs_cmd_RestartApp_PurgeCaches"/>
 
   <key id="ucjs_key_CloseTabsButHome"
     keycode="VK_F12"
@@ -80,10 +83,20 @@
 
 <!-- menu -->
 <menupopup id="menu_FilePopup">
-  <menuitem id="ucjs_menuitem_RestartApp"
-    label="再起動" accesskey="["
-    insertbefore="menu_FileQuitItem"
-    key="ucjs_key_RestartApp" command="ucjs_cmd_RestartApp"/>
+  <menu id="ucjs_menu_RestartApp"
+    label="再起動" accesskey="R"
+    insertbefore="menu_FileQuitItem">
+    <menupopup>
+      <menuitem id="ucjs_menuitem_RestartApp"
+        label="再起動"
+        key="ucjs_key_RestartApp"
+        command="ucjs_cmd_RestartApp"/>
+      <menuitem id="ucjs_menuitem_RestartApp_PurgeCaches"
+        label="再起動（キャッシュ再構築）"
+        key="ucjs_key_RestartApp_PurgeCaches"
+        command="ucjs_cmd_RestartApp_PurgeCaches"/>
+    </menupopup>
+  </menu>
 </menupopup>
 
 <menupopup id="menu_ToolsPopup">

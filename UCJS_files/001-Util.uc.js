@@ -116,10 +116,6 @@ var mXPCOM = (function() {
         'nsIScriptableUnicodeConverter');
     },
 
-    SupportsPRBool: function() {
-      return $I('@mozilla.org/supports-PRBool;1', 'nsISupportsPRBool');
-    },
-
     /*
      * Instance constructor
      * @function
@@ -856,38 +852,21 @@ function focusWindowAtIndex(aIdx) {
   }
 }
 
-function restartApp(aPurgeCaches) {
-  if (!canQuitApp()) {
+function restartApp(aOption) {
+  let {purgeCaches} = aOption || {}
+
+  // @see chrome://global/content/globalOverlay.js::canQuitApplication
+  if (!window.canQuitApplication('restart')) {
     return;
   }
 
-  if (aPurgeCaches) {
+  if (purgeCaches) {
     mXPCOM.XULRuntime.invalidateCachesOnRestart();
   }
 
-  const {quit, eRestart, eAttemptQuit} = mXPCOM.AppStartup;
-  quit(eRestart | eAttemptQuit);
-}
-
-function canQuitApp() {
-  const observerService = mXPCOM.ObserverService;
-
-  var cancel = mXPCOM.SupportsPRBool();
-  observerService.notifyObservers(cancel, 'quit-application-requested', null);
-  if (cancel.data) {
-    return false;
-  }
-
-  observerService.notifyObservers(null, 'quit-application-granted', null);
-
-  var wins = getWindowList(null), win;
-  while (wins.hasMoreElements()) {
-    win = wins.getNext();
-    if (('tryToClose' in win) && !win.tryToClose()) {
-      return false;
-    }
-  }
-  return true;
+  const {Ci} = window;
+  mXPCOM.AppStartup.
+  quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
 }
 
 function setGlobalStyleSheet(aCSS, aType) {
