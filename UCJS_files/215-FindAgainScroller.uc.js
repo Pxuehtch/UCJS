@@ -410,10 +410,14 @@ function SkipInvisible() {
         if (
           style.visibility !== 'visible' ||
           style.display === 'none' ||
-          // TODO: Use a certain detection of an element that is out of view by
-          // the position hacks.
-          (style.position === 'absolute' &&
-           (parseInt(style.left, 10) < 0) || (parseInt(style.top, 10) < 0))
+          // TODO: Use a certain detection of the position hacks to hide the
+          // content.
+          (/absolute|fixed/.test(style.position) &&
+           (parseInt(style.left, 10) < 0 ||
+            parseInt(style.top, 10) < 0 ||
+            parseInt(style.right, 10) <= -999)) ||
+          style.textIndent === '100%' ||
+          parseInt(style.textIndent, 10) <= -999
         ) {
           return false;
         }
