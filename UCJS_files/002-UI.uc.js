@@ -118,8 +118,7 @@ var mFindBar = {
  * Status bar
  */
 var mStatusField = (function() {
-  // @modified chrome://browser/content/browser.js::
-  // XULBrowserWindow
+  // @see chrome://browser/content/browser.js::XULBrowserWindow
   const {XULBrowserWindow} = window;
 
   const kStatusAttribute = {
