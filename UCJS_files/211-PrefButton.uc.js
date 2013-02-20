@@ -6,9 +6,10 @@
 
 // @require Util.uc.js
 // @usage Access to items on the navigation toolbar.
-// @note The buttons is styled as the height of a toolbar is 24pt. see
-// |setStyleSheet()|
 // @note Some about:config preferences are changed. see @pref
+
+// @note The styles are adjusted to the themes of my Firefox. see
+// |setStyleSheet()|
 
 
 (function(window, undefined) {
@@ -21,10 +22,11 @@
  * Identifiers
  */
 const kID = {
-  // Default
+  // default
   NAVIGATION_TOOLBAR: 'nav-bar',
-  // Custom
-  CONTAINER_ID:   'ucjs_prefbutton_container',
+
+  // custom
+  CONTAINER: 'ucjs_prefbutton_container',
   ITEM: 'ucjs_prefbutton_item'
 };
 
@@ -32,23 +34,23 @@ const kID = {
  * Type of <button>
  */
 const kItemType = {
-  button:   'button',
+  button: 'button',
   checkbox: 'checkbox'
 };
 
 /**
- * Preset items
+ * Preset button items
  * @param name {string} a name of item
- * @param disabled {boolean} [optional]
- *   true: this item is ignored
  * @param tabMode {boolean} [optional]
- *   true: each tab is observed
- * @param type {kItemType} a type of <button>
+ *   true: updates the button state whenever the tab is selected
+ *   set true if |command| works only on the selected tab
+ * @param type {kItemType} a type of button
  * @param label {string} button label
- * @param image {URL string} [instead of <label>] button image
+ * @param image {URL string} [instead of |label|] button image
  * @param description {string} tooltip text
- * @param checked {boolean} [for type <checkbox>] checkbox state
+ * @param checked {boolean} [for checkbox |type|] on/off state
  * @param command {function} button command
+ * @param disabled {boolean} [optional]
  */
 const Items = [
   {
@@ -147,14 +149,10 @@ const Items = [
   }//,
 ];
 
-
-//********** Functions
-
-
 /**
  * Progress listener
  */
-var mBrowserProgressListener = {
+const BrowserProgressListener = {
   onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
     if (aStateFlags & window.Ci.nsIWebProgressListener.STATE_STOP) {
       updateState();
@@ -172,25 +170,27 @@ function PrefButton_init() {
   makeButtons();
 
   addEvent([gBrowser, 'select', function() {
-    updateState(true);
+    updateState({tabMode: true});
   }, false]);
 
-  gBrowser.addProgressListener(mBrowserProgressListener);
+  gBrowser.addProgressListener(BrowserProgressListener);
   addEvent([window, 'unload', function() {
-    gBrowser.removeProgressListener(mBrowserProgressListener);
+    gBrowser.removeProgressListener(BrowserProgressListener);
   }, false]);
 }
 
-function updateState(aTabMode) {
+function updateState(aOption) {
+  let {tabMode} = aOption || {};
+
   Items.forEach(function(item, i) {
-    if (item.disabled || (aTabMode && !item.tabMode)) {
+    if (item.disabled || (tabMode && !item.tabMode)) {
       return;
     }
 
     let button = $ID(kID.ITEM + i);
     switch (item.type) {
       case kItemType.button:
-        // do nothing
+        // nothing to do
         break;
       case kItemType.checkbox:
         if (button.checked !== item.checked) {
@@ -211,7 +211,7 @@ function makeButtons() {
   var toolbar = $ID(kID.NAVIGATION_TOOLBAR);
 
   var hbox = $E('hbox');
-  hbox.id = kID.CONTAINER_ID;
+  hbox.id = kID.CONTAINER;
 
   Items.forEach(function(item, i) {
     if (item.disabled) {
@@ -240,9 +240,10 @@ function makeButtons() {
 }
 
 function setStyleSheet() {
-  // @note Suppose the height of the toolbar-menubar is 24pt.
+  // @note The styles are adjusted to the themes of my Firefox.
+  // * the height of the toolbar-menubar is 24pt
   var css = '\
-    #%%kID.CONTAINER_ID%%{\
+    #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\
     }\
     .%%kID.ITEM%%,\
