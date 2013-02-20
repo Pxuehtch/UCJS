@@ -25,8 +25,7 @@ const kID = {
   NAVIGATION_TOOLBAR: 'nav-bar',
   // Custom
   CONTAINER_ID:   'ucjs_prefbutton_container',
-  ITEM_CLASS_KEY: 'ucjs_prefbutton_item',
-  ITEM_ID_PREFIX: 'ucjs_prefbutton_'
+  ITEM: 'ucjs_prefbutton_item'
 };
 
 /**
@@ -39,6 +38,7 @@ const kItemType = {
 
 /**
  * Preset items
+ * @param name {string} a name of item
  * @param disabled {boolean} [optional]
  *   true: this item is ignored
  * @param tabMode {boolean} [optional]
@@ -49,12 +49,10 @@ const kItemType = {
  * @param description {string} tooltip text
  * @param checked {boolean} [for type <checkbox>] checkbox state
  * @param command {function} button command
- *
- * @note <key> name must consist of only ASCII characters [A-Za-z0-9_] for
- * using as <id> attribute.
  */
-var mPreset = {
-  'ToggleCSS_Tab': {
+const Items = [
+  {
+    name: 'ToggleCSS_Tab',
     tabMode: true,
     type: kItemType.checkbox,
     label: 'CSS',
@@ -75,8 +73,8 @@ var mPreset = {
       this.documentViewer.authorStyleDisabled = this.checked;
     }
   },
-
-  'ToggleReferrer': {
+  {
+    name: 'ToggleReferrer',
     type: kItemType.checkbox,
     label: 'Ref.',
     description: 'Toggle Referrer',
@@ -95,8 +93,8 @@ var mPreset = {
       setPref(this.pref, this.checked ? 0 : 2);
     }
   },
-
-  'ToggleJava': {
+  {
+    name: 'ToggleJava',
     type: kItemType.checkbox,
     label: 'Java',
     description: 'Toggle Java',
@@ -136,8 +134,8 @@ var mPreset = {
       }
     }
   },
-
-  'ClearCache': {
+  {
+    name: 'ClearCache',
     type: kItemType.button,
     label: 'CLR',
     description: 'Clear cache',
@@ -147,7 +145,7 @@ var mPreset = {
       $ID('Tools:Sanitize').doCommand();
     }
   }//,
-};
+];
 
 
 //********** Functions
@@ -184,12 +182,12 @@ function PrefButton_init() {
 }
 
 function updateState(aTabMode) {
-  for (let [, item] in Iterator(mPreset)) {
+  Items.forEach(function(item, i) {
     if (item.disabled || (aTabMode && !item.tabMode)) {
-      continue;
+      return;
     }
 
-    let button = $ID(item.id);
+    let button = $ID(kID.ITEM + i);
     switch (item.type) {
       case kItemType.button:
         // do nothing
@@ -200,17 +198,13 @@ function updateState(aTabMode) {
         }
         break;
     }
-  }
+  });
 }
 
 function doCommand(aEvent) {
-  var id = aEvent.target.id;
-
-  for (let [, item] in Iterator(mPreset)) {
-    if (id === item.id) {
-      item.command();
-    }
-  }
+  let button = aEvent.target;
+  let index = parseInt(button.id.replace(kID.ITEM, ''), 10);
+  Items[index].command();
 }
 
 function makeButtons() {
@@ -219,16 +213,15 @@ function makeButtons() {
   var hbox = $E('hbox');
   hbox.id = kID.CONTAINER_ID;
 
-  for (let [name, item] in Iterator(mPreset)) {
+  Items.forEach(function(item, i) {
     if (item.disabled) {
-      continue;
+      return;
     }
 
     let button = $E('button');
 
-    button.id = item.id =
-      kID.ITEM_ID_PREFIX + name.replace(/[^A-Za-z0-9_]/g, '_');
-    button.className = kID.ITEM_CLASS_KEY;
+    button.id = kID.ITEM + i;
+    button.className = kID.ITEM;
     button.setAttribute('type', item.type);
     button.setAttribute('tooltiptext', item.description);
 
@@ -241,7 +234,7 @@ function makeButtons() {
     addEvent([button, 'command', doCommand, false]);
 
     hbox.appendChild(button);
-  }
+  });
 
   toolbar.appendChild(hbox);
 }
@@ -252,8 +245,8 @@ function setStyleSheet() {
     #%%kID.CONTAINER_ID%%{\
       margin:3px 0 3px 2px;\
     }\
-    .%%kID.ITEM_CLASS_KEY%%,\
-    .%%kID.ITEM_CLASS_KEY%%:focus{\
+    .%%kID.ITEM%%,\
+    .%%kID.ITEM%%:focus{\
       -moz-appearance:none;\
       width:20px;\
       min-width:20px;\
@@ -268,16 +261,16 @@ function setStyleSheet() {
       background:transparent none center center no-repeat;\
       font:8px "Arial";\
     }\
-    .%%kID.ITEM_CLASS_KEY%%:active,\
-    .%%kID.ITEM_CLASS_KEY%%[checked=true]{\
+    .%%kID.ITEM%%:active,\
+    .%%kID.ITEM%%[checked=true]{\
       border:1px inset #ccc;\
       background-color:#ffcccc;\
     }\
-    .%%kID.ITEM_CLASS_KEY%%:hover{\
+    .%%kID.ITEM%%:hover{\
       cursor:pointer;\
       opacity:0.6;\
     }\
-    .%%kID.ITEM_CLASS_KEY%%>hbox{\
+    .%%kID.ITEM%%>hbox{\
       border:none;\
       padding:0;\
     }\
