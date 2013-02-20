@@ -1524,7 +1524,7 @@ function getAdjacentTab(aBaseTab, aDirection) {
       (aDirection === +1 && basePos === tabs.length - 1)) {
     return null;
   }
-  return tabs[pos + aDirection];
+  return tabs[basePos + aDirection];
 }
 
 function closeLeftTabs(aBaseTab) {
