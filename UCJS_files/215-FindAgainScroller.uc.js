@@ -505,7 +505,7 @@ function SmoothScroll() {
     // * 8 pitches mean approaching to the goal by each remaining distance
     // divided by 8
     // * the bigger value, the slower moving
-    pitch: {far: 8, near: 6}
+    pitch: {far: 2, near: 6}
   };
 
   var mTimerID;
