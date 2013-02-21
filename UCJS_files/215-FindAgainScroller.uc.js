@@ -245,6 +245,7 @@ function ScrollObserver() {
     // register the typical elements that can be scrolled
     // There may be many <div> so that we grab the deepest <div> and test the
     // scrollability to its ancestor.
+    // TODO: slow in the big document. faster finding or skip finding.
     const xpath = '//textarea|//pre|//ul|//ol|//div[not(descendant::div)]';
 
     $X(xpath, root).forEach(function(node) {
@@ -499,10 +500,11 @@ function HorizontalCentered() {
 function SmoothScroll() {
   const kOption = {
     // Pitch of the scroll
-    // * 8 pitches mean approaching to the goal by each remaining distance
-    // divided by 8
     // far: The goal is away from the current viewport over its width/height
     // near: The goal comes within the w/h of the viewport
+    // * 8 pitches mean approaching to the goal by each remaining distance
+    // divided by 8
+    // * the bigger value, the slower moving
     pitch: {far: 8, near: 6}
   };
 
@@ -559,7 +561,8 @@ function SmoothScroll() {
     var now = getScroll();
 
     var currentTime = Date.now();
-    if (currentTime - mStartTime > 1000 || currentTime - aLastTime > 100) {
+    if (currentTime - mStartTime > 1000 ||
+        currentTime - aLastTime > 100) {
       // it takes too much time. stop stepping and jump to goal
       stopScroll(true);
     }
