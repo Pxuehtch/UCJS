@@ -510,12 +510,8 @@ function SmoothScroll() {
   var mStartTime;
 
   var mState = {
-    init: function({node, goal}) {
-      if (this.goal) {
-        this.uninit(true);
-      }
-
-      if (goal === undefined) {
+    init: function({node, start, goal}) {
+      if (!node || !start || !goal) {
         return false;
       }
 
@@ -526,18 +522,16 @@ function SmoothScroll() {
 
       this.view = scrollable.view;
       this.node = node;
+      this.start = start;
       this.goal = goal;
 
       return true;
     },
 
     uninit: function() {
-      if (!this.goal) {
-        return;
-      }
-
       delete this.view;
       delete this.node;
+      delete this.start;
       delete this.goal;
     }
   };
@@ -546,17 +540,17 @@ function SmoothScroll() {
   //********** Functions
 
   function startScroll(aState) {
+    // terminate the current scrolling
+    stopScroll(false);
+
     if (!mState.init(aState)) {
       return;
     }
 
-    let start = aState.start;
-    if (start) {
-      doScrollTo(start);
-    }
+    doScrollTo(mState.start);
 
     mStartTime = Date.now();
-    doStep(getStep(start || getScroll().position), mStartTime);
+    doStep(getStep(mState.start), mStartTime);
   }
 
   function doStep(aStep, aLastTime) {
