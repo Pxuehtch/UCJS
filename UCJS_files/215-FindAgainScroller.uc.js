@@ -569,12 +569,10 @@ function SmoothScroll() {
       // it takes too much time. stop stepping and jump to goal
       stopScroll(true);
     }
-    else if (
-      (was.position.x === now.position.x || was.inside.x !== now.inside.x) &&
-      (was.position.y === now.position.y || was.inside.y !== now.inside.y)
-    ) {
-      // goal or go over a bit. stop stepping at here
-      stopScroll();
+    else if (was.delta.x * now.delta.x <= 0 &&
+             was.delta.y * now.delta.y <= 0) {
+      // reached the goal or went over. stop stepping at here
+      stopScroll(false);
     }
     else {
       mTimerID = setTimeout(doStep, 0, getStep(now.position), currentTime);
@@ -640,7 +638,7 @@ function SmoothScroll() {
 
     return {
       position: Position(x, y),
-      inside: Position(x < mState.goal.x, y < mState.goal.y)
+      delta: Position(mState.goal.x - x, mState.goal.y - y)
     };
   }
 
