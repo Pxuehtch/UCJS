@@ -501,8 +501,8 @@ function SmoothScroll() {
     // Pitch of the scroll
     // * 8 pitches mean approaching to the goal by each remaining distance
     // divided by 8
-    // far: The goal is out of the current view
-    // near: The goal is into the view
+    // far: The goal is away from the current viewport over its width/height
+    // near: The goal comes within the w/h of the viewport
     pitch: {far: 8, near: 6}
   };
 
@@ -612,8 +612,8 @@ function SmoothScroll() {
     let dX = mState.goal.x - aPosition.x,
         dY = mState.goal.y - aPosition.y;
 
-    let pitchX = (Math.abs(dX) < width) ? far : near,
-        pitchY = (Math.abs(dY) < height) ? far : near;
+    let pitchX = (Math.abs(dX) < width) ? near : far,
+        pitchY = (Math.abs(dY) < height) ? near : far;
 
     return Position(round(dX / pitchX), round(dY / pitchY));
   }
