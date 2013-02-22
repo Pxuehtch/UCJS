@@ -137,12 +137,17 @@ var mStatusField = (function() {
   /**
    * Show a message text
    */
+  let messageStatus;
   function showMessage(aText) {
     const {MESSAGE} = kStatusAttribute;
     let text = aText || '';
     let textField = getTextBox();
 
-    XULBrowserWindow.setJSStatus(text);
+    if (text || messageStatus) {
+      textField.label = text;
+      textField.setAttribute('crop', 'end');
+      messageStatus = text;
+    }
 
     if (text) {
       if (!textField.hasAttribute(MESSAGE)) {
@@ -185,7 +190,7 @@ var mStatusField = (function() {
         return;
       }
 
-      // clear the message to hide the status after the cursor leaves
+      // clear the message to hide it after the cursor leaves
       showMessage('');
 
       // @see resource:///modules/PlacesUtils.jsm
@@ -224,6 +229,11 @@ var mStatusField = (function() {
     // XULBrowserWindow::updateStatusField
     const $updateStatusField = XULBrowserWindow.updateStatusField;
     XULBrowserWindow.updateStatusField = function() {
+      // suppress the display except a message
+      if (messageStatus) {
+        return;
+      }
+
       var {LINKSTATE} = kStatusAttribute;
       var textField = getTextBox();
 
