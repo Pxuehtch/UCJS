@@ -165,7 +165,6 @@ var mStatusField = (function() {
    */
   const OverLink = (function() {
     let disableSetOverLink = false;
-    let linkState = null;
 
     /**
      * Toggle the showing
@@ -193,34 +192,44 @@ var mStatusField = (function() {
       // clear the message to hide it after the cursor leaves
       showMessage('');
 
-      // @see resource:///modules/PlacesUtils.jsm
-      const {PlacesUtils} = window;
+      let linkState;
+      if (url) {
+        // @see resource:///modules/PlacesUtils.jsm
+        const {PlacesUtils} = window;
+        let URI;
+        try {
+          URI = PlacesUtils._uri(url);
+        } catch (ex) {}
 
-      var URI;
-      try {
-        URI = PlacesUtils._uri(url);
-      } catch (ex) {}
-
-      if (URI) {
-        let visited;
-        // TODO: Fix the character escaping problem
-        // see https://bugzilla.mozilla.org/show_bug.cgi?id=817374
-        if (PlacesUtils.history.isVisited(URI)) {
-          url = format(url, getLastVisitTime(URI));
-          visited = true;
+        linkState = 'unknown';
+        if (URI) {
+          // TODO: Fix the character escaping problem
+          // see https://bugzilla.mozilla.org/show_bug.cgi?id=817374
+          if (PlacesUtils.history.isVisited(URI)) {
+            // update url
+            url = format(url, getLastVisitTime(URI));
+            linkState = 'visited';
+          }
+          // @note Not 'else if' to overwrite linkState
+          if (PlacesUtils.bookmarks.isBookmarked(URI)) {
+            linkState = 'bookmarked';
+          }
         }
-        if (PlacesUtils.bookmarks.isBookmarked(URI)) {
-          linkState = 'bookmarked';
-        } else if (visited) {
-          linkState = 'visited';
-        } else {
-          linkState = 'unknown';
+      }
+
+      const {LINKSTATE} = kStatusAttribute;
+      let textField = getTextBox();
+      if (linkState) {
+        textField.setAttribute(LINKSTATE, linkState);
+      } else {
+        if (textField.hasAttribute(LINKSTATE)) {
+          textField.removeAttribute(LINKSTATE);
         }
       }
 
       // disable the delayed showing
       this.hideOverLinkImmediately = true;
-      // @note use |call| for a updated |url|
+      // @note use |call| for the updated |url|
       $setOverLink.call(this, url, anchorElt);
       this.hideOverLinkImmediately = false;
     };
@@ -232,16 +241,6 @@ var mStatusField = (function() {
       // suppress the display except a message
       if (messageStatus) {
         return;
-      }
-
-      var {LINKSTATE} = kStatusAttribute;
-      var textField = getTextBox();
-
-      if (XULBrowserWindow.overLink && linkState) {
-        textField.setAttribute(LINKSTATE, linkState);
-        linkState = null;
-      } else if (textField.hasAttribute(LINKSTATE)) {
-        textField.removeAttribute(LINKSTATE);
       }
 
       $updateStatusField.apply(this, arguments);
