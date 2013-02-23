@@ -245,8 +245,11 @@ function ScrollObserver() {
     // register the typical elements that can be scrolled
     // There may be many <div> so that we grab the deepest <div> and test the
     // scrollability to its ancestor.
-    // TODO: slow in the big document. faster finding or skip finding.
-    const xpath = '//textarea|//pre|//ul|//ol|//div[not(descendant::div)]';
+    // TODO: better handling of the big document.
+    let xpath = '//textarea|//pre|//ul|//ol';
+    if (doc.getElementsByTagName('*').length < 1000) {
+      xpath += '|//div[not(descendant::div)]';
+    }
 
     $X(xpath, root).forEach(function(node) {
       let testAncestor = node instanceof HTMLDivElement;
