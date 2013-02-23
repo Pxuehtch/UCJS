@@ -469,14 +469,14 @@ function HorizontalCentered() {
 
     center = (viewWidth - width) / 2;
     if (right < center) {
-      doCentering(aView, right - center);
+      doHScrollBy(aView, right - center);
     }
     else if (left > center) {
-      doCentering(aView, left - center);
+      doHScrollBy(aView, left - center);
     }
   }
 
-  function doCentering(aView, aX) {
+  function doHScrollBy(aView, aX) {
     if (aView instanceof Window) {
       aView.scrollBy(aX, 0);
     } else {
