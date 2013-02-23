@@ -271,7 +271,7 @@ function ScrollObserver() {
     }
 
     if (aTestAncestor) {
-      while (aNode) {
+      while (aNode && !(aNode instanceof HTMLBodyElement)) {
         if (aNode.nodeType === Node.ELEMENT_NODE) {
           if (isRegistered(aNode)) {
             return null;
