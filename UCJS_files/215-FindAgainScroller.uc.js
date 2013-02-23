@@ -159,10 +159,6 @@ function ScrollObserver() {
       }
     }
 
-    function hasItem(aNode) {
-      return mItems.has(aNode);
-    }
-
     function addItem(aNode) {
       mItems.set(aNode, getScroll(aNode));
     }
@@ -207,7 +203,6 @@ function ScrollObserver() {
 
     return {
       cleanup: cleanup,
-      hasItem: hasItem,
       addItem: addItem,
       check: check,
       get scrollState() mScrollState
@@ -252,20 +247,22 @@ function ScrollObserver() {
       xpath += '|//div[not(descendant::div)]|//p[not(descendant::p)]';
     }
 
-    $X(xpath, root).forEach(function(node) {
+    $X(xpath, root).reduce(function(scrollables, node) {
       let testAncestor =
         node instanceof HTMLDivElement ||
         node instanceof HTMLParagraphElement;
-      let scrollable = testScrollable(node, testAncestor);
+      let scrollable = testScrollable(scrollables, node, testAncestor);
       if (scrollable) {
-        mScrollable.addItem(scrollable);
+        scrollables.push(scrollable);
+        mScrollable.addItem(node);
       }
-    });
+      return scrollables;
+    }, []);
   }
 
-  function testScrollable(aNode, aTestAncestor) {
+  function testScrollable(aArray, aNode, aTestAncestor) {
     function isRegistered(aNode) {
-      return mScrollable.hasItem(aNode);
+      return aArray.indexOf(aNode) > -1;
     }
 
     function isScrollable(aNode) {
