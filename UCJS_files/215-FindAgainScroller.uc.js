@@ -239,55 +239,43 @@ function ScrollObserver() {
 
     // register the typical elements that can be scrolled
     // <div>, <p>: there may be many elements so that we grab the deepest one
-    // and test the scrollability to its ancestor.
-    // TODO: better handling of the big document.
+    // TODO: handle the big document.
     // TODO: grab all scrollable elements.
-    let xpath = '//textarea|//pre|//ul|//ol';
     if (doc.getElementsByTagName('*').length < 1000) {
-      xpath += '|//div[not(descendant::div)]|//p[not(descendant::p)]';
-    }
+      let xpath = '//textarea|//pre|//ul|//ol' +
+        '|//div[not(descendant::div)]|//p[not(descendant::p)]';
 
-    $X(xpath, root).reduce(function(scrollables, node) {
-      let testAncestor =
-        node instanceof HTMLDivElement ||
-        node instanceof HTMLParagraphElement;
-      let scrollable = testScrollable(scrollables, node, testAncestor);
-      if (scrollable) {
-        scrollables.push(scrollable);
-        mScrollable.addItem(scrollable);
-      }
-      return scrollables;
-    }, []);
+      $X(xpath, root).reduce(function(scrollables, node) {
+        let scrollable = testScrollable(scrollables, node);
+        if (scrollable) {
+          scrollables.push(scrollable);
+          mScrollable.addItem(scrollable);
+        }
+        return scrollables;
+      }, []);
+    }
   }
 
-  function testScrollable(aArray, aNode, aTestAncestor) {
+  function testScrollable(aArray, aNode) {
     function isRegistered(aNode) {
       return aArray.indexOf(aNode) > -1;
     }
 
     function isScrollable(aNode) {
-      return aNode.scrollHeight > aNode.clientHeight ||
-             aNode.scrollWidth > aNode.clientWidth;
+      return aNode.clientHeight < aNode.scrollHeight ||
+             aNode.clientWidth < aNode.scrollWidth;
     }
 
-    if (aTestAncestor) {
-      while (aNode && !(aNode instanceof HTMLBodyElement)) {
-        if (aNode.nodeType === Node.ELEMENT_NODE) {
-          if (isRegistered(aNode)) {
-            return null;
-          }
-          if (isScrollable(aNode)) {
-            return aNode;
-          }
+    while (aNode && !(aNode instanceof HTMLBodyElement)) {
+      if (aNode.nodeType === Node.ELEMENT_NODE) {
+        if (isRegistered(aNode)) {
+          return null;
         }
-        aNode = aNode.parentNode;
+        if (isScrollable(aNode)) {
+          return aNode;
+        }
       }
-      return null;
-    }
-
-    if (!isRegistered(aNode) &&
-        isScrollable(aNode)) {
-      return aNode;
+      aNode = aNode.parentNode;
     }
     return null;
   }
