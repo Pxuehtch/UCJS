@@ -254,7 +254,7 @@ function ScrollObserver() {
       let scrollable = testScrollable(scrollables, node, testAncestor);
       if (scrollable) {
         scrollables.push(scrollable);
-        mScrollable.addItem(node);
+        mScrollable.addItem(scrollable);
       }
       return scrollables;
     }, []);
