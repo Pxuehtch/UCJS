@@ -243,16 +243,19 @@ function ScrollObserver() {
     }
 
     // register the typical elements that can be scrolled
-    // There may be many <div> so that we grab the deepest <div> and test the
-    // scrollability to its ancestor.
+    // <div>, <p>: there may be many elements so that we grab the deepest one
+    // and test the scrollability to its ancestor.
     // TODO: better handling of the big document.
+    // TODO: grab all scrollable elements.
     let xpath = '//textarea|//pre|//ul|//ol';
     if (doc.getElementsByTagName('*').length < 1000) {
-      xpath += '|//div[not(descendant::div)]';
+      xpath += '|//div[not(descendant::div)]|//p[not(descendant::p)]';
     }
 
     $X(xpath, root).forEach(function(node) {
-      let testAncestor = node instanceof HTMLDivElement;
+      let testAncestor =
+        node instanceof HTMLDivElement ||
+        node instanceof HTMLParagraphElement;
       let scrollable = testScrollable(node, testAncestor);
       if (scrollable) {
         mScrollable.addItem(scrollable);
