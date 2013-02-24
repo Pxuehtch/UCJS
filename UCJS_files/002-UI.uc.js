@@ -220,7 +220,9 @@ var mStatusField = (function() {
       const {LINKSTATE} = kStatusAttribute;
       let textField = getTextBox();
       if (linkState) {
-        textField.setAttribute(LINKSTATE, linkState);
+        if (textField.getAttribute(LINKSTATE) !== linkState) {
+          textField.setAttribute(LINKSTATE, linkState);
+        }
       } else {
         if (textField.hasAttribute(LINKSTATE)) {
           textField.removeAttribute(LINKSTATE);
