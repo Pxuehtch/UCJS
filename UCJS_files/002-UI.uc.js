@@ -137,16 +137,23 @@ var mStatusField = (function() {
   /**
    * Show a message text
    */
-  let messageStatus;
+  let messageStatus = '';
   function showMessage(aText) {
-    const {MESSAGE} = kStatusAttribute;
     let text = aText || '';
+    if (text === messageStatus) {
+      return;
+    }
+
+    const {MESSAGE} = kStatusAttribute;
     let textField = getTextBox();
 
-    if (text || messageStatus) {
-      textField.label = text;
-      textField.setAttribute('crop', 'end');
-      messageStatus = text;
+    messageStatus = text;
+    // overwrite the displayed status
+    textField.label = text;
+    // restore the hidden status
+    if (!text) {
+      XULBrowserWindow.statusText = '';
+      XULBrowserWindow.updateStatusField();
     }
 
     if (text) {
