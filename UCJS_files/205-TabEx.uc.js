@@ -609,6 +609,28 @@ var mSessionStore = {
       Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
 
+    addEvent([window, 'SSWindowStateBusy', this, false]);
+    addEvent([window, 'SSWindowStateReady', this, false]);
+
+    /**
+     * WORKAROUND: In Fx19 an error sometimes occurs in startup
+     * Error: NS_ERROR_XPC_JS_THREW_JS_OBJECT: 'TypeError: aFile is undefined'
+     * when calling method: [nsISessionStore::persistTabAttribute]
+     *
+     * maybe caused by:
+     * [OS.File] Write session store with OS.File
+     * https://bugzilla.mozilla.org/show_bug.cgi?id=794091
+     *
+     * The first |DOMContentLoaded| fires on the document for a selected tab.
+     * It seems enough after all tabs open in both normal and restore startup
+     * and seems to be ready to use |persistTabAttribute|.
+     * see |mStartup::init|
+     * TODO: use a certain observer
+     */
+    window.addEventListener('DOMContentLoaded', this, false);
+  },
+
+  persistTabAttribute: function() {
     let savedAttributes = [
       kID.OPENTIME,
       kID.READTIME,
@@ -627,9 +649,6 @@ var mSessionStore = {
     savedAttributes.forEach(function(key) {
       this.SessionStore.persistTabAttribute(key);
     }.bind(this));
-
-    addEvent([window, 'SSWindowStateBusy', this, false]);
-    addEvent([window, 'SSWindowStateReady', this, false]);
   },
 
   handleEvent: function(aEvent) {
@@ -639,6 +658,10 @@ var mSessionStore = {
         break;
       case 'SSWindowStateReady':
         this.isRestoring = false;
+        break;
+      case 'DOMContentLoaded':
+        window.removeEventListener('DOMContentLoaded', this, false);
+        this.persistTabAttribute();
         break;
     }
   },
