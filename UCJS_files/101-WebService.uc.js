@@ -246,7 +246,7 @@ function get(aParams) {
 
 function getResult(aParams, aType) {
   if (!aParams.name) {
-    throw 'aParams.name is empty';
+    throw Error('aParams.name is empty');
   }
 
   var result = null;
@@ -279,7 +279,7 @@ function evaluate(aParams, aPreset) {
 
   // build a URL
   if (!result.URL) {
-    throw 'aPreset.URL is empty';
+    throw Error('aPreset.URL is empty');
   }
   if (result.data) {
     result.URL = AliasFixup.create(result.URL, result.data);

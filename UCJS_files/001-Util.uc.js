@@ -384,7 +384,7 @@ function getFocusedDocument() {
 function getNodesByAttribute(aAttribute, aContext) {
   var {name, value, tag} = aAttribute;
   if (!name) {
-    throw new TypeError('attribute name is required');
+    throw Error('attribute name is required');
   }
 
   var xpath = 'descendant::' + (tag || '*') +

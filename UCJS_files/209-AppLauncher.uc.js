@@ -851,7 +851,7 @@ function getSaveFilePath(aURI, aDocument) {
 
   let fileName = makeFileName(aURI, aDocument);
   if (!fileName) {
-    throw new Error('Unexpected URL for download');
+    throw Error('Unexpected URL for download');
   }
 
   fileName = kFileNameForm.replace('%FILENAME%', fileName);

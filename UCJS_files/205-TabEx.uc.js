@@ -474,7 +474,7 @@ var mTab = (function () {
         };
         break;
       default:
-        throw new TypeError('unknown aKey of tab data');
+        throw Error('unknown aKey of tab data');
     }
 
     // get a data
@@ -522,7 +522,7 @@ var mTab = (function () {
         getter = getInt;
         break;
       default:
-        throw new TypeError('unsupported aKey of a closed tab data');
+        throw Error('unsupported aKey of a closed tab data');
     }
 
     return getter(aClosedTabData.state.attributes[name]);
@@ -1249,7 +1249,7 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
         basePos + 1;
       break;
     default:
-      throw 'unknown kPosType for OPENPOS';
+      throw Error('unknown kPosType for OPENPOS');
   }
 
   if (-1 < pos && pos !== tabPos) {
@@ -1286,7 +1286,7 @@ function selectTabAt(aBaseTab, aPosTypes) {
       case kPosType.ANYWHERE_OLDEST_UNREAD:
         return !!selectOldestUnreadTab();
       default:
-        throw 'unknown kPosType for SELECTPOS';
+        throw Error('unknown kPosType for SELECTPOS');
     }
     // never reached, but avoid warning
     return true;
@@ -1535,7 +1535,7 @@ function getOldestUnreadTab(aOption) {
 
 function getAdjacentTab(aBaseTab, aDirection) {
   if (aDirection !== -1 && aDirection !== +1) {
-    throw new TypeError('aDirection should be -1 or +1');
+    throw Error('aDirection should be -1 or +1');
   }
 
   // including the base tab
@@ -1560,7 +1560,7 @@ function closeRightTabs(aBaseTab) {
 
 function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
   if (aDirection !== -1 && aDirection !== +1) {
-    throw new TypeError('aDirection should be -1 or +1');
+    throw Error('aDirection should be -1 or +1');
   }
 
   var baseTab = aBaseTab || gBrowser.selectedTab;
@@ -1747,7 +1747,7 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 
     if (aSupportedStatements &&
         aSupportedStatements.indexOf(statement) < 0) {
-      throw new TypeError('unsupported aStatement');
+      throw Error('unsupported aStatement');
     }
 
     mKeys = statement.split(aDelimiter);
