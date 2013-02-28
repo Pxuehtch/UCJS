@@ -596,94 +596,6 @@ var mTab = (function () {
 })();
 
 /**
- * Session store handler
- */
-var mSessionStore = {
-  // whether a tab is in restoring (duplicated/undo-closed tab)
-  isRestoring: false,
-
-  init: function() {
-    const {Cc, Ci} = window;
-
-    this.SessionStore =
-      Cc['@mozilla.org/browser/sessionstore;1'].
-      getService(Ci.nsISessionStore);
-
-    addEvent([window, 'SSWindowStateBusy', this, false]);
-    addEvent([window, 'SSWindowStateReady', this, false]);
-
-    /**
-     * WORKAROUND: In Fx19 an error sometimes occurs in startup
-     * Error: NS_ERROR_XPC_JS_THREW_JS_OBJECT: 'TypeError: aFile is undefined'
-     * when calling method: [nsISessionStore::persistTabAttribute]
-     *
-     * We should wait until |persistTabAttribute| is ready for use
-     * 1.boot startup: observes |DOMContentLoaded| which fires on the document
-     * for the first selected tab at startup. see |mStartup::init|
-     * 2.resume startup: observes the first |SSWindowStateReady|
-     *
-     * TODO: use a certain observer
-     */
-    this.isResumeStartup =
-      Cc['@mozilla.org/browser/sessionstartup;1'].
-      getService(Ci.nsISessionStartup).
-      doRestore();
-
-    if (!this.isResumeStartup) {
-      window.addEventListener('DOMContentLoaded', this, false);
-    }
-  },
-
-  handleEvent: function(aEvent) {
-    switch (aEvent.type) {
-      case 'SSWindowStateBusy':
-        this.isRestoring = true;
-        break;
-      case 'SSWindowStateReady':
-        this.isRestoring = false;
-
-        if (this.isResumeStartup) {
-          delete this.isResumeStartup;
-          this.persistTabAttribute();
-        }
-        break;
-      case 'DOMContentLoaded':
-        window.removeEventListener('DOMContentLoaded', this, false);
-        this.persistTabAttribute();
-        break;
-    }
-  },
-
-  persistTabAttribute: function() {
-    let savedAttributes = [
-      kID.OPENTIME,
-      kID.READTIME,
-      kID.SELECTTIME,
-      kID.ANCESTORS,
-      kID.OPENQUERY
-    ];
-
-    if (kPref.showTabColor) {
-      savedAttributes.push(
-        kID.TABCOLOR,
-        kID.PARENTCOLOR
-      );
-    }
-
-    savedAttributes.forEach(function(key) {
-      this.SessionStore.persistTabAttribute(key);
-    }.bind(this));
-  },
-
-  getClosedTabList: function() {
-    if (this.SessionStore.getClosedTabCount(window) > 0) {
-      return JSON.parse(this.SessionStore.getClosedTabData(window));
-    }
-    return null;
-  }
-};
-
-/**
  * Tab opening handler
  */
 var mTabOpener = {
@@ -1031,6 +943,94 @@ var mTabSuspender = {
     }
 
     return [browser, loadingURL, query];
+  }
+};
+
+/**
+ * Session store handler
+ */
+var mSessionStore = {
+  // whether a tab is in restoring (duplicated/undo-closed tab)
+  isRestoring: false,
+
+  init: function() {
+    const {Cc, Ci} = window;
+
+    this.SessionStore =
+      Cc['@mozilla.org/browser/sessionstore;1'].
+      getService(Ci.nsISessionStore);
+
+    addEvent([window, 'SSWindowStateBusy', this, false]);
+    addEvent([window, 'SSWindowStateReady', this, false]);
+
+    /**
+     * WORKAROUND: In Fx19 an error sometimes occurs in startup
+     * Error: NS_ERROR_XPC_JS_THREW_JS_OBJECT: 'TypeError: aFile is undefined'
+     * when calling method: [nsISessionStore::persistTabAttribute]
+     *
+     * We should wait until |persistTabAttribute| is ready for use
+     * 1.boot startup: observes |DOMContentLoaded| which fires on the document
+     * for the first selected tab at startup. see |mStartup::init|
+     * 2.resume startup: observes the first |SSWindowStateReady|
+     *
+     * TODO: use a certain observer
+     */
+    this.isResumeStartup =
+      Cc['@mozilla.org/browser/sessionstartup;1'].
+      getService(Ci.nsISessionStartup).
+      doRestore();
+
+    if (!this.isResumeStartup) {
+      window.addEventListener('DOMContentLoaded', this, false);
+    }
+  },
+
+  handleEvent: function(aEvent) {
+    switch (aEvent.type) {
+      case 'SSWindowStateBusy':
+        this.isRestoring = true;
+        break;
+      case 'SSWindowStateReady':
+        this.isRestoring = false;
+
+        if (this.isResumeStartup) {
+          delete this.isResumeStartup;
+          this.persistTabAttribute();
+        }
+        break;
+      case 'DOMContentLoaded':
+        window.removeEventListener('DOMContentLoaded', this, false);
+        this.persistTabAttribute();
+        break;
+    }
+  },
+
+  persistTabAttribute: function() {
+    let savedAttributes = [
+      kID.OPENTIME,
+      kID.READTIME,
+      kID.SELECTTIME,
+      kID.ANCESTORS,
+      kID.OPENQUERY
+    ];
+
+    if (kPref.showTabColor) {
+      savedAttributes.push(
+        kID.TABCOLOR,
+        kID.PARENTCOLOR
+      );
+    }
+
+    savedAttributes.forEach(function(key) {
+      this.SessionStore.persistTabAttribute(key);
+    }.bind(this));
+  },
+
+  getClosedTabList: function() {
+    if (this.SessionStore.getClosedTabCount(window) > 0) {
+      return JSON.parse(this.SessionStore.getClosedTabData(window));
+    }
+    return null;
   }
 };
 
@@ -1841,9 +1841,9 @@ function TabEx_init() {
   modifySystemSetting();
   customizeTabTooltip();
 
+  mTabOpener.init();
   mTabEvent.init();
   mSessionStore.init();
-  mTabOpener.init();
   mStartup.init();
 }
 
