@@ -617,17 +617,41 @@ var mSessionStore = {
      * Error: NS_ERROR_XPC_JS_THREW_JS_OBJECT: 'TypeError: aFile is undefined'
      * when calling method: [nsISessionStore::persistTabAttribute]
      *
-     * maybe caused by:
-     * [OS.File] Write session store with OS.File
-     * https://bugzilla.mozilla.org/show_bug.cgi?id=794091
+     * We should wait until |persistTabAttribute| is ready for use
+     * 1.boot startup: observes |DOMContentLoaded| which fires on the document
+     * for the first selected tab at startup. see |mStartup::init|
+     * 2.resume startup: observes the first |SSWindowStateReady|
      *
-     * The first |DOMContentLoaded| fires on the document for a selected tab.
-     * It seems enough after all tabs open in both normal and restore startup
-     * and seems to be ready to use |persistTabAttribute|.
-     * see |mStartup::init|
      * TODO: use a certain observer
      */
-    window.addEventListener('DOMContentLoaded', this, false);
+    this.isResumeStartup =
+      Cc['@mozilla.org/browser/sessionstartup;1'].
+      getService(Ci.nsISessionStartup).
+      doRestore();
+
+    if (!this.isResumeStartup) {
+      window.addEventListener('DOMContentLoaded', this, false);
+    }
+  },
+
+  handleEvent: function(aEvent) {
+    switch (aEvent.type) {
+      case 'SSWindowStateBusy':
+        this.isRestoring = true;
+        break;
+      case 'SSWindowStateReady':
+        this.isRestoring = false;
+
+        if (this.isResumeStartup) {
+          delete this.isResumeStartup;
+          this.persistTabAttribute();
+        }
+        break;
+      case 'DOMContentLoaded':
+        window.removeEventListener('DOMContentLoaded', this, false);
+        this.persistTabAttribute();
+        break;
+    }
   },
 
   persistTabAttribute: function() {
@@ -649,21 +673,6 @@ var mSessionStore = {
     savedAttributes.forEach(function(key) {
       this.SessionStore.persistTabAttribute(key);
     }.bind(this));
-  },
-
-  handleEvent: function(aEvent) {
-    switch (aEvent.type) {
-      case 'SSWindowStateBusy':
-        this.isRestoring = true;
-        break;
-      case 'SSWindowStateReady':
-        this.isRestoring = false;
-        break;
-      case 'DOMContentLoaded':
-        window.removeEventListener('DOMContentLoaded', this, false);
-        this.persistTabAttribute();
-        break;
-    }
   },
 
   getClosedTabList: function() {
@@ -1027,9 +1036,9 @@ var mTabSuspender = {
 
 /**
  * Startup tabs handler
- * The boot startup opens the startup tabs (e.g. homepages). Some pinned tabs
+ * 1.The boot startup opens the startup tabs (e.g. homepages). Some pinned tabs
  * may be restored too.
- * The resume startup restores tabs.
+ * 2.The resume startup restores tabs.
  */
 var mStartup = {
   init: function() {
