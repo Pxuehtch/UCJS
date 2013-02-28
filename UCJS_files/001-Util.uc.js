@@ -852,7 +852,24 @@ function focusWindowAtIndex(aIdx) {
   }
 }
 
+// WORKAROUND: in Fx19 'sessionstore.js' sometimes isn't updated at restart
+// if 'resume_from_crash' is off. so force to update it.
 function restartApp(aOption) {
+  if (getPref('browser.sessionstore.resume_from_crash', false) === false) {
+    let tab = gBrowser.addTab('about:blank');
+    setTimeout(function() {
+      gBrowser.pinTab(tab); // makes update
+      gBrowser.removeTab(tab);
+    }, 100);
+    setTimeout(function() {
+      restartApp_original(aOption);
+    }, 100);
+    return;
+  }
+  restartApp_original(aOption);
+}
+
+function restartApp_original(aOption) {
   let {purgeCaches} = aOption || {}
 
   // @see chrome://global/content/globalOverlay.js::canQuitApplication
