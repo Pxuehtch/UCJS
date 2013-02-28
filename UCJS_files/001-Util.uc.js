@@ -23,106 +23,112 @@ var ucjsUtil = (function(window, undefined) {
 /**
  * XPCOM handler
  */
-var mXPCOM = (function() {
-  function $S(aCID, aIID) {
-    return window.Cc[aCID].getService(window.Ci[aIID]);
+const XPCOM = (function() {
+  const kServices = {
+    'BrowserGlue': {
+      CID: '@mozilla.org/browser/browserglue;1',
+      IID: 'nsIBrowserGlue'
+    },
+    'StyleSheetService': {
+      CID: '@mozilla.org/content/style-sheet-service;1',
+      IID: 'nsIStyleSheetService'
+    },
+    'TextToSubURI': {
+      CID: '@mozilla.org/intl/texttosuburi;1',
+      IID: 'nsITextToSubURI'
+    }//,
+  };
+
+  const kInstances = {
+    'DocumentEncoder': {
+      CID: '@mozilla.org/layout/documentEncoder;1',
+      IID: 'nsIDocumentEncoder'
+    },
+    'ScriptableUnicodeConverter': {
+      CID: '@mozilla.org/intl/scriptableunicodeconverter',
+      IID: 'nsIScriptableUnicodeConverter'
+    },
+    'Timer': {
+      CID: '@mozilla.org/timer;1',
+      IID: 'nsITimer'
+    }//,
+  };
+
+  function getService(aName, aCIDParams) {
+    if (window.Services.hasOwnProperty(aName)) {
+      return window.Services[aName];
+    }
+
+    if (!kServices.hasOwnProperty(aName)) {
+      throw Error('service is not defined: ' + aName);
+    }
+
+    if (!(kServices[aName] instanceof window.Ci.nsISupports)) {
+      let service = create(kServices[aName], aCIDParams, 'getService');
+      delete kServices[aName];
+      kServices[aName] = service
+    }
+    return kServices[aName];
   }
 
-  function $I(aCID, aIID) {
-    return window.Cc[aCID].createInstance(window.Ci[aIID]);
+  function getInstance(aName, aCIDParams) {
+    if (!kInstances.hasOwnProperty(aName)) {
+      throw Error('instance is not defined: ' + aName);
+    }
+
+    return create(kInstances[aName], aCIDParams, 'createInstance');
   }
 
-  function $C(aCID, aIID) {
-    return window.Components.Constructor(aCID, aIID);
+  function getConstructor(aName, aCIDParams) {
+    if (!kInstances.hasOwnProperty(aName)) {
+      throw Error('instance is not defined: ' + aName);
+    }
+
+    let {CID, IID} = kInstances[aName];
+
+    CID = fixupCID(CID, aCIDParams);
+
+    if (Array.isArray(IID)) {
+      throw Error('multiple IID is not allowed');
+    }
+
+    return window.Components.Constructor(window.Cc[CID], window.Ci[IID]);
+  }
+
+  function create(aItem, aCIDParams, aMethod) {
+    let {CID, IID} = aItem;
+
+    CID = fixupCID(CID, aCIDParams);
+
+    if (!Array.isArray(IID)) {
+      IID = [IID];
+    }
+
+    try {
+      let res = window.Cc[CID][aMethod]();
+      IID.forEach(function(id) {
+        res.QueryInterface(window.Ci[id]);
+      });
+      return res;
+    } catch (ex) {}
+    return null;
+  }
+
+  function fixupCID(aCID, aCIDParams) {
+    if (aCIDParams) {
+      let params = [];
+      for (let [name, value] in Iterator(aCIDParams)) {
+        params.push(name + '=' + value);
+      }
+      aCID += '?' + params.join('&');
+    }
+    return aCID;
   }
 
   return {
-    /*
-     * Service
-     * @getter
-     */
-    get AppStartup() {
-      delete this.AppStartup;
-      return this.AppStartup =
-        $S('@mozilla.org/toolkit/app-startup;1', 'nsIAppStartup');
-    },
-
-    get BrowserGlue() {
-      delete this.BrowserGlue;
-      return this.BrowserGlue =
-        $S('@mozilla.org/browser/browserglue;1', 'nsIBrowserGlue');
-    },
-
-    get ConsoleService() {
-      delete this.ConsoleService;
-      return this.ConsoleService =
-        $S('@mozilla.org/consoleservice;1', 'nsIConsoleService');
-    },
-
-    get IOService() {
-      delete this.IOService;
-      return this.IOService =
-        $S('@mozilla.org/network/io-service;1', 'nsIIOService');
-    },
-
-    get ObserverService() {
-      delete this.ObserverService;
-      return this.ObserverService =
-        $S('@mozilla.org/observer-service;1', 'nsIObserverService');
-    },
-
-    get PrefBranch() {
-      delete this.PrefBranch;
-      return this.PrefBranch =
-        $S('@mozilla.org/preferences;1', 'nsIPrefBranch');
-    },
-
-    get StyleSheetService() {
-      delete this.StyleSheetService;
-      return this.StyleSheetService =
-        $S('@mozilla.org/content/style-sheet-service;1',
-          'nsIStyleSheetService');
-    },
-
-    get TextToSubURI() {
-      delete this.TextToSubURI;
-      return this.TextToSubURI =
-        $S('@mozilla.org/intl/texttosuburi;1', 'nsITextToSubURI');
-    },
-
-    get WindowMediator() {
-      delete this.WindowMediator;
-      return this.WindowMediator =
-        $S('@mozilla.org/appshell/window-mediator;1', 'nsIWindowMediator');
-    },
-
-    get XULRuntime() {
-      delete this.XULRuntime;
-      return this.XULRuntime =
-        $S('@mozilla.org/xre/app-info;1', 'nsIXULRuntime');
-    },
-
-    /*
-     * Instance
-     * @function
-     */
-    DocumentEncoder: function(aType) {
-      return $I('@mozilla.org/layout/documentEncoder;1?type=' + aType,
-        'nsIDocumentEncoder');
-    },
-
-    ScriptableUnicodeConverter: function() {
-      return $I('@mozilla.org/intl/scriptableunicodeconverter',
-        'nsIScriptableUnicodeConverter');
-    },
-
-    /*
-     * Instance constructor
-     * @function
-     */
-    Timer: function() {
-      return $C('@mozilla.org/timer;1', 'nsITimer');
-    } //,
+    $S: getService,
+    $I: getInstance,
+    $C: getConstructor
   };
 })();
 
@@ -131,11 +137,11 @@ var mXPCOM = (function() {
  * Alternative native timers
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
  */
-let TimerHandler = (function() {
+const TimerHandler = (function() {
   const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = window.Ci.nsITimer;
 
   // instance constructor
-  const Timer = mXPCOM.Timer();
+  const Timer = XPCOM.$C('Timer');
 
   let timers = {};
   let lastID = 0;
@@ -287,7 +293,7 @@ function getSelectedTextInRange(aRange) {
   }
 
   var type = 'text/plain';
-  var encoder = mXPCOM.DocumentEncoder(type);
+  var encoder = XPCOM.$I('DocumentEncoder', {type: type});
 
   encoder.init(
     aRange.startContainer.ownerDocument,
@@ -561,7 +567,7 @@ function unescapeURLForUI(aURL, aCharset) {
 
   var charset = aCharset || getFocusedDocument().characterSet;
 
-  return mXPCOM.TextToSubURI.unEscapeURIForUI(charset, aURL);
+  return XPCOM.$S('TextToSubURI').unEscapeURIForUI(charset, aURL);
 }
 
 function resolveURL(aURL, aBaseURL) {
@@ -766,7 +772,7 @@ function convertFromUTF16(aStr, aCharset) {
     return null;
   }
 
-  var converter = mXPCOM.ScriptableUnicodeConverter();
+  var converter = XPCOM.$I('ScriptableUnicodeConverter');
 
   converter.charset = aCharset;
 
@@ -777,7 +783,7 @@ function convertFromUTF16(aStr, aCharset) {
 }
 
 function convertToUTF16(aStr, aCharset) {
-  var converter = mXPCOM.ScriptableUnicodeConverter();
+  var converter = XPCOM.$I('ScriptableUnicodeConverter');
 
   converter.charset = aCharset || 'UTF-8';
 
@@ -824,7 +830,7 @@ function getWindowList(aType) {
     aType = aType || 'navigator:browser';
   }
 
-  return mXPCOM.WindowMediator.getEnumerator(aType);
+  return XPCOM.$S('wm').getEnumerator(aType);
 }
 
 function focusWindow(aWindow) {
@@ -878,11 +884,11 @@ function restartApp_original(aOption) {
   }
 
   if (purgeCaches) {
-    mXPCOM.XULRuntime.invalidateCachesOnRestart();
+    XPCOM.$S('appinfo').invalidateCachesOnRestart();
   }
 
   const {Ci} = window;
-  mXPCOM.AppStartup.
+  XPCOM.$S('startup').
   quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
 }
 
@@ -904,13 +910,13 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
 
   let URI;
   try {
-    URI = mXPCOM.IOService.
+    URI = XPCOM.$S('io').
       newURI('data:text/css,' + encodeURIComponent(css), null, null);
   } catch (ex) {
     return;
   }
 
-  const styleSheetService = mXPCOM.StyleSheetService;
+  const styleSheetService = XPCOM.$S('StyleSheetService');
 
   let type;
   switch (aType) {
@@ -1002,7 +1008,7 @@ function normalizeCSS(aCSS) {
 }
 
 function getPref(aKey, aDef) {
-  const prefBranch = mXPCOM.PrefBranch;
+  const prefBranch = XPCOM.$S('prefs');
 
   try {
     switch (prefBranch.getPrefType(aKey)) {
@@ -1018,7 +1024,7 @@ function getPref(aKey, aDef) {
 }
 
 function setPref(aKey, aVal) {
-  const prefBranch = mXPCOM.PrefBranch;
+  const prefBranch = XPCOM.$S('prefs');
 
   try {
     if (aVal === null) {
@@ -1057,11 +1063,11 @@ function logMessage(aTarget, aMessage) {
   let formatDate = U(getFormatDate());
 
   // for the error console
-  mXPCOM.ConsoleService.logStringMessage(
+  XPCOM.$S('console').logStringMessage(
     [formatDate, formatMessage].join('\n'));
 
   // for the web console
-  var win = mXPCOM.BrowserGlue.getMostRecentBrowserWindow();
+  var win = XPCOM.$S('BrowserGlue').getMostRecentBrowserWindow();
   if (win) {
     win.content.console.log(formatMessage);
   }
