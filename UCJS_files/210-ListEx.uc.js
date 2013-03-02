@@ -175,17 +175,24 @@ var mHistoryList = (function() {
         action = 'gotoHistoryIndex(event);';
       }
 
-      aPopup.appendChild($E('menuitem', {
+      // @note |menuitem| should be defined in loop because it is passed to
+      // async callback of |getFavicon|
+      let menuitem = aPopup.appendChild($E('menuitem', {
         label: formatLabel({
           time: getLastVisitTime(entry.URI),
           title: entry.title
         }),
         tooltiptext: entry.URI.spec,
-        icon: getFavicon(null, entry.URI),
         class: className.join(' '),
         index: i,
         action: action
       }));
+
+      getFavicon(null, entry.URI, function(aIconURL) {
+        $E(menuitem, {
+          icon: aIconURL
+        });
+      });
     }
 
     return true;
@@ -216,16 +223,23 @@ var mHistoryList = (function() {
           replace(/%URL%/g, URL);
       }
 
-      aPopup.appendChild($E('menuitem', {
+      // @note |menuitem| should be defined in loop because it is passed to
+      // async callback of |getFavicon|
+      let menuitem = aPopup.appendChild($E('menuitem', {
         label: formatLabel({
           time: toMillisec(node.time),
           title: getTitle(node.title, URL)
         }),
         tooltiptext: URL,
-        icon: getFavicon(node.icon, URL),
         class: className.join(' '),
         action: action
       }));
+
+      getFavicon(node.icon, URL, function(aIconURL) {
+        $E(menuitem, {
+          icon: aIconURL
+        });
+      });
     }
 
     root.containerOpen = false;
@@ -608,37 +622,57 @@ function getTitle(aTitle, aURL) {
   return aTitle || window.PlacesUIUtils.getString('noTitle');
 }
 
-function getFavicon(aIcon, aPageURI) {
+function getFavicon(aIconURL, aPageURI, aCallback) {
   // @see resource:///modules/PlacesUtils.jsm
   const {favicons} = window.PlacesUtils;
 
-  if (!aIcon) {
-    aPageURI = makeURI(aPageURI);
-    if (aPageURI) {
-      try {
-        aIcon = favicons.getFaviconForPage(aPageURI).spec;
-      } catch (ex) {}
-
-      if (!aIcon && !/^https?:/.test(aPageURI.spec)) {
-        let fileExtension;
-        try {
-          fileExtension =
-            aPageURI.QueryInterface(window.Ci.nsIURL).fileExtension;
-        } catch (ex) {}
-
-        if (fileExtension) {
-          aIcon = 'moz-icon://.%EXT%?size=16'.
-            replace('%EXT%', fileExtension);
-        }
-      }
+  if (aIconURL) {
+    if (/^https?:/.test(aIconURL)) {
+      aIconURL = 'moz-anno:favicon:' + aIconURL;
     }
 
-    if (!aIcon) {
-      aIcon = favicons.defaultFavicon.spec;
+    if (aCallback) {
+      aCallback(aIconURL);
+      return;
     }
+    return aIconURL;
   }
 
-  return /^https?:/.test(aIcon) ? 'moz-anno:favicon:' + aIcon : aIcon;
+  aPageURI = makeURI(aPageURI);
+  if (!aPageURI) {
+    return favicons.defaultFavicon.spec;
+  }
+
+  favicons.getFaviconURLForPage(aPageURI, function(aIconURI) {
+    let iconURL;
+    if (aIconURI) {
+      try {
+        iconURL = favicons.getFaviconLinkForIcon(aIconURI).spec;
+      } catch (ex) {}
+    }
+    if (!iconURL && !/^https?:/.test(aPageURI.scheme)) {
+      iconURL = getExtensionFavicon(aPageURI);
+    }
+    if (!iconURL) {
+      iconURL = favicons.defaultFavicon.spec;
+    }
+
+    try {
+      aCallback(iconURL);
+    } catch (ex) {}
+  });
+}
+
+function getExtensionFavicon(aURI) {
+  let extension;
+  try {
+    extension = aURI.QueryInterface(window.Ci.nsIURL).fileExtension;
+  } catch (ex) {}
+
+  if (extension) {
+    return 'moz-icon://.%EXT%?size=16'.replace('%EXT%', extension);
+  }
+  return null
 }
 
 function makeURI(aURL) {
