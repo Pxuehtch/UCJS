@@ -1056,6 +1056,10 @@ function logMessage(aTarget, aMessage) {
     return toStringForUI(value);
   }
 
+  if (Array.isArray(aMessage)) {
+    aMessage = aMessage.join('\n');
+  }
+
   const kMessageFormat = '[%target%]\n%msg%';
 
   let formatMessage = U(kMessageFormat.
