@@ -9,9 +9,11 @@
 // @include chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @include chrome://browser/content/history/history-panel.xul
 
-// @usage Access to items through global functions (ucjsUtil.XXX).
+// @usage Access to functions through the global scope,
+// |window.ucjsUtil.XXX|
+
 // @note Note the definitions only in the main window (e.g. gBrowser) when
-// including on the other window.
+// including in the other window.
 
 
 var ucjsUtil = (function(window, undefined) {
@@ -1060,10 +1062,10 @@ function logMessage(aTarget, aMessage) {
     aMessage = aMessage.join('\n');
   }
 
-  const kMessageFormat = '[%target%]\n%msg%';
-
+  const kMessageFormat = '[%target%]\n%message%';
   let formatMessage = U(kMessageFormat.
-    replace('%target%', aTarget).replace('%msg%', aMessage));
+    replace('%target%', aTarget).
+    replace('%message%', aMessage));
   let formatDate = U(getFormatDate());
 
   // for the error console
