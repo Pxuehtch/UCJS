@@ -10,7 +10,7 @@
 // @include     main
 // ==/UserScript==
 
-// @require [for command] Util.uc.js, UI.uc.js, ucjsMisc
+// @require [for command] Util.uc.js, UI.uc.js, Misc.uc.js
  -->
 
 
