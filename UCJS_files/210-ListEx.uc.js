@@ -595,11 +595,10 @@ function getListRange(aIndex, aCount) {
 
 function getTitle(aTitle, aURL) {
   if (!aTitle && aURL) {
-    try {
-      // @see chrome://global/content/contentAreaUtils.js::makeURI
-      window.makeURI(aURL, null, null);
+    let URI = makeURI(aURL);
+    if (URI) {
       aTitle = aURL;
-    } catch (ex) {
+    } else {
       // Clip non-standard URL. (e.g. data:, javascript:)
       aTitle = aURL.substr(0, 32) + '...';
     }
@@ -614,15 +613,7 @@ function getFavicon(aIcon, aPageURI) {
   const {favicons} = window.PlacesUtils;
 
   if (!aIcon) {
-    if (typeof aPageURI === 'string') {
-      try {
-        // @see chrome://global/content/contentAreaUtils.js::makeURI
-        aPageURI = window.makeURI(aPageURI, null, null);
-      } catch (ex) {
-        aPageURI = null;
-      }
-    }
-
+    aPageURI = makeURI(aPageURI);
     if (aPageURI) {
       try {
         aIcon = favicons.getFaviconForPage(aPageURI).spec;
@@ -648,6 +639,18 @@ function getFavicon(aIcon, aPageURI) {
   }
 
   return /^https?:/.test(aIcon) ? 'moz-anno:favicon:' + aIcon : aIcon;
+}
+
+function makeURI(aURL) {
+  if (aURL && typeof aURL === 'string') {
+    try {
+      // @see chrome://global/content/contentAreaUtils.js::makeURI
+      return window.makeURI(aURL, null, null);
+    } catch (ex) {
+      return null;
+    }
+  }
+  return aURL;
 }
 
 
