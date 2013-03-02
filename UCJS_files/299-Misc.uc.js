@@ -7,7 +7,11 @@
 // @require Util.uc.js, UI.uc.js
 // @note Some about:config preferences are changed. see @pref.
 // @note Some default functions are modified. see @modified.
+// @note Some properties are exposed to the global scope.
+// |window.ucjsMisc.XXX|
 
+
+var ucjsMisc = {};
 
 (function(window, undefined) {
 
@@ -445,6 +449,98 @@
         linear-gradient(to right,hsl(0,0%,60%),hsl(0,0%,90%))!important;\
     }\
   ');
+
+})();
+
+/**
+ * Restart Firefox
+ * @note a function |restartFx| is exposed to the global scope
+ *
+ * WORKAROUND:
+ * In Fx19 'sessionstore.js' sometimes isn't updated at restart if the session
+ * store crash recovery is disabled. So updates the session store forcibly.
+ *
+ * TODO:
+ * use safe handling instead of pinning a tab to update the session.
+ */
+(function() {
+
+  function restartFx(aOption) {
+    const kPref_resume_from_crash = 'browser.sessionstore.resume_from_crash';
+    const kWaitingTime = 5000;
+
+    if (window.gPrivateBrowsingUI.privateBrowsingEnabled ||
+        getPref(kPref_resume_from_crash, false) !== false) {
+      doRestart(aOption);
+      return;
+    }
+
+    // to pin a tab will update the session store
+    let pinnedTab = gBrowser.addTab('about:blank');
+    gBrowser.pinTab(pinnedTab);
+
+    let stateUpdateTopic = 'sessionstore-state-write-complete';
+    let stateUpdateObserver = true;
+    window.Services.obs.addObserver(onStateUpdated, stateUpdateTopic, false);
+    let waitingTimer = setTimeout(onTimeExpired, kWaitingTime);
+
+    function cleanup() {
+      if (pinnedTab) {
+        // remove the dummy tab
+        gBrowser.removeTab(pinnedTab);
+        pinnedTab = null;
+      }
+
+      if (stateUpdateObserver) {
+        window.Services.obs.removeObserver(onStateUpdated, stateUpdateTopic);
+        stateUpdateObserver = false;
+      }
+      if (waitingTimer) {
+        clearTimeout(waitingTimer);
+        waitingTimer = null;
+      }
+    }
+
+    function onStateUpdated() {
+      cleanup();
+      doRestart(aOption);
+    }
+
+    function onTimeExpired() {
+      cleanup();
+
+      let result = window.Services.prompt.confirm(
+        null,
+        'Misc.uc.js::RestartFx',
+        'Preprocessing for restart is interrupted.\n' +
+        'It takes time too much for updating the current session.\n' +
+        '[OK]: You can force to restart, but the previous session may be restored.'
+      );
+      if (result) {
+        doRestart(aOption);
+      }
+    }
+  }
+
+  function doRestart(aOption) {
+    let {purgeCaches} = aOption || {}
+
+    // @see chrome://global/content/globalOverlay.js::canQuitApplication
+    if (!window.canQuitApplication('restart')) {
+      return;
+    }
+
+    const {Services, Ci} = window;
+    if (purgeCaches) {
+      Services.appinfo.invalidateCachesOnRestart();
+    }
+
+    Services.startup.
+    quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
+  }
+
+  // expose to the global scope
+  window.ucjsMisc.restartFx = restartFx;
 
 })();
 

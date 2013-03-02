@@ -10,7 +10,7 @@
 // @include     main
 // ==/UserScript==
 
-// @require Util.uc.js, UI.uc.js
+// @require [for command] Util.uc.js, UI.uc.js, ucjsMisc
  -->
 
 
@@ -29,10 +29,10 @@
     oncommand="ucjsUI.FindBar.toggleFindbar();"/>
 
   <command id="ucjs_cmd_RestartApp"
-    oncommand="ucjsUtil.restartApp();"/>
+    oncommand="ucjsMisc.restartFx();"/>
 
   <command id="ucjs_cmd_RestartApp_PurgeCaches"
-    oncommand="ucjsUtil.restartApp({purgeCaches: true});"/>
+    oncommand="ucjsMisc.restartFx({purgeCaches: true});"/>
 
   <command id="ucjs_cmd_ToggleTabbar"
     oncommand="(function(el){el.collapsed=!el.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked',!el.collapsed);})(document.getElementById('TabsToolbar'));"/>
