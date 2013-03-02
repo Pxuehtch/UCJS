@@ -541,8 +541,9 @@ function $ID(aID) {
   return window.document.getElementById(aID);
 }
 
-function $E(aTagName, aAttribute) {
-  var node = window.document.createElement(aTagName);
+function $E(aTagOrNode, aAttribute) {
+  let node = (typeof aTagOrNode === 'string') ?
+    window.document.createElement(aTagOrNode) : aTagOrNode;
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
