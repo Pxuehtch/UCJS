@@ -93,16 +93,20 @@ function buildContent() {
 }
 
 function makeGroup(aData, aGroupName) {
-  var groupbox, grid, columns, rows, row;
+  let groupbox, grid, columns, rows, row;
+
   groupbox = $E('groupbox');
   groupbox.appendChild($E('caption', {label: aGroupName}));
+
   grid = groupbox.appendChild($E('grid'));
+
   columns = grid.appendChild($E('columns'));
   columns.appendChild($E('column'));
   columns.appendChild($E('column'));
+
   rows = grid.appendChild($E('rows'));
   aData.forEach(function(item) {
-    if (item.separator) {
+    if (item === 'separator') {
       row = $E('separator', {class: kID.STYLE_GROOVE});
     } else {
       row = $E('row');
@@ -175,11 +179,20 @@ function getShortcutData() {
     });
   }
 
-  [searchEnginesData, bookmarksData].forEach(function(item) {
-    item.sort(function(a, b) a.keyword.localeCompare(b.keyword));
-  });
-
-  return searchEnginesData.concat({separator: true}, bookmarksData);
+  return [searchEnginesData, bookmarksData].reduce(
+    function(previous, current) {
+      if (current.length) {
+        current.sort(function(a, b) {
+          return a.keyword.localeCompare(b.keyword);
+        });
+        if (previous.length) {
+          current.unshift('separator');
+        }
+        return previous.concat(current);
+      }
+      return previous;
+    }, []
+  );
 }
 
 function setStyles() {
