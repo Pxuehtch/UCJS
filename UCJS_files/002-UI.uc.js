@@ -199,30 +199,8 @@ var mStatusField = (function() {
       // clear the message to hide it after the cursor leaves
       showMessage('');
 
-      let linkState;
-      if (url) {
-        // @see resource:///modules/PlacesUtils.jsm
-        const {PlacesUtils} = window;
-        let URI;
-        try {
-          URI = PlacesUtils._uri(url);
-        } catch (ex) {}
-
-        linkState = 'unknown';
-        if (URI) {
-          // TODO: Fix the character escaping problem
-          // see https://bugzilla.mozilla.org/show_bug.cgi?id=817374
-          if (PlacesUtils.history.isVisited(URI)) {
-            // update url
-            url = format(url, getLastVisitTime(URI));
-            linkState = 'visited';
-          }
-          // @note Not 'else if' to overwrite linkState
-          if (PlacesUtils.bookmarks.isBookmarked(URI)) {
-            linkState = 'bookmarked';
-          }
-        }
-      }
+      // |URL| can be updated with its visited date
+      let {linkState, URL} = getLinkState(url, anchorElt);
 
       const {LINKSTATE} = kStatusAttribute;
       let textField = getTextBox();
@@ -238,8 +216,8 @@ var mStatusField = (function() {
 
       // disable the delayed showing
       this.hideOverLinkImmediately = true;
-      // @note use |call| for the updated |url|
-      $setOverLink.call(this, url, anchorElt);
+      // @note use |call| for the updated |URL|
+      $setOverLink.call(this, URL, anchorElt);
       this.hideOverLinkImmediately = false;
     };
 
@@ -287,46 +265,70 @@ var mStatusField = (function() {
       setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
     }
 
-    // TODO: Get the time of a redirected URL
-    function getLastVisitTime(aURI) {
-      if (aURI.schemeIs('about')) {
-        return 0;
+    function getLinkState(aURL, aAnchorElt) {
+      if (!aURL) {
+        return {
+          linkState: null,
+          URL: aURL
+        };
       }
 
-      // @see resource:///modules/PlacesUtils.jsm
-      const history = window.PlacesUtils.history;
-      const {Ci} = window;
+      // query the Places DB with the raw URL of a link in the content area
+      // so that we can get the proper result
+      let originalURL = (aAnchorElt && aAnchorElt.href) || aURL;
+      let linkState;
+      let SQLExp, resultRows;
 
-      var query, options, root;
-      var time;
-
-      query = history.getNewQuery();
-      query.uri = aURI;
-
-      options = history.getNewQueryOptions();
-      options.queryType =
-        Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
-      options.sortingMode =
-        Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
-      options.maxResults = 1;
-
-      root = history.executeQuery(query, options).root;
-      root.containerOpen = true;
-      try {
+      // visited check
+      SQLExp = [
+        "SELECT h.visit_date",
+        "FROM moz_historyvisits h",
+        "JOIN moz_places p ON p.id = h.place_id",
+        "WHERE p.url = :url",
+        "ORDER BY h.visit_date DESC",
+        "LIMIT 1"
+      ].join(' ');
+      resultRows = scanPlacesDB({
+        expression: SQLExp,
+        params: {'url': originalURL},
+        columns: ['visit_date']
+      });
+      if (resultRows) {
+        // we ordered one row
+        let row = resultRows[0];
         // convert microseconds into milliseconds
-        time = root.getChild(0).time / 1000;
-      } catch (ex) {}
-      root.containerOpen = false;
+        let time = row.visit_date / 1000;
+        time = (new Date(time)).toLocaleFormat(kTimeFormat);
 
-      return time || 0;
-    }
+        aURL = kLinkFormat.replace('%url%', aURL).replace('%time%', time);
+        linkState = 'visited';
+      }
 
-    function format(aURL, aTime) {
-      let time = aTime ?
-        (new Date(aTime)).toLocaleFormat(kTimeFormat) :
-        'Redirected';
+      // bookmarked check
+      SQLExp = [
+        "SELECT b.id",
+        "FROM moz_bookmarks b",
+        "JOIN moz_places p ON p.id = b.fk",
+        "WHERE p.url = :url",
+        "LIMIT 1"
+      ].join(' ');
+      resultRows = scanPlacesDB({
+        expression: SQLExp,
+        params: {'url': originalURL},
+        columns: ['id']
+      });
+      if (resultRows) {
+        linkState = 'bookmarked';
+      }
 
-      return kLinkFormat.replace('%url%', aURL).replace('%time%', time);
+      if (!linkState) {
+        linkState = 'unknown';
+      }
+
+      return {
+        linkState: linkState,
+        URL: aURL
+      };
     }
 
     // expose
@@ -440,6 +442,10 @@ function addEvent(aData) {
 
 function setCSS(aCSS, aTitle) {
   window.ucjsUtil.setChromeStyleSheet(aCSS);
+}
+
+function scanPlacesDB(aSQLInfo) {
+  return window.ucjsUtil.scanPlacesDB(aSQLInfo);
 }
 
 function log(aMsg) {
