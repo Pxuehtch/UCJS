@@ -32,7 +32,8 @@ const {
   removeTab,
   setChromeStyleSheet,
   getPref,
-  setPref
+  setPref,
+  scanPlacesDB
 } = window.ucjsUtil;
 // for debug
 const log = window.ucjsUtil.logMessage.bind(null, 'TabEx.uc.js');
@@ -762,16 +763,28 @@ var mReferrer = {
     }
 
     // @see http://www.forensicswiki.org/wiki/Mozilla_Firefox_3_History_File_Format
-    var sql =
-      "SELECT p1.url " +
-      "FROM moz_places p1 " +
-      "JOIN moz_historyvisits h1 ON h1.place_id = p1.id " +
-      "JOIN moz_historyvisits h2 ON h2.from_visit = h1.id " +
-      "JOIN moz_places p2 ON p2.id = h2.place_id " +
-      "WHERE p2.url = :page_url " +
-      "ORDER BY h1.visit_date DESC";
+    let SQLExp = [
+      "SELECT p1.url",
+      "FROM moz_places p1",
+      "JOIN moz_historyvisits h1 ON h1.place_id = p1.id",
+      "JOIN moz_historyvisits h2 ON h2.from_visit = h1.id",
+      "JOIN moz_places p2 ON p2.id = h2.place_id",
+      "WHERE p2.url = :url",
+      "ORDER BY h1.visit_date DESC",
+      "LIMIT 1"
+    ].join(' ');
 
-    return scanHistoryDatabase(sql, {'page_url': aURL}, 'url');
+    let resultRows = scanPlacesDB({
+      expression: SQLExp,
+      params: {'url': aURL},
+      columns: ['url']
+    });
+
+    if (resultRows) {
+      // we ordered only one row
+      return resultRows[0].url;
+    }
+    return null;
   }
 };
 
@@ -1705,30 +1718,6 @@ function makeURI(aURL) {
     // @see chrome://global/content/contentAreaUtils.js::makeURI
     return window.makeURI(aURL);
   } catch (ex) {}
-  return null;
-}
-
-function scanHistoryDatabase(aSQL, aParams, aColumnName) {
-  const {Cc, Ci} = window;
-
-  var statement =
-    Cc['@mozilla.org/browser/nav-history-service;1'].
-    getService(Ci.nsPIPlacesDatabase).
-    DBConnection.
-    createStatement(aSQL);
-
-  for (let key in aParams) {
-    statement.params[key] = aParams[key];
-  }
-
-  try {
-    if (statement.executeStep()) {
-      return statement.row[aColumnName];
-    }
-  } finally {
-    statement.reset();
-    statement.finalize();
-  }
   return null;
 }
 

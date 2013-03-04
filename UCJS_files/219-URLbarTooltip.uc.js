@@ -139,15 +139,12 @@ function getRestrictData() {
 }
 
 function getShortcutData() {
-  const {Cc, Ci} = window;
+  let searchEnginesData = [],
+      bookmarksData = [];
+
+  // get search engine keywords
   // @see resource:///modules/Services.jsm
-  const searchService = window.Services.search;
-  // @see resource:///modules/PlacesUtils.jsm
-  const bookmarkService = window.PlacesUtils.bookmarks;
-
-  var searchEnginesData = [], bookmarksData = [];
-
-  searchService.getEngines().forEach(function(item) {
+  window.Services.search.getEngines().forEach(function(item) {
     if (item.alias) {
       searchEnginesData.push({
         keyword: item.alias,
@@ -156,32 +153,26 @@ function getShortcutData() {
     }
   });
 
-  var sql =
-    'SELECT b.id ' +
-    'FROM moz_bookmarks b ' +
-    'JOIN moz_keywords k ON k.id = b.keyword_id';
+  // get bookmark keywords
+  let SQLExp = [
+    'SELECT b.title, k.keyword, p.url',
+    'FROM moz_bookmarks b',
+    'JOIN moz_keywords k ON k.id = b.keyword_id',
+    'JOIN moz_places p ON p.id = b.fk'
+  ].join(' ');
 
-  var statement =
-    Cc['@mozilla.org/browser/nav-history-service;1'].
-    getService(Ci.nsPIPlacesDatabase).
-    DBConnection.
-    createStatement(sql);
+  let resultRows = scanPlacesDB({
+    expression: SQLExp,
+    columns: ['title', 'keyword', 'url']
+  });
 
-  var id, uri;
-  try {
-    while (statement.executeStep()) {
-      id = statement.row.id;
-      uri = bookmarkService.getBookmarkURI(id);
-      if (uri) {
-        bookmarksData.push({
-          keyword: bookmarkService.getKeywordForBookmark(id),
-          name: bookmarkService.getItemTitle(id) || uri.prePath
-        });
-      }
-    }
-  } finally {
-    statement.reset();
-    statement.finalize();
+  if (resultRows) {
+    resultRows.forEach(function(row) {
+      bookmarksData.push({
+        keyword: row.keyword,
+        name: row.title || getPrePath(row.url)
+      });
+    });
   }
 
   [searchEnginesData, bookmarksData].forEach(function(item) {
@@ -212,6 +203,14 @@ function $Class(aClassName) {
   return window.document.getElementsByClassName(aClassName);
 }
 
+function getPrePath(aURL) {
+  let prePath = aURL.replace(/^(\w+:[/]*[^/]+).*$/, '$1');
+  if (prePath.length > 40) {
+    prePath = prePath.substr(0, 40) + '...';
+  }
+  return prePath;
+}
+
 
 //********** Imports
 
@@ -229,6 +228,10 @@ function addEvent(aData) {
 
 function getPref(aKey) {
   return window.ucjsUtil.getPref(aKey);
+}
+
+function scanPlacesDB(aSQLInfo) {
+  return window.ucjsUtil.scanPlacesDB(aSQLInfo);
 }
 
 function log(aMsg) {

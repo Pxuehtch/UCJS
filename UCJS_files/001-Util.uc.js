@@ -1016,6 +1016,54 @@ function setPref(aKey, aVal) {
   } catch (ex) {}
 }
 
+/**
+ * Query the Places database
+ * @param aSQLInfo {hash}
+ *   expression: {string} a SQL expression
+ *   params: {hash} the binding parameters
+ *   columns: {array} the column names
+ * @return {hash[]|null}
+ *   hash[]: array of {column name: value, ...}
+ *   null: no result
+ *
+ * TODO: create an async version
+ */
+function scanPlacesDB(aSQLInfo) {
+  const {expression, params, columns} = aSQLInfo || {};
+
+  // @see resource:///modules/PlacesUtils.jsm
+  const {PlacesUtils} = window;
+  let statement =
+    PlacesUtils.history.
+    DBConnection.
+    createStatement(expression);
+
+  let rows = [];
+  try {
+    for (let key in statement.params) {
+      if (!(key in params)) {
+        throw Error('parameter is not defined: ' + key);
+      }
+      statement.params[key] = params[key];
+    }
+
+    while (statement.executeStep()) {
+      let res = {};
+      columns.forEach(function(name) {
+        res[name] = statement.row[name];
+      });
+      rows.push(res);
+    }
+  } finally {
+    statement.finalize();
+  }
+
+  if (rows.length) {
+    return rows;
+  }
+  return null;
+}
+
 
 //********** Log function
 
@@ -1120,9 +1168,9 @@ return {
   removeGlobalStyleSheet: removeGlobalStyleSheet,
   setChromeStyleSheet: registerChromeStyleSheet,
   setContentStyleSheet: registerContentStyleSheet,
-
   getPref: getPref,
   setPref: setPref,
+  scanPlacesDB: scanPlacesDB,
 
   logMessage: logMessage
 }
