@@ -172,6 +172,7 @@ var mStatusField = (function() {
    */
   const OverLink = (function() {
     let disableSetOverLink = false;
+    let lastOverLinkURL;
 
     /**
      * Toggle the showing
@@ -195,6 +196,13 @@ var mStatusField = (function() {
       if (disableSetOverLink) {
         return;
       }
+
+      // WORKAROUND: sometimes |setOverLink| is called on mouseover event (e.g.
+      // on history/bookmark sidebar), so we discard redundant callings.
+      if (lastOverLinkURL === url) {
+        return;
+      }
+      lastOverLinkURL = url;
 
       // clear the message to hide it after the cursor leaves
       showMessage('');
