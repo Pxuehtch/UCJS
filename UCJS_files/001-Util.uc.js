@@ -1032,9 +1032,10 @@ function scanPlacesDB(aSQLInfo) {
   const {expression, params, columns} = aSQLInfo || {};
 
   // @see resource:///modules/PlacesUtils.jsm
-  const {PlacesUtils} = window;
+  const {PlacesUtils, Ci} = window;
   let statement =
     PlacesUtils.history.
+    QueryInterface(Ci.nsPIPlacesDatabase).
     DBConnection.
     createStatement(expression);
 
