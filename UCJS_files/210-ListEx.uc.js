@@ -227,7 +227,7 @@ var mHistoryList = (function() {
       // async callback of |getFavicon|
       let menuitem = aPopup.appendChild($E('menuitem', {
         label: formatLabel({
-          time: toMillisec(node.time),
+          time: node.time,
           title: getTitle(node.title, URL)
         }),
         tooltiptext: URL,
@@ -272,7 +272,7 @@ var mHistoryList = (function() {
     root = history.executeQuery(query, options).root;
     root.containerOpen = true;
     try {
-      time = toMillisec(root.getChild(0).time);
+      time = root.getChild(0).time;
     } catch (ex) {}
     root.containerOpen = false;
 
@@ -296,21 +296,15 @@ var mHistoryList = (function() {
     return history.executeQuery(query, options).root;
   }
 
-  // convert microseconds into milliseconds
-  function toMillisec(aMicrosec) {
-    return aMicrosec / 1000;
-  }
-
   function formatLabel(aValue) {
-    var {time, title} = aValue;
+    let {time, title} = aValue;
 
-    var form = time ? kTitleFormat[0] : kTitleFormat[1];
-
+    let form = time ? kTitleFormat[0] : kTitleFormat[1];
     if (time) {
-      form = form.replace('%time%',
-        (new Date(time)).toLocaleFormat(kTimeFormat));
+      // convert microseconds into milliseconds
+      time = (new Date(time / 1000)).toLocaleFormat(kTimeFormat);
+      form = form.replace('%time%', time);
     }
-
     return form.replace('%title%', title);
   }
 
