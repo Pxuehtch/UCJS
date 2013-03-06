@@ -1018,9 +1018,9 @@ function setPref(aKey, aVal) {
 
 /**
  * Query the Places database
- * @param aSQLInfo {hash}
+ * @param aParam {hash}
  *   expression: {string} a SQL expression
- *   params: {hash} the binding parameters
+ *   params: {hash} [optional] the binding parameters
  *   columns: {array} the column names
  * @return {hash[]|null}
  *   hash[]: array of {column name: value, ...}
@@ -1028,8 +1028,8 @@ function setPref(aKey, aVal) {
  *
  * TODO: create an async version
  */
-function scanPlacesDB(aSQLInfo) {
-  const {expression, params, columns} = aSQLInfo || {};
+function scanPlacesDB(aParam) {
+  const {expression, params, columns} = aParam || {};
 
   // @see resource:///modules/PlacesUtils.jsm
   const {PlacesUtils, Ci} = window;

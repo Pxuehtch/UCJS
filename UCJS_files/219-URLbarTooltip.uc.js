@@ -243,8 +243,8 @@ function getPref(aKey) {
   return window.ucjsUtil.getPref(aKey);
 }
 
-function scanPlacesDB(aSQLInfo) {
-  return window.ucjsUtil.scanPlacesDB(aSQLInfo);
+function scanPlacesDB(aParam) {
+  return window.ucjsUtil.scanPlacesDB(aParam);
 }
 
 function log(aMsg) {
