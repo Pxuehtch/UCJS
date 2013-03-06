@@ -644,9 +644,7 @@ function getFavicon(aIconURL, aPageURI, aCallback) {
         iconURL = favicons.getFaviconLinkForIcon(aIconURI).spec;
       } catch (ex) {}
     }
-    if (!iconURL && !/^https?:/.test(aPageURI.scheme)) {
-      iconURL = getExtensionFavicon(aPageURI);
-    }
+
     if (!iconURL) {
       iconURL = favicons.defaultFavicon.spec;
     }
@@ -655,18 +653,6 @@ function getFavicon(aIconURL, aPageURI, aCallback) {
       aCallback(iconURL);
     } catch (ex) {}
   });
-}
-
-function getExtensionFavicon(aURI) {
-  let extension;
-  try {
-    extension = aURI.QueryInterface(window.Ci.nsIURL).fileExtension;
-  } catch (ex) {}
-
-  if (extension) {
-    return 'moz-icon://.%EXT%?size=16'.replace('%EXT%', extension);
-  }
-  return null
 }
 
 function makeURI(aURL) {
