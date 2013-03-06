@@ -213,7 +213,7 @@ function getAvailableItems() {
   var items = [];
 
   var pageInfo = {
-    title: gBrowser.contentTitle,
+    title: gBrowser.contentTitle || gBrowser.selectedTab.label,
     URL: gBrowser.currentURI.spec
   };
 
