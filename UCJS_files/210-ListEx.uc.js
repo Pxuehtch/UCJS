@@ -160,7 +160,7 @@ var mHistoryList = (function() {
     let entry;
     let currentIndex = sessionHistory.index;
     let [start, end] = getListRange(currentIndex, sessionHistory.count);
-    let className, direction, action;
+    let URL, className, direction, action;
 
     for (let i = end - 1; i >= start; i--) {
       entry = sessionHistory.getEntryAtIndex(i, false);
@@ -168,6 +168,7 @@ var mHistoryList = (function() {
         continue;
       }
 
+      URL = entry.URI.spec;
       className = ['menuitem-iconic'];
 
       if (i === currentIndex) {
@@ -179,22 +180,23 @@ var mHistoryList = (function() {
       }
       className.push(direction);
 
-      // @note |menuitem| should be defined in loop because it is passed to
-      // async callback of |getFavicon|
+      // @note |menuitem|,|title| should be defined in loop because it is
+      // passed to async callback of |getFaviconAndLastVisitedTime|
       let menuitem = aPopup.appendChild($E('menuitem', {
-        label: formatLabel({
-          time: getLastVisitTime(entry.URI),
-          title: entry.title
-        }),
-        tooltiptext: entry.URI.spec,
+        tooltiptext: URL,
         class: className.join(' '),
         index: i,
         action: action || null
       }));
 
-      getFavicon(null, entry.URI, function(aIconURL) {
+      let title = entry.title;
+      getFaviconAndLastVisitedTime(URL, function(aTime, aIcon) {
         $E(menuitem, {
-          icon: aIconURL
+          label: formatLabel({
+            time: aTime,
+            title: title
+          }),
+          icon: getFavicon(aIcon)
         });
       });
     }
@@ -250,36 +252,31 @@ var mHistoryList = (function() {
     return (count > 0);
   }
 
-  function getLastVisitTime(aURI) {
-    if (aURI.schemeIs('about')) {
-      return 0;
-    }
+  function getFaviconAndLastVisitedTime(aURL, aCallback) {
+    let SQLExp = [
+      "SELECT h.visit_date time, f.url icon",
+      "FROM moz_places p",
+      "JOIN moz_historyvisits h ON p.id = h.place_id",
+      "LEFT JOIN moz_favicons f ON p.favicon_id = f.id",
+      "WHERE p.url = :url",
+      "ORDER BY h.visit_date DESC",
+      "LIMIT 1"
+    ].join(' ');
 
-    // @see resource:///modules/PlacesUtils.jsm
-    const history = window.PlacesUtils.history;
-    const {Ci} = window;
-
-    var query, options, root;
-    var time;
-
-    query = history.getNewQuery();
-    query.uri = aURI;
-
-    options = history.getNewQueryOptions();
-    options.queryType =
-      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
-    options.sortingMode =
-      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
-    options.maxResults = 1;
-
-    root = history.executeQuery(query, options).root;
-    root.containerOpen = true;
-    try {
-      time = root.getChild(0).time;
-    } catch (ex) {}
-    root.containerOpen = false;
-
-    return time || 0;
+    asyncScanPlacesDB({
+      expression: SQLExp,
+      params: {'url': aURL},
+      columns: ['time', 'icon'],
+      onSuccess: function(aRows) {
+        let time, icon;
+        if (aRows) {
+          // we ordered only one row
+          time = aRows[0].time;
+          icon = aRows[0].icon;
+        }
+        aCallback(time, icon);
+      }
+    });
   }
 
   function getRecentHistoryPlacesRoot() {
@@ -692,6 +689,10 @@ function focusWindowAtIndex(aIndex) {
 
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
+
+function asyncScanPlacesDB(aParam) {
+  return window.ucjsUtil.asyncScanPlacesDB(aParam);
 }
 
 function log(aMsg) {
