@@ -138,9 +138,12 @@ var mHistoryList = (function() {
 
     makeMenuSeparator(popup);
 
-    if (!buildRecentHistory(popup)) {
-      makeDisabledMenuItem(popup, 'Recent: No history.');
-    }
+    let noRecent = makeDisabledMenuItem(popup, 'Recent: No history.');
+    asyncBuildRecentHistory(noRecent, function(aIsBuilt) {
+      if (aIsBuilt) {
+        noRecent.hidden = true;
+      }
+    });
 
     makeMenuSeparator(popup);
 
@@ -204,18 +207,24 @@ var mHistoryList = (function() {
     return true;
   }
 
-  function buildRecentHistory(aPopup) {
-    var root = getRecentHistoryPlacesRoot();
-    root.containerOpen = true;
+  function asyncBuildRecentHistory(aRefNode, aCallback) {
+    getRecentHistory(function(aRecentHistory) {
+      if (!aRecentHistory) {
+        aCallback(false);
+        return;
+      }
+      buildRecentHistory(aRefNode, aRecentHistory)
+      aCallback(true);
+    });
+  }
 
-    var node;
-    var count = root.childCount;
-    var currentURL = gBrowser.currentURI.spec;
-    var URL, className, action;
+  function buildRecentHistory(aRefNode, aRecentHistory) {
+    let popup = aRefNode.parentNode;
+    let currentURL = gBrowser.currentURI.spec;
+    let URL, className, action;
 
-    for (let i = 0; i < count; i++) {
-      node = root.getChild(i);
-      URL = node.uri
+    aRecentHistory.forEach(function(entry) {
+      URL = entry.url
       className = ['menuitem-iconic'];
 
       if (currentURL === URL) {
@@ -228,28 +237,17 @@ var mHistoryList = (function() {
         action = action.replace(/%URL%/g, URL);
       }
 
-      // @note |menuitem| should be defined in loop because it is passed to
-      // async callback of |getFavicon|
-      let menuitem = aPopup.appendChild($E('menuitem', {
+      popup.insertBefore($E('menuitem', {
         label: formatLabel({
-          time: node.time,
-          title: getTitle(node.title, URL)
+          time: entry.time,
+          title: getTitle(entry.title, URL)
         }),
         tooltiptext: URL,
+        icon: getFavicon(entry.icon),
         class: className.join(' '),
         action: action || null
-      }));
-
-      getFavicon(node.icon, URL, function(aIconURL) {
-        $E(menuitem, {
-          icon: aIconURL
-        });
-      });
-    }
-
-    root.containerOpen = false;
-
-    return (count > 0);
+      }), aRefNode);
+    });
   }
 
   function getFaviconAndLastVisitedTime(aURL, aCallback) {
@@ -279,21 +277,28 @@ var mHistoryList = (function() {
     });
   }
 
-  function getRecentHistoryPlacesRoot() {
-    // @see resource:///modules/PlacesUtils.jsm
-    const history = window.PlacesUtils.history;
-    const {Ci} = window;
+  function getRecentHistory(aCallback) {
+    let SQLExp = [
+      "SELECT p.title, p.url, h.visit_date time, f.url icon",
+      "FROM moz_places p",
+      "JOIN moz_historyvisits h ON p.id = h.place_id",
+      "LEFT JOIN moz_favicons f ON p.favicon_id = f.id",
+      "GROUP BY p.id",
+      "ORDER BY h.visit_date DESC",
+      "LIMIT :limit"
+    ].join(' ');
 
-    var query, options;
-    query = history.getNewQuery();
-    options = history.getNewQueryOptions();
-    options.queryType =
-      Ci.nsINavHistoryQueryOptions.QUERY_TYPE_HISTORY;
-    options.sortingMode =
-      Ci.nsINavHistoryQueryOptions.SORT_BY_DATE_DESCENDING;
-    options.maxResults = kMaxListItems;
+    // -1: all results will be returned
+    let limit = (kMaxListItems > 0) ? kMaxListItems : -1;
 
-    return history.executeQuery(query, options).root;
+    asyncScanPlacesDB({
+      expression: SQLExp,
+      params: {'limit': limit},
+      columns: ['title', 'url', 'time', 'icon'],
+      onSuccess: function(aRows) {
+        aCallback(aRows);
+      }
+    });
   }
 
   function formatLabel(aValue) {
@@ -576,7 +581,10 @@ function $E(aTagOrNode, aAttribute) {
 }
 
 function makeDisabledMenuItem(aPopup, aLabel) {
-  aPopup.appendChild($E('menuitem', {label: aLabel, disabled: true}));
+  return aPopup.appendChild($E('menuitem', {
+    label: aLabel,
+    disabled: true
+  }));
 }
 
 function makeMenuSeparator(aPopup) {
@@ -620,7 +628,7 @@ function getTitle(aTitle, aURL) {
   return aTitle || window.PlacesUIUtils.getString('noTitle');
 }
 
-function getFavicon(aIconURL, aPageURI, aCallback) {
+function getFavicon(aIconURL) {
   // @see resource:///modules/PlacesUtils.jsm
   const {favicons} = window.PlacesUtils;
 
@@ -628,35 +636,9 @@ function getFavicon(aIconURL, aPageURI, aCallback) {
     if (/^https?:/.test(aIconURL)) {
       aIconURL = 'moz-anno:favicon:' + aIconURL;
     }
-
-    if (aCallback) {
-      aCallback(aIconURL);
-      return;
-    }
     return aIconURL;
   }
-
-  aPageURI = makeURI(aPageURI);
-  if (!aPageURI) {
-    return favicons.defaultFavicon.spec;
-  }
-
-  favicons.getFaviconURLForPage(aPageURI, function(aIconURI) {
-    let iconURL;
-    if (aIconURI) {
-      try {
-        iconURL = favicons.getFaviconLinkForIcon(aIconURI).spec;
-      } catch (ex) {}
-    }
-
-    if (!iconURL) {
-      iconURL = favicons.defaultFavicon.spec;
-    }
-
-    try {
-      aCallback(iconURL);
-    } catch (ex) {}
-  });
+  return favicons.defaultFavicon.spec;
 }
 
 function makeURI(aURL) {
