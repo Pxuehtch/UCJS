@@ -16,8 +16,12 @@
 
 /**
  * Numbers of the listed items
- * @value {Integer} If set to 0, all *unlimited* items will be listed.
- * *[WARNING: It may be too long]*
+ * @value {integer} [>0]
+ *
+ * !!! WARNING !!!
+ * *ALL* items will be listed if set to 0.
+ * It can cause performance problems.
+ * !!! WARNING !!!
  */
 const kMaxListItems = 10;
 
@@ -344,6 +348,7 @@ var mOpenedList = (function() {
       if (tab.selected) {
         className.push('unified-nav-current');
       } else {
+        // @see chrome://browser/content/tabbrowser.xml::selectTabAtIndex
         action = 'gBrowser.selectTabAtIndex(' + i + ');';
       }
 
@@ -419,8 +424,7 @@ var mOpenedList = (function() {
   }
 
   function isBrowserWindow(aWindow) {
-    // @see chrome://browser/content/utilityOverlay.js::
-    // getBrowserURL()
+    // @see chrome://browser/content/utilityOverlay.js::getBrowserURL
     return aWindow.location.href === window.getBrowserURL();
   }
 
@@ -482,6 +486,7 @@ var mClosedList = (function() {
         tooltiptext: history.join('\n'),
         icon: getFavicon(data.image),
         class: 'menuitem-iconic',
+        // @see chrome://browser/content/browser.js::undoCloseTab
         action: 'undoCloseTab(' + i + ');'
       }));
     }
@@ -521,6 +526,7 @@ var mClosedList = (function() {
         tooltiptext: tabs.join('\n'),
         icon: getFavicon(icon),
         class: 'menuitem-iconic',
+        // @see chrome://browser/content/browser.js::undoCloseWindow
         action: 'undoCloseWindow(' + i + ');'
       }));
     }
@@ -559,6 +565,8 @@ function $E(aTagOrNode, aAttribute) {
           node.style.listStyleImage = 'url(' + value + ')';
         } else if (name === 'action') {
           node.setAttribute('oncommand', value);
+          // @see chrome://browser/content/utilityOverlay.js::
+          // checkForMiddleClick
           node.setAttribute('onclick', 'checkForMiddleClick(this,event);');
         } else {
           node.setAttribute(name, value);
