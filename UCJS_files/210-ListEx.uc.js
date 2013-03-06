@@ -148,32 +148,32 @@ var mHistoryList = (function() {
   }
 
   function buildTabHistory(aPopup) {
-    var sh = gBrowser.sessionHistory;
-    if (sh.count < 1) {
+    let sessionHistory = gBrowser.sessionHistory;
+    if (sessionHistory.count < 1) {
       return false;
     }
 
-    var entry;
-    var [index, count] = [sh.index, sh.count];
-    var [start, end] = getListRange(index, count);
-    var className, action;
+    let entry;
+    let currentIndex = sessionHistory.index;
+    let [start, end] = getListRange(currentIndex, sessionHistory.count);
+    let className, direction, action;
 
     for (let i = end - 1; i >= start; i--) {
-      entry = sh.getEntryAtIndex(i, false);
+      entry = sessionHistory.getEntryAtIndex(i, false);
       if (!entry) {
         continue;
       }
 
       className = ['menuitem-iconic'];
-      action = null;
 
-      if (i === index) {
-        className.push('unified-nav-current');
+      if (i === currentIndex) {
+        direction = 'unified-nav-current';
       } else {
-        className.push((i < index) ?
-          'unified-nav-back' : 'unified-nav-forward');
+        direction = 'unified-nav-' + (i < currentIndex ? 'back' : 'forward');
+        // @see chrome://browser/content/browser.js::gotoHistoryIndex
         action = 'gotoHistoryIndex(event);';
       }
+      className.push(direction);
 
       // @note |menuitem| should be defined in loop because it is passed to
       // async callback of |getFavicon|
@@ -185,7 +185,7 @@ var mHistoryList = (function() {
         tooltiptext: entry.URI.spec,
         class: className.join(' '),
         index: i,
-        action: action
+        action: action || null
       }));
 
       getFavicon(null, entry.URI, function(aIconURL) {
@@ -211,16 +211,15 @@ var mHistoryList = (function() {
       node = root.getChild(i);
       URL = node.uri
       className = ['menuitem-iconic'];
-      action = null;
 
       if (currentURL === URL) {
         className.push('unified-nav-current');
       } else {
         // @see resource:///modules/PlacesUIUtils.jsm
-        action =
-          ('PlacesUIUtils.markPageAsTyped("%URL%");' +
-           'openUILink("%URL%",event);').
-          replace(/%URL%/g, URL);
+        // @see chrome://browser/content/utilityOverlay.js::openUILink
+        action = 'PlacesUIUtils.markPageAsTyped("%URL%");' +
+                 'openUILink("%URL%",event);';
+        action = action.replace(/%URL%/g, URL);
       }
 
       // @note |menuitem| should be defined in loop because it is passed to
@@ -232,7 +231,7 @@ var mHistoryList = (function() {
         }),
         tooltiptext: URL,
         class: className.join(' '),
-        action: action
+        action: action || null
       }));
 
       getFavicon(node.icon, URL, function(aIconURL) {
