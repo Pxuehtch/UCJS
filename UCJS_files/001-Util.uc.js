@@ -1025,8 +1025,6 @@ function setPref(aKey, aVal) {
  * @return {hash[]|null}
  *   hash[]: array of {column name: value, ...}
  *   null: no result
- *
- * TODO: create an async version
  */
 function scanPlacesDB(aParam) {
   const {expression, params, columns} = aParam || {};
@@ -1063,6 +1061,79 @@ function scanPlacesDB(aParam) {
     return rows;
   }
   return null;
+}
+
+/**
+ * Query the Places database asynchronously
+ * @param aParam {hash}
+ *   expression: {string} a SQL expression
+ *   params: {hash} [optional] the binding parameters
+ *   columns: {array} the column names
+ *   onSuccess: {function} functions to be called when done successfully
+ *     @param aRows {hash[]|null}
+ *       hash[]: array of {column name: value, ...}
+ *       null: no result
+ *   onError: {function} [optional]
+ *   onCancel: {function} [optional]
+ * @return {mozIStoragePendingStatement}
+ *   a object with a .cancel() method allowing to cancel the request
+ *
+ * TODO: handlings on error and cancel
+ */
+function asyncScanPlacesDB(aParam) {
+  const {
+    expression, params, columns,
+    onSuccess, onError, onCancel
+  } = aParam || {};
+
+  // @see resource:///modules/PlacesUtils.jsm
+  const {PlacesUtils, Ci} = window;
+  let statement =
+    PlacesUtils.history.
+    QueryInterface(Ci.nsPIPlacesDatabase).
+    DBConnection.
+    createStatement(expression);
+
+  try {
+    for (let key in statement.params) {
+      if (!(key in params)) {
+        throw Error('parameter is not defined: ' + key);
+      }
+      statement.params[key] = params[key];
+    }
+
+    return statement.executeAsync({
+      rows: [],
+
+      handleResult: function(aResultSet) {
+        let row;
+        while ((row = aResultSet.getNextRow())) {
+          let res = {};
+          columns.forEach(function(name) {
+            res[name] = row.getResultByName(name);
+          });
+          this.rows.push(res);
+        }
+      },
+
+      handleError: function(aError) {
+      },
+
+      handleCompletion: function(aReason) {
+        switch (aReason) {
+          case Ci.mozIStorageStatementCallback.REASON_FINISHED:
+            onSuccess(this.rows.length ? this.rows : null);
+            break;
+          case Ci.mozIStorageStatementCallback.REASON_ERROR:
+            break;
+          case Ci.mozIStorageStatementCallback.REASON_CANCELED:
+            break;
+        }
+      }
+    });
+  } finally {
+    statement.finalize();
+  }
 }
 
 
@@ -1172,6 +1243,7 @@ return {
   getPref: getPref,
   setPref: setPref,
   scanPlacesDB: scanPlacesDB,
+  asyncScanPlacesDB: asyncScanPlacesDB,
 
   logMessage: logMessage
 }
