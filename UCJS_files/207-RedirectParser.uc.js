@@ -419,12 +419,9 @@ function setAction(aNode, aAction, aURL) {
       break;
   }
 
-  aNode.setAttribute(
-    'onclick',
-    'if(event.button===2)return;' +
-    'if(event.button===1)closeMenus(event.target);' +
-    action.replace('%URL%', aURL)
-  );
+  aNode.setAttribute('oncommand', action.replace('%URL%', aURL));
+  // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+  aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
 }
 
 function unescURLChars(aStr) {

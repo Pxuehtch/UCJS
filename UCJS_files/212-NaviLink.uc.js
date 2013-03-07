@@ -186,12 +186,13 @@ var mMenu = (function() {
 
     setSeparators(contextMenu);
 
-    addEvent([contextMenu, 'click', onCommand, false]);
+    addEvent([contextMenu, 'click', onClick, false]);
+    addEvent([contextMenu, 'command', onCommand, false]);
     addEvent([contextMenu, 'popupshowing', onPopupShowing, false]);
     addEvent([contextMenu, 'popuphiding', onPopupHiding, false]);
   }
 
-  function onCommand(aEvent) {
+  function onClick(aEvent) {
     aEvent.stopPropagation();
     let item = aEvent.target;
 
@@ -204,16 +205,28 @@ var mMenu = (function() {
       return;
     }
     if (aEvent.button === 1) {
-      // @see chrome://browser/content/utilityOverlay.js::
-      // closeMenus
+      // @see chrome://browser/content/utilityOverlay.js::closeMenus
       window.closeMenus(item);
+      onCommand(aEvent);
+    }
+  }
+
+  function onCommand(aEvent) {
+    aEvent.stopPropagation();
+    let item = aEvent.target;
+
+    let data = item[kID.data];
+    if (!data) {
+      return;
     }
 
     if (data.open) {
       if (/^(?:https?|ftp|file):/.test(data.open)) {
         let inTab = aEvent.button === 1, inBG = aEvent.ctrlKey;
-        openURL(data.open, inTab,
-          {inBackground: inBG, relatedToCurrent: true});
+        openURL(data.open, inTab, {
+          inBackground: inBG,
+          relatedToCurrent: true
+        });
       }
     } else if (data.submit) {
       data.submit.submit();

@@ -62,7 +62,7 @@ function buildMenu() {
     label: kBundle.newWindow.label,
     oncommand: 'gBrowser.replaceTabWithWindow(TabContextMenu.contextTab);'
   }));
-  addEvent([popup, 'click', doCommand, false]);
+  addEvent([popup, 'command', onCommand, false]);
   menu.appendChild(popup);
 
   var defaultItem = $ID('context_openTabInWindow');
@@ -119,14 +119,9 @@ function updateMenu(aEvent) {
   }
 }
 
-function doCommand(aEvent) {
+function onCommand(aEvent) {
   aEvent.stopPropagation();
-
-  if (aEvent.button !== 0) {
-    return;
-  }
-
-  var item = aEvent.target;
+  let item = aEvent.target;
   if (!item.value) {
     return;
   }

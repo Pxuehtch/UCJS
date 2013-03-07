@@ -298,12 +298,10 @@ function $E(aTag, aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
       if (value !== null && value !== undefined) {
         if (name === 'open') {
-          node.setAttribute(
-            'onclick',
-            'if(event.button===2)return;' +
-            'if(event.button===1)closeMenus(event.target);' +
-            commandForOpenURLs(value)
-          );
+          node.setAttribute('oncommand', commandForOpenURLs(value));
+          // @see chrome://browser/content/utilityOverlay.js::
+          // checkForMiddleClick
+          node.setAttribute('onclick', 'checkForMiddleClick(this,event);');
         } else {
           node.setAttribute(name, value);
         }
