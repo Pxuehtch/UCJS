@@ -1078,6 +1078,9 @@ function scanPlacesDB(aParam) {
  * @return {mozIStoragePendingStatement}
  *   a object with a .cancel() method allowing to cancel the request
  *
+ * TODO: use |createAsyncStatement|
+ * I'm not sure why it doesn't work well.
+ *
  * TODO: handlings on error and cancel
  */
 function asyncScanPlacesDB(aParam) {
