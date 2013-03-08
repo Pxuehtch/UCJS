@@ -283,6 +283,7 @@ var mHistoryList = (function() {
       "FROM moz_places p",
       "JOIN moz_historyvisits h ON p.id = h.place_id",
       "LEFT JOIN moz_favicons f ON p.favicon_id = f.id",
+      "WHERE p.hidden = 0",
       "GROUP BY p.id",
       "ORDER BY h.visit_date DESC",
       "LIMIT :limit"
