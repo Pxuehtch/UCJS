@@ -139,8 +139,8 @@ var mHistoryList = (function() {
     makeMenuSeparator(popup);
 
     let noRecent = makeDisabledMenuItem(popup, 'Recent: No history.');
-    asyncBuildRecentHistory(noRecent, function(aIsBuilt) {
-      if (aIsBuilt) {
+    asyncBuildRecentHistory(noRecent, function(aHasBuilt) {
+      if (aHasBuilt) {
         noRecent.hidden = true;
       }
     });
@@ -184,7 +184,7 @@ var mHistoryList = (function() {
       className.push(direction);
 
       // @note |menuitem|,|title| should be defined in loop because it is
-      // passed to async callback of |getFaviconAndLastVisitedTime|
+      // passed to async callback of |getTimeAndFavicon|
       let menuitem = aPopup.appendChild($E('menuitem', {
         tooltiptext: URL,
         class: className.join(' '),
@@ -193,7 +193,7 @@ var mHistoryList = (function() {
       }));
 
       let title = entry.title;
-      getFaviconAndLastVisitedTime(URL, function(aTime, aIcon) {
+      getTimeAndFavicon(URL, function(aTime, aIcon) {
         $E(menuitem, {
           label: formatLabel({
             time: aTime,
@@ -250,7 +250,7 @@ var mHistoryList = (function() {
     });
   }
 
-  function getFaviconAndLastVisitedTime(aURL, aCallback) {
+  function getTimeAndFavicon(aURL, aCallback) {
     let SQLExp = [
       "SELECT h.visit_date time, f.url icon",
       "FROM moz_places p",
@@ -345,7 +345,6 @@ var mOpenedList = (function() {
     for (let i = 0; i < tabs.length; i++) {
       tab = tabs[i];
       className = ['menuitem-iconic'];
-      action = null;
 
       if (tab.selected) {
         className.push('unified-nav-current');
@@ -359,7 +358,7 @@ var mOpenedList = (function() {
         tooltiptext: tab.linkedBrowser.currentURI.spec,
         icon: getFavicon(tab.getAttribute('image')),
         class: className.join(' '),
-        action: action
+        action: action || null
       }));
 
       // indicate the state of an unread tab
@@ -397,7 +396,6 @@ var mOpenedList = (function() {
       }
 
       className = ['menuitem-iconic'];
-      action = null;
 
       if (win === window) {
         className.push('unified-nav-current');
@@ -410,7 +408,7 @@ var mOpenedList = (function() {
         tooltiptext: tip,
         icon: getFavicon(icon),
         class: className.join(' '),
-        action: action
+        action: action || null
       }));
 
       winIndex++
