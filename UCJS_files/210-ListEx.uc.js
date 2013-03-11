@@ -160,20 +160,19 @@ var mHistoryList = (function() {
       return false;
     }
 
-    let entry;
     let currentIndex = sessionHistory.index;
     let [start, end] = getListRange(currentIndex, sessionHistory.count);
-    let URL, className, direction, action;
 
     for (let i = end - 1; i >= start; i--) {
-      entry = sessionHistory.getEntryAtIndex(i, false);
+      let entry = sessionHistory.getEntryAtIndex(i, false);
       if (!entry) {
         continue;
       }
 
+      let URL, className, direction, action;
+
       URL = entry.URI.spec;
       className = ['menuitem-iconic'];
-
       if (i === currentIndex) {
         direction = 'unified-nav-current';
       } else {
@@ -221,12 +220,12 @@ var mHistoryList = (function() {
   function buildRecentHistory(aRefNode, aRecentHistory) {
     let popup = aRefNode.parentNode;
     let currentURL = gBrowser.currentURI.spec;
-    let URL, className, action;
 
     aRecentHistory.forEach(function(entry) {
+      let URL, className, action;
+
       URL = entry.url
       className = ['menuitem-iconic'];
-
       if (currentURL === URL) {
         className.push('unified-nav-current');
       } else {
@@ -340,13 +339,10 @@ var mOpenedList = (function() {
   }
 
   function buildOpenedTabs(aPopup) {
-    var tabs = gBrowser.mTabs, tab;
-    var className, action, item;
+    Array.forEach(gBrowser.tabs, function(tab, i) {
+      let className, action;
 
-    for (let i = 0; i < tabs.length; i++) {
-      tab = tabs[i];
       className = ['menuitem-iconic'];
-
       if (tab.selected) {
         className.push('unified-nav-current');
       } else {
@@ -354,7 +350,7 @@ var mOpenedList = (function() {
         action = 'gBrowser.selectTabAtIndex(' + i + ');';
       }
 
-      item = aPopup.appendChild($E('menuitem', {
+      let menuitem = aPopup.appendChild($E('menuitem', {
         label: (i + 1) + '. ' + tab.label,
         tooltiptext: tab.linkedBrowser.currentURI.spec,
         icon: getFavicon(tab.getAttribute('image')),
@@ -364,25 +360,26 @@ var mOpenedList = (function() {
 
       // indicate the state of an unread tab
       if (!tab.selected) {
-        setStateForUnreadTab(item, tab);
+        setStateForUnreadTab(menuitem, tab);
       }
-    }
+    });
   }
 
   function buildOpenedWindows(aPopup) {
-    var wins = getWindowEnumerator(), win, winIndex = 0;
-    var title, tip, icon, className, action;
+    let wins = getWindowEnumerator();
+    let winIndex = 0;
 
     while (wins.hasMoreElements()) {
-      win = wins.getNext();
+      let win = wins.getNext();
+      let title, tip, icon, className, action;
 
       if (isBrowserWindow(win)) {
         let b = win.gBrowser;
 
-        let tabs =
-          [getPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])];
-        let [start, end] =
-          getListRange(b.mTabContainer.selectedIndex, b.mTabs.length);
+        let tabs = [getPluralForm('[#1 #2]', b.mTabs.length,
+          ['Tab', 'Tabs'])];
+        let [start, end] = getListRange(b.mTabContainer.selectedIndex,
+          b.mTabs.length);
         for (let j = start; j < end; j++) {
           tabs.push((j + 1) + '. ' + b.mTabs[j].label);
         }
@@ -466,17 +463,13 @@ var mClosedList = (function() {
       return false;
     }
 
-    var undoData = JSON.parse(ss.getClosedTabData(window)), data;
-    var entries, history;
-
+    var undoData = JSON.parse(ss.getClosedTabData(window));
     for (let i = 0; i < undoData.length; i++) {
-      data = undoData[i];
-      entries = data.state.entries;
-      history = [
-        getPluralForm('[#1 History #2]',
-        entries.length, ['entry', 'entries'])
-      ];
+      let data = undoData[i];
 
+      let entries = data.state.entries;
+      let history = [getPluralForm('[#1 History #2]', entries.length,
+        ['entry', 'entries'])];
       let [start, end] = getListRange(data.state.index, entries.length);
       for (let j = end - 1; j >= start; j--) {
         history.push((j + 1) + '. ' + getTitle(entries[j].title));
@@ -501,23 +494,21 @@ var mClosedList = (function() {
       return false;
     }
 
-    var undoData = JSON.parse(ss.getClosedWindowData()), data;
-    var tabs, tab;
-    var icon;
-
+    var undoData = JSON.parse(ss.getClosedWindowData());
     for (let i = 0; i < undoData.length; i++) {
-      data = undoData[i];
-      tabs = [getPluralForm('[#1 #2]', data.tabs.length, ['Tab', 'Tabs'])];
+      let data = undoData[i];
 
+      let tabs = [getPluralForm('[#1 #2]', data.tabs.length,
+        ['Tab', 'Tabs'])];
       let [start, end] = getListRange(data.selected - 1, data.tabs.length);
       let selected;
       for (let j = start; j < end; j++) {
-        tab = data.tabs[j];
+        let tab = data.tabs[j];
         selected = getTitle(tab.index && tab.entries[tab.index - 1].title);
         tabs.push((j + 1) + '. ' + selected);
       }
 
-      icon = null;
+      let icon;
       try {
         icon = data.tabs[data.selected - 1].attributes.image;
       } catch (ex) {}
