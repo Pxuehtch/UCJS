@@ -613,18 +613,20 @@ function getListRange(aIndex, aCount) {
 }
 
 function getTitle(aTitle, aURL) {
+  // @see resource:///modules/PlacesUIUtils.jsm
+  const {PlacesUIUtils} = window;
+
   if (!aTitle && aURL) {
     let URI = makeURI(aURL);
     if (URI) {
       aTitle = aURL;
     } else {
-      // Clip non-standard URL. (e.g. data:, javascript:)
-      aTitle = aURL.substr(0, 32) + '...';
+      // clip non-standard URL (e.g. data:, javascript:)
+      aTitle = aURL.substr(0, 32) + PlacesUIUtils.ellipsis;
     }
   }
 
-  // @see resource:///modules/PlacesUIUtils.jsm
-  return aTitle || window.PlacesUIUtils.getString('noTitle');
+  return aTitle || PlacesUIUtils.getString('noTitle');
 }
 
 function getFavicon(aIconURL) {
