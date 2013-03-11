@@ -966,11 +966,15 @@ function registerContentStyleSheet(aCSS, aOption) {
 }
 
 function normalizeCSS(aCSS) {
-  return aCSS.
+  // @note You should put a 'half-width space' for the separator of;
+  // the descendant selector (e.g. h1 em{...})
+  // the shorthand properties (e.g. margin:1px 2px;)
+
+  return aCSS.trim().
+    // put half-width spaces into one (maybe a necessary separator)
+    replace(/ +/g, ' ').
     // remove consecutive white spaces
-    // @note the delimiter of shorthand properties should be a SINGLE white
-    // space (margin:1px 2px;)
-    replace(/\s{2,}/g, '').trim().
+    replace(/\s{2,}/g, '').
     // remove comment
     replace(/\s*\/\*.*?\*\/\s*/g, '');
 }
