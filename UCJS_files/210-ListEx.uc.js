@@ -169,9 +169,10 @@ var mHistoryList = (function() {
         continue;
       }
 
-      let URL, className, direction, action;
+      let URL, title, className, direction, action;
 
       URL = entry.URI.spec;
+      title = entry.title || URL;
       className = ['menuitem-iconic'];
       if (i === currentIndex) {
         direction = 'unified-nav-current';
@@ -182,21 +183,19 @@ var mHistoryList = (function() {
       }
       className.push(direction);
 
-      // @note |menuitem|,|title| should be defined in loop because it is
-      // passed to async callback of |getTimeAndFavicon|
+      // @note |label|,|icon| will be async-set by |getTimeAndFavicon|
       let menuitem = aPopup.appendChild($E('menuitem', {
-        tooltiptext: URL,
+        tooltiptext: getTooltip(title, URL),
         class: className.join(' '),
         index: i,
         action: action || null
       }));
 
-      let title = entry.title;
       getTimeAndFavicon(URL, function(aTime, aIcon) {
         $E(menuitem, {
           label: formatLabel({
             time: aTime,
-            title: title
+            title: getTitle(title)
           }),
           icon: getFavicon(aIcon)
         });
@@ -222,9 +221,10 @@ var mHistoryList = (function() {
     let currentURL = gBrowser.currentURI.spec;
 
     aRecentHistory.forEach(function(entry) {
-      let URL, className, action;
+      let URL, title, className, action;
 
-      URL = entry.url
+      URL = entry.url;
+      title = entry.title || URL;
       className = ['menuitem-iconic'];
       if (currentURL === URL) {
         className.push('unified-nav-current');
@@ -239,9 +239,9 @@ var mHistoryList = (function() {
       popup.insertBefore($E('menuitem', {
         label: formatLabel({
           time: entry.time,
-          title: getTitle(entry.title, URL)
+          title: getTitle(title)
         }),
-        tooltiptext: URL,
+        tooltiptext: getTooltip(title, URL),
         icon: getFavicon(entry.icon),
         class: className.join(' '),
         action: action || null
@@ -351,8 +351,8 @@ var mOpenedList = (function() {
       }
 
       let menuitem = aPopup.appendChild($E('menuitem', {
-        label: (i + 1) + '. ' + tab.label,
-        tooltiptext: tab.linkedBrowser.currentURI.spec,
+        label: (i + 1) + '. ' + getTitle(tab.label),
+        tooltiptext: getTooltip(tab.label, tab.linkedBrowser.currentURI.spec),
         icon: getFavicon(tab.getAttribute('image')),
         class: className.join(' '),
         action: action || null
@@ -385,7 +385,7 @@ var mOpenedList = (function() {
         }
         tip = tabs.join('\n');
 
-        title = getTitle(b.contentTitle, b.currentURI.spec);
+        title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
         icon = b.selectedTab.image;
       } else {
         title = win.document.title;
@@ -402,8 +402,8 @@ var mOpenedList = (function() {
       }
 
       aPopup.appendChild($E('menuitem', {
-        label: title,
-        tooltiptext: tip,
+        label: getTitle(title),
+        tooltiptext: getTooltip(title, tip),
         icon: getFavicon(icon),
         class: className.join(' '),
         action: action || null
@@ -458,27 +458,29 @@ var mClosedList = (function() {
   }
 
   function buildClosedTabs(aPopup) {
-    var ss = getSessionStore();
-    if (ss.getClosedTabCount(window) === 0) {
+    var sessionStore = getSessionStore();
+    if (sessionStore.getClosedTabCount(window) === 0) {
       return false;
     }
 
-    var undoData = JSON.parse(ss.getClosedTabData(window));
-    for (let i = 0; i < undoData.length; i++) {
-      let data = undoData[i];
+    var closedTabs = JSON.parse(sessionStore.getClosedTabData(window));
+    for (let i = 0; i < closedTabs.length; i++) {
+      let closedTab = closedTabs[i];
 
-      let entries = data.state.entries;
-      let history = [getPluralForm('[#1 History #2]', entries.length,
-        ['entry', 'entries'])];
-      let [start, end] = getListRange(data.state.index, entries.length);
+      let entries = closedTab.state.entries;
+      let history = [];
+      history.push(getPluralForm('[#1 History #2]', entries.length,
+        ['entry', 'entries']));
+      let [start, end] = getListRange(closedTab.state.index, entries.length);
       for (let j = end - 1; j >= start; j--) {
-        history.push((j + 1) + '. ' + getTitle(entries[j].title));
+        history.push((j + 1) + '. ' +
+          getTitle(entries[j].title || entries[j].url));
       }
 
       aPopup.appendChild($E('menuitem', {
-        label: getTitle(data.title),
-        tooltiptext: history.join('\n'),
-        icon: getFavicon(data.image),
+        label: getTitle(closedTab.title),
+        tooltiptext: getTooltip(closedTab.title, history.join('\n')),
+        icon: getFavicon(closedTab.image),
         class: 'menuitem-iconic',
         // @see chrome://browser/content/browser.js::undoCloseTab
         action: 'undoCloseTab(' + i + ');'
@@ -489,33 +491,33 @@ var mClosedList = (function() {
   }
 
   function buildClosedWindows(aPopup) {
-    var ss = getSessionStore();
-    if (ss.getClosedWindowCount() === 0) {
+    var sessionStore = getSessionStore();
+    if (sessionStore.getClosedWindowCount() === 0) {
       return false;
     }
 
-    var undoData = JSON.parse(ss.getClosedWindowData());
-    for (let i = 0; i < undoData.length; i++) {
-      let data = undoData[i];
+    var closedWindows = JSON.parse(sessionStore.getClosedWindowData());
+    for (let i = 0; i < closedWindows.length; i++) {
+      let closedWindow = closedWindows[i];
 
-      let tabs = [getPluralForm('[#1 #2]', data.tabs.length,
-        ['Tab', 'Tabs'])];
-      let [start, end] = getListRange(data.selected - 1, data.tabs.length);
-      let selected;
+      let tabs = closedWindow.tabs;
+      let tabList = [];
+      tabList.push(getPluralForm('[#1 #2]', tabs.length, ['Tab', 'Tabs']));
+      let [start, end] = getListRange(closedWindow.selected - 1, tabs.length);
       for (let j = start; j < end; j++) {
-        let tab = data.tabs[j];
-        selected = getTitle(tab.index && tab.entries[tab.index - 1].title);
-        tabs.push((j + 1) + '. ' + selected);
+        let tab = tabs[j].index && tabs[j].entries[tabs[j].index - 1];
+        tabList.push((j + 1) + '. ' +
+          getTitle(tab && (tab.title || tab.url)));
       }
 
       let icon;
       try {
-        icon = data.tabs[data.selected - 1].attributes.image;
+        icon = tabs[closedWindow.selected - 1].attributes.image;
       } catch (ex) {}
 
       aPopup.appendChild($E('menuitem', {
-        label: getTitle(data.title),
-        tooltiptext: tabs.join('\n'),
+        label: getTitle(closedWindow.title),
+        tooltiptext: getTooltip(closedWindow.title, tabList.join('\n')),
         icon: getFavicon(icon),
         class: 'menuitem-iconic',
         // @see chrome://browser/content/browser.js::undoCloseWindow
@@ -603,21 +605,29 @@ function getListRange(aIndex, aCount) {
   return [start, end];
 }
 
-function getTitle(aTitle, aURL) {
+function getTitle(aText) {
   // @see resource:///modules/PlacesUIUtils.jsm
   const {PlacesUIUtils} = window;
+  const kMaxTextLen = 40;
 
-  if (!aTitle && aURL) {
-    let URI = makeURI(aURL);
-    if (URI) {
-      aTitle = aURL;
+  if (aText && aText.length > kMaxTextLen) {
+    if (/^(?:https?|ftp|file):/i.test(aText)) {
+      let half = Math.floor(kMaxTextLen / 2);
+      aText = aText.substr(0, half) + PlacesUIUtils.ellipsis +
+        aText.substr(-half);
     } else {
-      // clip non-standard URL (e.g. data:, javascript:)
-      aTitle = aURL.substr(0, 32) + PlacesUIUtils.ellipsis;
+      aText = aText.substr(0, kMaxTextLen) + PlacesUIUtils.ellipsis;
     }
   }
 
-  return aTitle || PlacesUIUtils.getString('noTitle');
+  return aText || PlacesUIUtils.getString('noTitle');
+}
+
+function getTooltip(aTitle, aURL) {
+  if (aTitle === aURL) {
+    return aTitle;
+  }
+  return [aTitle, aURL].join('\n');
 }
 
 function getFavicon(aIconURL) {
@@ -631,18 +641,6 @@ function getFavicon(aIconURL) {
     return aIconURL;
   }
   return favicons.defaultFavicon.spec;
-}
-
-function makeURI(aURL) {
-  if (aURL && typeof aURL === 'string') {
-    try {
-      // @see chrome://global/content/contentAreaUtils.js::makeURI
-      return window.makeURI(aURL, null, null);
-    } catch (ex) {
-      return null;
-    }
-  }
-  return aURL;
 }
 
 
