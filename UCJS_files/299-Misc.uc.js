@@ -37,37 +37,6 @@ var ucjsMisc = {};
 })();
 
 /**
- * Modify the title of a bookmark/history item
- */
-(function() {
-
-  // @modified resource:///modules/PlacesUIUtils.jsm::
-  // PlacesUIUtils::getBestTitle
-  const {PlacesUIUtils} = window;
-
-  PlacesUIUtils.getBestTitle = function(aNode, aDoNotCutTitle) {
-    var title;
-
-    if (!aNode.title && PlacesUtils.uriTypes.indexOf(aNode.type) !== -1) {
-      try {
-        // PlacesUtils._uri() will throw if aNode.uri is not a valid URI.
-        PlacesUtils._uri(aNode.uri);
-        // Use raw URL.
-        title = aNode.uri;
-      } catch (ex) {
-        // Use clipped URL for non-standard URIs (e.g. data:, javascript:).
-        title = aNode.uri.substr(0, 32) + this.ellipsis;
-      }
-    } else {
-      title = aNode.title;
-    }
-
-    return title || this.getString('noTitle');
-  };
-
-})();
-
-/**
  * Shows a long URL text without cropped in a tooltip of the URL bar
  */
 (function() {
