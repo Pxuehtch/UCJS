@@ -212,21 +212,21 @@ var ucjsMisc = {};
  */
 (function() {
 
-  addEvent([gBrowser.mPanelContainer, 'mousedown', onMouseDown, false]);
+  addEvent([gBrowser.mPanelContainer, 'mousedown', onMouseDown, true]);
 
   function onMouseDown(aEvent) {
-    let node = aEvent.target;
+    let link;
 
-    if (!isHtmlDocument(node.ownerDocument)) {
+    if (aEvent.button !== 0 ||
+        !isHtmlDocument(aEvent.target.ownerDocument) ||
+        !(link = getLink(aEvent.target))) {
       return;
     }
-
-    let link = getLink(node);
 
     /**
      * Gets rid of target="_blank" links
      */
-    if (link && /^(?:_blank|_new|blank|new)$/i.test(link.target)) {
+    if (/^(?:_blank|_new|blank|new)$/i.test(link.target)) {
       link.target = '_top';
     }
   }
@@ -248,13 +248,14 @@ var ucjsMisc = {};
 
   function getLink(aNode) {
     while (aNode) {
-      if (aNode.nodeType === Node.ELEMENT_NODE &&
-           (aNode instanceof HTMLAnchorElement ||
+      if (aNode.nodeType === Node.ELEMENT_NODE) {
+        if (aNode instanceof HTMLAnchorElement ||
             aNode instanceof HTMLAreaElement ||
             aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
-            'simple'))
-        break;
-
+            'simple') {
+          break;
+        }
+      }
       aNode = aNode.parentNode;
     }
     return aNode;
