@@ -379,16 +379,11 @@ function SkipInvisible() {
 
   function isVisible(aNode) {
     let getComputedStyle = aNode.ownerDocument.defaultView.getComputedStyle;
-    let rect, style;
+    let style;
 
     while (aNode) {
       if (aNode.nodeType === Node.ELEMENT_NODE) {
         if (aNode.hidden || aNode.collapsed) {
-          return false;
-        }
-
-        rect = aNode.getBoundingClientRect();
-        if (rect.width <= 0 || rect.height <= 0) {
           return false;
         }
 
