@@ -221,13 +221,16 @@ var mMenu = (function() {
     }
 
     if (data.open) {
-      if (/^(?:https?|ftp|file):/.test(data.open)) {
-        let inTab = aEvent.button === 1, inBG = aEvent.ctrlKey;
-        openURL(data.open, inTab, {
-          inBackground: inBG,
-          relatedToCurrent: true
-        });
+      if (!/^(?:https?|ftp|file):/.test(data.open)) {
+        log('invalid scheme to open:\n' + data.open);
+        return;
       }
+
+      let [inTab, inBG] = [aEvent.button === 1,  aEvent.ctrlKey];
+      openURL(data.open, inTab, {
+        inBackground: inBG,
+        relatedToCurrent: true
+      });
     } else if (data.submit) {
       data.submit.submit();
     }
