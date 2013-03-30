@@ -354,6 +354,7 @@ function log(aMsg) {
 return {
   open: open,
   get: get,
+
   reSubmitLess: function(aData, aSubmit) {
     return reSubmit(aData, aSubmit, true);
   },

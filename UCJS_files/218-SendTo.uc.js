@@ -356,8 +356,9 @@ function $E(aTagOrNode, aAttribute) {
 
 //********** Imports
 
-function getContextMenu()
-  window.ucjsUI.ContentArea.contextMenu;
+function getContextMenu() {
+  return window.ucjsUI.ContentArea.contextMenu;
+}
 
 function commandForOpenURL(aURL) {
   let command = 'ucjsUtil.openTab("%URL%",' +

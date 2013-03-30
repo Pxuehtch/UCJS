@@ -398,8 +398,9 @@ function charForAccesskey(aIndex) {
 
 //********** Imports
 
-function getContextMenu()
-  window.ucjsUI.ContentArea.contextMenu;
+function getContextMenu() {
+  return window.ucjsUI.ContentArea.contextMenu;
+}
 
 function setAction(aNode, aAction, aURL) {
   if (!aAction || !aURL) {
