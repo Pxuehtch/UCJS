@@ -198,9 +198,9 @@ const Beautifier = (function() {
    * Fix up options
    *
    * @param aOptions {hash}
-   *   indent_size {number} [2]
-   *   indent_char {string} [' ']
-   *   wrap_line_length {number} [80]
+   *   indentSize {number} [2]
+   *   indentChar {string} [' ']
+   *   wrapLineLength {number} [80]
    *   extraLine {boolean} [true]
    *   lastSemicolon {boolean} [true]
    * @return {hash}
@@ -217,26 +217,26 @@ const Beautifier = (function() {
     }
 
     let {
-      indent_size,
-      indent_char,
-      wrap_line_length,
+      indentSize,
+      indentChar,
+      wrapLineLength,
       extraLine,
       lastSemicolon
     } = aOptions || {};
 
-    indent_size = num(indent_size);
-    if (indent_size === undefined ||
-        indent_size <= 0) {
-      indent_size = 2;
+    indentSize = num(indentSize);
+    if (indentSize === undefined ||
+        indentSize <= 0) {
+      indentSize = 2;
     }
 
-    indent_char = str(indent_char) || ' ';
+    indentChar = str(indentChar) || ' ';
 
-    wrap_line_length = num(wrap_line_length);
-    if (wrap_line_length === undefined) {
-      wrap_line_length = 80;
-    } else if (wrap_line_length <= 0) {
-      wrap_line_length = 0;
+    wrapLineLength = num(wrapLineLength);
+    if (wrapLineLength === undefined) {
+      wrapLineLength = 80;
+    } else if (wrapLineLength <= 0) {
+      wrapLineLength = 0;
     }
 
     extraLine = !!(extraLine !== false);
@@ -244,9 +244,9 @@ const Beautifier = (function() {
     lastSemicolon = !!(lastSemicolon !== false);
 
     return {
-      indent_size: indent_size,
-      indent_char: indent_char,
-      wrap_line_length: wrap_line_length,
+      indentSize: indentSize,
+      indentChar: indentChar,
+      wrapLineLength: wrapLineLength,
       extraLine: extraLine,
       lastSemicolon: lastSemicolon
     };
@@ -265,10 +265,10 @@ const Beautifier = (function() {
     let beautify;
     switch (aTextType) {
       case kTextType.javascript:
-        beautify = js_beautify;
+        beautify = JSBeautify;
         break;
       case kTextType.css:
-        beautify = css_beautify;
+        beautify = CSSBeautify;
         break;
       default:
         throw Error('unsupported text type');
@@ -278,8 +278,8 @@ const Beautifier = (function() {
 
     let result = beautify(normalizeText(aText), aOptions);
 
-    if (aOptions.wrap_line_length > 0) {
-      result = wrapLines(result, aTextType, aOptions.wrap_line_length);
+    if (aOptions.wrapLineLength > 0) {
+      result = wrapLines(result, aTextType, aOptions.wrapLineLength);
     }
     if (aOptions.extraLine) {
       result = addExtraLine(result);
@@ -348,26 +348,41 @@ const Beautifier = (function() {
   }
 
   /**
+   * JS beautifier
+   */
+  function JSBeautify(aText, aOptions) {
+    let options = {
+      indent_size: aOptions.indentSize,
+      indent_char: aOptions.indentChar
+    };
+    return BuiltinBeautifier.js_beautify(aText, options);
+  }
+
+  /**
    * Built-in JS beautifier
    *
-   * @note this version unsupports |wrap_line_length| option
-   *
-   * @see https://github.com/mozilla/releases-mozilla-central/blob/master/browser/devtools/shared/Jsbeautify.jsm
+   * @see https://github.com/mozilla/releases-mozilla-release/blob/master/browser/devtools/shared/Jsbeautify.jsm
+   * @note this version doesn't support |wrap_line_length| option
    *
    * based on JS Beautifier beautify.js
    * @see https://github.com/einars/js-beautify
    */
-  let BUILTIN = {};
-  window.XPCOMUtils.defineLazyModuleGetter(BUILTIN, 'js_beautify',
+  let BuiltinBeautifier = {};
+  window.XPCOMUtils.defineLazyModuleGetter(BuiltinBeautifier, 'js_beautify',
     'resource:///modules/devtools/Jsbeautify.jsm');
-
-  function js_beautify(source_text, options) {
-    return BUILTIN.js_beautify(source_text, options);
-  }
 
   /**
    * CSS beautifier
-   *
+   */
+  function CSSBeautify(aText, aOptions) {
+    let options = {
+      indent_size: aOptions.indentSize,
+      indent_char: aOptions.indentChar
+    };
+    return css_beautify(aText, options);
+  }
+
+  /**
    * JS Beautifier beautify-css.js March 27, 2013
    * @see https://github.com/einars/js-beautify/blob/master/beautify-css.js
    *
