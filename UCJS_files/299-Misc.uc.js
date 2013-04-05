@@ -440,7 +440,7 @@ var ucjsMisc = {};
     const kWaitingTime = 5000;
 
     if (window.gPrivateBrowsingUI.privateBrowsingEnabled ||
-        getPref(kPref_resume_from_crash, false) !== false) {
+        getPref(kPref_resume_from_crash) !== false) {
       doRestart(aOption);
       return;
     }
