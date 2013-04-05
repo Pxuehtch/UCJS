@@ -351,8 +351,12 @@ function createNode(aTagOrNode, aAttribute) {
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        node.setAttribute(name, value);
+      if (value !== null &&
+          value !== undefined) {
+        if (!node.hasAttribute(name) ||
+            value + '' !== node.getAttribute(name)) {
+          node.setAttribute(name, value);
+        }
       }
     }
   }
