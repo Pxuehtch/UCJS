@@ -16,9 +16,12 @@
 
 /**
  * Whether the access key of a menu item is expressed with underline
+ * @note valid values are string 'true' or 'false', and missing key or empty
+ * value equals 'false'
+ * @see http://mxr.mozilla.org/mozilla-release/source/toolkit/locales/en-US/chrome/global/intl.properties#64
  */
 const kUnderlinedAccesskey =
-  getPref('intl.menuitems.alwaysappendaccesskeys') === 'false';
+  getPref('intl.menuitems.alwaysappendaccesskeys', 'false') === 'false';
 
 /**
  * Preference
@@ -438,8 +441,8 @@ function U(aStr) {
   return window.ucjsUtil.toStringForUI(aStr);
 }
 
-function getPref(aKey) {
-  return window.ucjsUtil.getPref(aKey);
+function getPref(aKey, aDefaultValue) {
+  return window.ucjsUtil.getPref(aKey, aDefaultValue);
 }
 
 function addEvent(aData) {
