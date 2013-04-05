@@ -409,7 +409,7 @@ const Beautifier = (function() {
 
 /**
  * Get a source text of a document
- * get if the document only contains JS or CSS source code
+ * get if the document only contains a simple text
  *
  * @param {HTMLDocument} aDocument
  * @return {string|null}
