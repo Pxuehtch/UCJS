@@ -76,26 +76,42 @@ function updateMenu(aEvent) {
     return;
   }
 
-  var menu = $ID(kBundle.menu.id);
+  let menu = $E($ID(kBundle.menu.id), {
+    disabled: true
+  });
 
-  var contextTab = getContextTab();
-  var tabsNum = gBrowser.tabs.length;
-  var wins = getWindowsState(contextTab);
-
-  // 1.disable on a pinned tab
-  // 2.meaningless at one tab window and no other window
-  if (contextTab.pinned || (tabsNum <= 1 && !wins.length)) {
-    menu.disabled = true;
+  // disable in private browsing
+  if (isWindowPrivate(window)) {
     return;
   }
-  menu.disabled = false;
 
-  var item_newWindow = $ID(kBundle.newWindow.id);
-  item_newWindow.disabled = tabsNum <= 1;
+  let contextTab = getContextTab();
+  // disable on a pinned tab
+  if (contextTab.pinned) {
+    return;
+  }
+
+  let tabsNum = gBrowser.tabs.length;
+  let wins = getWindowsState(contextTab);
+  // meaningless at one tab window and no other window
+  if (tabsNum <= 1 && !wins.length) {
+    return;
+  }
+
+  $E(menu, {
+    disabled: false
+  });
+
+  // make a menuitem to move the tab to a new window
+  // it is useless when the window has only one tab
+  // @note this is used as the reference node to append menuitem elements
+  let refItem = $E($ID(kBundle.newWindow.id), {
+    disabled: tabsNum <= 1
+  });
 
   var popup = menu.menupopup;
 
-  while (popup.firstChild && popup.firstChild !== item_newWindow) {
+  while (popup.firstChild && popup.firstChild !== refItem) {
     popup.removeChild(popup.firstChild);
   }
 
@@ -107,15 +123,22 @@ function updateMenu(aEvent) {
           replace('%title%', win.title).
           replace('%tabsNum%', win.tabsNum).
           replace('%s%', win.tabsNum > 1 ? 's' : '')
-      }), item_newWindow);
-      if (win.hasSame) {
+      }), refItem);
+
+      if (win.isPrivate) {
+        $E(item, {
+          disabled: true
+        });
+      }
+      else if (win.hasSame) {
         $E(item, {
           style: kBundle.hasSame.style,
           tooltiptext: kBundle.hasSame.tooltiptext
         });
       }
     });
-    popup.insertBefore($E('menuseparator'), item_newWindow);
+
+    popup.insertBefore($E('menuseparator'), refItem);
   }
 }
 
@@ -154,10 +177,12 @@ function getWindowsState(aTab) {
     let tabbrowser = win.gBrowser;
     wins.push({
       index: i,
-      hasSame: tabbrowser.browsers.
-        some(function(b) b.currentURI.spec === tabURL),
+      hasSame: tabbrowser.browsers.some(function(b) {
+        return b.currentURI.spec === tabURL;
+      }),
       title: tabbrowser.selectedTab.label,
-      tabsNum: tabbrowser.tabs.length
+      tabsNum: tabbrowser.tabs.length,
+      isPrivate: isWindowPrivate(win)
     });
   }
 
@@ -216,6 +241,11 @@ function getWindowEnumerator() {
   // enumerator of all windows in order from front to back
   // @see resource:///modules/Services.jsm
   return window.Services.wm.getZOrderDOMWindowEnumerator(null, true);
+}
+
+function isWindowPrivate(aWindow) {
+  // @see resource://gre/modules/PrivateBrowsingUtils.jsm
+  return window.PrivateBrowsingUtils.isWindowPrivate(aWindow);
 }
 
 function $ID(aId) {
