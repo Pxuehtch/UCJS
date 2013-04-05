@@ -439,7 +439,7 @@ var ucjsMisc = {};
     const kPref_resume_from_crash = 'browser.sessionstore.resume_from_crash';
     const kWaitingTime = 5000;
 
-    if (window.gPrivateBrowsingUI.privateBrowsingEnabled ||
+    if (window.PrivateBrowsingUtils.isWindowPrivate(window) ||
         getPref(kPref_resume_from_crash) !== false) {
       doRestart(aOption);
       return;
