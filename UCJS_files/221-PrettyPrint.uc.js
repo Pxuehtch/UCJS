@@ -297,9 +297,9 @@ const Beautifier = (function() {
   }
 
   function addExtraLine(aText) {
-    // add an extra line after '}' or '},' which is not the last one in nesting
-    // block
-    return aText.replace(/(},?\n)(?!\s*})/g, '$1\n');
+    // add an extra line after '}'/'},'/'};' which is not the last one in
+    // nesting block
+    return aText.replace(/(}[,;]?\n)(?!\s*})/g, '$1\n');
   }
 
   function complementLastSemicolon(aText) {
