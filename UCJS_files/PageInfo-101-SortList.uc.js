@@ -26,9 +26,7 @@ const SortState = (function() {
   let mMap = new WeakMap();
 
   function clear() {
-    // TODO: |WeakMap::clear| is supported in Fx20
-    // @see https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/WeakMap
-    // mMap.clear();
+    mMap.clear();
     mMap = null;
   }
 
