@@ -442,7 +442,7 @@ function U(aStr) {
 }
 
 function getPref(aKey, aDefaultValue) {
-  return window.ucjsUtil.getPref(aKey, aDefaultValue);
+  return window.ucjsUtil.Prefs.get(aKey, aDefaultValue);
 }
 
 function addEvent(aData) {

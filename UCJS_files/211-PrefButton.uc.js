@@ -303,11 +303,11 @@ function setCSS(aCSS) {
 }
 
 function getPref(aKey, aDefaultValue) {
-  return window.ucjsUtil.getPref(aKey, aDefaultValue);
+  return window.ucjsUtil.Prefs.get(aKey, aDefaultValue);
 }
 
 function setPref(aKey, aValue) {
-  window.ucjsUtil.setPref(aKey, aValue);
+  window.ucjsUtil.Prefs.set(aKey, aValue);
 }
 
 function log(aMsg) {

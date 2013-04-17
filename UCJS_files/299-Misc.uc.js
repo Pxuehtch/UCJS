@@ -181,8 +181,8 @@ var ucjsMisc = {};
 
   var command = '\
     (function(){\
-      var state = ucjsUtil.getPref("%kPrefTabFocus%") !== 1 ? 1 : 7;\
-      ucjsUtil.setPref("%kPrefTabFocus%", state);\
+      var state = ucjsUtil.Prefs.get("%kPrefTabFocus%") !== 1 ? 1 : 7;\
+      ucjsUtil.Prefs.set("%kPrefTabFocus%", state);\
       ucjsUI.StatusField.message("TAB focus: " + (state === 1 ?\
       "text fields only." : "text fields, form elements, and links."));\
     })();\
@@ -550,11 +550,11 @@ function addEvent(aData) {
 }
 
 function getPref(aKey) {
-  return window.ucjsUtil.getPref(aKey);
+  return window.ucjsUtil.Prefs.get(aKey);
 }
 
-function setPref(aKey, aVal) {
-  window.ucjsUtil.setPref(aKey, aVal);
+function setPref(aKey, aValue) {
+  window.ucjsUtil.Prefs.set(aKey, aValue);
 }
 
 function log(aMsg) {

@@ -183,6 +183,69 @@ const Timer = (function() {
   };
 })();
 
+/**
+ * Preferences handler
+ */
+const Prefs = (function() {
+  function getPrefs() {
+    return XPCOM.$S('prefs');
+  }
+
+  function get(aKey, aDefaultValue) {
+    const prefs = getPrefs();
+
+    try {
+      switch (prefs.getPrefType(aKey)) {
+        case prefs.PREF_BOOL:
+          return prefs.getBoolPref(aKey);
+        case prefs.PREF_INT:
+          return prefs.getIntPref(aKey);
+        case prefs.PREF_STRING:
+          return prefs.getCharPref(aKey);
+      }
+    } catch (ex) {}
+    return aDefaultValue || null;
+  }
+
+  function set(aKey, aValue) {
+    const prefs = getPrefs();
+
+    if (aValue === null ||
+        aValue === undefined) {
+      log('invalid value to set to:\n' + aKey);
+      return;
+    }
+
+    try {
+      if (get(aKey) !== aValue) {
+        switch (typeof aValue) {
+          case 'boolean':
+            prefs.setBoolPref(aKey, aValue);
+            break;
+          case 'number':
+            prefs.setIntPref(aKey, aValue);
+            break;
+          case 'string':
+            prefs.setCharPref(aKey, aValue);
+            break;
+        };
+      }
+    } catch (ex) {}
+  }
+
+  function clear(aKey) {
+    const prefs = getPrefs();
+
+    prefs.clearUserPref(aKey);
+  }
+
+  return {
+    get: get,
+    set: set,
+    clear: clear
+  };
+})();
+
 
 //********** DOM functions
 
@@ -977,47 +1040,6 @@ function normalizeCSS(aCSS) {
     replace(/\s*\/\*.*?\*\/\s*/g, '');
 }
 
-function getPref(aKey, aDef) {
-  const prefBranch = XPCOM.$S('prefs');
-
-  try {
-    switch (prefBranch.getPrefType(aKey)) {
-      case prefBranch.PREF_BOOL:
-        return prefBranch.getBoolPref(aKey);
-      case prefBranch.PREF_INT:
-        return prefBranch.getIntPref(aKey);
-      case prefBranch.PREF_STRING:
-        return prefBranch.getCharPref(aKey);
-    }
-  } catch (ex) {}
-  return aDef || null;
-}
-
-function setPref(aKey, aVal) {
-  const prefBranch = XPCOM.$S('prefs');
-
-  try {
-    if (aVal === null) {
-      prefBranch.clearUserPref(aKey);
-      return;
-    }
-
-    if (getPref(aKey) !== aVal) {
-      switch (typeof aVal) {
-        case 'boolean':
-          prefBranch.setBoolPref(aKey, aVal);
-          break;
-        case 'number':
-          prefBranch.setIntPref(aKey, aVal);
-          break;
-        case 'string':
-          prefBranch.setCharPref(aKey, aVal);
-          break;
-      };
-    }
-  } catch (ex) {}
-}
-
 /**
  * Query the Places database
  * @param aParam {hash}
@@ -1213,6 +1235,7 @@ function log(aMessage) {
 
 return {
   Timer: Timer,
+  Prefs: Prefs,
 
   setEventListener: setEventListener,
   getSelectionAtCursor: getSelectionAtCursor,
@@ -1245,8 +1268,6 @@ return {
   removeGlobalStyleSheet: removeGlobalStyleSheet,
   setChromeStyleSheet: registerChromeStyleSheet,
   setContentStyleSheet: registerContentStyleSheet,
-  getPref: getPref,
-  setPref: setPref,
   scanPlacesDB: scanPlacesDB,
   asyncScanPlacesDB: asyncScanPlacesDB,
 

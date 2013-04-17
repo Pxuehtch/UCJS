@@ -27,12 +27,11 @@ const {
     setInterval,
     clearInterval
   },
+  Prefs: Prefs,
   setEventListener: addEvent,
   openTab,
   removeTab,
   setChromeStyleSheet,
-  getPref,
-  setPref,
   scanPlacesDB
 } = window.ucjsUtil;
 // for debug
@@ -1491,6 +1490,7 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
  * Patches for the system default
  */
 function modifySystemSetting() {
+  const {get, set} = Prefs;
   const prefs = [
     // @pref Disable the custom positioning and focusing of tabs.
     {key: 'browser.tabs.insertRelatedAfterCurrent', value: false},
@@ -1501,9 +1501,9 @@ function modifySystemSetting() {
   ];
 
   prefs.forEach(function(pref) {
-    var value = getPref(pref.key);
+    var value = get(pref.key);
     if (value !== pref.value) {
-      setPref(pref.key, pref.value);
+      set(pref.key, pref.value);
     }
   });
 }

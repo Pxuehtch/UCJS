@@ -240,7 +240,7 @@ function addEvent(aData) {
 }
 
 function getPref(aKey) {
-  return window.ucjsUtil.getPref(aKey);
+  return window.ucjsUtil.Prefs.get(aKey);
 }
 
 function scanPlacesDB(aParam) {
