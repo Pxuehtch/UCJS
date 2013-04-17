@@ -495,44 +495,38 @@ function lookupNamespaceURI(aPrefix) {
   return kNS[aPrefix] || null;
 }
 
-// @note cf. http://nanto.asablo.jp/blog/2008/12/11/4003371
+/**
+ * @see http://nanto.asablo.jp/blog/2008/12/11/4003371
+ */
 function fixNamespacePrefixForXPath(aXPath, aPrefix) {
-  /**
-   * identifier  ([A-Za-z_\u00c0-\ufffd][\w\-.\u00b7-\ufffd]*|\*)
-   *               \s*
-   * suffix        (::?|\()?
-   *             |
-   * operator    (\/\/?|!=|[<>]=?|[\(\[|,=+-])
-   *             |
-   *             ".*?"|
-   *             '.*?'|
-   *             \.?\d+(?:\.\d*)?|
-   *             \.\.?|
-   *             [\)\]@$]
-   */
-  const kToken = /([A-Za-z_\u00c0-\ufffd][\w\-.\u00b7-\ufffd]*|\*)\s*(::?|\()?|(\/\/?|!=|[<>]=?|[\(\[|,=+-])|".*?"|'.*?'|\.?\d+(?:\.\d*)?|\.\.?|[\)\]@$]/g;
+  const kTokenPattern = /([A-Za-z_\u00c0-\ufffd][\w\-.\u00b7-\ufffd]*|\*)\s*(::?|\()?|(".*?"|'.*?'|\d+(?:\.\d*)?|\.(?:\.|\d+)?|[\)\]])|(\/\/?|!=|[<>]=?|[\(\[|,=+-])|([@$])/g;
 
-  var prefix = aPrefix + ':', ready = true;
+  const TERM = 1, OPERATOR = 2, MODIFIER = 3;
+  let tokenType = OPERATOR;
 
-  function replacer(token, identifier, suffix, operator) {
+  aPrefix += ':';
+
+  function replacer(token, identifier, suffix, term, operator, modifier) {
     if (suffix) {
-      ready = (suffix === '::' && identifier !== 'attribute' &&
-              identifier !== 'namespace') ||
-              suffix === '(';
-    } else if (identifier) {
-      if (ready && identifier !== '*') {
-        token = prefix + token;
+      tokenType =
+        (suffix === ':' || (suffix === '::' &&
+         (identifier === 'attribute' || identifier === 'namespace'))) ?
+        MODIFIER : OPERATOR;
+    }
+    else if (identifier) {
+      if (tokenType === OPERATOR && identifier !== '*') {
+        token = aPrefix + token;
       }
-      // Consecutive identifiers are alternately ready or not.
-      ready = (ready === null) ? true : null;
-    } else {
-      ready = !!operator;
+      tokenType = (tokenType === TERM) ? OPERATOR : TERM;
+    }
+    else {
+      tokenType = term ? TERM : (operator ? OPERATOR : MODIFIER);
     }
 
     return token;
   }
 
-  return aXPath.replace(kToken, replacer);
+  return aXPath.replace(kTokenPattern, replacer);
 }
 
 
