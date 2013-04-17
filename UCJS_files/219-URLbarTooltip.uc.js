@@ -132,10 +132,10 @@ function getRestrictData() {
 
   var data = [];
 
-  for (let a in prefs) {
-    let keyword = getPref(a);
+  for (let key in prefs) {
+    let keyword = getPref(key);
     if (keyword) {
-      data.push({keyword: keyword, name: prefs[a]});
+      data.push({keyword: keyword, name: prefs[key]});
     }
   }
 

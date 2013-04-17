@@ -27,7 +27,7 @@ const kBundle = {
   otherWindow: {
     label: U('%title% [%tabsNum% tab%s%]')
   },
-  hasSame: {
+  hasSameURL: {
     style: 'color:red;',
     tooltiptext: U('同じ URL のタブあり')
   },
@@ -130,10 +130,10 @@ function updateMenu(aEvent) {
           disabled: true
         });
       }
-      else if (win.hasSame) {
+      else if (win.hasSameURL) {
         $E(item, {
-          style: kBundle.hasSame.style,
-          tooltiptext: kBundle.hasSame.tooltiptext
+          style: kBundle.hasSameURL.style,
+          tooltiptext: kBundle.hasSameURL.tooltiptext
         });
       }
     });
@@ -177,7 +177,7 @@ function getWindowsState(aTab) {
     let tabbrowser = win.gBrowser;
     wins.push({
       index: i,
-      hasSame: tabbrowser.browsers.some(function(b) {
+      hasSameURL: tabbrowser.browsers.some(function(b) {
         return b.currentURI.spec === tabURL;
       }),
       title: tabbrowser.selectedTab.label,
