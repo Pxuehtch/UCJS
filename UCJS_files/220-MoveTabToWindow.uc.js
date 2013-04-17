@@ -31,6 +31,9 @@ const kBundle = {
     style: 'color:red;',
     tooltiptext: U('同じ URL のタブあり')
   },
+  isPrivate: {
+    tooltiptext: U('プライベートウィンドウ')
+  },
   newWindow: {
     id: 'ucjs_moveTabToWindow_newWindow',
     label: U('新しいウィンドウ')
@@ -127,7 +130,8 @@ function updateMenu(aEvent) {
 
       if (win.isPrivate) {
         $E(item, {
-          disabled: true
+          disabled: true,
+          tooltiptext: kBundle.isPrivate.tooltiptext
         });
       }
       else if (win.hasSameURL) {
