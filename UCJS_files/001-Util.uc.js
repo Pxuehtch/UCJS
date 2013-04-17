@@ -139,18 +139,18 @@ const XPCOM = (function() {
  * Alternative native timers
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
  */
-const TimerHandler = (function() {
+const Timer = (function() {
   const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = window.Ci.nsITimer;
 
   // instance constructor
-  const Timer = XPCOM.$C('Timer');
+  const createTimer = XPCOM.$C('Timer');
 
   let timers = {};
   let lastID = 0;
 
   function setTimer(aType, aCallback, aDelay) {
     let id = ++lastID;
-    let timer = timers[id] = Timer();
+    let timer = timers[id] = createTimer();
     let args = Array.slice(arguments, 3);
 
     timer.initWithCallback({
@@ -1212,7 +1212,7 @@ function log(aMessage) {
 //********** Export
 
 return {
-  TimerHandler: TimerHandler,
+  Timer: Timer,
 
   setEventListener: setEventListener,
   getSelectionAtCursor: getSelectionAtCursor,

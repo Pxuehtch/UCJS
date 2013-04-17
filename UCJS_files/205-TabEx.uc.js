@@ -21,7 +21,7 @@ var ucjsTabEx = (function(window, undefined) {
  * Imports
  */
 const {
-  TimerHandler: {
+  Timer: {
     setTimeout,
     clearTimeout,
     setInterval,

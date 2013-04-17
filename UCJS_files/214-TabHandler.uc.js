@@ -18,7 +18,7 @@
  * Imports
  */
 const {
-  TimerHandler: {
+  Timer: {
     setTimeout,
     clearTimeout
   },
