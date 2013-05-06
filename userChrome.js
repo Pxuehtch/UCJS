@@ -252,8 +252,9 @@ function ScriptList() {
       // 'dir1/dir2' -> match[1]='dir1/dir2', match[2]=''
       // 'dir1/dir2/' -> match[1]='dir1/dir2', match[2]='/'
       match = /^(.+?)(\/?)$/.exec(folder);
-      if (!match)
+      if (!match) {
         return;
+      }
 
       deeper = !!match[2];
       directory = chrome.clone();
@@ -261,8 +262,9 @@ function ScriptList() {
         if (segment) {
           try {
             directory.append(segment);
-            return directory.exists() && directory.isDirectory() &&
-              !directory.isHidden();
+            return directory.exists() &&
+                   directory.isDirectory() &&
+                   !directory.isHidden();
           } catch (ex) {}
         }
         return false;
@@ -277,8 +279,10 @@ function ScriptList() {
       var list = getEntryList(aDirectory), entry;
       var ext, script;
       while ((entry = getNextEntry(list))) {
-        if (entry.isHidden())
+        if (entry.isHidden()) {
           continue;
+        }
+
         if (aDeeper && entry.isDirectory()) {
           // recursively
           scanDirectory(entry, aDeeper);
@@ -302,10 +306,12 @@ function ScriptList() {
       var dot = aFile.leafName.indexOf('.');
       if (dot > -1) {
         let ext = aFile.leafName.substr(dot);
-        if (kConfig.jscriptExts.indexOf(ext) > -1)
+        if (kConfig.jscriptExts.indexOf(ext) > -1) {
           return 'js';
-        if (kConfig.overlayExts.indexOf(ext) > -1)
+        }
+        if (kConfig.overlayExts.indexOf(ext) > -1) {
           return 'xul';
+        }
       }
       return '';
     }
@@ -448,8 +454,9 @@ function ScriptList() {
     }
 
     var exclude = aMetaData.exclude;
-    if (exclude.length && exclude.some(test))
+    if (exclude.length && exclude.some(test)) {
       return false;
+    }
 
     var include = aMetaData.include;
     if (!include.length) {
@@ -488,9 +495,17 @@ function ScriptList() {
 function Util() {
   const {classes: Cc, interfaces: Ci} = window.Components;
 
-  function $S(aCID, aIID) Cc[aCID].getService(Ci[aIID]);
-  function $I(aCID, aIID) Cc[aCID].createInstance(Ci[aIID]);
-  function QI(aNode, aIID) aNode.QueryInterface(Ci[aIID]);
+  function $S(aCID, aIID) {
+    return Cc[aCID].getService(Ci[aIID]);
+  }
+
+  function $I(aCID, aIID) {
+    return Cc[aCID].createInstance(Ci[aIID]);
+  }
+
+  function QI(aNode, aIID) {
+    return aNode.QueryInterface(Ci[aIID]);
+  }
 
   function getLastModifiedTime(aFile) {
     var lf = $I('@mozilla.org/file/local;1', 'nsIFile');
@@ -639,7 +654,9 @@ function Util() {
  * @return {hash}
  */
 function Log(aEnabled) {
-  function noop() function(){};
+  function noop() {
+    return function(){};
+  }
 
   var exports = {
     list: noop,
