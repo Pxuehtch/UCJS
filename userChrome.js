@@ -48,10 +48,6 @@ const kSystem = {
   // Log the activity of this script to the error console
   logging: false,
 
-  // Required lowest version of Firefox
-  // fx15: rest parameters
-  firefoxVersion: '15.0',
-
   // Exposed property name in the global scope |window|
   loaderName: 'ucjsScriptLoader',
 
@@ -114,15 +110,7 @@ function ScriptLoader() {
 
   function init() {
     const {document} = window;
-    const {checkVersion} = Util;
 
-    if (!checkVersion(kSystem.firefoxVersion)) {
-      Log.list('Not init window', {
-        'Required': 'Firefox %VER% or higher.'.
-          replace('%VER%', kSystem.firefoxVersion)
-      });
-      return false;
-    }
     if (isBlockURL(document)) {
       Log.list('Not init window', {
         'Blocked URL': document.location.href
@@ -535,16 +523,6 @@ function Util() {
     return data.value.replace(/\r\n?/g, '\n');
   }
 
-  function checkVersion(aVersion) {
-    const xai = $S('@mozilla.org/xre/app-info;1',
-      'nsIXULAppInfo');
-    const vc = $S('@mozilla.org/xpcom/version-comparator;1',
-      'nsIVersionComparator');
-
-    return xai.name === 'Firefox' &&
-      vc.compare(xai.version, String(aVersion)) >= 0;
-  }
-
   // your chrome directory
   function getChromeDirectory() {
     return $S('@mozilla.org/file/directory_service;1', 'nsIProperties').
@@ -642,7 +620,6 @@ function Util() {
   return {
     getLastModifiedTime: getLastModifiedTime,
     readFile: readFile,
-    checkVersion: checkVersion,
     getChromeDirectory: getChromeDirectory,
     getEntryList: getEntryList,
     getNextEntry: getNextEntry,
