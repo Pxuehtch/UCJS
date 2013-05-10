@@ -386,18 +386,9 @@ const kSiteList = [
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|user\/|\w+$)/,
     script: function(aDocument) {
       // exclude the playlist mode
-      if (/[?&]list=/.test(aDocument.location.search)) {
-        return;
+      if (!/[?&]list=/.test(aDocument.location.search)) {
+        preventAutoplay(aDocument);
       }
-
-      // wait for the player ready
-      // TODO: Use a certain observer.
-      setTimeout(function(doc) {
-        try {
-          // WORKAROUND: check whether the document object is alive
-          doc.readyState && preventAutoplay(doc);
-        } catch (ex) {}
-      }, 1000, aDocument);
 
       function preventAutoplay(aDocument) {
         var player;
@@ -430,11 +421,23 @@ const kSiteList = [
  * Page observer handler
  * @return {hash}
  *   @member init {function}
+ *
+ * TODO: ensure to detect when a request in the same document is loaded
+ *   e.g.
+ *   - a next page from a link of the navigation bar of Google result
+ *   - whether a player object is ready in Youtube
+ * WORKAROUND: observe |about:document-onload-blocker| and delay execution of
+ * a command
  */
 var PageObserver = (function() {
+  const {
+    LOCATION_CHANGE_SAME_DOCUMENT,
+    STATE_STOP, STATE_IS_WINDOW, STATE_IS_REQUEST
+  } = window.Ci.nsIWebProgressListener;
+
   let mBrowserState = new WeakMap();
 
-  var mProgressListener = {
+  const mProgressListener = {
     init: function() {
       addEvent([gBrowser.tabContainer, 'TabClose', function(aEvent) {
         var browser = aEvent.target.linkedBrowser;
@@ -474,13 +477,10 @@ var PageObserver = (function() {
 
       // 3. wait the document loads and run the script
       if (site.script) {
-        // aFlags: LOCATION_CHANGE_SAME_DOCUMENT=0x1
-        let observing = (aFlags & 0x1) ?
-          'FIRST_STOP_REQUEST' : 'FIRST_STOP_WINDOW';
         mBrowserState.set(aBrowser, {
           URL: URL,
           site: site,
-          observing: observing
+          isSameDocument: aFlags & LOCATION_CHANGE_SAME_DOCUMENT
         });
       }
     },
@@ -497,19 +497,24 @@ var PageObserver = (function() {
         return;
       }
 
-      // aFlags: STATE_STOP=0x10, STATE_IS_REQUEST=0x10000,
-      // STATE_IS_WINDOW=0x80000
-      if (
-          (state.observing === 'FIRST_STOP_WINDOW' &&
-           (aFlags & 0x10) && (aFlags & 0x80000) &&
-           aRequest.name === URL) ||
+      if (aFlags & STATE_STOP) {
+        if ((!state.isSameDocument &&
+             aFlags & STATE_IS_WINDOW &&
+             aRequest.name === URL) ||
+            (state.isSameDocument &&
+             aFlags & STATE_IS_REQUEST &&
+             aRequest.name === 'about:document-onload-blocker')) {
+          setTimeout(function(aDocument) {
+            try {
+              // error will occur if the document is not alive
+              if (aDocument.readyState) {
+                state.site.script(aDocument);
+              }
+            } catch (ex) {}
+          }, 1000, aBrowser.contentDocument);
 
-          (state.observing === 'FIRST_STOP_REQUEST' &&
-           (aFlags & 0x10) && (aFlags & 0x10000) &&
-           aRequest.name === 'about:document-onload-blocker')
-      ) {
-        state.site.script(aBrowser.contentDocument);
-        mBrowserState.delete(aBrowser);
+          mBrowserState.delete(aBrowser);
+        }
       }
     },
 
