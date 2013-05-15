@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 
 <!--
-// @note Through encodeURIComponent().
+// @note need to escape special characters through |encodeURIComponent|
 <?xml-stylesheet href="data:text/css,
 @namespace url('http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul');
 @namespace html url('http://www.w3.org/1999/xhtml');
-#linkTab{list-style-image:url('resource:///chrome/toolkit/skin/classic/mozapps/extensions/localeGeneric.png')!important;}
+#linkTab{list-style-image:url('chrome://mozapps/skin/extensions/localeGeneric.png')!important;}
 #linktree-index{text-align:right;}
 " type="text/css"?>
  -->
 
 <?xml-stylesheet href="data:text/css,
-%40namespace%20url('http%3A%2F%2Fwww.mozilla.org%2Fkeymaster%2Fgatekeeper%2Fthere.is.only.xul')%3B%40namespace%20html%20url('http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml')%3B%23linkTab%7Blist-style-image%3Aurl('resource%3A%2F%2F%2Fchrome%2Ftoolkit%2Fskin%2Fclassic%2Fmozapps%2Fextensions%2FlocaleGeneric.png')!important%3B%7D%23linktree-index%7Btext-align%3Aright%3B%7D
+%40namespace%20url('http%3A%2F%2Fwww.mozilla.org%2Fkeymaster%2Fgatekeeper%2Fthere.is.only.xul')%3B%40namespace%20html%20url('http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml')%3B%23linkTab%7Blist-style-image%3Aurl('chrome%3A%2F%2Fmozapps%2Fskin%2Fextensions%2FlocaleGeneric.png')!important%3B%7D%23linktree-index%7Btext-align%3Aright%3B%7D
 " type="text/css"?>
 
 <overlay id="ucjs_pageInfo_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">

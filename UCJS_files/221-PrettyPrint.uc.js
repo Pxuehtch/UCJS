@@ -369,7 +369,7 @@ const Beautifier = (function() {
    */
   let BuiltinBeautifier = {};
   window.XPCOMUtils.defineLazyModuleGetter(BuiltinBeautifier, 'js_beautify',
-    'resource:///modules/devtools/Jsbeautify.jsm');
+    'resource://app/modules/devtools/Jsbeautify.jsm');
 
   /**
    * CSS beautifier

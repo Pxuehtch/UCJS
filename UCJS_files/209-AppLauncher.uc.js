@@ -702,7 +702,7 @@ const kSpecialFolderAliases = [
 
 //********** XPCOM handler
 
-// @see resource:///modules/Services.jsm
+// @see resource://gre/modules/Services.jsm
 const {Cc, Ci, Services} = window;
 
 function $I(aCID, aIID) {

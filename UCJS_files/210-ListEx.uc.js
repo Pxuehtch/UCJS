@@ -229,7 +229,7 @@ var mHistoryList = (function() {
       if (currentURL === URL) {
         className.push('unified-nav-current');
       } else {
-        // @see resource:///modules/PlacesUIUtils.jsm
+        // @see resource://app/modules/PlacesUIUtils.jsm
         // @see chrome://browser/content/utilityOverlay.js::openUILink
         action = 'PlacesUIUtils.markPageAsTyped("%URL%");' +
                  'openUILink("%URL%",event);';
@@ -606,7 +606,7 @@ function getListRange(aIndex, aCount) {
 }
 
 function getTitle(aText) {
-  // @see resource:///modules/PlacesUIUtils.jsm
+  // @see resource://app/modules/PlacesUIUtils.jsm
   const {PlacesUIUtils} = window;
   const kMaxTextLen = 40;
 
@@ -631,7 +631,7 @@ function getTooltip(aTitle, aURL) {
 }
 
 function getFavicon(aIconURL) {
-  // @see resource:///modules/PlacesUtils.jsm
+  // @see resource://gre/modules/PlacesUtils.jsm
   const {favicons} = window.PlacesUtils;
 
   if (aIconURL) {

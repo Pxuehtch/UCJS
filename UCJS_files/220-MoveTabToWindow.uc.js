@@ -243,7 +243,7 @@ function getContextTab() {
 
 function getWindowEnumerator() {
   // enumerator of all windows in order from front to back
-  // @see resource:///modules/Services.jsm
+  // @see resource://gre/modules/Services.jsm
   return window.Services.wm.getZOrderDOMWindowEnumerator(null, true);
 }
 

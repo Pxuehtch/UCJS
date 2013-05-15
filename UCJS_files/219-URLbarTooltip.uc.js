@@ -147,7 +147,7 @@ function getShortcutData() {
       bookmarksData = [];
 
   // get search engine keywords
-  // @see resource:///modules/Services.jsm
+  // @see resource://gre/modules/Services.jsm
   window.Services.search.getEngines().forEach(function(item) {
     if (item.alias) {
       searchEnginesData.push({

@@ -1424,7 +1424,7 @@ function htmlUnescape(aString) {
 function getPageTitle(aURL) {
   var title;
   try {
-    // @see resource:///modules/PlacesUtils.jsm
+    // @see resource://gre/modules/PlacesUtils.jsm
     title = window.PlacesUtils.history.getPageTitle(makeURI(aURL));
   } catch (ex) {}
 

@@ -1053,7 +1053,7 @@ function normalizeCSS(aCSS) {
 function scanPlacesDB(aParam) {
   const {expression, params, columns} = aParam || {};
 
-  // @see resource:///modules/PlacesUtils.jsm
+  // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils, Ci} = window;
   let statement =
     PlacesUtils.history.
@@ -1113,7 +1113,7 @@ function asyncScanPlacesDB(aParam) {
     onSuccess, onError, onCancel
   } = aParam || {};
 
-  // @see resource:///modules/PlacesUtils.jsm
+  // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils, Ci} = window;
   let statement =
     PlacesUtils.history.

@@ -1467,7 +1467,7 @@ var mUpperNavi = (function() {
 
     var baseDomain = host;
     try {
-      // @see resource:///modules/Services.jsm
+      // @see resource://gre/modules/Services.jsm
       baseDomain = window.Services.eTLD.getBaseDomainFromHost(host);
     } catch (ex) {
       // @throws NS_ERROR_UNEXPECTED: host contains characters disallowed in
