@@ -160,7 +160,9 @@ function handleEvent(aEvent) {
 function findURL(aDocument, aSelection) {
   var URL = '';
 
-  if (!aSelection || !mURLUtil.guess(aSelection)) {
+  if (!aSelection ||
+      !aSelection.rangeCount ||
+      !mURLUtil.guess(aSelection)) {
     return URL;
   }
 
