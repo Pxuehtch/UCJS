@@ -383,38 +383,53 @@ const kSiteList = [
   },
   {
     name: 'Youtube Player',
-    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|user\/|\w+$)/,
+    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|channel\/|user\/)/,
     script: function(aDocument) {
       // exclude the playlist mode
       if (!/[?&]list=/.test(aDocument.location.search)) {
-        preventAutoplay(aDocument);
+        preventAutoplay();
       }
 
-      function preventAutoplay(aDocument) {
-        var player;
+      // using Youtube Player API
+      // @see https://developers.google.com/youtube/js_api_reference
+      function preventAutoplay() {
+        let intervalTime = 500;
+        let waitCount = 10;
 
-        // Flash version
-        player = $S1('embed[id^="movie_player"]', aDocument);
-        if (player) {
-          let flashvars = player.getAttribute('flashvars');
-          if (!flashvars.contains('autoplay=0')) {
-            player.setAttribute('flashvars', flashvars + '&autoplay=0');
-            player.src += '#';
+        let timerID = setInterval(function() {
+          if (--waitCount < 0) {
+            clear();
+            return;
           }
-          return;
-        }
 
-        // HTML5 version
-        player = $S1('video', aDocument);
-        if (player) {
-          player.pause();
-          player.currentTime = 0;
-          return;
+          let player = $S1('[id^="movie_player"]', aDocument);
+          if (player) {
+            player = player.wrappedJSObject;
+            if (player.getPlayerState) {
+              switch (player.getPlayerState()) {
+                case 1: // playing
+                case 2: // paused
+                  clear();
+                  player.pauseVideo();
+                  player.seekTo(0);
+                  break;
+              }
+            }
+          }
+        }, intervalTime);
+
+        aDocument.defaultView.
+        addEventListener('unload', clear, false);
+
+        function clear() {
+          aDocument.defaultView.
+          removeEventListener('unload', clear, false);
+
+          clearInterval(timerID);
         }
       }
     }
-  }
-  //,
+  }//,
 ];
 
 /**
@@ -425,7 +440,6 @@ const kSiteList = [
  * TODO: ensure to detect when a request in the same document is loaded
  *   e.g.
  *   - a next page from a link of the navigation bar of Google result
- *   - whether a player object is ready in Youtube
  * WORKAROUND: observe |about:document-onload-blocker| and delay execution of
  * a command
  */
