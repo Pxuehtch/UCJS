@@ -511,7 +511,7 @@ var PageObserver = (function() {
                 state.site.script(aDocument);
               }
             } catch (ex) {}
-          }, 1000, aBrowser.contentDocument);
+          }, 500, aBrowser.contentDocument);
 
           mBrowserState.delete(aBrowser);
         }
