@@ -411,7 +411,7 @@ const kSiteList = [
                 case 2: // paused
                   clear();
                   player.pauseVideo();
-                  player.seekTo(0);
+                  player.seekTo(getStartTime(aDocument.location.href));
                   break;
               }
             }
@@ -426,6 +426,20 @@ const kSiteList = [
           removeEventListener('unload', clear, false);
 
           clearInterval(timerID);
+        }
+
+        function getStartTime(aURL) {
+          let time = /[?&#]t=(\d+h)?(\d+m)?(\d+s?)?/.exec(aURL);
+          if (!time) {
+            return 0;
+          }
+
+          let [, h, m, s] = time;
+          h = (h && parseInt(h) * 3600) || 0;
+          m = (m && parseInt(m) * 60) || 0;
+          s = (s && parseInt(s)) || 0;
+
+          return h + m + s;
         }
       }
     }
@@ -650,7 +664,6 @@ var NoisyURLHandler = (function() {
     test: test
   };
 })();
-
 
 /**
  * Page CSS handler
