@@ -435,9 +435,9 @@ const kSiteList = [
           }
 
           let [, h, m, s] = time;
-          h = (h && parseInt(h) * 3600) || 0;
-          m = (m && parseInt(m) * 60) || 0;
-          s = (s && parseInt(s)) || 0;
+          h = (h && parseInt(h, 10) * 3600) || 0;
+          m = (m && parseInt(m, 10) * 60) || 0;
+          s = (s && parseInt(s, 10)) || 0;
 
           return h + m + s;
         }
