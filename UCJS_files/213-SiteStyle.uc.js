@@ -461,11 +461,15 @@ const kSiteList = [
  * @return {hash}
  *   @member init {function}
  *
- * TODO: ensure to detect when a request in the same document is loaded
+ * TODO: surely detect that the document is loaded
+ * WORKAROUND: applies a script when the complete request URL equals the
+ * document URL
+ *
+ * TODO: surely detect that a request in the same document is loaded
  *   e.g.
  *   - a next page from a link of the navigation bar of Google result
- * WORKAROUND: observe |about:document-onload-blocker| and delay execution of
- * a command
+ * WORKAROUND: observes |about:document-onload-blocker| and delays execution
+ * of a command
  */
 var PageObserver = (function() {
   const {
@@ -536,9 +540,10 @@ var PageObserver = (function() {
       }
 
       if (aFlags & STATE_STOP) {
-        if ((!state.isSameDocument &&
-             aFlags & STATE_IS_WINDOW &&
-             aRequest.name === URL) ||
+        // fix up a cached page URL (wyciwyg:)
+        if (fixupURL(aRequest.name) === URL ||
+            (aFlags & STATE_IS_WINDOW &&
+             aWebProgress.DOMWindow === aBrowser.contentWindow) ||
             (state.isSameDocument &&
              aFlags & STATE_IS_REQUEST &&
              aRequest.name === 'about:document-onload-blocker')) {
@@ -562,6 +567,19 @@ var PageObserver = (function() {
     onRefreshAttempted: function() {},
     onLinkIconAvailable: function() {}
   };
+
+  function fixupURL(aURL) {
+    let uri;
+
+    // @see resource://gre/modules/Services.jsm
+    const uriFixup = window.Services.uriFixup;
+    try {
+      uri = uriFixup.createFixupURI(aURL, uriFixup.FIXUP_FLAG_NONE);
+      uri = uriFixup.createExposableURI(uri);
+    } catch (ex) {}
+
+    return uri ? uri.spec : aURL;
+  }
 
   function matchSiteList(aURL) {
     var site = null;
