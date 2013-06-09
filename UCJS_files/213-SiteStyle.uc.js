@@ -394,7 +394,7 @@ const kSiteList = [
       // @see https://developers.google.com/youtube/js_api_reference
       function preventAutoplay() {
         let intervalTime = 500;
-        let waitCount = 10;
+        let waitCount = 20;
 
         let timerID = setInterval(function() {
           if (--waitCount < 0) {
