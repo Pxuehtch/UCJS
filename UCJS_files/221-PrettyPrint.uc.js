@@ -208,13 +208,25 @@ const Beautifier = (function() {
    * @note |JS Beautify beautify.js| new version supports |wrap_line_length|
    */
   function fixupOptions(aOptions) {
-    function num(aValue) {
-      return (aValue && parseInt(aValue, 10)) || undefined;
+    function num(aValue, aDefault) {
+      return (aValue === undefined) ? aDefault : parseInt(aValue, 10);
     }
 
-    function str(aValue) {
-      return (aValue && aValue + '') || undefined;
+    function str(aValue, aDefault) {
+      return (aValue === undefined) ? aDefault : aValue + '';
     }
+
+    function bool(aValue, aDefault) {
+      return (aValue === undefined) ? aDefault : !!aValue;
+    }
+
+    const kDefault = {
+      indentSize: 2,
+      indentChar: ' ',
+      wrapLineLength: 80,
+      extraLine: true,
+      lastSemicolon: true
+    };
 
     let {
       indentSize,
@@ -224,24 +236,24 @@ const Beautifier = (function() {
       lastSemicolon
     } = aOptions || {};
 
-    indentSize = num(indentSize);
-    if (indentSize === undefined ||
-        indentSize <= 0) {
-      indentSize = 2;
+    indentSize = num(indentSize, kDefault.indentSize);
+    if (indentSize <= 0) {
+      indentSize = kDefault.indentSize;
     }
 
-    indentChar = str(indentChar) || ' ';
+    indentChar = str(indentChar, kDefault.indentChar);
+    if (indentChar === '') {
+      indentChar = kDefault.indentChar;
+    }
 
-    wrapLineLength = num(wrapLineLength);
-    if (wrapLineLength === undefined) {
-      wrapLineLength = 80;
-    } else if (wrapLineLength <= 0) {
+    wrapLineLength = num(wrapLineLength, kDefault.wrapLineLength);
+    if (wrapLineLength <= 0) {
       wrapLineLength = 0;
     }
 
-    extraLine = !!(extraLine !== false);
+    extraLine = bool(extraLine, kDefault.extraLine);
 
-    lastSemicolon = !!(lastSemicolon !== false);
+    lastSemicolon = bool(lastSemicolon, kDefault.lastSemicolon);
 
     return {
       indentSize: indentSize,
