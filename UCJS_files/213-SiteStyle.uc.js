@@ -384,6 +384,16 @@ const kSiteList = [
   {
     name: 'Youtube Player',
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|channel\/|user\/)/,
+    quickScript: function(aDocument) {
+      let location = aDocument.location;
+
+      // WORKAROUND: changes a hash for the start time of a video jumped
+      // from 'Play in Youtube.com' of an embedded player, so that we can pause
+      // at the time
+      if (/#at=\d+/.test(location.href)) {
+        location.replace(location.href.replace('#at=', '#t='));
+      }
+    },
     script: function(aDocument) {
       // exclude the playlist mode
       if (!/[?&]list=/.test(aDocument.location.search)) {
