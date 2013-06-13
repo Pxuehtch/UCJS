@@ -316,8 +316,8 @@ const kGestureSet = [
 
 
 //********** Handlers
-// TODO: Cancel the gesture when enters into a window(always on top) that is
-// overwrapped on the gesture area.
+// TODO: cancel the gesture when enters into a window (always on top) that is
+// overwrapped on the gesture area
 
 /**
  * Main handler
@@ -343,11 +343,14 @@ function MouseGesture() {
     addEvent([pc, 'contextmenu', onContextMenu, false]);
     addEvent([pc, 'click', onClick, false]);
 
-    // @note Use not 'dragenter' but 'dragover' to check the coordinate.
     addEvent([pc, 'dragstart', onDragStart, false]);
     addEvent([pc, 'dragend', onDragEnd, false]);
+    // @note use 'dragover' (not 'dragenter') to check the coordinate
     addEvent([pc, 'dragover', onDragOver, false]);
-    addEvent([pc, 'drop', onDrop, false]);
+    // WORKAROUND: use capture mode to detect a drop event that is trapped by
+    // content script (e.g. gist.github.com)
+    // TODO: need to check the mode of the other events
+    addEvent([pc, 'drop', onDrop, true]);
 
     // WORKAROUND: observe a XUL popup in the content area for cancelling the
     // gestures on it
