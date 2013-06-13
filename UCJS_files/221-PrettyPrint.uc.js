@@ -343,6 +343,8 @@ const Beautifier = (function() {
     return aText.replace(/[^;}\s](?=\n\s*\})/g, '$&;');
   }
 
+  // @note syntax error may occur due to line wrapping forced when you run
+  // copy-and-paste output
   function wrapLines(aText, aTextType, aWrapLineLength) {
     let charsForWrap;
     switch (aTextType) {
