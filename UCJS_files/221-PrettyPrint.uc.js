@@ -208,60 +208,84 @@ const Beautifier = (function() {
    * @note |JS Beautify beautify.js| new version supports |wrap_line_length|
    */
   function fixupOptions(aOptions) {
-    function num(aValue, aDefault) {
-      return (aValue === undefined) ? aDefault : parseInt(aValue, 10);
-    }
+    const kOptionList = {
+      indentSize: {
+        type: 'number',
+        defaultValue: 2,
+        validate: function(aValue) {
+          if (aValue <= 0) {
+            return this.defaultValue;
+          }
+          return aValue;
+        }
+      },
 
-    function str(aValue, aDefault) {
-      return (aValue === undefined) ? aDefault : aValue + '';
-    }
+      indentChar: {
+        type: 'string',
+        defaultValue: ' ',
+        validate: function(aValue) {
+          if (aValue === '') {
+            return this.defaultValue;
+          }
+          return aValue.charAt(0);
+        }
+      },
 
-    function bool(aValue, aDefault) {
-      return (aValue === undefined) ? aDefault : !!aValue;
-    }
+      wrapLineLength: {
+        type: 'number',
+        defaultValue: 80,
+        validate: function(aValue) {
+          if (aValue < 0) {
+            return 0;
+          }
+          return aValue;
+        }
+      },
 
-    const kDefault = {
-      indentSize: 2,
-      indentChar: ' ',
-      wrapLineLength: 80,
-      extraLine: true,
-      lastSemicolon: true
+      extraLine: {
+        type: 'boolean',
+        defaultValue: true
+      },
+
+      lastSemicolon: {
+        type: 'boolean',
+        defaultValue: true
+      }
     };
 
-    let {
-      indentSize,
-      indentChar,
-      wrapLineLength,
-      extraLine,
-      lastSemicolon
-    } = aOptions || {};
+    let options = {};
 
-    indentSize = num(indentSize, kDefault.indentSize);
-    if (indentSize <= 0) {
-      indentSize = kDefault.indentSize;
+    aOptions = aOptions || {};
+    for (let [key, setting] in Iterator(kOptionList)) {
+      let value = aOptions[key];
+
+      if (value === undefined) {
+        value = setting.defaultValue;
+      } else {
+        switch (setting.type) {
+          case 'number':
+            value = parseInt(aValue, 10);
+            if (isNaN(value)) {
+              value = setting.defaultValue;
+            }
+            break;
+          case 'string':
+            value = aValue + '';
+            break;
+          case 'boolean':
+            value = !!aValue;
+            break;
+        }
+      }
+
+      if (setting.validate) {
+        value = setting.validate(value);
+      }
+
+      options[key] = value;
     }
 
-    indentChar = str(indentChar, kDefault.indentChar);
-    if (indentChar === '') {
-      indentChar = kDefault.indentChar;
-    }
-
-    wrapLineLength = num(wrapLineLength, kDefault.wrapLineLength);
-    if (wrapLineLength <= 0) {
-      wrapLineLength = 0;
-    }
-
-    extraLine = bool(extraLine, kDefault.extraLine);
-
-    lastSemicolon = bool(lastSemicolon, kDefault.lastSemicolon);
-
-    return {
-      indentSize: indentSize,
-      indentChar: indentChar,
-      wrapLineLength: wrapLineLength,
-      extraLine: extraLine,
-      lastSemicolon: lastSemicolon
-    };
+    return options;
   }
 
   /**
