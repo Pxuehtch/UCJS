@@ -5,15 +5,16 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage Access to items in the URLbar context menu.
-// @note Some functions are exported to global (ucjsNaviLink.XXX).
+// @usage creates items in the URLbar context menu
+// @note some functions are exposed to the global scope
+// |window.ucjsNaviLink.XXX|
 
 // TODO: The URLbar is initialized when the toolbar customization panel opens.
 // Observe it and fix our broken functions.
 // WORKAROUND: Restart Firefox after customizing.
 
 
-var ucjsNaviLink = (function(window, undefined) {
+const ucjsNaviLink = (function(window, undefined) {
 
 
 "use strict";
@@ -21,8 +22,10 @@ var ucjsNaviLink = (function(window, undefined) {
 
 const kPref = {
   // show the page information menu
+  // @see |kPageInfoType|
   showPageInfo: true,
   // show the unregistered navigation links
+  // @see |kNaviLinkType| for the registered types
   showSubNaviLinks: true
 };
 
@@ -176,7 +179,7 @@ const kID = (function() {
 /**
  * Handler of the menu UI settings
  */
-var mMenu = (function() {
+const MenuUI = (function() {
   function init() {
     let contextMenu = getURLBarContextMenu();
 
@@ -235,7 +238,7 @@ var mMenu = (function() {
   function onPopupShowing(aEvent) {
     aEvent.stopPropagation();
 
-    var contextMenu = aEvent.target;
+    let contextMenu = aEvent.target;
     if (contextMenu !== getURLBarContextMenu()) {
       return;
     }
@@ -244,8 +247,8 @@ var mMenu = (function() {
       return;
     }
 
-    var isHtmlDocument = getDocument() instanceof HTMLDocument;
-    var [, eSep] = getSeparators();
+    let isHtmlDocument = getDocument() instanceof HTMLDocument;
+    let [, eSep] = getSeparators();
 
     [
       buildUpperNavi(),
@@ -265,13 +268,13 @@ var mMenu = (function() {
   function onPopupHiding(aEvent) {
     aEvent.stopPropagation();
 
-    var contextMenu = aEvent.target;
+    let contextMenu = aEvent.target;
     if (contextMenu !== getURLBarContextMenu()) {
       return;
     }
 
     // remove existing items
-    var [sSep, eSep] = getSeparators();
+    let [sSep, eSep] = getSeparators();
     for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
       contextMenu.removeChild(item);
     }
@@ -296,9 +299,9 @@ var mMenu = (function() {
   }
 
   function buildUpperNavi() {
-    var URLList = mUpperNavi.getList();
+    let URLList = UpperNavi.getList();
 
-    var popup = $E('menupopup');
+    let popup = $E('menupopup');
 
     if (URLList) {
       URLList.forEach(function(URL) {
@@ -310,7 +313,7 @@ var mMenu = (function() {
       });
     }
 
-    var menu = $E('menu', {
+    let menu = $E('menu', {
       id: kID.upper,
       label: kFormat.upper,
       disabled: URLList === null || null
@@ -321,14 +324,14 @@ var mMenu = (function() {
   }
 
   function buildSiblingNavi(aDirection) {
-    var res = mSiblingNavi.getResult(aDirection);
-    if (!res) {
+    let result = SiblingNavi.getResult(aDirection);
+    if (!result) {
       return null;
     }
 
-    var {list, scanType} = res;
+    let {list, scanType} = result;
 
-    var node;
+    let node;
 
     if (list.length === 1) {
       let data = list[0];
@@ -372,17 +375,17 @@ var mMenu = (function() {
   }
 
   function buildNaviLink() {
-    var naviList, subNaviList;
-    naviList = mNaviLink.getNaviList();
+    let naviList, subNaviList;
+    naviList = NaviLink.getNaviList();
     if (kPref.showSubNaviLinks) {
-      subNaviList = mNaviLink.getSubNaviList();
+      subNaviList = NaviLink.getSubNaviList();
     }
 
     if (!naviList && !subNaviList) {
       return null;
     }
 
-    var popup = $E('menupopup');
+    let popup = $E('menupopup');
 
     [naviList, subNaviList].forEach(function(result) {
       if (!result) {
@@ -434,7 +437,7 @@ var mMenu = (function() {
       }
     });
 
-    var menu = $E('menu', {
+    let menu = $E('menu', {
       id: kID.naviLink,
       label: kFormat.naviLink
     });
@@ -444,12 +447,12 @@ var mMenu = (function() {
   }
 
   function buildPageInfo() {
-    var result = mNaviLink.getInfoList();
+    let result = NaviLink.getInfoList();
     if (!result) {
       return null;
     }
 
-    var popup = $E('menupopup');
+    let popup = $E('menupopup');
 
     for (let type in result) {
       let {list, trimmed} = result[type];
@@ -487,7 +490,7 @@ var mMenu = (function() {
       }));
     }
 
-    var menu = $E('menu', {
+    let menu = $E('menu', {
       id: kID.pageInfo,
       label: kFormat.pageInfo
     });
@@ -540,7 +543,7 @@ var mMenu = (function() {
 
   /**
    * Attributes formatter
-   * @param aAttributes {array} see |mNaviLink|
+   * @param aAttributes {array} see |NaviLink|
    *   [['name', 'value'], ..., ['rel', ['value', 'value', ...]]]
    * @return {string}
    */
@@ -553,7 +556,7 @@ var mMenu = (function() {
       return '';
     }
 
-    var attributes = [];
+    let attributes = [];
 
     aAttributes.forEach(function([name, value]) {
       if (Array.isArray(value)) {
@@ -585,7 +588,7 @@ var mMenu = (function() {
 /**
  * Handler of the user preset of the navigation links
  */
-var mPresetNavi = (function() {
+const PresetNavi = (function() {
   /**
    * Gets the preset data for the previous or next page
    * @param aDirection {string} 'prev' or 'next'
@@ -597,9 +600,9 @@ var mPresetNavi = (function() {
    * }
    */
   function getData(aDirection) {
-    var item;
+    let item;
 
-    var URL = getURI().spec;
+    let URL = getURI().spec;
     for (let i = 0; i < kPresetNavi.length; i++) {
       if (kPresetNavi[i].URL.test(URL)) {
         item = kPresetNavi[i];
@@ -610,7 +613,7 @@ var mPresetNavi = (function() {
       return null;
     }
 
-    var node = $X1(item[aDirection]);
+    let node = $X1(item[aDirection]);
 
     if (node && node.href) {
       return {
@@ -646,7 +649,7 @@ var mPresetNavi = (function() {
  * Handler of the official navigation links according to the <rel> attribute
  * @note [additional] Makes a list of the page information.
  */
-var mNaviLink = (function() {
+const NaviLink = (function() {
   const kFeedType = {
     'application/rss+xml': 'RSS',
     'application/atom+xml': 'ATOM',
@@ -658,11 +661,11 @@ var mNaviLink = (function() {
   // max number of the items of each type
   const kMaxItemsOfType = 20;
 
-  var mWorkURL = '';
-  var mNaviList, mSubNaviList, mInfoList;
+  let mWorkURL = '';
+  let mNaviList, mSubNaviList, mInfoList;
 
   function init() {
-    var URI = getURI();
+    let URI = getURI();
 
     if (!URI.isSamePage(mWorkURL)) {
       mWorkURL = URI.spec;
@@ -731,12 +734,14 @@ var mNaviLink = (function() {
     scanScript(infoList);
 
     Array.forEach($SA('[rel][href], [rev][href]'), function(node, i) {
-      var rel = node.rel || node.rev;
-      if (!rel || !node.href || !/^(?:https?|mailto):/.test(node.href)) {
+      let rel = node.rel || node.rev;
+      if (!rel ||
+          !node.href ||
+          !/^(?:https?|mailto):/.test(node.href)) {
         return;
       }
 
-      var rels = makeRels(rel);
+      let rels = makeRels(rel);
 
       scanInfoLink(infoList, i, node, rels) ||
       scanNaviLink(naviList, i, node, rels) ||
@@ -809,27 +814,29 @@ var mNaviLink = (function() {
   }
 
   function makeRels(aRelAttribute) {
-    var relValues = aRelAttribute.toLowerCase().split(/\s+/);
+    let relValues = aRelAttribute.toLowerCase().split(/\s+/);
 
-    var rels = Object.create(null, {
+    let rels = Object.create(null, {
       length: {
         value: relValues.length
       },
-      except: {
+      exceptOf: {
         value: function(aValue) {
           return relValues.filter(function(val) val !== aValue);
         }
       }
     });
 
-    relValues.forEach(function(val) {rels[val] = true});
+    relValues.forEach(function(val) {
+      rels[val] = true;
+    });
 
     return rels;
   }
 
   function scanMeta(aList) {
-    var doc = getDocument();
-    var metas = Array.slice(doc.getElementsByTagName('meta'));
+    let doc = getDocument();
+    let metas = Array.slice(doc.getElementsByTagName('meta'));
 
     // be sure to add <content-type> so that the meta list is not empty
     let empty = !metas.some(function(meta) {
@@ -849,7 +856,7 @@ var mNaviLink = (function() {
   }
 
   function scanScript(aList) {
-    var doc = getDocument();
+    let doc = getDocument();
 
     Array.forEach(doc.getElementsByTagName('script'),
     function(node, i) {
@@ -858,8 +865,8 @@ var mNaviLink = (function() {
   }
 
   function scanInfoLink(aList, aIndex, aNode, aRels) {
-    var type = '';
-    var attributes = [];
+    let type = '';
+    let attributes = [];
 
     if (aRels.feed ||
         (aNode.type && aRels.alternate && !aRels.stylesheet)) {
@@ -891,8 +898,8 @@ var mNaviLink = (function() {
   }
 
   function scanNaviLink(aList, aIndex, aNode, aRels) {
-    var startLen = aList.length;
-    var attributes = [];
+    let startLen = aList.length;
+    let attributes = [];
 
     if (aRels.alternate) {
       if (aNode.media) {
@@ -908,7 +915,7 @@ var mNaviLink = (function() {
     for (let type in aRels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (type in kNaviLinkType) {
-        others = plural ? [['rel', aRels.except(type)]] : [];
+        others = plural ? [['rel', aRels.exceptOf(type)]] : [];
         addItem(aList, aIndex, type, aNode, attributes.concat(others));
       }
     }
@@ -922,7 +929,7 @@ var mNaviLink = (function() {
     for (let type in aRels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (!(type in kNaviLinkType)) {
-        others = plural ? [['rel', aRels.except(type)]] : [];
+        others = plural ? [['rel', aRels.exceptOf(type)]] : [];
         addItem(aList, aIndex, type, aNode, others);
       }
     }
@@ -1001,7 +1008,7 @@ var mNaviLink = (function() {
 /**
  * Handler of links to the sibling(prev/next) page
  */
-var mSiblingNavi = (function() {
+const SiblingNavi = (function() {
   // max number of links that are scanned to guess the sibling page
   const kMaxNumScanningLinks = 400;
   // max number of entries that are scored as the sibling page
@@ -1009,9 +1016,14 @@ var mSiblingNavi = (function() {
   // max number of guessed siblings to display
   const kMaxNumSiblings = 3;
 
+  /**
+   * Retrieves the URL string for the direction
+   * @param aDirection {string} 'prev' or 'next'
+   * @return {string}
+   */
   function getURLFor(aDirection) {
-    var res = getResult(aDirection);
-    return (res && res.list[0].URL) || '';
+    let result = getResult(aDirection);
+    return (result && result.list[0].URL) || '';
   }
 
   /**
@@ -1032,12 +1044,12 @@ var mSiblingNavi = (function() {
    * {here:, there:, URL:} for a sibling by <numbering>
    */
   function getResult(aDirection) {
-    var data;
-    var scanType;
+    let data;
+    let scanType;
 
     [
-      ['preset', mPresetNavi.getData],
-      ['official', mNaviLink.getData],
+      ['preset', PresetNavi.getData],
+      ['official', NaviLink.getData],
       ['searching', guessBySearching],
       ['numbering', guessByNumbering]
     ].
@@ -1061,17 +1073,19 @@ var mSiblingNavi = (function() {
   }
 
   function guessBySearching(aDirection) {
-    var URI = getURI('NO_REF');
+    let URI = getURI('NO_REF');
 
     NaviLinkTester.init(URI.spec, aDirection);
 
-    var entries = getSearchEntries();
-    var link, href, text, score;
+    let entries = getSearchEntries();
+    let link, href, text, score;
 
     for (link in getSearchLinks()) {
       href = link.href;
-      if (!href || !/^https?:/.test(href) || URI.isSamePage(href) ||
-        entries.contains(href)) {
+      if (!href ||
+          !/^https?:/.test(href) ||
+          URI.isSamePage(href) ||
+          entries.contains(href)) {
         continue;
       }
 
@@ -1094,8 +1108,8 @@ var mSiblingNavi = (function() {
   }
 
   function getSearchEntries() {
-    var entries = [];
-    var URLs = [];
+    let entries = [];
+    let URLs = [];
 
     function detach() {
       entries.length = 0;
@@ -1126,10 +1140,10 @@ var mSiblingNavi = (function() {
         return null;
       }
 
-      // sort items in a descending of the score
+      // sort items in a *descending* of the score
       entries.sort(function(a, b) b.score - a.score);
 
-      var list = entries.map(function({text, URL, score}) {
+      let list = entries.map(function({text, URL, score}) {
         return {
           // <data> for a sibling by searching
           title: text,
@@ -1152,8 +1166,8 @@ var mSiblingNavi = (function() {
   }
 
   function getSearchLinks() {
-    var links = getDocument().links;
-    var count = links.length;
+    let links = getDocument().links;
+    let count = links.length;
 
     if (kMaxNumScanningLinks < count) {
       let limit = Math.floor(kMaxNumScanningLinks / 2);
@@ -1175,8 +1189,8 @@ var mSiblingNavi = (function() {
     yield aNode.textContent;
     yield aNode.getAttribute('title');
 
-    var images = aNode.getElementsByTagName('img');
-    var image = images.length ? images[0] : null;
+    let images = aNode.getElementsByTagName('img');
+    let image = images.length ? images[0] : null;
 
     if (image) {
       yield image.getAttribute('alt');
@@ -1190,7 +1204,7 @@ var mSiblingNavi = (function() {
       return false;
     }
 
-    var style = aNode.ownerDocument.defaultView.
+    let style = aNode.ownerDocument.defaultView.
       getComputedStyle(aNode, '');
 
     return style.visibility === 'visible' &&
@@ -1210,17 +1224,17 @@ var mSiblingNavi = (function() {
     const kNumEndPath =
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
 
-    var URI = getURI('NO_REF');
+    let URI = getURI('NO_REF');
     if (!URI.hasPath()) {
       return null;
     }
 
-    var direction = (aDirection === 'next') ? 1 : -1;
-    var list = [];
+    let direction = (aDirection === 'next') ? 1 : -1;
+    let list = [];
 
     [kNumQuery, kNumEndPath].forEach(function(pattern) {
-      var URL = URI.spec;
-      var matches;
+      let URL = URI.spec;
+      let matches;
       while ((matches = pattern.exec(URL))) {
         let [match, leading , oldNum, trailing] = matches;
 
@@ -1266,11 +1280,11 @@ var mSiblingNavi = (function() {
 /**
  * Evaluator of the navigation-like text and URL
  */
-var NaviLinkTester = (function() {
+const NaviLinkTester = (function() {
   /**
    * Test for text
    */
-  var textLike = (function() {
+  const TextLike = (function() {
     // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
     // ←:\u2190
     // &rsaquo;(>):\u203a, &raquo;(>>):\u00bb, ＞:\uff1e, ≫:\u226b,
@@ -1297,11 +1311,11 @@ var NaviLinkTester = (function() {
       lessText: 30
     });
 
-    var naviSign = null, oppositeSign = null,
+    let naviSign = null, oppositeSign = null,
         naviWord = null, oppositeWord = null;
 
     function init(aDirection) {
-      var opposite, sign, word;
+      let opposite, sign, word;
 
       opposite = (aDirection === 'prev') ? 'next' : 'prev';
       oppositeSign = RegExp(kNaviSign[opposite]);
@@ -1318,8 +1332,8 @@ var NaviLinkTester = (function() {
     }
 
     function score(aText) {
-      var point = 0;
-      var match;
+      let point = 0;
+      let match;
 
       if (!oppositeSign.test(aText) && (match = naviSign.exec(aText))) {
         point += kWeight.matchSign;
@@ -1360,37 +1374,37 @@ var NaviLinkTester = (function() {
   /**
    * Test for URL
    */
-  var URLLike = (function() {
+  const URLLike = (function() {
     const kWeight = normalizeWeight({
       equalLength: 35,
       overlapParts: 65
     });
 
-    var srcURL = '';
+    let srcURL = '';
 
     function init(aURL) {
       srcURL = unescURLChar(aURL);
     }
 
     function score(aURL) {
-      var dstURL = unescURLChar(aURL);
+      let dstURL = unescURLChar(aURL);
 
       return (kWeight.equalLength * getEqualLengthRate(srcURL, dstURL)) +
              (kWeight.overlapParts * getOverlapPartsRate(srcURL, dstURL));
     }
 
     function getEqualLengthRate(aSrc, aDst) {
-      var sLen = aSrc.length, dLen = aDst.length;
+      let sLen = aSrc.length, dLen = aDst.length;
 
       // be less than (1.0)
       return 1 - (Math.abs(sLen - dLen) / (sLen + dLen));
     }
 
     function getOverlapPartsRate(aSrc, aDst) {
-      var [sParts, dParts] =
+      let [sParts, dParts] =
         [aSrc, aDst].map(function(a) a.split(/[/?&=#;]+/));
 
-      var overlaps = sParts.filter(function(part) {
+      let overlaps = sParts.filter(function(part) {
         if (part) {
           let i = dParts.indexOf(part);
           if (i > -1) {
@@ -1411,26 +1425,26 @@ var NaviLinkTester = (function() {
     };
   })();
 
-  var workDirection = '',
-      workURL = '';
+  let mWorkDirection = '',
+      mWorkURL = '';
 
   function init(aURL, aDirection) {
-    if (workURL !== aURL) {
-      workDirection = '';
-      workURL = aURL;
+    if (mWorkURL !== aURL) {
+      mWorkDirection = '';
+      mWorkURL = aURL;
 
       URLLike.init(aURL);
     }
 
-    if (workDirection !== aDirection) {
-      workDirection = aDirection;
+    if (mWorkDirection !== aDirection) {
+      mWorkDirection = aDirection;
 
-      textLike.init(aDirection);
+      TextLike.init(aDirection);
     }
   }
 
   function score(aText, aURL) {
-    var point = textLike.score(aText);
+    let point = TextLike.score(aText);
 
     if (point > 0) {
       point += URLLike.score(aURL);
@@ -1440,7 +1454,7 @@ var NaviLinkTester = (function() {
   }
 
   function normalizeWeight(aWeights) {
-    var total = 0;
+    let total = 0;
     for (let key in aWeights) {
       total += aWeights[key];
     }
@@ -1461,16 +1475,16 @@ var NaviLinkTester = (function() {
 /**
  * Handler of the links to the upper(top/parent) page
  */
-var mUpperNavi = (function() {
+const UpperNavi = (function() {
   /**
    * Gets the list of the upper page URLs from parent to top in order
    * @return {string[]}
    */
   function getList() {
-    var list = [];
+    let list = [];
 
-    var URI = getURI('NO_QUERY');
-    var URL;
+    let URI = getURI('NO_QUERY');
+    let URL;
     while ((URL = getParent(URI))) {
       list.push(URL);
       URI = createURI(URL);
@@ -1502,12 +1516,12 @@ var mUpperNavi = (function() {
   }
 
   function getUpperHost(aURI) {
-    var host = aURI.host;
+    let host = aURI.host;
     if (!host) {
       return '';
     }
 
-    var baseDomain = host;
+    let baseDomain = host;
     try {
       // @see resource://gre/modules/Services.jsm
       baseDomain = window.Services.eTLD.getBaseDomainFromHost(host);
@@ -1565,8 +1579,8 @@ function createURI(aURI, aFlag) {
     aURI = window.makeURI(aURI, null, null);
   }
 
-  var {scheme, prePath, path, spec} = aURI;
-  var host;
+  let {scheme, prePath, path, spec} = aURI;
+  let host;
   try {
     // returns an empty string for the host of 'file:///C:/...'
     host = aURI.host;
@@ -1739,7 +1753,7 @@ function log(aMsg) {
 //********** Entry point
 
 function NaviLink_init() {
-  mMenu.init();
+  MenuUI.init();
 }
 
 NaviLink_init();
@@ -1748,10 +1762,10 @@ NaviLink_init();
 //********** Expose
 
 return {
-  getNext: mSiblingNavi.getNext,
-  getPrev: mSiblingNavi.getPrev,
-  getParent: mUpperNavi.getParent,
-  getTop: mUpperNavi.getTop
+  getNext: SiblingNavi.getNext,
+  getPrev: SiblingNavi.getPrev,
+  getParent: UpperNavi.getParent,
+  getTop: UpperNavi.getTop
 };
 
 
