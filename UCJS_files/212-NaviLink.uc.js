@@ -24,8 +24,6 @@ const kPref = {
   showPageInfo: true,
   // show the unregistered navigation links
   showSubNaviLinks: true,
-  // max number of the guessed siblings
-  maxGuessSiblingsNum: 3,
   // max number of the items of each categories in the navigation links
   maxNaviLinkItemsNum: 30
 };
@@ -331,10 +329,6 @@ var mMenu = (function() {
     }
 
     var {list, scanType} = res;
-    if ((scanType === 'searching' || scanType === 'numbering') &&
-        list.length > kPref.maxGuessSiblingsNum) {
-      list = list.slice(0, kPref.maxGuessSiblingsNum);
-    }
 
     var node;
 
@@ -981,6 +975,13 @@ var mNaviLink = (function() {
  * Handler of links to the sibling(prev/next) page
  */
 var mSiblingNavi = (function() {
+  // max number of links that are scanned to guess the sibling page
+  const kMaxNumScanningLinks = 400;
+  // max number of entries that are scored as the sibling page
+  const kMaxNumScoredEntries = 10;
+  // max number of guessed siblings to display
+  const kMaxNumSiblings = 3;
+
   function getURLFor(aDirection) {
     var res = getResult(aDirection);
     return (res && res.list[0].URL) || '';
@@ -1056,6 +1057,10 @@ var mSiblingNavi = (function() {
           break;
         }
       }
+
+      if (entries.isFull()) {
+        break;
+      }
     }
 
     return entries.collect();
@@ -1085,6 +1090,10 @@ var mSiblingNavi = (function() {
       return URLs.indexOf(aURL) > -1;
     }
 
+    function isFull() {
+      return entries.length >= kMaxNumScoredEntries;
+    }
+
     function collect() {
       if (!entries.length) {
         return null;
@@ -1104,24 +1113,23 @@ var mSiblingNavi = (function() {
 
       detach();
 
-      return list;
+      return trimSiblingsList(list);
     }
 
     return {
       add: add,
       contains: contains,
+      isFull: isFull,
       collect: collect
     };
   }
 
   function getSearchLinks() {
-    const kScanLimit = 400;
-
     var links = getDocument().links;
     var count = links.length;
 
-    if (kScanLimit < count) {
-      let limit = Math.floor(kScanLimit / 2);
+    if (kMaxNumScanningLinks < count) {
+      let limit = Math.floor(kMaxNumScanningLinks / 2);
 
       for (let i = 0; i < limit; i++) {
         yield links[i];
@@ -1207,7 +1215,14 @@ var mSiblingNavi = (function() {
       }
     });
 
-    return list.length ? list : null;
+    if (list.length) {
+      return trimSiblingsList(list);
+    }
+    return null;
+  }
+
+  function trimSiblingsList(aList) {
+    return aList.slice(0, kMaxNumSiblings);
   }
 
   return {
