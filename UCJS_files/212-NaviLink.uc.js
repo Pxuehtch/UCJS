@@ -23,9 +23,7 @@ const kPref = {
   // show the page information menu
   showPageInfo: true,
   // show the unregistered navigation links
-  showSubNaviLinks: true,
-  // max number of the items of each categories in the navigation links
-  maxNaviLinkItemsNum: 30
+  showSubNaviLinks: true
 };
 
 /**
@@ -151,7 +149,7 @@ const kFormat = U({
   submit: '<submit mode>',
 
   // for the sub items of <Navi Link>/<Page Info>
-  tooManyItems: '項目が多いので表示を制限 (%count%/%total%)',
+  tooManyItems: '項目が多いので表示を制限',
   type: ['%title%', '%title% (%count%)'],
   item: ['%title%', '%title% [%attributes%]'],
   meta: '%name%: %content%'
@@ -386,8 +384,8 @@ var mMenu = (function() {
 
     var popup = $E('menupopup');
 
-    [naviList, subNaviList].forEach(function(list) {
-      if (!list) {
+    [naviList, subNaviList].forEach(function(result) {
+      if (!result) {
         return;
       }
 
@@ -395,52 +393,43 @@ var mMenu = (function() {
         popup.appendChild($E('menuseparator'));
       }
 
-      for (let type in list) {
+      for (let type in result) {
+        let {list, trimmed} = result[type];
+
         let child;
-        let itemCount;
-        let tooltip;
+        let tooltiptext;
 
-        if (list[type].length === 1) {
-          let data = list[type][0];
-
+        if (list.length === 1) {
+          let data = list[0];
           child = $E('menuitem', {
             tooltiptext: formatTip(formatText(data), data.URL),
             'open': data.URL
           });
         } else {
           let childPopup = $E('menupopup');
-
-          let censored = list[type].length > kPref.maxNaviLinkItemsNum;
-
-          list[type].some(function(data, i) {
+          list.forEach(function(data) {
             childPopup.appendChild($E('menuitem', {
               crop: 'center',
               label: formatText(data),
               tooltiptext: data.URL,
               'open': data.URL
             }));
-
-            return censored && i >= kPref.maxNaviLinkItemsNum - 1;
           });
 
           child = $E('menu');
           child.appendChild(childPopup);
 
-          itemCount = childPopup.childElementCount;
-          if (censored) {
-            tooltip = F(kFormat.tooManyItems, {
-              count: itemCount,
-              total: list[type].length
-            });
+          if (trimmed) {
+            tooltiptext = kFormat.tooManyItems;
           }
         }
 
         popup.appendChild($E(child, {
           label: F(kFormat.type, {
             title: kNaviLinkType[type] || type,
-            count: (itemCount > 1) ? itemCount : null
+            count: (list.length > 1) ? list.length : null
           }),
-          tooltiptext: tooltip || null
+          tooltiptext: tooltiptext || null
         }));
       }
     });
@@ -455,19 +444,21 @@ var mMenu = (function() {
   }
 
   function buildPageInfo() {
-    var list = mNaviLink.getInfoList();
-    if (!list) {
+    var result = mNaviLink.getInfoList();
+    if (!result) {
       return null;
     }
 
     var popup = $E('menupopup');
 
-    for (let type in list) {
+    for (let type in result) {
+      let {list, trimmed} = result[type];
+
       let childPopup = $E('menupopup');
 
       if (type === 'meta') {
-        // no command and only show <meta> informations
-        list[type].forEach(function(data) {
+        // only shows <meta> information with no command
+        list.forEach(function(data) {
           childPopup.appendChild($E('menuitem', {
             closemenu: 'none',
             label: formatText(data, {meta: true}),
@@ -475,7 +466,7 @@ var mMenu = (function() {
           }));
         });
       } else {
-        list[type].forEach(function(data) {
+        list.forEach(function(data) {
           childPopup.appendChild($E('menuitem', {
             crop: 'center',
             label: formatText(data),
@@ -485,14 +476,14 @@ var mMenu = (function() {
         });
       }
 
-      let itemCount = childPopup.childElementCount;
       let child = $E('menu');
       child.appendChild(childPopup);
       popup.appendChild($E(child, {
         label: F(kFormat.type, {
           title: kPageInfoType[type],
-          count: (itemCount > 1) ? itemCount : null
-        })
+          count: (list.length > 1) ? list.length : null
+        }),
+        tooltiptext: trimmed ? kFormat.tooManyItems : null
       }));
     }
 
@@ -664,6 +655,9 @@ var mNaviLink = (function() {
     'application/rdf+xml': 'XML'
   };
 
+  // max number of the items of each type
+  const kMaxItemsOfType = 20;
+
   var mWorkURL = '';
   var mNaviList, mSubNaviList, mInfoList;
 
@@ -693,17 +687,23 @@ var mNaviLink = (function() {
    * }
    */
   function getData(aType) {
-    var list = getNaviList();
-    return (list && list[aType] && list[aType][0]) || null;
+    let result = getNaviList();
+    return (result && result[aType] && result[aType].list[0]) || null;
   }
 
   /**
    * Retrieves the list for the types
+   *
    * @return {hash|null}
    * {
-   *   <type>: [<data>, ...],
+   *   <type>: {
+   *     list: {<data>[]}
+   *     trimmed: {boolean} whether a list has been cut because of too much
+   *       items
+   *   },
    *   ...
    * }
+   *
    * <type>: |kNaviLinkType| or |kPageInfoType|
    * <data>: see |getData()|
    */
@@ -723,10 +723,9 @@ var mNaviLink = (function() {
   }
 
   function getLinkList() {
-    // keep the order list of sort to the first item
-    var naviList = [kNaviLinkType],
-        subNaviList = [{}],
-        infoList = [kPageInfoType];
+    let naviList = [],
+        subNaviList = [],
+        infoList = [];
 
     scanMeta(infoList);
     scanScript(infoList);
@@ -744,40 +743,68 @@ var mNaviLink = (function() {
       scanSubNaviLink(subNaviList, i, node, rels);
     });
 
-    return [naviList, subNaviList, infoList].map(function(list) {
-      if (list.length === 1) {
-        return null;
+    return [
+      {
+        list: naviList,
+        sortOrder: kNaviLinkType
+      },
+      {
+        list: subNaviList,
+        sortOrder: {}
+      },
+      {
+        list: infoList,
+        sortOrder: kPageInfoType
+      }
+    ].map(formatList);
+  }
+
+  function formatList({list, sortOrder}) {
+    if (!list.length) {
+      return null;
+    }
+
+    let order = [i for (i in sortOrder)];
+    list.sort(order.length ?
+      function(a, b) {
+        return order.indexOf(a.type) - order.indexOf(b.type) ||
+               a.index - b.index;
+      } :
+      function(a, b) {
+        return a.type.localeCompare(b.type) ||
+               a.index - b.index;
+      }
+    );
+
+    let result = {};
+
+    list.forEach(function({type, data}) {
+      if (!(type in result)) {
+        result[type] = {
+          list: [],
+          trimmed: false
+        };
       }
 
-      // pick out the order list
-      var order = [i for (i in list.shift())];
-      list.sort(order.length ?
-        function(a, b) {
-          return order.indexOf(a.type) - order.indexOf(b.type) ||
-                 a.index - b.index;
-        } :
-        function(a, b) {
-          return a.type.localeCompare(b.type) ||
-                 a.index - b.index;
+      if (result[type].trimmed) {
+        return;
+      }
+
+      if (isUnique(result[type].list, data)) {
+        result[type].list.push(data);
+        if (result[type].list.length >= kMaxItemsOfType) {
+          result[type].trimmed = true;
         }
-      );
+      }
+    });
 
-      var res = {};
+    return result;
+  }
 
-      list.forEach(function({type, data}) {
-        if (!(type in res)) {
-          res[type] = [];
-        }
-
-        let unique = !res[type].some(function(item) {
-          return JSON.stringify(item) === JSON.stringify(data);
-        });
-        if (unique) {
-          res[type].push(data);
-        }
-      });
-
-      return res;
+  // TODO: make it efficient
+  function isUnique(aArray, aItem) {
+    return aArray.every(function(item) {
+      return JSON.stringify(item) !== JSON.stringify(aItem);
     });
   }
 
