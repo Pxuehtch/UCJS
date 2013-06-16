@@ -1072,6 +1072,21 @@ const SiblingNavi = (function() {
     return null;
   }
 
+  /**
+   * Gets a list of the previous or next page
+   *
+   * @param aDirection {string} 'prev' or 'next'
+   * @return {<data>[]|null}
+   * <data> {hash}
+   * {
+   *   title: {string}
+   *   score: {number}
+   *   URL: {string}
+   * }
+   *
+   * @note allows only URL that has the same as the base domain of the document
+   * to avoid jumping to the outside by a 'prev/next' command
+   */
   function guessBySearching(aDirection) {
     let URI = getURI('NO_REF');
 
@@ -1082,10 +1097,11 @@ const SiblingNavi = (function() {
 
     for (link in getSearchLinks()) {
       href = link.href;
-      if (!href ||
+      if (entries.contains(href) ||
+          !href ||
           !/^https?:/.test(href) ||
           URI.isSamePage(href) ||
-          entries.contains(href)) {
+          !URI.isSameBaseDomain(href)) {
         continue;
       }
 
