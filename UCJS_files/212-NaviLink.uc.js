@@ -1521,19 +1521,7 @@ const UpperNavi = (function() {
       return '';
     }
 
-    let baseDomain = host;
-    try {
-      // @see resource://gre/modules/Services.jsm
-      baseDomain = window.Services.eTLD.getBaseDomainFromHost(host);
-    } catch (ex) {
-      // @throws NS_ERROR_UNEXPECTED: host contains characters disallowed in
-      // URIs.
-      // @throws NS_ERROR_HOST_IS_IP_ADDRESS: host is a numeric IPv4 or IPv6
-      // address.
-      return '';
-    }
-
-    if (baseDomain !== host) {
+    if (aURI.baseDomain !== host) {
       let levels = host.split('.');
       levels.shift();
       return aURI.scheme + '://' + levels.join('.') + '/';
@@ -1573,21 +1561,14 @@ function getURI(aFlag) {
  * URI object wrapper
  */
 function createURI(aURI, aFlag) {
-  if (!(aURI instanceof window.Ci.nsIURI)) {
-    // @see chrome://global/content/contentAreaUtils.js::
-    // makeURI
-    aURI = window.makeURI(aURI, null, null);
-  }
+  // assuming nsIURI object is valid
+  // TODO: should do an error handling?
+  aURI = makeURI(aURI);
 
   let {scheme, prePath, path, spec} = aURI;
-  let host;
-  try {
-    // returns an empty string for the host of 'file:///C:/...'
-    host = aURI.host;
-  } catch (ex) {
-    host = aURI.spec.
-      match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
-  }
+  let noRefSpec = removeRef(spec);
+  let host = getHost(aURI);
+  let baseDomain = getBaseDomain(aURI);
 
   switch (aFlag) {
     case 'NO_QUERY':
@@ -1613,18 +1594,64 @@ function createURI(aURI, aFlag) {
   }
 
   function isSamePage(aTargetURL) {
-    return removeRef(aTargetURL) === removeRef(spec);
+    return removeRef(aTargetURL) === noRefSpec;
+  }
+
+  function isSameBaseDomain(aTargetURL) {
+    return getBaseDomain(makeURI(aTargetURL)) === baseDomain;
   }
 
   return {
     scheme: scheme,
     host: host,
+    baseDomain: baseDomain,
     prePath: prePath,
     path: path,
     spec: spec,
     hasPath: hasPath,
-    isSamePage: isSamePage
+    isSamePage: isSamePage,
+    isSameBaseDomain: isSameBaseDomain
   };
+}
+
+function makeURI(aURL) {
+  if (aURL instanceof window.Ci.nsIURI) {
+    return aURL;
+  }
+
+  try {
+    // @see resource://gre/modules/Services.jsm
+    return Services.io.newURI(aURL, null, null);
+  } catch (ex) {}
+
+  return null;
+}
+
+function getHost(aURI) {
+  if (!aURI) {
+    return '';
+  }
+
+  try {
+    // @note returns an empty string for the host of 'file:///C:/...'
+    return aURI.host;
+  } catch (ex) {}
+
+  return aURI.spec.
+    match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
+}
+
+function getBaseDomain(aURI) {
+  if (!aURI) {
+    return '';
+  }
+
+  try {
+    // @see resource://gre/modules/Services.jsm
+    return window.Services.eTLD.getBaseDomain(aURI);
+  } catch (ex) {}
+
+  return getHost(aURI);
 }
 
 /**
