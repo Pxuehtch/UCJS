@@ -1339,8 +1339,8 @@ const NaviLinkTester = (function() {
     const kWeight = normalizeWeight({
       matchSign: 50,
       matchWord: 50,
-      unmatchOppositeWord: 20,
-      lessText: 10
+      unmatchOppositeWord: 25,
+      lessText: 20
     });
 
     let naviSign = null, oppositeSign = null,
