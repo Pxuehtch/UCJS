@@ -1012,7 +1012,7 @@ const SiblingNavi = (function() {
   // max number of links that are scanned to guess the sibling page
   const kMaxNumScanningLinks = 400;
   // max number of entries that are scored as the sibling page
-  const kMaxNumScoredEntries = 10;
+  const kMaxNumScoredEntries = 100;
   // max number of guessed siblings to display
   const kMaxNumSiblings = 3;
 
@@ -1324,7 +1324,7 @@ const NaviLinkTester = (function() {
       matchSign: 50,
       matchWord: 50,
       unmatchOppositeWord: 20,
-      lessText: 30
+      lessText: 10
     });
 
     let naviSign = null, oppositeSign = null,
@@ -1343,6 +1343,9 @@ const NaviLinkTester = (function() {
       oppositeWord = RegExp(word[0] + '|' +  word[1], 'i');
 
       word = kNaviWord[aDirection];
+      // find a text string or image filename like a navigation
+      // @note allows the short leading words before the navigation word for
+      // the ascii characters (e.g. 'Go to next page', 'goto-next-page.png')
       naviWord = RegExp('(?:^|^.{0,10}[\\s-_])(?:' + word[0] +
         ')(?:$|[\\s-_.])|^(?:' +  word[1] + ')', 'i');
     }
@@ -1392,8 +1395,8 @@ const NaviLinkTester = (function() {
    */
   const URLLike = (function() {
     const kWeight = normalizeWeight({
-      equalLength: 35,
-      overlapParts: 65
+      equalLength: 30,
+      overlapParts: 70
     });
 
     let srcURL = '';
@@ -1417,8 +1420,9 @@ const NaviLinkTester = (function() {
     }
 
     function getOverlapPartsRate(aSrc, aDst) {
-      let [sParts, dParts] =
-        [aSrc, aDst].map(function(a) a.split(/[/?&=#;]+/));
+      let [sParts, dParts] = [aSrc, aDst].map(function(item) {
+        return item.split(/[\W_]+/);
+      });
 
       let overlaps = sParts.filter(function(part) {
         if (part) {
