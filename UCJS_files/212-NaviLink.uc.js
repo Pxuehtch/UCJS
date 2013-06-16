@@ -21,12 +21,12 @@ const ucjsNaviLink = (function(window, undefined) {
 
 
 const kPref = {
-  // show the page information menu
-  // @see |kPageInfoType|
-  showPageInfo: true,
   // show the unregistered navigation links
   // @see |kNaviLinkType| for the registered types
-  showSubNaviLinks: true
+  showSubNaviLinks: true,
+  // show the page information menu
+  // @see |kPageInfoType|
+  showPageInfo: true
 };
 
 /**
@@ -824,7 +824,7 @@ const NaviLink = (function() {
       length: {
         value: relValues.length
       },
-      exceptOf: {
+      exceptFor: {
         value: function(aValue) {
           return relValues.filter(function(val) val !== aValue);
         }
@@ -919,7 +919,7 @@ const NaviLink = (function() {
     for (let type in aRels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (type in kNaviLinkType) {
-        others = plural ? [['rel', aRels.exceptOf(type)]] : [];
+        others = plural ? [['rel', aRels.exceptFor(type)]] : [];
         addItem(aList, aIndex, type, aNode, attributes.concat(others));
       }
     }
@@ -933,7 +933,7 @@ const NaviLink = (function() {
     for (let type in aRels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (!(type in kNaviLinkType)) {
-        others = plural ? [['rel', aRels.exceptOf(type)]] : [];
+        others = plural ? [['rel', aRels.exceptFor(type)]] : [];
         addItem(aList, aIndex, type, aNode, others);
       }
     }
@@ -1077,7 +1077,7 @@ const SiblingNavi = (function() {
   }
 
   /**
-   * Gets a list of the previous or next page
+   * Gets a list of the prev/next page by searching links
    *
    * @param aDirection {string} 'prev' or 'next'
    * @return {<data>[]|null}
@@ -1231,6 +1231,18 @@ const SiblingNavi = (function() {
            style.display !== 'none';
   }
 
+  /**
+   * Gets a list of the prev/next page by numbering of URL
+   *
+   * @param aDirection {string} 'prev' or 'next'
+   * @return {<data>[]|null}
+   * <data> {hash}
+   * {
+   *   here: {string}
+   *   there: {string}
+   *   URL: {string}
+   * }
+   */
   function guessByNumbering(aDirection) {
     /**
      * Patterns like the page numbers in URL
