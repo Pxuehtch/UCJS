@@ -795,7 +795,7 @@ const NaviLink = (function() {
         return;
       }
 
-      if (isUnique(result[type].list, data)) {
+      if (testUniqueItem(result[type].list, data)) {
         result[type].list.push(data);
         if (result[type].list.length >= kMaxItemsOfType) {
           result[type].trimmed = true;
@@ -806,10 +806,14 @@ const NaviLink = (function() {
     return result;
   }
 
-  // TODO: make it efficient
-  function isUnique(aArray, aItem) {
+  function testUniqueItem(aArray, aItem) {
     return aArray.every(function(item) {
-      return JSON.stringify(item) !== JSON.stringify(aItem);
+      for (let key in aItem) {
+        if (item[key] !== aItem[key]) {
+          return true;
+        }
+      }
+      return false;
     });
   }
 
