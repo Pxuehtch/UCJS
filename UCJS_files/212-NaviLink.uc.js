@@ -335,7 +335,7 @@ const MenuUI = (function() {
 
     if (list.length === 1) {
       let data = list[0];
-      let tooltip = formatTip(
+      let tooltip = formatTooltip(
         formatText(data, {
           siblingScanType: scanType
         }),
@@ -351,12 +351,12 @@ const MenuUI = (function() {
       let popup = $E('menupopup');
 
       list.forEach(function(data) {
+        let text = formatText(data, {siblingScanType: scanType});
+        let URL = data.URL;
         popup.appendChild($E('menuitem', {
-          label: formatText(data, {
-            siblingScanType: scanType
-          }),
-          tooltiptext: data.URL,
-          'open': data.URL
+          label: text,
+          tooltiptext: formatTooltip(text, URL),
+          'open': URL
         }));
       });
 
@@ -404,18 +404,20 @@ const MenuUI = (function() {
 
         if (list.length === 1) {
           let data = list[0];
+          let URL = data.URL;
           child = $E('menuitem', {
-            tooltiptext: formatTip(formatText(data), data.URL),
-            'open': data.URL
+            'open': URL
           });
+          tooltiptext = URL;
         } else {
           let childPopup = $E('menupopup');
           list.forEach(function(data) {
+            let [text, URL] = [formatText(data), data.URL];
             childPopup.appendChild($E('menuitem', {
               crop: 'center',
-              label: formatText(data),
-              tooltiptext: data.URL,
-              'open': data.URL
+              label: text,
+              tooltiptext: formatTooltip(text, URL),
+              'open': URL
             }));
           });
 
@@ -427,11 +429,15 @@ const MenuUI = (function() {
           }
         }
 
+        let label = F(kFormat.type, {
+          title: getLabelForType(kNaviLinkType, type),
+          count: (list.length > 1) ? list.length : null
+        });
+        if (tooltiptext) {
+          tooltiptext = formatTooltip(label, tooltiptext);
+        }
         popup.appendChild($E(child, {
-          label: F(kFormat.type, {
-            title: kNaviLinkType[type] || type,
-            count: (list.length > 1) ? list.length : null
-          }),
+          label: label,
           tooltiptext: tooltiptext || null
         }));
       }
@@ -462,19 +468,21 @@ const MenuUI = (function() {
       if (type === 'meta') {
         // only shows <meta> information with no command
         list.forEach(function(data) {
+          let text = formatText(data, {meta: true});
           childPopup.appendChild($E('menuitem', {
             closemenu: 'none',
-            label: formatText(data, {meta: true}),
-            tooltiptext: data.content
+            label: text,
+            tooltiptext: text
           }));
         });
       } else {
         list.forEach(function(data) {
+          let [text, URL] = [formatText(data), data.URL];
           childPopup.appendChild($E('menuitem', {
             crop: 'center',
-            label: formatText(data),
-            tooltiptext: data.URL,
-            'open': data.URL
+            label: text,
+            tooltiptext: formatTooltip(text, URL),
+            'open': URL
           }));
         });
       }
@@ -573,7 +581,7 @@ const MenuUI = (function() {
     return attributes.join(kAttributesDelimiter);
   }
 
-  function formatTip(aText, aURL) {
+  function formatTooltip(aText, aURL) {
     if (aText && aText !== getLeaf(aURL)) {
       return aText + '\n' + aURL;
     }
