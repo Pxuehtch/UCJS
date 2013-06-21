@@ -267,9 +267,6 @@ const MenuUI = (function() {
       return;
     }
 
-    if (aEvent.button === 2) {
-      return;
-    }
     if (aEvent.button === 1) {
       // @see chrome://browser/content/utilityOverlay.js::closeMenus
       window.closeMenus(item);
@@ -1565,8 +1562,9 @@ const NaviLinkTester = (function() {
       return point;
     }
 
-    function removeMatched(aText, aMatched)
-      aText.replace(aMatched, '').trim();
+    function removeMatched(aText, aMatched) {
+      return aText.replace(aMatched, '').trim();
+    }
 
     return {
       init: init,
