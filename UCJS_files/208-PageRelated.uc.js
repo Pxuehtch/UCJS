@@ -37,76 +37,93 @@ const kString = U({
 
 /**
  * Preset list
- * @key {string} category name for menu
- * @value {hash[]}
- *   @key name {string} a display name for menuitem
- *   @key URL {string} a URL that opens
- *     pass the page information by alias. see |AliasFixup|
- *   @key URL {function} for the custom formattings
- *     @param aPageInfo {hash}
- *       @key URL {string} a page URL
- *       @key title {string} a page title
+ *
+ * {hash[]}
+ * @key category {string} a display name for menu
+ * @key items {hash[]}
  *   @key disabled {boolean} [optional]
+ *   @key name {string} a display name for menuitem
+ *   @key URL
+ *     {string} a URL string
+ *       pass the page information by alias. see |AliasFixup|
+ *     {function} for the custom formattings
+ *       @param aPageInfo {hash}
+ *         @key URL {string} a page URL
+ *         @key title {string} a page title
+ *       @return {string} a URL string
+ *     @note a URL string can have aliases for the page information
+ *       see |AliasFixup|
+ *
+ * @note displayed in the declared order
  */
-const kPreset = {
-  'Translator': [
-    {
-      name: 'Google 翻訳 > JP',
-      URL: 'http://translate.google.com/translate?sl=auto&tl=ja&u=%u%'
-    }
-  ],
-
-  'Archive': [
-    {
-      name: 'Google cache:',
-      URL: 'https://www.google.co.jp/search?q=cache:%u|sl%'
-    },
-    {
-      name: 'Internet Archive',
-      URL: 'http://web.archive.org/*/%u%'
-    },
-    {
-      name: 'WEB 魚拓',
-      URL: 'https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%u|sl%'
-    }
-  ],
-
-  'Bookmark': [
-    {
-      name: 'はてなブックマーク',
-      URL: function(aPageInfo) {
-        var entryURL = 'http://b.hatena.ne.jp/entry/';
-        if (/^https:/.test(aPageInfo.URL)) {
-          entryURL += 's/';
-        }
-        return entryURL + '%u|sl%';
+const kPreset = [
+  {
+    category: 'Translator',
+    items: [
+      {
+        name: 'Google 翻訳 > JP',
+        URL: 'http://translate.google.com/translate?sl=auto&tl=ja&u=%u%'
       }
-    },
-    {
-      name: 'reddit',
-      URL: 'http://www.reddit.com/submit?url=%u|en%'
-    }
-  ],
-
-  'Related': [
-    {
-      name: 'Google link:',
-      URL: 'https://www.google.co.jp/search?q=link:%u|sl%'
-    },
-    {
-      name: 'Google with Page Title',
-      URL: 'https://www.google.co.jp/search?q="%t%"'
-    },
-    {
-      name: 'Yahoo! link:',
-      URL: 'http://search.yahoo.co.jp/search?p=link:%u%'
-    },
-    {
-      name: 'Yahoo! with Page Title',
-      URL: 'http://search.yahoo.co.jp/search?p="%t|en%"'
-    }
-  ]
-};
+    ]
+  },
+  {
+    category: 'Archive',
+    items: [
+      {
+        name: 'Google cache:',
+        URL: 'https://www.google.co.jp/search?q=cache:%u|sl%'
+      },
+      {
+        name: 'Internet Archive',
+        URL: 'http://web.archive.org/*/%u%'
+      },
+      {
+        name: 'WEB 魚拓',
+        URL: 'https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%u|sl%'
+      }
+    ]
+  },
+  {
+    category: 'Bookmark',
+    items: [
+      {
+        name: 'はてなブックマーク',
+        URL: function(aPageInfo) {
+          var entryURL = 'http://b.hatena.ne.jp/entry/';
+          if (/^https:/.test(aPageInfo.URL)) {
+            entryURL += 's/';
+          }
+          return entryURL + '%u|sl%';
+        }
+      },
+      {
+        name: 'reddit',
+        URL: 'http://www.reddit.com/submit?url=%u|en%'
+      }
+    ]
+  },
+  {
+    category: 'Related',
+    items: [
+      {
+        name: 'Google link:',
+        URL: 'https://www.google.co.jp/search?q=link:%u|sl%'
+      },
+      {
+        name: 'Google with Page Title',
+        URL: 'https://www.google.co.jp/search?q="%t%"'
+      },
+      {
+        name: 'Yahoo! link:',
+        URL: 'http://search.yahoo.co.jp/search?p=link:%u%'
+      },
+      {
+        name: 'Yahoo! with Page Title',
+        URL: 'http://search.yahoo.co.jp/search?p="%t|en%"'
+      }
+    ]
+  }
+];
 
 /**
  * Handler of fixing up a alias with the page information
@@ -194,9 +211,9 @@ function showContextMenu(aEvent) {
 
   var [sSep, eSep] = getSeparators();
 
-  // remove existing items
-  for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
-    contextMenu.removeChild(item);
+  // remove existing menus
+  for (let menu; (menu = sSep.nextSibling) !== eSep; /**/) {
+    contextMenu.removeChild(menu);
   }
 
   // allow only HTTP page
@@ -204,13 +221,13 @@ function showContextMenu(aEvent) {
     return;
   }
 
-  getAvailableItems().forEach(function(item) {
-    contextMenu.insertBefore(item, eSep);
+  getAvailableMenus().forEach(function(menu) {
+    contextMenu.insertBefore(menu, eSep);
   });
 }
 
-function getAvailableItems() {
-  var items = [];
+function getAvailableMenus() {
+  var menus = [];
 
   var pageInfo = {
     title: gBrowser.contentTitle || gBrowser.selectedTab.label,
@@ -219,7 +236,7 @@ function getAvailableItems() {
 
   // warning of a URL with a parameter
   if (/[?#].*$/.test(pageInfo.URL)) {
-    items.push($E('menuitem', {
+    menus.push($E('menuitem', {
       label: kString.warnParameter,
       style: 'font-weight:bold;',
       tooltiptext: pageInfo.URL.replace(/[?#]/, '\n$&'),
@@ -227,14 +244,14 @@ function getAvailableItems() {
     }));
   }
 
-  for (let category in kPreset) {
+  kPreset.forEach(function({category, items}) {
     // @note |U()| for UI display.
     let menu = $E('menu', {label: U(category)});
     let popup = $E('menupopup');
 
     let URLs = [];
 
-    kPreset[category].forEach(function(data) {
+    items.forEach(function(data) {
       if (data.disabled) {
         return;
       }
@@ -263,10 +280,10 @@ function getAvailableItems() {
     }
 
     menu.appendChild(popup);
-    items.push(menu);
-  }
+    menus.push(menu);
+  });
 
-  return items;
+  return menus;
 }
 
 // @note ucjsUI_manageContextMenuSeparators() manages the visibility of

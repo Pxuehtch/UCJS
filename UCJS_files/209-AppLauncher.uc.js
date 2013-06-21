@@ -31,11 +31,11 @@ const kAppList = [
     // Displayed name
     name: 'IE',
 
-    // @see keys in kTypeAction
+    // @see |kTypeAction|
     type: 'browse',
 
     // Alias of the special folder is available
-    // @see kSpecialFolderAliases
+    // @see |kSpecialFolderAliases|
     // %ProgF%: program files folder
     // %LocalAppData%: local application data folder
     path: '%ProgF%\\Internet Explorer\\iexplore.exe',
@@ -124,20 +124,52 @@ const kAppList = [
 
 /**
  * Actions for each types
+ *
+ * @note displayed in the declared order
  */
-const kTypeAction = {
-  tool:     ['launchTool'],
-  file:     ['openFile'],
-  browse:   ['openPage', 'openFrame', 'openLink'],
-  text:     ['viewPageSource', 'viewFrameSource', 'viewLinkSource'],
-  mail:     ['sendMail'],
-  news:     ['readNews'],
-  media:    ['openLinkMedia', 'openMedia'],
-  image:    ['viewLinkImage', 'viewImage', 'viewBGImage'],
-  download: ['downloadLink', 'downloadMedia', 'downloadImage',
-             'downloadBGImage'],
-  ftp:      ['openFTP']
-};
+const kTypeAction = [
+  {
+    type: 'tool',
+    actions: ['launchTool']
+  },
+  {
+    type: 'file',
+    actions: ['openFile']
+  },
+  {
+    type: 'browse',
+    actions: ['openPage', 'openFrame', 'openLink']
+  },
+  {
+    type: 'text',
+    actions: ['viewPageSource', 'viewFrameSource', 'viewLinkSource']
+  },
+  {
+    type: 'mail',
+    actions: ['sendMail']
+  },
+  {
+    type: 'news',
+    actions: ['readNews']
+  },
+  {
+    type: 'media',
+    actions: ['openLinkMedia', 'openMedia']
+  },
+  {
+    type: 'image',
+    actions: ['viewLinkImage', 'viewImage', 'viewBGImage']
+  },
+  {
+    type: 'download',
+    actions: ['downloadLink', 'downloadMedia', 'downloadImage',
+             'downloadBGImage']
+  },
+  {
+    type: 'ftp',
+    actions: ['openFTP']
+  },
+];
 
 /**
  * String bundle
@@ -264,12 +296,11 @@ function AppLauncher_init() {
 }
 
 function initAppList() {
-  let apps =
-  kAppList.filter(function(app) {
+  let apps = kAppList.filter(function(app) {
     let {name, type, extensions, path, disabled} = app;
 
     if (!disabled && name && type && path) {
-      if (type in kTypeAction) {
+      if (kTypeAction.some(function(item) item.type === type)) {
         if (type !== 'file' || (extensions && extensions.length)) {
           let isValid = checkApp(app);
           if (isValid && type === 'file') {
@@ -282,7 +313,7 @@ function initAppList() {
     return false;
   });
 
-  var order = [i for (i in kTypeAction)];
+  let order = kTypeAction.map(function({type}) type);
   apps.sort(function(a, b) {
     return order.indexOf(a.type) - order.indexOf(b.type) ||
            a.name.localeCompare(b.name);
@@ -341,7 +372,14 @@ function makeActionItems(aPopup, aAppList) {
       lastType = type;
     }
 
-    actions = kTypeAction[type];
+    let actions;
+    kTypeAction.some(function(item) {
+      if (item.type === type) {
+        actions = item.actions;
+        return true;
+      }
+      return false;
+    });
 
     if (type === 'file') {
       actions = actions.reduce(function(a, b) {
