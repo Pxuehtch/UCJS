@@ -824,24 +824,26 @@ const NaviLink = (function() {
   }
 
   function makeRels(aRelAttribute) {
-    let relValues = aRelAttribute.toLowerCase().split(/\s+/);
+    let rels = aRelAttribute.toLowerCase().split(/\s+/);
 
-    let rels = Object.create(null, {
-      length: {
-        value: relValues.length
-      },
-      exceptFor: {
-        value: function(aValue) {
-          return relValues.filter(function(val) val !== aValue);
-        }
+    let relsList = {};
+    rels.forEach(function(aValue) {
+      relsList[aValue] = true;
+    });
+
+    function exceptFor(aSourceValue) {
+      if (rels.length > 1) {
+        return rels.filter(function(aValue) {
+          return aValue !== aSourceValue;
+        });
       }
-    });
+      return [];
+    }
 
-    relValues.forEach(function(val) {
-      rels[val] = true;
-    });
-
-    return rels;
+    return {
+      list: relsList,
+      exceptFor: exceptFor
+    };
   }
 
   function scanMeta(aList) {
@@ -875,25 +877,26 @@ const NaviLink = (function() {
   }
 
   function scanInfoLink(aList, aIndex, aNode, aRels) {
+    let {list: rels} = aRels;
     let type = '';
     let attributes = [];
 
-    if (aRels.feed ||
-        (aNode.type && aRels.alternate && !aRels.stylesheet)) {
+    if (rels.feed ||
+        (aNode.type && rels.alternate && !rels.stylesheet)) {
       // @see chrome://browser/content/utilityOverlay.js::
       // isValidFeed
       let feedType = window.isValidFeed(
-        aNode, getDocument().nodePrincipal, aRels.feed);
+        aNode, getDocument().nodePrincipal, rels.feed);
       if (feedType) {
         type = 'feed';
         attributes.push(['type', kFeedType[feedType] || 'RSS']);
       }
     }
-    else if (aRels.stylesheet) {
+    else if (rels.stylesheet) {
       type = 'stylesheet';
       attributes.push(['media', aNode.media || 'all']);
     }
-    else if (aRels.icon) {
+    else if (rels.icon) {
       type = 'favicon';
       if (aNode.type) {
         attributes.push(['type', aNode.type]);
@@ -908,10 +911,10 @@ const NaviLink = (function() {
   }
 
   function scanNaviLink(aList, aIndex, aNode, aRels) {
-    let startLen = aList.length;
+    let {list: rels, exceptFor} = aRels;
     let attributes = [];
 
-    if (aRels.alternate) {
+    if (rels.alternate) {
       if (aNode.media) {
         attributes.push(['media', aNode.media]);
       }
@@ -920,27 +923,28 @@ const NaviLink = (function() {
       }
     }
 
-    let plural = aRels.length > 1;
-    let others;
-    for (let type in aRels) {
+    // TODO: smart flag setting
+    let added = false;
+
+    for (let type in rels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (type in kNaviLinkType) {
-        others = plural ? [['rel', aRels.exceptFor(type)]] : [];
-        addItem(aList, aIndex, type, aNode, attributes.concat(others));
+        attributes.push(['rel', exceptFor(type)]);
+        addItem(aList, aIndex, type, aNode, attributes);
+        added || (added = true);
       }
     }
 
-    return aList.length - startLen > 0;
+    return added;
   }
 
   function scanSubNaviLink(aList, aIndex, aNode, aRels) {
-    let plural = aRels.length > 1;
-    let others;
-    for (let type in aRels) {
+    let {list: rels, exceptFor} = aRels;
+
+    for (let type in rels) {
       type = kNaviLinkTypeConversion[type] || type;
       if (!(type in kNaviLinkType)) {
-        others = plural ? [['rel', aRels.exceptFor(type)]] : [];
-        addItem(aList, aIndex, type, aNode, others);
+        addItem(aList, aIndex, type, aNode, [['rel', exceptFor(type)]]);
       }
     }
   }
@@ -1000,7 +1004,7 @@ const NaviLink = (function() {
       return {
         // <data> for a script or rel
         title: title,
-        attributes: aAttributes,
+        attributes: aAttributes || [],
         URL: URL
       };
     }
