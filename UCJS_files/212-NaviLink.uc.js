@@ -806,10 +806,16 @@ const NaviLink = (function() {
     return result;
   }
 
-  function testUniqueItem(aArray, aItem) {
-    return aArray.every(function(item) {
-      for (let key in aItem) {
-        if (item[key] !== aItem[key]) {
+  function testUniqueData(aArray, aData) {
+    return aArray.every(function(data) {
+      for (let key in data) {
+        // <attributes> is {array}, the others are {string}
+        if (key === 'attributes') {
+          if (data[key].join() !== aData[key].join()) {
+            return true;
+          }
+        }
+        else if (data[key] !== aData[key]) {
           return true;
         }
       }
