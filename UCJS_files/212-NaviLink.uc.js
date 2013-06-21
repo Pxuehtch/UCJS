@@ -61,62 +61,128 @@ const kPresetNavi = [
 
 /**
  * Types of the link navigations
- * @note The keys are values of the <rel> attribute of a linkable element like
- * <link>.
- * @note The values is displayed in this order.
- * @note |U()| for UI display.
+ *
+ * @key type {string}
+ *   the value of <rel> attribute of a linkable element like <link>
+ * @key synonym {string} [optional]
+ *   the synonymous value that is converted to <type>
+ *   the values can be combined with '|'
+ * @key label {string} [optional]
+ *   a displayed string
+ *   a capitalized text of <type> will be displayed if <label> is empty
+ *
+ * @note displayed in the declared order
+ * @note |U()| for UI display
  */
-const kNaviLinkType = U({
-  top:        'Top',
-  up:         'Up',
-  first:      'First',
-  prev:       'Prev',
-  next:       'Next',
-  last:       'Last',
-  contents:   'Contents',
-  index:      'Index',
-  chapter:    'Chapter',
-  section:    'Section',
-  subsection: 'Subsection',
-  appendix:   'Appendix',
-  bookmark:   'Bookmark',
-  glossary:   'Glossary',
-  help:       'Help',
-  search:     'Search',
-  author:     'Author',
-  copyright:  'Copyright',
-  alternate:  'Alternate'
-});
-
-/**
- * Synonymous keys of the link navigations
- * @note The values are defined as the keys of |kNaviLinkType|.
- */
-const kNaviLinkTypeConversion = {
-  home:     'top',
-  origin:   'top',
-  start:    'top',
-  parent:   'up',
-  begin:    'first',
-  end:      'last',
-  previous: 'prev',
-  child:    'next',
-  toc:      'contents',
-  made:     'author'
-};
+const kNaviLinkType = [
+  {
+    type: 'top',
+    synonym: 'home|origin'
+    //,label: U('トップページ')
+  },
+  {
+    type: 'up',
+    synonym: 'parent'
+    //,label: U(親ページ')
+  },
+  {
+    type: 'first',
+    synonym: 'begin|start'
+    //,label: U('最初のページ')
+  },
+  {
+    type: 'prev',
+    synonym: 'previous'
+    //,label: U('前のページ')
+  },
+  {
+    type: 'next',
+    synonym: 'child'
+    //,label: U('次のページ')
+  },
+  {
+    type: 'last',
+    synonym: 'end'
+    //,label: U('最後のページ')
+  },
+  {
+    type: 'contents',
+    synonym: 'toc'
+  },
+  {
+    type: 'index'
+  },
+  {
+    type: 'chapter'
+  },
+  {
+    type: 'section'
+  },
+  {
+    type: 'subsection'
+  },
+  {
+    type: 'appendix'
+  },
+  {
+    type: 'bookmark'
+  },
+  {
+    type: 'glossary'
+  },
+  {
+    type: 'help'
+  },
+  {
+    type: 'search'
+  },
+  {
+    type: 'author',
+    synonym: 'made'
+  },
+  {
+    type: 'copyright'
+  },
+  {
+    type: 'alternate'
+  }
+];
 
 /**
  * Types of the page information
- * @note The values is displayed in this order.
- * @note |U()| for UI display.
+ *
+ * @key type {string}
+ *   the value of <rel> attribute of an element that has <href> (e.g. <link>,
+ *   <a>)
+ * @key label {string} [optional]
+ *   a displayed string
+ *   a capitalized text of <type> will be displayed if <label> is empty
+ *
+ * @note displayed in the declared order
+ * @note |U()| for UI display
  */
-const kPageInfoType = U({
-  meta:       'Meta',
-  feed:       'Feed',
-  stylesheet: 'Stylesheet',
-  script:     'Script',
-  favicon:    'Favicon'
-});
+const kPageInfoType = [
+  {
+    type: 'meta'
+    //,label: U('メタ情報')
+  },
+  {
+    type: 'feed'
+    //,label: U('フィード')
+  },
+  {
+    type: 'stylesheet'
+    //,label: U('スタイルシート')
+  },
+  {
+    type: 'script'
+    //,label: U('スクリプト')
+  },
+  {
+    type: 'favicon'
+    //,label: U('ファビコン')
+  }
+];
 
 /**
  * Types of the prev/next navigation
@@ -396,9 +462,7 @@ const MenuUI = (function() {
         popup.appendChild($E('menuseparator'));
       }
 
-      for (let type in result) {
-        let {list, trimmed} = result[type];
-
+      result.forEach(function({type, list, trimmed}) {
         let child;
         let tooltiptext;
 
@@ -440,7 +504,7 @@ const MenuUI = (function() {
           label: label,
           tooltiptext: tooltiptext || null
         }));
-      }
+      });
     });
 
     let menu = $E('menu', {
@@ -460,9 +524,7 @@ const MenuUI = (function() {
 
     let popup = $E('menupopup');
 
-    for (let type in result) {
-      let {list, trimmed} = result[type];
-
+    result.forEach(function({type, list, trimmed}) {
       let childPopup = $E('menupopup');
 
       if (type === 'meta') {
@@ -491,12 +553,12 @@ const MenuUI = (function() {
       child.appendChild(childPopup);
       popup.appendChild($E(child, {
         label: F(kFormat.type, {
-          title: kPageInfoType[type],
+          title: getLabelForType(kPageInfoType, type),
           count: (list.length > 1) ? list.length : null
         }),
         tooltiptext: trimmed ? kFormat.tooManyItems : null
       }));
-    }
+    });
 
     let menu = $E('menu', {
       id: kID.pageInfo,
@@ -589,6 +651,21 @@ const MenuUI = (function() {
     return aURL;
   }
 
+  function getLabelForType(aTypeList, aType) {
+    function capitalize(aText) {
+      return aText.substr(0, 1).toUpperCase() + aText.substr(1);
+    }
+
+    for (let i = 0, l = aTypeList.length; i < l; i++) {
+      let {type, label} = aTypeList[i];
+      type = type.toLowerCase();
+      if (type === aType) {
+        return label || capitalize(type);
+      }
+    }
+    return aType;
+  }
+
   return {
     init: init
   };
@@ -667,8 +744,51 @@ const NaviLink = (function() {
     'application/rdf+xml': 'XML'
   };
 
-  // max number of the items of each type
-  const kMaxItemsOfType = 20;
+  /**
+   * The max number of the items of each type
+   */
+  const kMaxNumItemsOfType = 20;
+
+  /**
+   * Handler of the types of link navigations
+   * @see |kNaviLinkType|
+   */
+  const NaviLinkTypeFixup = (function() {
+    let naviLinkType = {};
+    let naviLinkTypeConversion = {};
+
+    kNaviLinkType.forEach(function({type, synonym}) {
+      naviLinkType[type] = true;
+      if (synonym) {
+        synonym.toLowerCase().split('|').forEach(function(item) {
+          naviLinkTypeConversion[item] = type;
+        });
+      }
+    });
+
+    function registered(aType) {
+      let type = naviLinkTypeConversion[aType] || aType;
+
+      if (type in naviLinkType) {
+        return type;
+      }
+      return '';
+    }
+
+    function unregistered(aType) {
+      let type = naviLinkTypeConversion[aType] || aType;
+
+      if (!(type in naviLinkType)) {
+        return type;
+      }
+      return '';
+    }
+
+    return {
+      registered: registered,
+      unregistered: unregistered
+    };
+  })();
 
   let mWorkURL = '';
   let mNaviList, mSubNaviList, mInfoList;
@@ -684,7 +804,7 @@ const NaviLink = (function() {
 
   /**
    * Retrieves the first data of the list for the type
-   * @param aType {string} |kNaviLinkType| or |kPageInfoType|
+   * @param aType {string} |kNaviLinkType.type| or |kPageInfoType.type|
    * @return {hash|null} see |addItem()|
    * {
    *   title:,
@@ -700,24 +820,27 @@ const NaviLink = (function() {
    */
   function getData(aType) {
     let result = getNaviList();
-    return (result && result[aType] && result[aType].list[0]) || null;
+
+    if (result) {
+      for (let i = 0, l = result.length; i < l; i++) {
+        if (result[i].type === aType) {
+          return result[i].list[0];
+        }
+      }
+    }
+    return null;
   }
 
   /**
-   * Retrieves the list for the types
+   * Retrieves the list by types
    *
-   * @return {hash|null}
+   * @return {hash[]|null}
    * {
-   *   <type>: {
-   *     list: {<data>[]}
-   *     trimmed: {boolean} whether a list has been cut because of too much
-   *       items
-   *   },
-   *   ...
+   *   type: |kNaviLinkType.type| or |kPageInfoType.type|
+   *   list: {<data>[]} see |getData()|
+   *   trimmed: {boolean} whether a list has been cut because of too much
+   *     items
    * }
-   *
-   * <type>: |kNaviLinkType| or |kPageInfoType|
-   * <data>: see |getData()|
    */
   function getNaviList() {
     init();
@@ -735,14 +858,14 @@ const NaviLink = (function() {
   }
 
   function getLinkList() {
-    let naviList = [],
-        subNaviList = [],
-        infoList = [];
+    let naviList = {},
+        subNaviList = {},
+        infoList = {};
 
     scanMeta(infoList);
     scanScript(infoList);
 
-    Array.forEach($SA('[rel][href], [rev][href]'), function(node, i) {
+    Array.forEach($SA('[rel][href], [rev][href]'), function(node) {
       let rel = node.rel || node.rev;
       if (!rel ||
           !node.href ||
@@ -752,64 +875,58 @@ const NaviLink = (function() {
 
       let rels = makeRels(rel);
 
-      scanInfoLink(infoList, i, node, rels) ||
-      scanNaviLink(naviList, i, node, rels) ||
-      scanSubNaviLink(subNaviList, i, node, rels);
+      scanInfoLink(infoList, node, rels) ||
+      scanNaviLink(naviList, node, rels) ||
+      scanSubNaviLink(subNaviList, node, rels);
     });
 
     return [
       {
         list: naviList,
-        sortOrder: kNaviLinkType
+        orderList: kNaviLinkType
       },
       {
-        list: subNaviList,
-        sortOrder: {}
+        list: subNaviList
       },
       {
         list: infoList,
-        sortOrder: kPageInfoType
+        orderList: kPageInfoType
       }
     ].map(formatList);
   }
 
-  function formatList({list, sortOrder}) {
-    if (!list.length) {
+  function formatList({list, orderList}) {
+    let types = Object.keys(list);
+    if (!types.length) {
       return null;
     }
 
-    let order = [i for (i in sortOrder)];
-    list.sort(order.length ?
-      function(a, b) {
-        return order.indexOf(a.type) - order.indexOf(b.type) ||
-               a.index - b.index;
-      } :
-      function(a, b) {
-        return a.type.localeCompare(b.type) ||
-               a.index - b.index;
-      }
-    );
+    sortByTypeOrder(types, orderList);
 
-    let result = {};
+    let result = [];
 
-    list.forEach(function({type, data}) {
-      if (!(type in result)) {
-        result[type] = {
-          list: [],
-          trimmed: false
-        };
-      }
+    types.forEach(function(type) {
+      let resultList = [];
+      let trimmed = false;
 
-      if (result[type].trimmed) {
-        return;
-      }
+      list[type].some(function(data) {
+        if (testUniqueData(resultList, data)) {
+          resultList.push(data);
 
-      if (testUniqueItem(result[type].list, data)) {
-        result[type].list.push(data);
-        if (result[type].list.length >= kMaxItemsOfType) {
-          result[type].trimmed = true;
+          // stop scanning the source list
+          if (resultList.length >= kMaxNumItemsOfType) {
+            trimmed = true;
+            return true;
+          }
         }
-      }
+        return false;
+      });
+
+      result.push({
+        type: type,
+        list: resultList,
+        trimmed: trimmed
+      });
     });
 
     return result;
@@ -871,8 +988,8 @@ const NaviLink = (function() {
       });
     }
 
-    metas.forEach(function(node, i) {
-      addItem(aList, i, 'meta', node);
+    metas.forEach(function(node) {
+      addItem(aList, 'meta', node);
     });
   }
 
@@ -880,12 +997,12 @@ const NaviLink = (function() {
     let doc = getDocument();
 
     Array.forEach(doc.getElementsByTagName('script'),
-    function(node, i) {
-      addItem(aList, i, 'script', node);
+    function(node) {
+      addItem(aList, 'script', node);
     });
   }
 
-  function scanInfoLink(aList, aIndex, aNode, aRels) {
+  function scanInfoLink(aList, aNode, aRels) {
     let {list: rels} = aRels;
     let type = '';
     let attributes = [];
@@ -913,13 +1030,13 @@ const NaviLink = (function() {
     }
 
     if (type) {
-      addItem(aList, aIndex, type, aNode, attributes);
+      addItem(aList, type, aNode, attributes);
       return true;
     }
     return false;
   }
 
-  function scanNaviLink(aList, aIndex, aNode, aRels) {
+  function scanNaviLink(aList, aNode, aRels) {
     let {list: rels, exceptFor} = aRels;
     let attributes = [];
 
@@ -936,10 +1053,10 @@ const NaviLink = (function() {
     let added = false;
 
     for (let type in rels) {
-      type = kNaviLinkTypeConversion[type] || type;
-      if (type in kNaviLinkType) {
+      type = NaviLinkTypeFixup.registered(type);
+      if (type) {
         attributes.push(['rel', exceptFor(type)]);
-        addItem(aList, aIndex, type, aNode, attributes);
+        addItem(aList, type, aNode, attributes);
         added || (added = true);
       }
     }
@@ -947,19 +1064,20 @@ const NaviLink = (function() {
     return added;
   }
 
-  function scanSubNaviLink(aList, aIndex, aNode, aRels) {
+  function scanSubNaviLink(aList, aNode, aRels) {
     let {list: rels, exceptFor} = aRels;
 
     for (let type in rels) {
-      type = kNaviLinkTypeConversion[type] || type;
-      if (!(type in kNaviLinkType)) {
-        addItem(aList, aIndex, type, aNode, [['rel', exceptFor(type)]]);
+      type = NaviLinkTypeFixup.unregistered(type);
+      if (type) {
+        addItem(aList, type, aNode, [['rel', exceptFor(type)]]);
       }
     }
   }
 
-  function addItem(aList, aIndex, aType, aNode, aAttributes) {
+  function addItem(aList, aType, aNode, aAttributes) {
     let data;
+
     if (aType === 'meta') {
       data = getMetaData(aNode);
     } else {
@@ -967,11 +1085,10 @@ const NaviLink = (function() {
     }
 
     if (data) {
-      aList.push({
-        index: aIndex,
-        type: aType,
-        data: data
-      });
+      if (!(aType in aList)) {
+        aList[aType] = [];
+      }
+      aList[aType].push(data);
     }
   }
 
@@ -1018,6 +1135,37 @@ const NaviLink = (function() {
       };
     }
     return null;
+  }
+
+  function sortByTypeOrder(aTypes, aOrderList) {
+    if (aTypes.length <= 1) {
+      return;
+    }
+
+    let order;
+
+    if (aOrderList && aOrderList.length) {
+      if (aOrderList.length <= 1) {
+        return;
+      }
+      order = aOrderList.map(function(aItem) {
+        return aItem.type.toLowerCase();
+      });
+    }
+
+    let comparator;
+
+    if (order) {
+      comparator = function(a, b) {
+        return order.indexOf(a) - order.indexOf(b);
+      };
+    } else {
+      comparator = function(a, b) {
+        return a.localeCompare(b);
+      };
+    }
+
+    aTypes.sort(comparator);
   }
 
   return {
