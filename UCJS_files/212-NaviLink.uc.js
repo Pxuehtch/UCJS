@@ -41,7 +41,8 @@ const kPref = {
  *   any element which has <href> attribute: opens its URL
  *   <input> element: submits with its form
  *
- * @note |U()| converts embedded chars in the code for displaying properly.
+ * @note |U()| encodes an embedded string with the proper character code for
+ * UI displaying
  */
 const kPresetNavi = [
   {
@@ -201,11 +202,11 @@ const kSiblingScanType = U({
  * @note The values is displayed through |F()|.
  * @note |U()| for UI display.
  */
-const kFormat = U({
+const kFormat = {
   // for the main categories
-  upper: '上の階層',
-  prev: '前ページ - %scanType%',
-  next: '次ページ - %scanType%',
+  upper: U('上の階層'),
+  prev: U('前ページ - %scanType%'),
+  next: U('次ページ - %scanType%'),
   naviLink: 'Navi Link',
   pageInfo: 'Page Info',
 
@@ -218,11 +219,11 @@ const kFormat = U({
   submit: '<submit mode>',
 
   // for the sub items of <Navi Link>/<Page Info>
-  tooManyItems: '項目が多いので表示を制限',
+  tooManyItems: U('項目が多いので表示を制限'),
   type: ['%title%', '%title% (%count%)'],
   item: ['%title%', '%title% [%attributes%]'],
   meta: '%name%: %content%'
-});
+};
 
 /**
  * Identifiers
