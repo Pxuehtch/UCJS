@@ -570,12 +570,13 @@ const MenuUI = (function() {
       if (Array.isArray(value)) {
         value = value.join(kValuesDelimiter);
       }
-      attributes.push(
-        F(kAttributeFormat, {
+
+      if (value) {
+        attributes.push(F(kAttributeFormat, {
           name: name,
           value: value
-        })
-      );
+        }));
+      }
     });
 
     return attributes.join(kAttributesDelimiter);
