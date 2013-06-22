@@ -130,44 +130,73 @@ const kAppList = [
 const kTypeAction = [
   {
     type: 'tool',
-    actions: ['launchTool']
+    actions: [
+      'launchTool'
+    ]
   },
   {
     type: 'file',
-    actions: ['openFile']
+    actions: [
+      'openFile'
+    ]
   },
   {
     type: 'browse',
-    actions: ['openPage', 'openFrame', 'openLink']
+    actions: [
+      'openPage',
+      'openFrame',
+      'openLink'
+    ]
   },
   {
     type: 'text',
-    actions: ['viewPageSource', 'viewFrameSource', 'viewLinkSource']
+    actions: [
+      'viewPageSource',
+      'viewFrameSource',
+      'viewLinkSource'
+    ]
   },
   {
     type: 'mail',
-    actions: ['sendMail']
+    actions: [
+      'sendMail'
+    ]
   },
   {
     type: 'news',
-    actions: ['readNews']
+    actions: [
+      'readNews'
+    ]
   },
   {
     type: 'media',
-    actions: ['openLinkMedia', 'openMedia']
+    actions: [
+      'openLinkMedia',
+      'openMedia'
+    ]
   },
   {
     type: 'image',
-    actions: ['viewLinkImage', 'viewImage', 'viewBGImage']
+    actions: [
+      'viewLinkImage',
+      'viewImage',
+      'viewBGImage'
+    ]
   },
   {
     type: 'download',
-    actions: ['downloadLink', 'downloadMedia', 'downloadImage',
-             'downloadBGImage']
+    actions: [
+      'downloadLink',
+      'downloadMedia',
+      'downloadImage',
+      'downloadBGImage'
+    ]
   },
   {
     type: 'ftp',
-    actions: ['openFTP']
+    actions: [
+      'openFTP'
+    ]
   },
 ];
 
@@ -220,7 +249,8 @@ const kString = {
  */
 const kLinkExtension = {
   // for <openFile>
-  // @note Stay empty. This is created with |FileUtil::updateFileExt()|.
+  // @note Set no values. they will be created with
+  // |FileExtUtil::updateFileExt()|
   file:  [],
   // for <viewLinkSource>
   text:  ['css', 'js', 'txt', 'xml'],
@@ -254,7 +284,7 @@ const kID = {
 /**
  * Utility for the file extensions
  */
-var FileUtil = {
+const FileExtUtil = {
   makeFileAction: function(aAction, aExt) {
     return aAction + '_' + aExt;
   },
@@ -304,7 +334,7 @@ function initAppList() {
         if (type !== 'file' || (extensions && extensions.length)) {
           let isValid = checkApp(app);
           if (isValid && type === 'file') {
-            FileUtil.updateFileExt(extensions);
+            FileExtUtil.updateFileExt(extensions);
           }
           return isValid;
         }
@@ -383,7 +413,7 @@ function makeActionItems(aPopup, aAppList) {
     if (type === 'file') {
       actions = actions.reduce(function(a, b) {
         return a.concat(app.extensions.map(function(ext) {
-          return FileUtil.makeFileAction(b, ext);
+          return FileExtUtil.makeFileAction(b, ext);
         }));
       }, []);
     }
@@ -512,16 +542,16 @@ function getAvailableActions() {
   if (gContextMenu.onLink) {
     let URL = gContextMenu.linkURL;
 
-    let ext = FileUtil.matchExt(URL, 'file');
+    let ext = FileExtUtil.matchExt(URL, 'file');
     if (ext) {
-      actions.push(FileUtil.makeFileAction('openFile', ext));
+      actions.push(FileExtUtil.makeFileAction('openFile', ext));
     }
 
-    if (FileUtil.matchExt(URL, 'text')) {
+    if (FileExtUtil.matchExt(URL, 'text')) {
       actions.push('viewLinkSource');
-    } else if (FileUtil.matchExt(URL, 'image')) {
+    } else if (FileExtUtil.matchExt(URL, 'image')) {
       actions.push('viewLinkImage');
-    } else if (FileUtil.matchExt(URL, 'media')) {
+    } else if (FileExtUtil.matchExt(URL, 'media')) {
       actions.push('openLinkMedia');
     }
 
@@ -574,7 +604,7 @@ function doAction(aApp, aAction) {
   let targetDocument;
   let targetURL;
 
-  switch (FileUtil.getBaseAction(aAction)) {
+  switch (FileExtUtil.getBaseAction(aAction)) {
     case 'launchTool':
       break;
     case 'openPage':

@@ -64,7 +64,8 @@ const kPresetNavi = [
  * Types of the link navigations
  *
  * @key type {string}
- *   the value of <rel> attribute of a linkable element like <link>
+ *   the value of <rel> attribute of an element that has <href> (e.g. <link>,
+ *   <a>)
  * @key synonym {string} [optional]
  *   the synonymous value that is converted to <type>
  *   the values can be combined with '|'
@@ -153,8 +154,6 @@ const kNaviLinkType = [
  * Types of the page information
  *
  * @key type {string}
- *   the value of <rel> attribute of an element that has <href> (e.g. <link>,
- *   <a>)
  * @key label {string} [optional]
  *   a displayed string
  *   a capitalized text of <type> will be displayed if <label> is empty
