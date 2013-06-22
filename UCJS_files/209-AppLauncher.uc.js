@@ -346,26 +346,25 @@ function makeMainMenu(aAppList) {
 }
 
 function makeAppMenu(aPopup, aAppList) {
-  var menu = $E('menu', {
+  let appMenu = $E('menu', {
     label: U(kUI.appMenuLabel)
   });
 
-  var popup = $E('menupopup');
+  let appMenuPopup = $E('menupopup');
 
   aAppList.forEach(function(app) {
-    addMenuItem(popup, 'launchTool', app, true);
+    addAppMenuItem(appMenuPopup, 'launchTool', app);
   });
 
-  menu.appendChild(popup);
-  aPopup.appendChild(menu);
+  appMenu.appendChild(appMenuPopup);
+  aPopup.appendChild(appMenu);
 }
 
 function makeActionItems(aPopup, aAppList) {
-  var type, lastType = '';
-  var actions;
+  let lastType;
 
   aAppList.forEach(function(app) {
-    type = app.type;
+    let type = app.type;
 
     if (type !== lastType) {
       addSeparator(aPopup);
@@ -390,32 +389,27 @@ function makeActionItems(aPopup, aAppList) {
     }
 
     actions.forEach(function(action) {
-      addMenuItem(aPopup, action, app);
+      addActionMenuItem(aPopup, action, app);
     });
   });
 
   addSeparator(aPopup);
-  addMenuItem(aPopup, 'noActions');
+  addActionMenuItem(aPopup, 'noActions');
 }
 
-function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
-  var label;
-  if (aInAppMenu) {
-    let type = kString.type[aApp.type];
-    if (aApp.type === 'file') {
-      type = type.replace('%1', aApp.extensions.join(','));
-    }
-    label = kString.appMenuItem.
-      replace('%type%', type).replace('%name%', aApp.name);
-  } else {
-    label = kString.action[FileUtil.getBaseAction(aAction)];
-    if (aApp) {
-      label = label.replace('%1', aApp.name);
-    }
-  }
+function addAppMenuItem(aPopup, aAction, aApp) {
+  let label = makeMenuItemLabel(aApp, aAction, true);
+  addMenuItem(aPopup, aAction, aApp, label);
+}
 
-  var item = $E('menuitem', {
-    label: U(label),
+function addActionMenuItem(aPopup, aAction, aApp) {
+  let label = makeMenuItemLabel(aApp, aAction, false);
+  addMenuItem(aPopup, aAction, aApp, label);
+}
+
+function addMenuItem(aPopup, aAction, aApp, aLabel) {
+  let item = $E('menuitem', {
+    label: U(aLabel),
     user: [kID.actionKey, aAction]
   });
 
@@ -423,11 +417,33 @@ function addMenuItem(aPopup, aAction, aApp, aInAppMenu) {
     addEvent([item, 'command', function() {
       doAction(aApp, aAction);
     }, false]);
-  } else {
+  }
+  else {
     $E(item, {disabled: true});
   }
 
   aPopup.appendChild(item);
+}
+
+function makeMenuItemLabel(aApp, aAction, aInAppMenu) {
+  let label;
+
+  if (aInAppMenu) {
+    let type = kString.type[aApp.type];
+    if (aApp.type === 'file') {
+      type = type.replace('%1', aApp.extensions.join(','));
+    }
+    label = kString.appMenuItem.
+      replace('%type%', type).replace('%name%', aApp.name);
+  }
+  else {
+    label = kString.action[FileExtUtil.getBaseAction(aAction)];
+    if (aApp) {
+      label = label.replace('%1', aApp.name);
+    }
+  }
+
+  return label;
 }
 
 function doBrowse(aEvent) {
