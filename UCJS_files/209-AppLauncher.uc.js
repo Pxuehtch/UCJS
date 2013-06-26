@@ -41,9 +41,9 @@ const kAppList = [
     path: '%ProgF%\\Internet Explorer\\iexplore.exe',
 
     // [optional] Commandline arguments
-    // %URL% is replaced with the proper URL of each action.
-    // If omitted or empty, it equals to <args: '%URL%'>.
-    // If launched as tool, arguments that have %URL% are removed.
+    // %URL% is replaced with the proper URL of each action
+    // If omitted or empty, it equals to <args: '%URL%'>
+    // If launched as tool, arguments that have %URL% are ignored
     args: ['-new', '%URL%'],
 
     // [optional] This item is disabled
@@ -52,7 +52,7 @@ const kAppList = [
   {
     name: 'WMP',
     // If <type> is 'file', and also set <extensions> to describe the file
-    // extensions of a link URL that is passed to the application.
+    // extensions of a link URL that is passed to the application
     type: 'file',
     extensions: ['asx', 'wax', 'wvx'],
     path: '%ProgF%\\Windows Media Player\\wmplayer.exe',
@@ -249,8 +249,8 @@ const kString = {
  */
 const kLinkExtension = {
   // for <openFile>
-  // @note Set no values. they will be created with
-  // |FileExtUtil::updateFileExt()|
+  // @note SET NO VALUES. they will be automatically created with
+  // |kAppList.extensions|. see |FileExtUtil::updateFileExt()|
   file:  [],
   // for <viewLinkSource>
   text:  ['css', 'js', 'txt', 'xml'],
