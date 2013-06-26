@@ -353,7 +353,7 @@ var mOpenedList = (function() {
       let menuitem = aPopup.appendChild($E('menuitem', {
         label: (i + 1) + '. ' + getTitle(tab.label),
         tooltiptext: getTooltip(tab.label, tab.linkedBrowser.currentURI.spec),
-        icon: getFavicon(tab.getAttribute('image')),
+        icon: getFavicon(gBrowser.getIcon(tab)),
         class: className.join(' '),
         action: action || null
       }));
@@ -386,7 +386,7 @@ var mOpenedList = (function() {
         tip = tabs.join('\n');
 
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
-        icon = b.selectedTab.image;
+        icon = b.getIcon(b.selectedTab);
       } else {
         title = win.document.title;
         tip = win.location.href;
