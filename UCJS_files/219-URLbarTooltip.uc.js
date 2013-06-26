@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage A tooltip panel will popup with 'ctrl + mousemove' on the URL bar.
+// @usage A tooltip panel will popup with 'alt + mousemove' on the URL bar.
 
 
 (function(window, undefined) {
@@ -64,7 +64,7 @@ function URLbarTooltip_init() {
 }
 
 function showPanel(aEvent) {
-  if (aEvent.ctrlKey && getPanel().state === 'closed') {
+  if (aEvent.altKey && getPanel().state === 'closed') {
     buildContent();
 
     // close the default tooltip
