@@ -85,7 +85,7 @@ const kNaviLinkType = [
   {
     type: 'up',
     synonym: 'parent'
-    //,label: U(親ページ')
+    //,label: U('親ページ')
   },
   {
     type: 'first',
