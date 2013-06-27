@@ -153,13 +153,6 @@ function AllTabs_init() {
 
 function initCSS() {
   var css = '\
-    #%%kID.GROUPS_MENU%%{\
-      list-style-image:url("chrome://browser/skin/tabbrowser/alltabs.png");\
-      -moz-image-region:rect(0,28px,16px,14px);\
-    }\
-    #%%kID.GROUPS_MENU%%[disabled]{\
-      -moz-image-region:rect(0,14px,16px,0);\
-    }\
     #%%kID.GROUPS_MENU%% menu,\
     #%%kID.PINNEDTABS_TAG_MENUITEM%%,\
     #%%kID.GROUP_TAG_MENUITEM%%{\
@@ -238,7 +231,6 @@ function initAllTabsMenu() {
   var groupsMenu = alltabsPopup.insertBefore(
     $E('menu', {
       id: kID.GROUPS_MENU,
-      class: 'menu-iconic',
       label: kFormat.GROUPS_MENU
     }),
     $(kID.ALLTABS_POPUP_SEPARATOR)
