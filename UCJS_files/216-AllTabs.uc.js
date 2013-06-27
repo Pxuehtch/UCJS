@@ -281,7 +281,7 @@ function makeTabMenuItem(aTab, aOption) {
 
   return $E('menuitem', {
     class: 'menuitem-iconic alltabs-item menuitem-with-favicon',
-    image: aTab.image,
+    image: gBrowser.getIcon(aTab),
     label: aTab.label,
     crop: aTab.getAttribute('crop'),
     selected: selected || null,
