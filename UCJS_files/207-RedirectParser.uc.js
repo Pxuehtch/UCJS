@@ -32,37 +32,62 @@ const kPref = {
 };
 
 /**
- * User preset
- * @key name {string} display name to UI
- * @key link {regexp} URL for a target link should run as a preset
- *   @note A capturing parentheses is required. The matches is tested against
- *   |item.pattern|
- * @key item {hash[]}
- *   @key pattern {regexp}
+ * User preset settings
+ *
+ * @key name {string} display name
+ * @key link {regexp} link URL
+ * @key image {regexp} linked image URL
+ *   @note |link| will be valid on a linked image if both keys are defined
+ *   @note capturing parentheses are required. they replace |$n| in
+ *   |items.replacement|
+ * @key items {hash[]}
+ *   @key replacement {string}
  *   @key description {string}
- *   @key prefix {string} [optional] adds a prefix to the matched |pattern|
+ * @key disabled {boolean} [optional]
  */
 const kPreset = [
   {
     name: '2ch リダイレクト',
     link: /^http:\/\/ime\.(?:nu|st)\/(.+)$/,
-    item: [
-      {pattern: /^(.+)$/, prefix: 'http://', description: 'リダイレクト先 URL'}
+    items: [
+      {
+        replacement: 'http://$1',
+        description: 'リダイレクト先 URL'
+      }
     ]
   },
   {
     name: 'はてなアンテナ リダイレクト',
     link: /^http:\/\/a\.st\-hatena\.com\/go\?(.+)$/,
-    item: [
-      {pattern: /^(.+)$/, description: 'リダイレクト先 URL'}
+    items: [
+      {
+        replacement: '$1',
+        description: 'リダイレクト先 URL'
+      }
     ]
   },
   {
     name: 'Google 画像検索',
-    link: /^http:\/\/(?:www|images)\.google\..+?\/imgres\?(.+)$/,
-    item: [
-      {pattern: /imgurl=(.+?)&/, description: '画像 URL'},
-      {pattern: /imgrefurl=(.+?)&/, description: 'ページ URL'}
+    link: /^https?:\/\/(?:www|images)\.google\..+?\/imgres\?(?:.+&)?imgurl=(.+?)&(?:.+&)?imgrefurl=(.+?)&.+$/,
+    items: [
+      {
+        replacement: '$1',
+        description: '画像 URL'
+      },
+      {
+        replacement: '$2',
+        description: 'ページ URL'
+      }
+    ]
+  },
+  {
+    name: 'My Opera Photo albums サムネイル',
+    image: /^(https?):\/\/(?:files|thumbs)\.myopera\.com\/(?:.+\/)??([^\/]+\/albums\/\d+)\/(?:thumbs\/)?(.+?\.[a-z]+)(?:_thumb\.[a-z]+)?$/,
+    items: [
+      {
+        replacement: '$1://files.myopera.com/$2/$3',
+        description: '画像 URL'
+      }
     ]
   }
   //,
@@ -76,6 +101,13 @@ const kUI = {
   },
 
   item: {
+    preset: {
+      text: '[%type%] %name%',
+      type: {
+        link: 'Link',
+        image: 'Image'
+      }
+    },
     source: {
       text: 'リンクのまま',
       style: 'font-weight:bold;'
@@ -100,11 +132,13 @@ const kUI = {
  */
 var mItemData = {
   preset: null,
+  type: '',
   URLs: [],
   separators: [],
 
   clear: function() {
     this.preset = null;
+    this.type = '';
     this.URLs.length = 0;
     this.separators.length = 0;
   },
@@ -177,9 +211,12 @@ function initMenu() {
 function showContextMenu(aEvent) {
   if (aEvent.target === getContextMenu()) {
     // @see chrome://browser/content/nsContextMenu.js
-    const {showItem, linkURL} = window.gContextMenu;
+    const {showItem, linkURL, mediaURL} = window.gContextMenu;
 
-    showItem($ID(kUI.menu.id), scanURL(linkURL));
+    showItem($ID(kUI.menu.id), scanURL({
+      link: linkURL,
+      image: mediaURL
+    }));
   }
 }
 
@@ -203,8 +240,17 @@ function makeMenuItems(aEvent) {
   }
 
   if (mItemData.preset) {
-    popup.appendChild($E('menuitem')).
-    setAttribute('label', U(mItemData.preset.name));
+    let {preset, type} = mItemData;
+    let name;
+    if (type === 'link') {
+      name = preset.name;
+    } else {
+      let ui = kUI.item.preset;
+      name = ui.text.
+        replace('%type%', ui.type[type]).
+        replace('%name%', preset.name);
+    }
+    popup.appendChild($E('menuitem')).setAttribute('label', U(name));
   }
 
   mItemData.URLs.forEach(function({URL, action}, i) {
@@ -262,27 +308,46 @@ function makeMenuItems(aEvent) {
   });
 }
 
-function scanURL(aURL) {
-  if (!/^http/i.test(aURL)) {
+function scanURL(aURLList) {
+  let {link} = aURLList;
+
+  if (!link || !/^https?:/i.test(link)) {
     return false;
   }
 
-  return testPreset(aURL) || testSplittable(aURL);
+  return testPreset(aURLList) || testSplittable(link);
 }
 
-function testPreset(aURL) {
+function testPreset(aURLList) {
   kPreset.some(function(preset) {
-    var [, works] = preset.link.exec(aURL) || [];
-    if (works) {
-      mItemData.preset = preset;
-      mItemData.add(aURL);
+    if (preset.disabled) {
+      return false;
+    }
 
-      preset.item.forEach(function(item) {
-        var [, targetURL] = item.pattern.exec(works) || [];
-        if (targetURL && item.prefix) {
-          targetURL = item.prefix + targetURL;
-        }
-        mItemData.add(unescURLChars(targetURL));
+    let type, testerRE, sourceURL;
+    if (preset.link && aURLList.link) {
+      type = 'link';
+      testerRE = preset.link;
+      sourceURL = aURLList.link;
+    }
+    else if (preset.image && aURLList.image) {
+      type = 'image';
+      testerRE = preset.image;
+      sourceURL = aURLList.image;
+    }
+
+    if (!type) {
+      return false;
+    }
+
+    if (testerRE.test(sourceURL)) {
+      mItemData.preset = preset;
+      mItemData.type = type;
+      mItemData.add(sourceURL);
+
+      preset.items.forEach(function({replacement}) {
+        let matchURL = sourceURL.replace(testerRE, replacement);
+        mItemData.add(unescURLChars(matchURL));
       });
 
       return true;
