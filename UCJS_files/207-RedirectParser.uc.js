@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage Access to menu in the main context menu.
+// @usage Access to a menu in the main context menu
 
 
 (function(window, undefined) {
@@ -68,7 +68,7 @@ const kPreset = [
   //,
 ];
 
-const kBundle = {
+const kUI = {
   menu: {
     id: 'ucjs_redirectparser_menu',
     label: 'リンクの URL を分類',
@@ -131,7 +131,7 @@ var mItemData = {
   },
 
   isValid: function() {
-    // URLs[0] is a linkURL itself
+    // URLs[0] is a source URL itself
     if (this.URLs.length <= 1 ||
         (!this.preset && !this.separators.length)) {
       this.clear();
@@ -162,11 +162,11 @@ function initMenu() {
   var context = getContextMenu();
   var refItem = $ID('context-sep-copylink');
 
-  var menuPref = kBundle.menu;
+  var ui = kUI.menu;
   var menu = context.insertBefore($E('menu'), refItem);
-  menu.id = menuPref.id;
-  menu.setAttribute('label', U(menuPref.label));
-  menu.setAttribute('accesskey', menuPref.accesskey);
+  menu.id = ui.id;
+  menu.setAttribute('label', U(ui.label));
+  menu.setAttribute('accesskey', ui.accesskey);
   addEvent([menu.appendChild($E('menupopup')),
     'popupshowing', makeMenuItems, false]);
 
@@ -177,14 +177,15 @@ function initMenu() {
 function showContextMenu(aEvent) {
   if (aEvent.target === getContextMenu()) {
     // @see chrome://browser/content/nsContextMenu.js
-    window.gContextMenu.showItem($ID(kBundle.menu.id),
-      scanURL(window.gContextMenu.linkURL));
+    const {showItem, linkURL} = window.gContextMenu;
+
+    showItem($ID(kUI.menu.id), scanURL(linkURL));
   }
 }
 
 function hideContextMenu(aEvent) {
   if (aEvent.target === getContextMenu()) {
-    let menu = $ID(kBundle.menu.id);
+    let menu = $ID(kUI.menu.id);
     while (menu.itemCount) {
       menu.removeItemAt(0);
     }
@@ -194,7 +195,9 @@ function hideContextMenu(aEvent) {
 
 function makeMenuItems(aEvent) {
   aEvent.stopPropagation();
-  var popup = aEvent.target;
+  let popup = aEvent.target;
+
+  // show existing items when a menu reopens on the context menu remained open
   if (popup.hasChildNodes()) {
     return;
   }
@@ -209,44 +212,51 @@ function makeMenuItems(aEvent) {
       popup.appendChild($E('menuseparator'));
     }
 
-    var item = popup.appendChild($E('menuitem'));
-    var label = '', tooltip = '';
+    let item = popup.appendChild($E('menuitem'));
 
-    let (key = charForAccesskey(i)) {
-      item.setAttribute('accesskey', key);
-      if (kUnderlinedAccesskey) {
-        label += key + ': ';
-      }
-    }
+    let accesskey = charForAccesskey(i);
+    item.setAttribute('accesskey', accesskey);
+
+    let ui;
+    let tips = [];
 
     if (i === 0) {
-      let bundle = kBundle.item.source;
-      item.setAttribute('style', bundle.style);
-      tooltip += bundle.text + '\n';
-    } else if (mItemData.preset) {
-      tooltip += mItemData.preset.item[i - 1].description + '\n';
+      ui = kUI.item.source;
+      item.setAttribute('style', ui.style);
+      tips.push(ui.text);
+    }
+    else if (mItemData.preset) {
+      tips.push(mItemData.preset.items[i - 1].description);
     }
 
     if (URL === null) {
-      let bundle = kBundle.item.empty;
-      URL = bundle.text;
-      item.setAttribute('style', bundle.style);
+      ui = kUI.item.empty;
+      URL = ui.text;
+      item.setAttribute('style', ui.style);
       item.disabled = true;
-    } else if (URL === gBrowser.currentURI.spec) {
-      let bundle = kBundle.item.page;
-      item.setAttribute('style', bundle.style);
-      tooltip += bundle.text + '\n';
-    } else if (action === 'copy') {
-      let bundle = kBundle.item.copy;
-      item.setAttribute('style', bundle.style);
-      tooltip += bundle.text + '\n';
+    }
+    else if (URL === gBrowser.currentURI.spec) {
+      ui = kUI.item.page;
+      item.setAttribute('style', ui.style);
+      tips.push(ui.text);
+    }
+    else if (action === 'copy') {
+      ui = kUI.item.copy;
+      item.setAttribute('style', ui.style);
+      tips.push(ui.text);
     }
 
     // make the URL of a label readable
-    item.setAttribute('label', U(label) + unescURLforUI(URL));
+    let label = unescURLforUI(URL);
+    if (kUnderlinedAccesskey) {
+      label = accesskey + ': ' + label;
+    }
+    item.setAttribute('label', label);
     item.setAttribute('crop', 'center');
+
     // keep the URL of a tooltip as it is to confirm the raw one
-    item.setAttribute('tooltiptext', U(tooltip) + URL);
+    let tooltip = U(tips.join('\n')) + '\n' + URL;
+    item.setAttribute('tooltiptext', tooltip);
 
     setAction(item, action, URL);
   });
