@@ -274,17 +274,18 @@ function makeMenuItems(aEvent) {
       item.setAttribute('style', ui.style);
       item.disabled = true;
       action = 'none';
-    }
-    else if (URL === gBrowser.currentURI.spec) {
-      ui = kUI.item.page;
-      item.setAttribute('style', ui.style);
-      tips.push(ui.text);
-    }
-    else if (!testGeneralScheme(URL)) {
-      ui = kUI.item.special;
-      item.setAttribute('style', ui.style);
-      tips.push(ui.text);
-      action = 'copy';
+    } else {
+      if (URL === gBrowser.currentURI.spec) {
+        ui = kUI.item.page;
+        item.setAttribute('style', ui.style);
+        tips.push(ui.text);
+      }
+      if (!testGeneralScheme(URL)) {
+        ui = kUI.item.special;
+        item.setAttribute('style', ui.style);
+        tips.push(ui.text);
+        action = 'copy';
+      }
     }
 
     // make the URL of a label readable
