@@ -150,17 +150,13 @@ var mItemData = {
 
     aURLs.forEach(function(URL) {
       if (URL) {
-        let action = 'open';
         if (!/^(?:https?|ftp):/.test(URL)) {
           if (!kPref.showAllSchemes) {
             return;
           }
-          action = 'copy';
         }
-        this.URLs.push({URL: URL, action: action});
-      } else {
-        this.URLs.push({URL: null});
       }
+      this.URLs.push(URL || '');
     }, this);
   },
 
@@ -251,7 +247,7 @@ function makeMenuItems(aEvent) {
     presetName.disabled = true;
   }
 
-  mItemData.URLs.forEach(function({URL, action}, i) {
+  mItemData.URLs.forEach(function(URL, i) {
     if (mItemData.hasSeparator(i)) {
       popup.appendChild($E('menuseparator'));
     }
@@ -273,21 +269,24 @@ function makeMenuItems(aEvent) {
       tips.push(mItemData.preset.items[i - 1].description);
     }
 
-    if (URL === null) {
+    let action = 'open';
+    if (!URL) {
       ui = kUI.item.empty;
       URL = ui.text;
       item.setAttribute('style', ui.style);
       item.disabled = true;
+      action = 'none';
     }
     else if (URL === gBrowser.currentURI.spec) {
       ui = kUI.item.page;
       item.setAttribute('style', ui.style);
       tips.push(ui.text);
     }
-    else if (action === 'copy') {
+    else if (!/^(?:https?|ftp):/.test(URL)) {
       ui = kUI.item.special;
       item.setAttribute('style', ui.style);
       tips.push(ui.text);
+      action = 'copy';
     }
 
     // make the URL of a label readable
@@ -482,24 +481,26 @@ function getContextMenu() {
 }
 
 function setAction(aNode, aAction, aURL) {
-  if (!aAction || !aURL) {
+  if (!aURL) {
     return;
   }
 
-  var action;
+  let command;
   switch (aAction) {
     case 'open':
       // @require Util.uc.js
-      action = 'ucjsUtil.openTab("%URL%",' +
+      command = 'ucjsUtil.openTab("%URL%",' +
         '{inBackground:event.button===1});';
       break;
     case 'copy':
-      action = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
+      command = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
         'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
       break;
+    default:
+      return;
   }
 
-  aNode.setAttribute('oncommand', action.replace('%URL%', aURL));
+  aNode.setAttribute('oncommand', command.replace('%URL%', aURL));
   // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
   aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
 }
