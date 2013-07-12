@@ -370,7 +370,6 @@ function testSplittable(aURL) {
     if (trimmedURL) {
       mItemData.add(trimmedURL);
     }
-	}
   }
 
   return mItemData.isValid();
