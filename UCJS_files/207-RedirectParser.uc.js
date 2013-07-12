@@ -27,8 +27,11 @@ const kUnderlinedAccesskey =
  * Preference
  */
 const kPref = {
-  // show schemes except 'http://', 'https://' and 'ftp://'
-  showAllSchemes: true
+  // show a URL that has a scheme except general schemes
+  // @note the URL can't be opened with menu-command but will be copied to
+  // clipboard
+  showSpecialSchemes: true,
+  generalSchemes: 'http|https|ftp'
 };
 
 /**
@@ -143,15 +146,15 @@ var mItemData = {
     this.newURLIndexes.length = 0;
   },
 
-  add: function(aURLs) {
-    if (URL) {
-      if (!/^(?:https?|ftp):/.test(URL)) {
-        if (!kPref.showAllSchemes) {
-          return;
-        }
+  add: function(aURL) {
+    if (aURL) {
+      // optional checks whether special schemes are allowed
+      if (!kPref.showSpecialSchemes &&
+          !testGeneralScheme(aURL)) {
+        return;
       }
     }
-    this.URLs.push(URL || '');
+    this.URLs.push(aURL || '');
   },
 
   isValid: function() {
@@ -277,7 +280,7 @@ function makeMenuItems(aEvent) {
       item.setAttribute('style', ui.style);
       tips.push(ui.text);
     }
-    else if (!/^(?:https?|ftp):/.test(URL)) {
+    else if (!testGeneralScheme(URL)) {
       ui = kUI.item.special;
       item.setAttribute('style', ui.style);
       tips.push(ui.text);
@@ -301,6 +304,14 @@ function makeMenuItems(aEvent) {
 
     setAction(item, action, URL);
   });
+}
+
+function testGeneralScheme(aURL) {
+  if (aURL) {
+    let re = RegExp('^(?:' + kPref.generalSchemes + '):/', 'i');
+    return re.test(aURL);
+  }
+  return false;
 }
 
 function scanURL(aURLList) {
