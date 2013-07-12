@@ -391,7 +391,8 @@ function splitIntoSchemes(aURL) {
   var URLs = [];
 
   // splits aURL by '://'
-  // e.g. ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
+  // e.g.
+  // ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
   // [0][1][2] are surely not empty
   const delimiter = /((?:\:|%(?:25)?3A)(?:\/|%(?:25)?2F){2})/i;
   var splits = aURL.split(delimiter);
@@ -411,9 +412,10 @@ function splitIntoSchemes(aURL) {
   URLs.push(scheme + splits.shift());
 
   return URLs.reduce(function(a, b) {
-    var s = b.split(delimiter);
-    if (!s[0] || !s[2]) {
-      // '://...' or 'http://' is combined with a previous string
+    var segments = b.split(delimiter);
+    if (!segments[0] || !segments[2]) {
+      // an incomplete URL ('://...' or 'http://') is combined with a previous
+      // string as a part of it
       a[a.length - 1] += b;
     } else {
       // 'http://...' is a complete URL string
@@ -424,36 +426,51 @@ function splitIntoSchemes(aURL) {
 }
 
 function sliceScheme(aString) {
-  if (!aString)
+  if (!aString) {
     return ['', ''];
+  }
 
-  // scan scheme-like characters
-  // @note The allowable characters for scheme name, "+-.", are excluded
-  // because they are ambiguous within queries.
-  const charRe = /[a-z0-9]/i, escapedRe = /%(?:25)?2D/i;
+  // allowable characters for scheme
+  const schemeCharRE = /[a-z0-9+-.]/i;
+  // two hexadecimal digits part of the escaped code for [+-.]
+  const escapedCodeRE = /2B|2D|2E/i;
 
-  var i = aString.length - 1;
+  // the loop index is used outside of loop, so be care for decreasing it
+  let i = aString.length - 1;
   while (true) {
     if (aString[i] !== '%') {
-      if (!charRe.test(aString[i])) {
+      if (!schemeCharRE.test(aString[i])) {
         i += 1;
         break;
       }
     } else {
-      if (!escapedRe.test(aString.substr(i, 3))) {
-        i += 3;
-        break;
+      let code, codeLength;
+      // '%' may be escaped to '%25'
+      // string.substr(start, length) returns an empty string if
+      // |start| >= the length of the string
+      if (aString.substr(i, 3) === '%25') {
+        code = aString.substr(i + 3, 2);
+        codeLength = 5;
+      } else {
+        code = aString.substr(i + 1, 2);
+        codeLength = 3;
       }
-      if (!escapedRe.test(aString.substr(i, 5))) {
-        i += 5;
+      if (!escapedCodeRE.test(code)) {
+        i += codeLength;
         break;
       }
     }
-    if (i === 0)
+
+    // no more characters
+    if (i === 0) {
       break;
+    }
+    // decrease the loop index here, at the bottom
     i--;
   }
 
+  // string.slice(begin[, end]) returns an empty string if
+  // |begin| >= the length of the string
   return [aString.slice(0, i), aString.slice(i)];
 }
 
