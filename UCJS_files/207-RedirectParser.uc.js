@@ -144,20 +144,14 @@ var mItemData = {
   },
 
   add: function(aURLs) {
-    if (typeof aURLs === 'string') {
-      aURLs = [aURLs];
-    }
-
-    aURLs.forEach(function(URL) {
-      if (URL) {
-        if (!/^(?:https?|ftp):/.test(URL)) {
-          if (!kPref.showAllSchemes) {
-            return;
-          }
+    if (URL) {
+      if (!/^(?:https?|ftp):/.test(URL)) {
+        if (!kPref.showAllSchemes) {
+          return;
         }
       }
-      this.URLs.push(URL || '');
-    }, this);
+    }
+    this.URLs.push(URL || '');
   },
 
   isValid: function() {
@@ -365,11 +359,18 @@ function testSplittable(aURL) {
     // mark for menuseparator
     mItemData.separate();
 
-    let base = unescURLChars(URLs.shift());
+    let baseURL = unescURLChars(URLs.shift());
     if (URLs.length) {
-      mItemData.add(base + URLs.join(''));
+      mItemData.add(baseURL + URLs.join(''));
     }
-    mItemData.add(trimTrailing(base));
+
+    mItemData.add(baseURL);
+
+    let trimmedURL = removeFragment(baseURL);
+    if (trimmedURL) {
+      mItemData.add(trimmedURL);
+    }
+	}
   }
 
   return mItemData.isValid();
@@ -445,15 +446,12 @@ function sliceScheme(aString) {
   return [aString.slice(0, i), aString.slice(i)];
 }
 
-function trimTrailing(aURL) {
-  var URLs = [aURL];
-
-  var splits = aURL.split(/[?&#]/);
-  if (splits.length > 1) {
-    URLs.push(splits.shift());
+function removeFragment(aURL) {
+  let trimmedURL = aURL.replace(/[?#].*$/, '');
+  if (trimmedURL !== aURL) {
+    return trimmedURL;
   }
-
-  return URLs;
+  return '';
 }
 
 
