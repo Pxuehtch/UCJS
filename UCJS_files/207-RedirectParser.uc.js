@@ -134,13 +134,13 @@ var mItemData = {
   preset: null,
   type: '',
   URLs: [],
-  separators: [],
+  newURLIndexes: [],
 
   clear: function() {
     this.preset = null;
     this.type = '';
     this.URLs.length = 0;
-    this.separators.length = 0;
+    this.newURLIndexes.length = 0;
   },
 
   add: function(aURLs) {
@@ -155,23 +155,23 @@ var mItemData = {
   },
 
   isValid: function() {
-    // URLs[0] is a source URL itself
+    // a list with no new URL except a source URL is invalid
+    // @note URLs[0] is a source URL itself
     if (this.URLs.length <= 1 ||
-        (!this.preset && !this.separators.length)) {
+        (!this.preset && this.newURLIndexes.length <= 1)) {
       this.clear();
       return false;
     }
     return true;
   },
 
-  separate: function() {
-    if (this.URLs.length) {
-      this.separators.push(this.URLs.length);
-    }
+  markAsNewURL: function() {
+    // @note the first item is always new URL
+    this.newURLIndexes.push(this.URLs.length);
   },
 
-  hasSeparator: function(aIndex) {
-    return this.separators.indexOf(aIndex) > -1;
+  checkNewURLStart: function(aIndex) {
+    return this.newURLIndexes.indexOf(aIndex) > -1;
   }
 };
 
@@ -242,7 +242,8 @@ function makeMenuItems(aEvent) {
   }
 
   mItemData.URLs.forEach(function(URL, i) {
-    if (mItemData.hasSeparator(i)) {
+    // @note a separator is not necessary before the first item
+    if (i > 0 && mItemData.checkNewURLStart(i)) {
       popup.appendChild($E('menuseparator'));
     }
 
@@ -356,8 +357,7 @@ function testSplittable(aURL) {
   var URLs = splitIntoSchemes(aURL);
 
   while (URLs.length) {
-    // mark for menuseparator
-    mItemData.separate();
+    mItemData.markAsNewURL();
 
     let baseURL = unescURLChars(URLs.shift());
     if (URLs.length) {
