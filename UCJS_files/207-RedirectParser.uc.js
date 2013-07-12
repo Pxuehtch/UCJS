@@ -109,26 +109,26 @@ const kUI = {
       }
     },
     source: {
-      text: 'リンクのまま',
+      text: '元の URL',
       style: 'font-weight:bold;'
     },
     page: {
-      text: 'このページと同じ',
+      text: '現在のページと同じ URL',
       style: 'color:red;'
     },
     empty: {
       text: '該当なし',
       style: ''
     },
-    copy: {
-      text: 'クリック: コピーするだけ',
+    special: {
+      text: '特殊な URL（コピーだけ開かない）',
       style: 'font-style:italic;'
     }
   }
 };
 
 /**
- * Handler of the parsed data of a link URL
+ * Handler of the parsed data of URL
  */
 var mItemData = {
   preset: null,
@@ -241,16 +241,14 @@ function makeMenuItems(aEvent) {
 
   if (mItemData.preset) {
     let {preset, type} = mItemData;
-    let name;
-    if (type === 'link') {
-      name = preset.name;
-    } else {
-      let ui = kUI.item.preset;
-      name = ui.text.
-        replace('%type%', ui.type[type]).
-        replace('%name%', preset.name);
-    }
-    popup.appendChild($E('menuitem')).setAttribute('label', U(name));
+    let ui = kUI.item.preset;
+    let name = ui.text.
+      replace('%type%', ui.type[type]).
+      replace('%name%', preset.name);
+
+    let presetName = popup.appendChild($E('menuitem'));
+    presetName.setAttribute('label', U(name));
+    presetName.disabled = true;
   }
 
   mItemData.URLs.forEach(function({URL, action}, i) {
@@ -287,7 +285,7 @@ function makeMenuItems(aEvent) {
       tips.push(ui.text);
     }
     else if (action === 'copy') {
-      ui = kUI.item.copy;
+      ui = kUI.item.special;
       item.setAttribute('style', ui.style);
       tips.push(ui.text);
     }
@@ -301,7 +299,10 @@ function makeMenuItems(aEvent) {
     item.setAttribute('crop', 'center');
 
     // keep the URL of a tooltip as it is to confirm the raw one
-    let tooltip = U(tips.join('\n')) + '\n' + URL;
+    let tooltip = URL;
+    if (tips.length) {
+       tooltip = U(tips.join('\n')) + '\n' + tooltip;
+    }
     item.setAttribute('tooltiptext', tooltip);
 
     setAction(item, action, URL);
