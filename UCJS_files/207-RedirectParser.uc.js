@@ -27,10 +27,9 @@ const kUnderlinedAccesskey =
  * Preference
  */
 const kPref = {
-  // show a URL that has a scheme except general schemes
-  // @note the URL can't be opened with menu-command but will be copied to
-  // clipboard
-  showSpecialSchemes: true,
+  // schemes of URL that is opened with menu-command
+  // @note the other scheme URL can't be opened but will be copied to
+  // clipboard as an unknown URL
   generalSchemes: 'http|https|ftp'
 };
 
@@ -117,15 +116,15 @@ const kUI = {
     },
     page: {
       text: '現在のページと同じ URL',
+      style: 'font-style:italic;'
+    },
+    unknown: {
+      text: '不明な URL（コピーだけ開かない）',
       style: 'color:red;'
     },
     empty: {
       text: '該当なし',
       style: ''
-    },
-    special: {
-      text: '特殊な URL（コピーだけ開かない）',
-      style: 'font-style:italic;'
     }
   }
 };
@@ -147,14 +146,7 @@ var mItemData = {
   },
 
   add: function(aURL) {
-    if (aURL) {
-      // optional checks whether special schemes are allowed
-      if (!kPref.showSpecialSchemes &&
-          !testGeneralScheme(aURL)) {
-        return;
-      }
-    }
-    this.URLs.push(aURL || '');
+    this.URLs.push(aURL);
   },
 
   isValid: function() {
@@ -267,25 +259,28 @@ function makeMenuItems(aEvent) {
       tips.push(mItemData.preset.items[i - 1].description);
     }
 
-    let action = 'open';
-    if (!URL) {
-      ui = kUI.item.empty;
-      URL = ui.text;
-      styles.push(ui.style);
-      action = 'none';
-      disabled = true;
-    } else {
+    let action;
+    if (URL) {
+      if (testGeneralScheme(URL)) {
+        action = 'open';
+      } else {
+        ui = kUI.item.unknown;
+        tips.push(ui.text);
+        styles.push(ui.style);
+        action = 'copy';
+      }
+
       if (URL === gBrowser.currentURI.spec) {
         ui = kUI.item.page;
         tips.push(ui.text);
         styles.push(ui.style);
       }
-      if (!testGeneralScheme(URL)) {
-        ui = kUI.item.special;
-        tips.push(ui.text);
-        styles.push(ui.style);
-        action = 'copy';
-      }
+    } else {
+      ui = kUI.item.empty;
+      URL = ui.text;
+      styles.push(ui.style);
+      action = 'none';
+      disabled = true;
     }
 
     // make the URL of a label readable
@@ -315,7 +310,7 @@ function makeMenuItems(aEvent) {
 
 function testGeneralScheme(aURL) {
   if (aURL) {
-    let re = RegExp('^(?:' + kPref.generalSchemes + '):/', 'i');
+    let re = RegExp('^(?:' + kPref.generalSchemes + '):\/\/.+$', 'i');
     return re.test(aURL);
   }
   return false;
