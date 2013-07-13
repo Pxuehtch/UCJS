@@ -190,10 +190,12 @@ function initMenu() {
   var refItem = $ID('context-sep-copylink');
 
   var ui = kUI.menu;
-  var menu = context.insertBefore($E('menu'), refItem);
-  menu.id = ui.id;
-  menu.setAttribute('label', U(ui.label));
-  menu.setAttribute('accesskey', ui.accesskey);
+  var menu = context.insertBefore($E('menu', {
+    id: ui.id,
+    label: U(ui.label),
+    accesskey: ui.accesskey
+  }), refItem);
+
   addEvent([menu.appendChild($E('menupopup')),
     'popupshowing', makeMenuItems, false]);
 
@@ -239,9 +241,10 @@ function makeMenuItems(aEvent) {
       replace('%type%', ui.type[type]).
       replace('%name%', preset.name);
 
-    let presetName = popup.appendChild($E('menuitem'));
-    presetName.setAttribute('label', U(name));
-    presetName.disabled = true;
+    popup.appendChild($E('menuitem', {
+      label: U(name),
+      disabled: true
+    }));
   }
 
   mItemData.URLs.forEach(function(URL, i) {
@@ -250,18 +253,15 @@ function makeMenuItems(aEvent) {
       popup.appendChild($E('menuseparator'));
     }
 
-    let item = popup.appendChild($E('menuitem'));
-
-    let accesskey = charForAccesskey(i);
-    item.setAttribute('accesskey', accesskey);
-
+    let item = $E('menuitem');
     let ui;
-    let tips = [];
+    let tips = [], styles = [];
+    let disabled;
 
     if (i === 0) {
       ui = kUI.item.source;
-      item.setAttribute('style', ui.style);
       tips.push(ui.text);
+      styles.push(ui.style);
     }
     else if (mItemData.preset) {
       tips.push(mItemData.preset.items[i - 1].description);
@@ -271,39 +271,45 @@ function makeMenuItems(aEvent) {
     if (!URL) {
       ui = kUI.item.empty;
       URL = ui.text;
-      item.setAttribute('style', ui.style);
-      item.disabled = true;
+      styles.push(ui.style);
       action = 'none';
+      disabled = true;
     } else {
       if (URL === gBrowser.currentURI.spec) {
         ui = kUI.item.page;
-        item.setAttribute('style', ui.style);
         tips.push(ui.text);
+        styles.push(ui.style);
       }
       if (!testGeneralScheme(URL)) {
         ui = kUI.item.special;
-        item.setAttribute('style', ui.style);
         tips.push(ui.text);
+        styles.push(ui.style);
         action = 'copy';
       }
     }
 
     // make the URL of a label readable
     let label = unescURLforUI(URL);
+    let accesskey = charForAccesskey(i);
     if (kUnderlinedAccesskey) {
       label = accesskey + ': ' + label;
     }
-    item.setAttribute('label', label);
-    item.setAttribute('crop', 'center');
 
     // keep the URL of a tooltip as it is to confirm the raw one
-    let tooltip = URL;
+    let tooltiptext = URL;
     if (tips.length) {
-       tooltip = U(tips.join('\n')) + '\n' + tooltip;
+      tooltiptext = U(tips.join('\n')) + '\n' + tooltiptext;
     }
-    item.setAttribute('tooltiptext', tooltip);
 
-    setAction(item, action, URL);
+    popup.appendChild($E(item, {
+      label: label,
+      crop: 'center',
+      accesskey: accesskey,
+      tooltiptext: tooltiptext,
+      styles: styles,
+      action: [action, URL],
+      disabled: disabled
+    }));
   });
 }
 
@@ -489,8 +495,81 @@ function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
-function $E(aTag) {
-  return window.document.createElement(aTag);
+function $E(aTagOrElement, aAttributes) {
+  let element;
+  if (typeof aTagOrElement === 'string') {
+    element = window.document.createElement(aTagOrElement);
+  } else {
+    element = aTagOrElement;
+  }
+
+  setAttributes(element, aAttributes);
+
+  return element;
+}
+
+function setAttributes(aElement, aAttributes) {
+  if (!aAttributes) {
+    return;
+  }
+
+  for (let [name, value] in Iterator(aAttributes)) {
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    switch (name) {
+      case 'styles':
+        value.join(';').split(/;+/).forEach(function(style) {
+          let [propName, propValue] =
+          style.split(':').map(function(str) {
+            return str.trim();
+          });
+
+          if (propName && propValue) {
+            aElement.style.setProperty(propName, propValue, '');
+          }
+        });
+        break;
+      case 'action': {
+        let command = makeActionCommand(value);
+        if (command) {
+          aElement.setAttribute('oncommand', command);
+          // @see chrome://browser/content/utilityOverlay.js::
+          // checkForMiddleClick
+          aElement.setAttribute('onclick',
+            'checkForMiddleClick(this,event);');
+        }
+        break;
+      }
+      default:
+        aElement.setAttribute(name, value);
+        break;
+    }
+  }
+}
+
+function makeActionCommand(aValue) {
+  let [action, URL] = aValue;
+  if (!URL) {
+    return '';
+  }
+
+  let command;
+  switch (action) {
+    case 'open':
+      command = getOpenTabCommand(URL);
+      break;
+    case 'copy':
+      command = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
+        'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
+      command = command.replace('%URL%', URL);
+      break;
+    default:
+      return '';
+  }
+
+  return command;
 }
 
 function charForAccesskey(aIndex) {
@@ -506,29 +585,12 @@ function getContextMenu() {
   return window.ucjsUI.ContentArea.contextMenu;
 }
 
-function setAction(aNode, aAction, aURL) {
-  if (!aURL) {
-    return;
-  }
-
-  let command;
-  switch (aAction) {
-    case 'open':
-      // @require Util.uc.js
-      command = 'ucjsUtil.openTab("%URL%",' +
-        '{inBackground:event.button===1});';
-      break;
-    case 'copy':
-      command = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
-        'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
-      break;
-    default:
-      return;
-  }
-
-  aNode.setAttribute('oncommand', command.replace('%URL%', aURL));
-  // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
-  aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
+/**
+ * Makes a string for the |oncommand| attribute of an element
+ */
+function getOpenTabCommand(aURL) {
+  let command = 'ucjsUtil.openTab("%URL%",{inBackground:event.button===1});';
+  return command.replace('%URL%', aURL);
 }
 
 function unescURLChars(aStr) {
