@@ -475,7 +475,7 @@ function sliceScheme(aString) {
 }
 
 function removeFragment(aURL) {
-  let trimmedURL = aURL.replace(/[?#].*$/, '');
+  let trimmedURL = aURL.replace(/[?&#].*$/, '');
   if (trimmedURL !== aURL) {
     return trimmedURL;
   }
