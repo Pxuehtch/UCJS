@@ -70,7 +70,7 @@ const kPreset = [
   },
   {
     name: 'Google 画像検索',
-    link: /^https?:\/\/(?:www|images)\.google\..+?\/imgres\?(?:.+&)?imgurl=(.+?)&(?:.+&)?imgrefurl=(.+?)&.+$/,
+    link: /^https?:\/\/(?:www|images)\.google\..+?\/imgres\?(?:.*?imgurl=(.+?)&)?(?:.*?imgrefurl=(.+?)&)?.+$/,
     items: [
       {
         replacement: '$1',
@@ -104,27 +104,24 @@ const kUI = {
 
   item: {
     preset: {
-      text: '[%type%] %name%',
       type: {
         link: 'Link',
         image: 'Image'
-      }
+      },
+      title: '[%type%] %name%',
+      empty: '[%description%] 該当なし'
     },
     source: {
       text: '元の URL',
       style: 'font-weight:bold;'
     },
-    page: {
+    currentpage: {
       text: '現在のページと同じ URL',
       style: 'font-style:italic;'
     },
     unknown: {
-      text: '不明な URL（コピーだけ開かない）',
+      text: '不明な URL (コピーだけ開かない)',
       style: 'color:red;'
-    },
-    empty: {
-      text: '該当なし',
-      style: ''
     }
   }
 };
@@ -202,12 +199,12 @@ function makeMenuItems(aParseList) {
   if (aParseList.preset) {
     let {preset, sourceURLType} = aParseList;
     let ui = kUI.item.preset;
-    let name = ui.text.
+    let title = ui.title.
       replace('%type%', ui.type[sourceURLType]).
       replace('%name%', preset.name);
 
     popup.appendChild($E('menuitem', {
-      label: U(name),
+      label: U(title),
       disabled: true
     }));
   }
@@ -220,7 +217,7 @@ function makeMenuItems(aParseList) {
 
     let ui;
     let tips = [], styles = [];
-    let disabled;
+    let label, accesskey, tooltiptext, action, disabled;
 
     if (i === 0) {
       ui = kUI.item.source;
@@ -228,10 +225,20 @@ function makeMenuItems(aParseList) {
       styles.push(ui.style);
     }
     else if (aParseList.preset) {
-      tips.push(aParseList.preset.items[i - 1].description);
+      let description = aParseList.preset.items[i - 1].description;
+
+      if (URL) {
+        tips.push(description);
+      } else {
+        ui = kUI.item.preset;
+        // show a text in label and tooltip instead of URL
+        label = tooltiptext =
+        U(ui.empty.replace('%description%', description));
+        action = 'none';
+        disabled = true;
+      }
     }
 
-    let action;
     if (URL) {
       if (testGeneralScheme(URL)) {
         action = 'open';
@@ -243,27 +250,25 @@ function makeMenuItems(aParseList) {
       }
 
       if (URL === gBrowser.currentURI.spec) {
-        ui = kUI.item.page;
+        ui = kUI.item.currentpage;
         tips.push(ui.text);
         styles.push(ui.style);
       }
-    } else {
-      ui = kUI.item.empty;
-      URL = ui.text;
-      styles.push(ui.style);
-      action = 'none';
-      disabled = true;
     }
 
     // make the URL of a label readable
-    let label = unescURLforUI(URL);
-    let accesskey = charForAccesskey(i);
+    if (!label) {
+      label = unescURLforUI(URL);
+    }
+    accesskey = getCharFor(i);
     if (kUnderlinedAccesskey) {
       label = accesskey + ': ' + label;
     }
 
     // keep the URL of a tooltip as it is to confirm the raw one
-    let tooltiptext = URL;
+    if (!tooltiptext) {
+      tooltiptext = URL;
+    }
     if (tips.length) {
       tooltiptext = U(tips.join('\n')) + '\n' + tooltiptext;
     }
@@ -286,6 +291,12 @@ function testGeneralScheme(aURL) {
     return re.test(aURL);
   }
   return false;
+}
+
+function getCharFor(aIndex) {
+  const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+
+  return chars[aIndex % chars.length];
 }
 
 function getParseListByPreset(aSourceURL) {
@@ -577,12 +588,6 @@ function makeActionCommand(aValue) {
   }
 
   return command;
-}
-
-function charForAccesskey(aIndex) {
-  const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
-
-  return chars[aIndex % chars.length];
 }
 
 
