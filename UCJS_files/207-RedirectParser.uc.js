@@ -178,17 +178,18 @@ function RedirectParser_init() {
 }
 
 function initMenu() {
-  let context = getContextMenu();
-  let refItem = $ID('context-sep-copylink');
+  var context = getContextMenu();
+  var refItem = $ID('context-sep-copylink');
 
-  let ui = kUI.menu;
-  let menu = $E('menu', {
+  var ui = kUI.menu;
+  var menu = context.insertBefore($E('menu', {
     id: ui.id,
     label: U(ui.label),
     accesskey: ui.accesskey
-  });
-  menu.appendChild($E('menupopup'));
-  context.insertBefore(menu, refItem);
+  }), refItem);
+
+  addEvent([menu.appendChild($E('menupopup')),
+    'popupshowing', makeMenuItems, false]);
 
   addEvent([context, 'popupshowing', showContextMenu, false]);
   addEvent([context, 'popuphiding', hideContextMenu, false]);
@@ -199,11 +200,9 @@ function showContextMenu(aEvent) {
     // @see chrome://browser/content/nsContextMenu.js
     const {showItem, linkURL, mediaURL} = window.gContextMenu;
 
-    showItem($ID(kUI.menu.id), buildParsedURLs({
-      sourceURL: {
-        link: linkURL,
-        image: mediaURL
-      }
+    showItem($ID(kUI.menu.id), scanURL({
+      link: linkURL,
+      image: mediaURL
     }));
   }
 }
@@ -214,23 +213,18 @@ function hideContextMenu(aEvent) {
     while (menu.itemCount) {
       menu.removeItemAt(0);
     }
+    mItemData.clear();
   }
 }
 
-function buildParsedURLs(aParam) {
-  const {sourceURL} = aParam;
+function makeMenuItems(aEvent) {
+  aEvent.stopPropagation();
+  let popup = aEvent.target;
 
-  if (!sourceURL.link ||
-      !/^https?:/i.test(sourceURL.link)) {
-    return false;
+  // show existing items when a menu reopens on the context menu remained open
+  if (popup.hasChildNodes()) {
+    return;
   }
-
-  return testPreset(sourceURL) ||
-         testSplittable(sourceURL.link);
-}
-
-function makeMenuItems() {
-  let popup = $ID(kUI.menu.id).menupopup;
 
   if (mItemData.preset) {
     let {preset, type} = mItemData;
@@ -311,8 +305,6 @@ function makeMenuItems() {
       disabled: disabled
     }));
   });
-
-  mItemData.clear();
 }
 
 function testGeneralScheme(aURL) {
@@ -321,6 +313,16 @@ function testGeneralScheme(aURL) {
     return re.test(aURL);
   }
   return false;
+}
+
+function scanURL(aURLList) {
+  let {link} = aURLList;
+
+  if (!link || !/^https?:/i.test(link)) {
+    return false;
+  }
+
+  return testPreset(aURLList) || testSplittable(link);
 }
 
 function testPreset(aURLList) {
