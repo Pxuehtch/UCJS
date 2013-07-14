@@ -129,47 +129,6 @@ const kUI = {
   }
 };
 
-/**
- * Handler of the parsed data of URL
- */
-var mItemData = {
-  preset: null,
-  type: '',
-  URLs: [],
-  newURLIndexes: [],
-
-  clear: function() {
-    this.preset = null;
-    this.type = '';
-    this.URLs.length = 0;
-    this.newURLIndexes.length = 0;
-  },
-
-  add: function(aURL) {
-    this.URLs.push(aURL);
-  },
-
-  isValid: function() {
-    // a list with no new URL except a source URL is invalid
-    // @note URLs[0] is a source URL itself
-    if (this.URLs.length <= 1 ||
-        (!this.preset && this.newURLIndexes.length <= 1)) {
-      this.clear();
-      return false;
-    }
-    return true;
-  },
-
-  markAsNewURL: function() {
-    // @note the first item is always new URL
-    this.newURLIndexes.push(this.URLs.length);
-  },
-
-  checkNewURLStart: function(aIndex) {
-    return this.newURLIndexes.indexOf(aIndex) > -1;
-  }
-};
-
 
 //********** Functions
 
@@ -225,24 +184,26 @@ function buildParsedURLs(aParam) {
     return false;
   }
 
-  let result =
-    testPreset(sourceURL) ||
-    testSplittable(sourceURL.link);
+  let parseList =
+    getParseListByPreset(sourceURL) ||
+    getParseListByScan(sourceURL);
 
-  if (result) {
-    makeMenuItems();
+  if (parseList) {
+    makeMenuItems(parseList);
+    parseList.clear();
     return true;
   }
   return false;
 }
 
-function makeMenuItems() {
+function makeMenuItems(aParseList) {
+  let popup = $ID(kUI.menu.id).menupopup;
 
-  if (mItemData.preset) {
-    let {preset, type} = mItemData;
+  if (aParseList.preset) {
+    let {preset, sourceURLType} = aParseList;
     let ui = kUI.item.preset;
     let name = ui.text.
-      replace('%type%', ui.type[type]).
+      replace('%type%', ui.type[sourceURLType]).
       replace('%name%', preset.name);
 
     popup.appendChild($E('menuitem', {
@@ -251,9 +212,9 @@ function makeMenuItems() {
     }));
   }
 
-  mItemData.URLs.forEach(function(URL, i) {
+  aParseList.URLs.forEach(function(URL, i) {
     // @note a separator is not necessary before the first item
-    if (i > 0 && mItemData.checkNewURLStart(i)) {
+    if (i > 0 && aParseList.checkNewURLStart(i)) {
       popup.appendChild($E('menuseparator'));
     }
 
@@ -266,8 +227,8 @@ function makeMenuItems() {
       tips.push(ui.text);
       styles.push(ui.style);
     }
-    else if (mItemData.preset) {
-      tips.push(mItemData.preset.items[i - 1].description);
+    else if (aParseList.preset) {
+      tips.push(aParseList.preset.items[i - 1].description);
     }
 
     let action;
@@ -317,8 +278,6 @@ function makeMenuItems() {
       disabled: disabled
     }));
   });
-
-  mItemData.clear();
 }
 
 function testGeneralScheme(aURL) {
@@ -329,36 +288,38 @@ function testGeneralScheme(aURL) {
   return false;
 }
 
-function testPreset(aURLList) {
+function getParseListByPreset(aSourceURL) {
+  let parseList;
+
   kPreset.some(function(preset) {
     if (preset.disabled) {
       return false;
     }
 
-    let type, testerRE, sourceURL;
-    if (preset.link && aURLList.link) {
-      type = 'link';
+    let testerRE, sourceURL, sourceURLType;
+    if (preset.link && aSourceURL.link) {
       testerRE = preset.link;
-      sourceURL = aURLList.link;
+      sourceURL = aSourceURL.link;
+      sourceURLType = 'link';
     }
-    else if (preset.image && aURLList.image) {
-      type = 'image';
+    else if (preset.image && aSourceURL.image) {
       testerRE = preset.image;
-      sourceURL = aURLList.image;
+      sourceURL = aSourceURL.image;
+      sourceURLType = 'image';
     }
 
-    if (!type) {
+    if (!sourceURLType) {
       return false;
     }
 
     if (testerRE.test(sourceURL)) {
-      mItemData.preset = preset;
-      mItemData.type = type;
-      mItemData.add(sourceURL);
+      parseList = createParseList(preset, sourceURLType);
+
+      parseList.add(sourceURL);
 
       preset.items.forEach(function({replacement}) {
         let matchURL = sourceURL.replace(testerRE, replacement);
-        mItemData.add(unescURLChars(matchURL));
+        parseList.add(unescURLChars(matchURL));
       });
 
       return true;
@@ -366,45 +327,52 @@ function testPreset(aURLList) {
     return false;
   });
 
-  return mItemData.isValid();
+  if (parseList && parseList.validate()) {
+    return parseList;
+  }
+  return null;
 }
 
-function testSplittable(aURL) {
-  var URLs = splitIntoSchemes(aURL);
+function getParseListByScan(aSourceURL) {
+  let parseList = createParseList();
 
+  let URLs = splitIntoSchemes(aSourceURL.link);
   while (URLs.length) {
-    mItemData.markAsNewURL();
+    parseList.markAsNewURL();
 
     let baseURL = unescURLChars(URLs.shift());
     if (URLs.length) {
-      mItemData.add(baseURL + URLs.join(''));
+      parseList.add(baseURL + URLs.join(''));
     }
 
-    mItemData.add(baseURL);
+    parseList.add(baseURL);
 
     let trimmedURL = removeFragment(baseURL);
     if (trimmedURL) {
-      mItemData.add(trimmedURL);
+      parseList.add(trimmedURL);
     }
   }
 
-  return mItemData.isValid();
+  if (parseList && parseList.validate()) {
+    return parseList;
+  }
+  return null;
 }
 
 function splitIntoSchemes(aURL) {
-  var URLs = [];
-
-  // splits aURL by '://'
+  // splits a URL by '://'
   // e.g.
   // ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
   // [0][1][2] are surely not empty
   const delimiter = /((?:\:|%(?:25)?3A)(?:\/|%(?:25)?2F){2})/i;
-  var splits = aURL.split(delimiter);
+
+  let splits = aURL.split(delimiter);
   if (splits.length === 3) {
     return [aURL];
   }
 
-  var slices, scheme = splits.shift() + splits.shift();
+  let URLs = [];
+  let slices, scheme = splits.shift() + splits.shift();
   while (splits.length > 1) {
     // ['abc.com/...', 'http']
     slices = sliceScheme(splits.shift());
@@ -416,7 +384,7 @@ function splitIntoSchemes(aURL) {
   URLs.push(scheme + splits.shift());
 
   return URLs.reduce(function(a, b) {
-    var segments = b.split(delimiter);
+    let segments = b.split(delimiter);
     if (!segments[0] || !segments[2]) {
       // an incomplete URL ('://...' or 'http://') is combined with a previous
       // string as a part of it
@@ -484,6 +452,58 @@ function removeFragment(aURL) {
     return trimmedURL;
   }
   return '';
+}
+
+/*
+ * Creates a handler of the list of the parsed URLs
+ */
+function createParseList(aPreset, aSourceURLType) {
+  let mPreset = aPreset;
+  let mSourceURLType = aSourceURLType;
+  let mURLs = [];
+  let mNewURLIndexes = [];
+
+  function clear() {
+    mPreset = null;
+    mSourceURLType = '';
+    mURLs.length = 0;
+    mNewURLIndexes.length = 0;
+  }
+
+  function add(aURL) {
+    mURLs.push(aURL);
+  }
+
+  function validate() {
+    // a list with no new URL except a source URL is invalid
+    // @note URLs[0] is a source URL itself
+    if (mURLs.length <= 1 ||
+        (!mPreset && mNewURLIndexes.length <= 1)) {
+      clear();
+      return false;
+    }
+    return true;
+  }
+
+  function markAsNewURL() {
+    // @note the first item is always new URL
+    mNewURLIndexes.push(mURLs.length);
+  }
+
+  function checkNewURLStart(aIndex) {
+    return mNewURLIndexes.indexOf(aIndex) > -1;
+  }
+
+  return {
+    preset: mPreset,
+    sourceURLType: mSourceURLType,
+    URLs: mURLs,
+    clear: clear,
+    add: add,
+    validate: validate,
+    markAsNewURL: markAsNewURL,
+    checkNewURLStart: checkNewURLStart
+  };
 }
 
 
