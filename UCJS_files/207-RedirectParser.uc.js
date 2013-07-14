@@ -245,7 +245,6 @@ function makeMenuItems(aEvent) {
       popup.appendChild($E('menuseparator'));
     }
 
-    let item = $E('menuitem');
     let ui;
     let tips = [], styles = [];
     let disabled;
@@ -296,7 +295,7 @@ function makeMenuItems(aEvent) {
       tooltiptext = U(tips.join('\n')) + '\n' + tooltiptext;
     }
 
-    popup.appendChild($E(item, {
+    popup.appendChild($E('menuitem', {
       label: label,
       crop: 'center',
       accesskey: accesskey,
@@ -490,58 +489,47 @@ function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
-function $E(aTagOrElement, aAttributes) {
-  let element;
-  if (typeof aTagOrElement === 'string') {
-    element = window.document.createElement(aTagOrElement);
-  } else {
-    element = aTagOrElement;
-  }
+function $E(aTag, aAttributes) {
+  let element = window.document.createElement(aTag);
 
-  setAttributes(element, aAttributes);
+  if (aAttributes) {
+    for (let [name, value] in Iterator(aAttributes)) {
+      if (value === null || value === undefined) {
+        continue;
+      }
+
+      switch (name) {
+        case 'styles':
+          value.join(';').split(/;+/).forEach(function(style) {
+            let [propName, propValue] =
+            style.split(':').map(function(str) {
+              return str.trim();
+            });
+
+            if (propName && propValue) {
+              element.style.setProperty(propName, propValue, '');
+            }
+          });
+          break;
+        case 'action': {
+          let command = makeActionCommand(value);
+          if (command) {
+            element.setAttribute('oncommand', command);
+            // @see chrome://browser/content/utilityOverlay.js::
+            // checkForMiddleClick
+            element.setAttribute('onclick',
+              'checkForMiddleClick(this,event);');
+          }
+          break;
+        }
+        default:
+          element.setAttribute(name, value);
+          break;
+      }
+    }
+  }
 
   return element;
-}
-
-function setAttributes(aElement, aAttributes) {
-  if (!aAttributes) {
-    return;
-  }
-
-  for (let [name, value] in Iterator(aAttributes)) {
-    if (value === null || value === undefined) {
-      continue;
-    }
-
-    switch (name) {
-      case 'styles':
-        value.join(';').split(/;+/).forEach(function(style) {
-          let [propName, propValue] =
-          style.split(':').map(function(str) {
-            return str.trim();
-          });
-
-          if (propName && propValue) {
-            aElement.style.setProperty(propName, propValue, '');
-          }
-        });
-        break;
-      case 'action': {
-        let command = makeActionCommand(value);
-        if (command) {
-          aElement.setAttribute('oncommand', command);
-          // @see chrome://browser/content/utilityOverlay.js::
-          // checkForMiddleClick
-          aElement.setAttribute('onclick',
-            'checkForMiddleClick(this,event);');
-        }
-        break;
-      }
-      default:
-        aElement.setAttribute(name, value);
-        break;
-    }
-  }
 }
 
 function makeActionCommand(aValue) {
