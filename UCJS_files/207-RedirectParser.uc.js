@@ -27,7 +27,7 @@ const kUnderlinedAccesskey =
  * Preference
  */
 const kPref = {
-  // schemes of URL that is opened with menu-command
+  // schemes of URL that can be opened with menu-command
   // @note the other scheme URL can't be opened but will be copied to
   // clipboard as an unknown URL
   generalSchemes: 'http|https|ftp'
@@ -414,47 +414,54 @@ function sliceScheme(aString) {
   }
 
   // allowable characters for scheme
+  // scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+  // @see http://tools.ietf.org/html/rfc3986#section-3.1
   const schemeCharRE = /[a-z0-9+-.]/i;
-  // two hexadecimal digits part of the escaped code for [+-.]
-  const escapedCodeRE = /2B|2D|2E/i;
+  // two hexadecimal digits part of the escape code for [+-.]
+  const escapeCodeRE = /2B|2D|2E/i;
+  // leading marks are invalid for scheme
+  const leadingMarksRE = /^(?:[0-9+-.]|%(?:25)?(?:2B|2D|2E))+/i;
 
-  // the loop index is used outside of loop, so be care for decreasing it
-  let i = aString.length - 1;
+  // be care for changing the value of a loop index for using it outside of
+  // loop
+  let index = aString.length - 1;
   while (true) {
-    if (aString[i] !== '%') {
-      if (!schemeCharRE.test(aString[i])) {
-        i += 1;
+    if (aString[index] !== '%') {
+      if (!schemeCharRE.test(aString[index])) {
+        index += 1;
         break;
       }
     } else {
       let code, codeLength;
       // '%' may be escaped to '%25'
-      // string.substr(start, length) returns an empty string if
-      // |start| >= the length of the string
-      if (aString.substr(i, 3) === '%25') {
-        code = aString.substr(i + 3, 2);
+      if (aString.substr(index, 3) === '%25') {
+        code = aString.substr(index + 3, 2);
         codeLength = 5;
       } else {
-        code = aString.substr(i + 1, 2);
+        code = aString.substr(index + 1, 2);
         codeLength = 3;
       }
-      if (!escapedCodeRE.test(code)) {
-        i += codeLength;
+      if (!escapeCodeRE.test(code)) {
+        index += codeLength;
         break;
       }
     }
 
     // no more characters
-    if (i === 0) {
+    if (index === 0) {
       break;
     }
-    // decrease the loop index here, at the bottom
-    i--;
+    // decrement the loop index here, at the bottom of loop
+    index--;
   }
 
-  // string.slice(begin[, end]) returns an empty string if
-  // |begin| >= the length of the string
-  return [aString.slice(0, i), aString.slice(i)];
+  if (index < aString.length) {
+    let scheme = aString.slice(index).replace(leadingMarksRE, '');
+    if (scheme) {
+      return [aString.slice(0, aString.lastIndexOf(scheme)), scheme];
+    }
+  }
+  return [aString, ''];
 }
 
 function removeFragment(aURL) {
@@ -497,7 +504,7 @@ function createParseList(aPreset, aSourceURLType) {
   }
 
   function markAsNewURL() {
-    // @note the first item is always new URL
+    // @note the first item is always marked
     mNewURLIndexes.push(mURLs.length);
   }
 
