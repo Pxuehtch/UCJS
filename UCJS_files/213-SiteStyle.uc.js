@@ -151,6 +151,10 @@ const kNoiseList = [
  * @key quickScript {function} [optional]
  *   run the script as soon as a location changes
  *   @param aDocument {Document}
+ *   @return {boolean}
+ *     whether |script| is applied after |quickScript|
+ *     true: do apply
+ *     false: don't apply
  * @key script {function} [optional]
  *   run the script after the document loaded
  *   @param aDocument {Document}
@@ -175,7 +179,9 @@ const kSiteList = [
       // switch to the old mode
       if (!/[?&#]sout=1/.test(location.href)) {
         location.replace(location.href + '&sout=1');
+        return false;
       }
+      return true;
     }
   },
   {
@@ -396,7 +402,9 @@ const kSiteList = [
       // at the time
       if (/#at=\d+/.test(location.href)) {
         location.replace(location.href.replace('#at=', '#t='));
+        return false;
       }
+      return true;
     },
     script: function(aDocument) {
       // exclude the playlist mode
@@ -518,7 +526,10 @@ var PageObserver = (function() {
 
       // 2. run the quick script before the document loading
       if (site.quickScript) {
-        site.quickScript(aBrowser.contentDocument);
+        if (!site.quickScript(aBrowser.contentDocument)) {
+          // suppress the following script
+          return;
+        }
       }
 
       // 3. wait the document loads and run the script
