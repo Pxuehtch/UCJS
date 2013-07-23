@@ -232,6 +232,10 @@ const kSiteList = [
 
       // common styles
       let css = '\
+        /* content area container */\
+        .col{\
+          width:auto!important;\
+        }\
         /* block items */\
         .nrgt>tbody>tr>td,.ts>tbody>tr>td{\
           float:left!important;\
