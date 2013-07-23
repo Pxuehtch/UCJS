@@ -187,7 +187,6 @@ function buildParsedURLs(aParam) {
 
   if (parseList) {
     makeMenuItems(parseList);
-    parseList.clear();
     return true;
   }
   return false;
@@ -476,30 +475,27 @@ function removeFragment(aURL) {
  * Creates a handler of the list of the parsed URLs
  */
 function createParseList(aPreset, aSourceURLType) {
-  let mPreset = aPreset;
-  let mSourceURLType = aSourceURLType;
+  let mPreset = aPreset || null;
+  let mSourceURLType = aSourceURLType || '';
   let mURLs = [];
   let mNewURLIndexes = [];
-
-  function clear() {
-    mPreset = null;
-    mSourceURLType = '';
-    mURLs.length = 0;
-    mNewURLIndexes.length = 0;
-  }
 
   function add(aURL) {
     mURLs.push(aURL);
   }
 
   function validate() {
-    // a list with no new URL except a source URL is invalid
-    // @note URLs[0] is a source URL itself
-    if (mURLs.length <= 1 ||
-        (!mPreset && mNewURLIndexes.length <= 1)) {
-      clear();
+    // invalid: no item except a source URL
+    // @note URLs[0] is always a source URL itself
+    if (mURLs.length <= 1) {
       return false;
     }
+
+    // invalid: no inner URL by scanning
+    if (!mPreset && mNewURLIndexes.length <= 1) {
+      return false;
+    }
+
     return true;
   }
 
@@ -516,7 +512,6 @@ function createParseList(aPreset, aSourceURLType) {
     preset: mPreset,
     sourceURLType: mSourceURLType,
     URLs: mURLs,
-    clear: clear,
     add: add,
     validate: validate,
     markAsNewURL: markAsNewURL,
