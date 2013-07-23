@@ -384,7 +384,7 @@ function splitIntoSchemes(aURL) {
   let URLs = [];
   let slices, scheme = splits.shift() + splits.shift();
   while (splits.length > 1) {
-    // ['abc.com/...', 'http']
+    // 'abc.com/...http' -> ['abc.com/...', 'http']
     slices = sliceScheme(splits.shift());
     // 'http://' + 'abc.com/...'
     URLs.push(scheme + slices[0]);
