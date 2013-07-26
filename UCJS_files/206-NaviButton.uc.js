@@ -213,13 +213,17 @@ var mTooltip = {
   },
 
   show: function(aEvent) {
-    var btn = aEvent.target;
+    let button = aEvent.target;
 
-    var isBackButton = (btn.id === kID.BACK_BUTTON);
-    var disabled = btn.disabled;
-    var hasReferrer = isBackButton && mReferrer.exists();
+    let backward = button.id === kID.BACK_BUTTON;
+    let referrer = backward && Referrer.exists();
+    let disabled = button.disabled;
 
-    this.build(mHistory.scan(isBackButton, disabled, hasReferrer));
+    this.build(History.scan({
+      backward: backward,
+      referrer: referrer,
+      disabled: disabled
+    }));
 
     this.tooltip.openPopup(btn, 'after_start', 0, 0, false, false);
   },
@@ -370,24 +374,25 @@ var mHistory = {
     gBrowser.webNavigation.gotoIndex(index);
   },
 
-  scan: function(aBackward, aDisabled, aReferrer) {
-    var back = aBackward;
-    var data = this.initData(back, aReferrer);
-    var sh = this.getSessionHistory();
+  scan: function({backward, referrer, disabled}) {
+    let data = this.initData(backward, referrer);
 
-    if (!sh || aDisabled) {
-      return data;
-    }
-    if ((back && sh.index === 0) ||
-        (!back && sh.index === sh.count - 1)) {
+    if (disabled) {
       return data;
     }
 
-    var step = back ? -1 : 1;
-    var border = sh.index + step;
+    let sh = this.getSessionHistory();
+    if (!sh ||
+        (backward && sh.index === 0) ||
+        (!backward && sh.index === sh.count - 1)) {
+      return data;
+    }
 
-    var within = back ? function(i) -1 < i : function(i) i < sh.count;
-    var host = sh.getEntryAt(sh.index).host;
+    let step = backward ? -1 : 1;
+    let border = sh.index + step;
+
+    let within = backward ? function(i) -1 < i : function(i) i < sh.count;
+    let host = sh.getEntryAt(sh.index).host;
 
     for (; within(border); border += step) {
       if (host !== sh.getEntryAt(border).host) {
@@ -398,7 +403,7 @@ var mHistory = {
     [
       [data.neighbor, sh.index + step],
       [data.border, border - step],
-      [data.stop, back ? 0 : sh.count - 1]
+      [data.stop, backward ? 0 : sh.count - 1]
     ].
     forEach(function([entry, dist]) {
       if (sh.index !== dist) {
