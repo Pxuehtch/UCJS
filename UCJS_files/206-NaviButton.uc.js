@@ -46,11 +46,11 @@ const kID = {
 /**
  * UI strings
  */
-const kBundle = {
+const kUI = {
   title: {
-    NOTITLE:   'No title',
-    NOHISTORY: 'No history',
-    DITTO:     'Ditto'
+    noTitle:   'No title',
+    noHistory: 'No history',
+    ditto:     'Ditto'
   },
 
   form: {
@@ -66,17 +66,14 @@ const kBundle = {
     start:       '|<',
     end:         '>|',
     referrer:    'From:'
+  },
+
+  style: {
+    title: 'font-weight:bold;',
+    referrer: 'color:blue;'
   }
 };
 
-
-/**
- * UI styles
- */
-const kStyle = {
-  title: 'font-weight:bold;',
-  referrer: 'color:blue;'
-};
 
 /**
  * Handler of a navigation button
@@ -251,10 +248,10 @@ var mTooltip = {
 
       var style = '';
       if (aTitle) {
-        style += kStyle.title
+        style += kUI.style.title
       }
       if (aReferrer) {
-        style += kStyle.referrer
+        style += kUI.style.referrer
       }
       if (style) {
         label.setAttribute('style', style);
@@ -270,18 +267,18 @@ var mTooltip = {
     var dir = '';
 
     if (URL && title === URL) {
-      title = kBundle.title.NOTITLE;
+      title = kUI.title.noTitle;
     }
 
     switch (aKey) {
       case 'neighbor':
         dir = back ? 'prev' : 'next';
-        title = title || kBundle.title.NOHISTORY;
+        title = title || kUI.title.noHistory;
         break;
       case 'border':
         dir = back ? 'rewind' : 'fastforward';
         if (distance === 1) {
-          title = kBundle.title.DITTO;
+          title = kUI.title.ditto;
           URL = '';
         }
         break;
@@ -291,7 +288,7 @@ var mTooltip = {
           title = '';
           URL = '';
         } else if (distance && aData.border.distance === distance) {
-          title = kBundle.title.DITTO;
+          title = kUI.title.ditto;
           URL = '';
         }
         break;
@@ -301,8 +298,8 @@ var mTooltip = {
     }
 
     if (title) {
-      title = kBundle.form[(distance < 2) ? 'near' : 'far'].
-        replace('%dir', kBundle.sign[dir]).
+      title = kUI.form[(distance < 2) ? 'near' : 'far'].
+        replace('%dir', kUI.sign[dir]).
         replace('%distance', distance).
         replace('%title', title);
     }
