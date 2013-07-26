@@ -70,7 +70,8 @@ const kUI = {
 
   style: {
     title: 'font-weight:bold;',
-    referrer: 'color:blue;'
+    referrer: 'color:blue;',
+    url: ''
   }
 };
 
@@ -232,26 +233,30 @@ var mTooltip = {
 
     ['neighbor', 'border', 'stop', 'referrer'].
     forEach(function(key) {
-      var [title, URL] = this.formatData(aData, key);
-      setLabel(title, true, key === 'referrer');
-      setLabel(URL);
+      let [title, URL] = this.formatData(aData, key);
+
+      setLabel(title, {title: true, referrer: key === 'referrer'});
+      setLabel(URL, {url: true});
     }, this);
 
-    function setLabel(aVal, aTitle, aReferrer) {
-      if (!aVal) {
+    function setLabel(aValue, aType) {
+      if (!aValue) {
         return;
       }
 
-      var label = $E('label');
-      label.setAttribute('value', aVal);
+      let label = $E('label');
+      label.setAttribute('value', aValue);
       label.setAttribute('crop', 'center');
 
-      var style = '';
-      if (aTitle) {
+      let style = '';
+      if (aType.title) {
         style += kUI.style.title
       }
-      if (aReferrer) {
+      if (aType.referrer) {
         style += kUI.style.referrer
+      }
+      if (aType.url) {
+        style += kUI.style.url
       }
       if (style) {
         label.setAttribute('style', style);
