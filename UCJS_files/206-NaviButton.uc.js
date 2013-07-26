@@ -10,12 +10,16 @@
 
 /**
  * @usage
- * click: go back or forward a step
- * click the back button with a referrer: a new tab opens in a referrer URL
- * shift+click: go to the border of the same domain of the current page
- * ctrl+click: go to the stop of history
- * @note A new tab will open with 'middle button click'.
- * @see |mHistory.jump()|
+ * Click: go back or forward a step if the history exists
+ * Shift+Click: go to the border of the same domain of the current page
+ * Ctrl+Click: go to the stop of history
+ * @note a new tab will open with 'middle button click'
+ *
+ * special usage for the *back* button with a referrer
+ * Shift+Ctrl+Click: select or open a tab in the referrer URL
+ * @note does the same action with 'Click' if no backward and disabled
+ *
+ * @see |History.jump()|
  */
 
 
@@ -333,28 +337,35 @@ var mHistory = {
   },
 
   jump: function(aEvent) {
-    var btn = aEvent.target;
+    let {shiftKey, ctrlKey} = aEvent;
 
-    if (btn.hasAttribute(kID.REFERRER)) {
-      openReferrer();
-      return;
+    let referrer = this.data.referrer.URL;
+    if (referrer) {
+      if (!gBrowser.canGoBack || (shiftKey && ctrlKey)) {
+        selectOrOpen(referrer);
+        return;
+      }
     }
 
-    var idx = this.data.neighbor.index;
-    if (aEvent.shiftKey) {
-      idx = this.data.border.index;
-    } else if (aEvent.ctrlKey) {
-      idx = this.data.stop.index;
+    let index = -1;
+    if (!shiftKey && !ctrlKey) {
+      index = this.data.neighbor.index;
+    }
+    else if (shiftKey && !ctrlKey) {
+      index = this.data.border.index;
+    }
+    else if (ctrlKey && !shiftKey) {
+      index = this.data.stop.index;
     }
 
-    if (idx < 0) {
+    if (index < 0) {
       return;
     }
 
     if (aEvent.button === 1) {
       gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
     }
-    gBrowser.webNavigation.gotoIndex(idx);
+    gBrowser.webNavigation.gotoIndex(index);
   },
 
   scan: function(aBackward, aDisabled, aReferrer) {
@@ -437,17 +448,15 @@ var mHistory = {
 
 //********** Utilities
 
-function openReferrer() {
-  var tabs = gBrowser.mTabs;
-  var referrer = mReferrer.getURL();
-
+function selectOrOpen(aURL) {
+  let tabs = gBrowser.visibleTabs;
   for (let i = 0; i < tabs.length; i++) {
-    if (gBrowser.getBrowserAtIndex(i).currentURI.spec === referrer) {
+    if (gBrowser.getBrowserForTab(tabs[i]).currentURI.spec === aURL) {
       gBrowser.selectedTab = tabs[i];
       return;
     }
   }
-  gBrowser.loadOneTab(referrer);
+  gBrowser.loadOneTab(aURL);
 }
 
 function $ID(aId) {
