@@ -33,18 +33,17 @@
  * Identifiers
  */
 const kID = {
-  // Default
+  // Firefox default
   BACK_BUTTON: 'back-button',
   FORWARD_BUTTON: 'forward-button',
 
-  // Custom
+  // custom
   TOOLTIP: 'ucjs_navibutton_tooltip',
   REFERRER: 'ucjs_navibutton_referrer'
 };
 
-
 /**
- * UI strings
+ * UI settings
  */
 const kUI = {
   title: {
@@ -75,11 +74,10 @@ const kUI = {
   }
 };
 
-
 /**
  * Handler of a navigation button
  */
-var mButton = {
+const Button = {
   init: function(aButton) {
     if (!aButton) {
       return;
@@ -109,28 +107,28 @@ var mButton = {
   handleEvent: function(aEvent) {
     switch (aEvent.type) {
       case 'mouseover':
-        mTooltip.show(aEvent);
+        Tooltip.show(aEvent);
         break;
       case 'mouseout':
-        mTooltip.hide(aEvent);
+        Tooltip.hide(aEvent);
         break;
       case 'click':
         if (aEvent.button !== 2) {
-          mTooltip.hide(aEvent);
-          mHistory.jump(aEvent);
-          mTooltip.delayShow(aEvent);
+          Tooltip.hide(aEvent);
+          History.jump(aEvent);
+          Tooltip.delayShow(aEvent);
         }
         break;
     }
   },
 
   preventCommand: function(aButton) {
-    var command = (aButton.id === kID.BACK_BUTTON) ?
+    let command = (aButton.id === kID.BACK_BUTTON) ?
       'BrowserBack' : 'BrowserForward';
 
     // @modified chrome://browser/content/browser.js::BrowserBack
     // @modified chrome://browser/content/browser.js::BrowserForward
-    var $func = window[command];
+    let $func = window[command];
     window[command] = function(aEvent) {
       if (aEvent &&
           aEvent.sourceEvent &&
@@ -147,13 +145,14 @@ var mButton = {
  * Progress listener
  * @see |NaviButton_init()|
  */
-var mBrowserProgressListener = {
+const BrowserProgressListener = {
   onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
-    var back = $ID(kID.BACK_BUTTON);
+    let back = $ID(kID.BACK_BUTTON);
 
-    if (!gBrowser.canGoBack && mReferrer.exists()) {
+    if (!gBrowser.canGoBack && Referrer.exists()) {
       back.setAttribute(kID.REFERRER, true);
-    } else if (back.hasAttribute(kID.REFERRER)) {
+    }
+    else if (back.hasAttribute(kID.REFERRER)) {
       back.removeAttribute(kID.REFERRER);
     }
   },
@@ -168,32 +167,40 @@ var mBrowserProgressListener = {
  * Handler of referrer
  * @require TabEx.uc.js
  */
-var mReferrer = {
-  get ref() {
-    delete this.ref;
-    return this.ref = window.ucjsTabEx && window.ucjsTabEx.referrer;
+const Referrer = {
+  get referrer() {
+    delete this.referrer;
+    return this.referrer =
+      window.ucjsTabEx &&
+      window.ucjsTabEx.referrer;
   },
 
   exists: function() {
-    return this.ref &&
-      this.ref.exists(gBrowser.selectedTab);
+    if (this.referrer) {
+      return this.referrer.exists(gBrowser.selectedTab);
+    }
+    return false;
   },
 
   getURL: function() {
-    return this.ref &&
-      this.ref.getURL(gBrowser.selectedTab);
+    if (this.referrer) {
+      return this.referrer.getURL(gBrowser.selectedTab);
+    }
+    return '';
   },
 
   getTitle: function() {
-    return this.ref &&
-      this.ref.getTitle(gBrowser.selectedTab);
+    if (this.referrer) {
+      return this.referrer.getTitle(gBrowser.selectedTab);
+    }
+    return '';
   }
 };
 
 /**
  * Handler of a tooltip panel
  */
-var mTooltip = {
+const Tooltip = {
   init: function() {
     this.tooltip = $ID('mainPopupSet').appendChild($E('tooltip'));
     this.tooltip.id = kID.TOOLTIP;
@@ -225,11 +232,11 @@ var mTooltip = {
       disabled: disabled
     }));
 
-    this.tooltip.openPopup(btn, 'after_start', 0, 0, false, false);
+    this.tooltip.openPopup(button, 'after_start', 0, 0, false, false);
   },
 
   build: function(aData) {
-    var tooltip = this.tooltip;
+    let tooltip = this.tooltip;
 
     while (tooltip.hasChildNodes()) {
       tooltip.removeChild(tooltip.firstChild);
@@ -271,9 +278,9 @@ var mTooltip = {
   },
 
   formatData: function(aData, aKey) {
-    var back = aData.backward;
-    var {title, URL, distance} = aData[aKey];
-    var dir = '';
+    let backward = aData.backward;
+    let {title, URL, distance} = aData[aKey];
+    let dir = '';
 
     if (URL && title === URL) {
       title = kUI.title.noTitle;
@@ -281,22 +288,23 @@ var mTooltip = {
 
     switch (aKey) {
       case 'neighbor':
-        dir = back ? 'prev' : 'next';
+        dir = backward ? 'prev' : 'next';
         title = title || kUI.title.noHistory;
         break;
       case 'border':
-        dir = back ? 'rewind' : 'fastforward';
+        dir = backward ? 'rewind' : 'fastforward';
         if (distance === 1) {
           title = kUI.title.ditto;
           URL = '';
         }
         break;
       case 'stop':
-        dir = back ? 'start' : 'end';
+        dir = backward ? 'start' : 'end';
         if (distance === 1) {
           title = '';
           URL = '';
-        } else if (distance && aData.border.distance === distance) {
+        }
+        else if (distance && aData.border.distance === distance) {
           title = kUI.title.ditto;
           URL = '';
         }
@@ -320,13 +328,18 @@ var mTooltip = {
 /**
  * Handler of history
  */
-var mHistory = {
+const History = {
   initData: function(aBackward, aReferrer) {
     function Entry() {
-      return {title: '', URL: '', index: -1, distance: 0};
+      return {
+        title: '',
+        URL: '',
+        index: -1,
+        distance: 0
+      };
     }
 
-    var data = {
+    let data = {
       backward: aBackward,
       neighbor: Entry(),
       border:   Entry(),
@@ -335,8 +348,8 @@ var mHistory = {
     };
 
     if (aReferrer) {
-      data.referrer.title = mReferrer.getTitle();
-      data.referrer.URL = mReferrer.getURL();
+      data.referrer.title = Referrer.getTitle();
+      data.referrer.URL = Referrer.getURL();
     }
 
     return this.data = data;
@@ -405,13 +418,13 @@ var mHistory = {
       [data.border, border - step],
       [data.stop, backward ? 0 : sh.count - 1]
     ].
-    forEach(function([entry, dist]) {
-      if (sh.index !== dist) {
-        let src = sh.getEntryAt(dist);
-        entry.title = src.title;
-        entry.URL = src.URL;
-        entry.index = dist;
-        entry.distance = Math.abs(dist - sh.index);
+    forEach(function([entry, index]) {
+      if (sh.index !== index) {
+        let info = sh.getEntryAt(index);
+        entry.title = info.title;
+        entry.URL = info.URL;
+        entry.index = index;
+        entry.distance = Math.abs(index - sh.index);
       }
     });
 
@@ -419,7 +432,7 @@ var mHistory = {
   },
 
   getSessionHistory: function() {
-    var sh = gBrowser.sessionHistory;
+    let sh = gBrowser.sessionHistory;
     if (sh) {
       return {
         index: sh.index,
@@ -429,10 +442,10 @@ var mHistory = {
     }
     return null;
 
-    function getEntryAt(aIdx) {
-      var info = {title: '', URL: '', host: ''};
+    function getEntryAt(aIndex) {
+      let info = {title: '', URL: '', host: ''};
 
-      var entry = sh.getEntryAtIndex(aIdx, false);
+      let entry = sh.getEntryAtIndex(aIndex, false);
       if (entry) {
         if (entry.title) {
           info.title = entry.title;
@@ -485,21 +498,21 @@ function log(aStr) {
 //********** Entry point
 
 function NaviButton_init() {
-  var back = $ID(kID.BACK_BUTTON),
+  let back = $ID(kID.BACK_BUTTON),
       forward = $ID(kID.FORWARD_BUTTON);
 
-  mButton.init(back);
-  mButton.init(forward);
+  Button.init(back);
+  Button.init(forward);
 
-  mTooltip.init();
+  Tooltip.init();
 
-  gBrowser.addProgressListener(mBrowserProgressListener);
+  gBrowser.addProgressListener(BrowserProgressListener);
 
   window.addEventListener('unload', function cleanup() {
     window.removeEventListener('unload', cleanup, false);
-    gBrowser.removeProgressListener(mBrowserProgressListener);
-    mButton.uninit(back);
-    mButton.uninit(forward);
+    gBrowser.removeProgressListener(BrowserProgressListener);
+    Button.uninit(back);
+    Button.uninit(forward);
   }, false);
 }
 
