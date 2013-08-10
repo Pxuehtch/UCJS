@@ -75,18 +75,28 @@ const Items = [
     label: 'Ref.',
     description: 'Switch Referrer sending',
 
-    // @pref see http://kb.mozillazine.org/Network.http.sendRefererHeader
+    // @pref
     // 0: never send the referrer header
     // 1: send when clicking on a link
-    // 2: send when clicking on a link or loading an image (Default)
-    pref: 'network.http.sendRefererHeader',
+    // 2: send when clicking on a link or loading an image [default]
+    // @see http://kb.mozillazine.org/Network.http.sendRefererHeader
+    pref: {
+      key: 'network.http.sendRefererHeader',
+      value: {
+        never: 0,
+        link: 1,
+        linkOrImage: 2
+      }
+    },
 
     get checked() {
-      return getPref(this.pref, 2) !== 0;
+      let {key, value} = this.pref;
+      return getPref(key, value.linkOrImage) !== value.never;
     },
 
     command: function() {
-      setPref(this.pref, this.checked ? 0 : 2);
+      let {key, value} = this.pref;
+      setPref(key, this.checked ? value.never : value.linkOrImage);
     }
   },
   {
