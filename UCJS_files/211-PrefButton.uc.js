@@ -31,20 +31,14 @@ const kID = {
 };
 
 /**
- * Type of <button>
- */
-const kItemType = {
-  button: 'button',
-  checkbox: 'checkbox'
-};
-
-/**
  * Preset button items
  *
  * @param tabMode {boolean} [optional]
  *   true: updates the button state whenever the tab is selected
  *   set true if |command| works only on the selected tab
- * @param type {kItemType} a type of button
+ * @param type {string}
+ *   'button': a normal button
+ *   'checkbox': can be in two states
  * @param label {string} button label
  * @param image {URL string} [instead of |label|] button image
  * @param description {string} tooltip text
@@ -56,7 +50,7 @@ const Items = [
   {
     // switch CSS for each tab
     tabMode: true,
-    type: kItemType.checkbox,
+    type: 'checkbox',
     label: 'CSS',
     description: 'Switch CSS (Tab)',
 
@@ -77,7 +71,7 @@ const Items = [
   },
   {
     // switch the referrer header sending
-    type: kItemType.checkbox,
+    type: 'checkbox',
     label: 'Ref.',
     description: 'Switch Referrer sending',
 
@@ -97,7 +91,7 @@ const Items = [
   },
   {
     // switch Java
-    type: kItemType.checkbox,
+    type: 'checkbox',
     label: 'Java',
     description: 'Switch Java',
 
@@ -138,7 +132,7 @@ const Items = [
   },
   {
     // open the sanitize dialog
-    type: kItemType.button,
+    type: 'button',
     label: 'CLR',
     description: 'Clear cache',
     image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAe1BMVEUAAAC6urpmZmZvb2+qqqpmZjOZZjMzMzOZmZmZZmbMzGbMmTOZmTOZmWbMzJnFxcXMmWb//5n/zGZmMzPS0tL//8z/zJlaW1szM2bMmZlaZGd7e3szZmbi4uKHh4fMzMzv7+/IyMhecnqZmcxmZswzM5mZZpmZzMxmZpkJF2RIAAAAKXRSTlMA/////////////////////////////////////////////////////0LHzqgAAACJSURBVHhefc7JEsIgEARQYkZFMIPEsCiSqLjk/7/QEU1JLvbtdddQMPY3KamSz5TGcQIAqEe63f3kOET+M4oBzpcYrtkKEY1BiD24/r2SKBoDD/WJig4tUdv2cAzOd7nRxloUonG+yk+qHepWCLndf8xY1dAu5Zp/Tb/Y0F6YmuVqZrpa1DMXeQFq7Aju0wjcLAAAAABJRU5ErkJggg==',
@@ -192,11 +186,12 @@ function updateState(aOption) {
     }
 
     let button = $ID(kID.ITEM + i);
+
     switch (item.type) {
-      case kItemType.button:
+      case 'button':
         // nothing to do
         break;
-      case kItemType.checkbox:
+      case 'checkbox':
         if (button.checked !== item.checked) {
           button.checked = item.checked;
         }
