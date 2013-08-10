@@ -78,6 +78,10 @@
   <key id="ucjs_key_CloseTabsButHome"
     keycode="VK_F12"
     oncommand="ucjsUtil.openHomePages({doReplace:true,onlyFirstPage:true});"/>
+
+  <key id="ucjs_key_StopAllRequest"
+    keycode="VK_ESCAPE" modifiers="shift"
+    oncommand="BrowserStop();"/>
 </keyset>
 
 
