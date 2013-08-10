@@ -40,7 +40,7 @@ const kItemType = {
 
 /**
  * Preset button items
- * @param name {string} a name of item
+ *
  * @param tabMode {boolean} [optional]
  *   true: updates the button state whenever the tab is selected
  *   set true if |command| works only on the selected tab
@@ -54,11 +54,11 @@ const kItemType = {
  */
 const Items = [
   {
-    name: 'ToggleCSS_Tab',
+    // switch CSS for each tab
     tabMode: true,
     type: kItemType.checkbox,
     label: 'CSS',
-    description: 'Toggle CSS (Tab)',
+    description: 'Switch CSS (Tab)',
 
     // gets the content viewer for the current content document
     // @see chrome://browser/content/tabbrowser.xml::
@@ -76,10 +76,10 @@ const Items = [
     }
   },
   {
-    name: 'ToggleReferrer',
+    // switch the referrer header sending
     type: kItemType.checkbox,
     label: 'Ref.',
-    description: 'Toggle Referrer',
+    description: 'Switch Referrer sending',
 
     // @pref see http://kb.mozillazine.org/Network.http.sendRefererHeader
     // 0: never send the referrer header
@@ -96,10 +96,10 @@ const Items = [
     }
   },
   {
-    name: 'ToggleJava',
+    // switch Java
     type: kItemType.checkbox,
     label: 'Java',
-    description: 'Toggle Java',
+    description: 'Switch Java',
 
     get disabled() {
       return this.plugin === null;
@@ -137,7 +137,7 @@ const Items = [
     }
   },
   {
-    name: 'ClearCache',
+    // open the sanitize dialog
     type: kItemType.button,
     label: 'CLR',
     description: 'Clear cache',
