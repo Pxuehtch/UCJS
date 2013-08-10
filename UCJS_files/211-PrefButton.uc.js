@@ -153,9 +153,13 @@ const Items = [
  * Progress listener
  */
 const BrowserProgressListener = {
-  onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
-    if (aStateFlags & window.Ci.nsIWebProgressListener.STATE_STOP) {
-      updateState();
+  onStateChange: function(aWebProgress, aRequest, aFlags, aStatus) {
+    const {STATE_STOP, STATE_IS_WINDOW} = window.Ci.nsIWebProgressListener;
+    if (aFlags & STATE_STOP) {
+      if (aFlags & STATE_IS_WINDOW &&
+          aWebProgress.DOMWindow === gBrowser.contentWindow) {
+        updateState();
+      }
     }
   },
 
