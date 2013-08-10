@@ -34,16 +34,20 @@ const kID = {
  * Preset button items
  *
  * @param tabMode {boolean} [optional]
- *   true: updates the button state whenever the tab is selected
- *   set true if |command| works only on the selected tab
+ *   true: updates the button state whenever a tab is selected
+ *   set true if |command| should work only on the selected tab
  * @param type {string}
  *   'button': a normal button
  *   'checkbox': can be in two states
- * @param label {string} button label
- * @param image {URL string} [instead of |label|] button image
- * @param description {string} tooltip text
- * @param checked {boolean} [for checkbox |type|] on/off state
- * @param command {function} button command
+ * @param label {string}
+ * @param image {URL string} [optional]
+ *   the image instead of the label text of a button
+ * @param description {string}
+ *   the text of tooltip
+ * @param checked {boolean} [optional]
+ *   necessary for 'checkbox' type button
+ *   returns on or off state of this function
+ * @param command {function}
  * @param disabled {boolean} [optional]
  */
 const Items = [
@@ -138,6 +142,7 @@ const Items = [
   },
   {
     // switch Java
+    // @note I uninstalled Java plugin, so, I can't test this block
     type: 'checkbox',
     label: 'Java',
     description: 'Switch Java',
@@ -149,12 +154,12 @@ const Items = [
     get plugin() {
       const {Cc, Ci} = window;
 
-      var plugins =
+      let plugins =
         Cc['@mozilla.org/plugin/host;1'].
         getService(Ci.nsIPluginHost).
         getPluginTags({});
 
-      var plugin = null;
+      let plugin = null;
 
       for (let i = 0; i < plugins.length; i++) {
         if (plugins[i].name.contains('Java(TM)')) {
@@ -296,9 +301,9 @@ function makeButtons() {
 }
 
 function setStyleSheet() {
-  // @note The styles are adjusted to the themes of my Firefox.
-  // * the height of the toolbar-menubar is 24pt
-  var css = '\
+  // @note the styles are adjusted to the themes of my Firefox
+  // @note on condition that the height of the toolbar-menubar is 24pt
+  let css = '\
     #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\
     }\
