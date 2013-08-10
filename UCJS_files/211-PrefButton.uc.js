@@ -214,9 +214,9 @@ function doCommand(aEvent) {
 }
 
 function makeButtons() {
-  var toolbar = $ID(kID.NAVIGATION_TOOLBAR);
+  let toolbar = $ID(kID.NAVIGATION_TOOLBAR);
 
-  var hbox = $E('hbox');
+  let hbox = $E('hbox');
   hbox.id = kID.CONTAINER;
   addEvent([hbox, 'click', doCommand, false]);
 
@@ -229,14 +229,18 @@ function makeButtons() {
 
     button.id = kID.ITEM + i;
     button.className = kID.ITEM;
-    button.setAttribute('type', item.type);
-    button.setAttribute('tooltiptext', item.description);
+
+    if (item.type !== 'button') {
+      button.setAttribute('type', item.type);
+    }
 
     if (item.image) {
       button.setAttribute('image', item.image);
     } else {
       button.setAttribute('label', item.label);
     }
+
+    button.setAttribute('tooltiptext', item.description);
 
     hbox.appendChild(button);
   });
