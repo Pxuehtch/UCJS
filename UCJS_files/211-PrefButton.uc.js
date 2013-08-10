@@ -100,6 +100,43 @@ const Items = [
     }
   },
   {
+    // switch the image animation
+    type: 'checkbox',
+    label: 'GIF',
+    description: 'Switch GIF animation',
+
+    // @pref
+    // 'none': prevent image animation
+    // 'once': let the image animate once
+    // 'normal': allow it to play over and over [default]
+    // @see http://kb.mozillazine.org/Animated_images
+    pref: {
+      key: 'image.animation_mode',
+      value: {
+        none: 'none',
+        once: 'once',
+        normal: 'normal'
+      }
+    },
+
+    get checked() {
+      let {key, value} = this.pref;
+      return getPref(key, value.normal) !== value.none;
+    },
+
+    command: function() {
+      let {key, value} = this.pref;
+      setPref(key, this.checked ? value.none : value.normal);
+
+      // immediately apply the new mode in the animate-able image document
+      if (gBrowser.contentDocument instanceof ImageDocument &&
+          /^image\/(?:gif|png)$/.test(gBrowser.contentDocument.contentType)) {
+        // @see chrome://browser/content/browser.js::BrowserReload
+        window.BrowserReload();
+      }
+    }
+  },
+  {
     // switch Java
     type: 'checkbox',
     label: 'Java',
