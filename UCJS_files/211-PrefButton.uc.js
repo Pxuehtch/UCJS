@@ -206,9 +206,16 @@ function updateState(aOption) {
 }
 
 function doCommand(aEvent) {
+  aEvent.stopPropagation();
+  if (aEvent.button !== 0) {
+    return;
+  }
+
   let button = aEvent.target;
-  let index = parseInt(button.id.replace(kID.ITEM, ''), 10);
-  Items[index].command();
+
+  if (button.id && button.id.startsWith(kID.ITEM)) {
+    Items[+button.id.replace(kID.ITEM, '')].command();
+  }
 }
 
 function makeButtons() {
@@ -216,6 +223,7 @@ function makeButtons() {
 
   var hbox = $E('hbox');
   hbox.id = kID.CONTAINER;
+  addEvent([hbox, 'click', doCommand, false]);
 
   Items.forEach(function(item, i) {
     if (item.disabled) {
@@ -234,8 +242,6 @@ function makeButtons() {
     } else {
       button.setAttribute('label', item.label);
     }
-
-    addEvent([button, 'command', doCommand, false]);
 
     hbox.appendChild(button);
   });
