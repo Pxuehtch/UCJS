@@ -13,11 +13,12 @@
  * Click: go back or forward a step if the history exists
  * Shift+Click: go to the border of the same domain of the current page
  * Ctrl+Click: go to the stop of history
- * @note a new tab will open with 'middle button click'
+ * @note a new tab will open in *fore*ground with 'middle button click'
  *
  * special usage for the *back* button with a referrer
  * Shift+Ctrl+Click: select or open a tab in the referrer URL
  * @note does the same action with 'Click' if no backward and disabled
+ * @note a new tab will open in *back*ground with 'middle button click'
  *
  * @see |History.jump()|
  */
@@ -433,12 +434,12 @@ const History = {
   },
 
   jump: function(aEvent) {
-    let {shiftKey, ctrlKey} = aEvent;
+    let {shiftKey, ctrlKey, button} = aEvent;
 
     let referrer = this.data.referrer.URL;
     if (referrer) {
       if (!gBrowser.canGoBack || (shiftKey && ctrlKey)) {
-        selectOrOpen(referrer);
+        selectOrOpen(referrer, {inBackground: button === 1});
         return;
       }
     }
@@ -458,7 +459,7 @@ const History = {
       return;
     }
 
-    if (aEvent.button === 1) {
+    if (button === 1) {
       gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
     }
     gBrowser.webNavigation.gotoIndex(index);
@@ -468,20 +469,24 @@ const History = {
 
 //********** Utilities
 
-function selectOrOpen(aURL) {
+function selectOrOpen(aURL, aOption) {
   function getURL(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
     return browser.userTypedValue || browser.currentURI.spec;
   }
 
+  let {inBackground} = aOption || {};
+
   let tabs = gBrowser.visibleTabs;
   for (let i = 0; i < tabs.length; i++) {
     if (getURL(tabs[i]) === aURL) {
-      gBrowser.selectedTab = tabs[i];
+      if (!inBackground) {
+        gBrowser.selectedTab = tabs[i];
+      }
       return;
     }
   }
-  gBrowser.loadOneTab(aURL);
+  gBrowser.loadOneTab(aURL, {inBackground: inBackground});
 }
 
 function $ID(aId) {
