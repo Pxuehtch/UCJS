@@ -469,9 +469,14 @@ const History = {
 //********** Utilities
 
 function selectOrOpen(aURL) {
+  function getURL(aTab) {
+    let browser = gBrowser.getBrowserForTab(aTab);
+    return browser.userTypedValue || browser.currentURI.spec;
+  }
+
   let tabs = gBrowser.visibleTabs;
   for (let i = 0; i < tabs.length; i++) {
-    if (gBrowser.getBrowserForTab(tabs[i]).currentURI.spec === aURL) {
+    if (getURL(tabs[i]) === aURL) {
       gBrowser.selectedTab = tabs[i];
       return;
     }
