@@ -464,8 +464,8 @@ var mReferrer = {
     return query.referrerURL || query.fromVisit;
   },
 
-  getTitle: function(aTab) {
-    return getPageTitle(this.getURL(aTab));
+  fetchTitle: function(aTab, aCallback) {
+    fetchPageTitle(this.getURL(aTab), aCallback);
   },
 
   exists: function(aTab) {
@@ -627,7 +627,9 @@ var mTabSuspender = {
         browser.stop();
       }
       if (isBlank) {
-        aTab.label = getPageTitle(loadingURL);
+        fetchPageTitle(loadingURL, function(aTitle) {
+          aTab.label = aTitle;
+        });
       }
     }
   },
@@ -1421,14 +1423,21 @@ function htmlUnescape(aString) {
     replace(/&apos;/g, "'");
 }
 
-function getPageTitle(aURL) {
-  var title;
-  try {
-    // @see resource://gre/modules/PlacesUtils.jsm
-    title = window.PlacesUtils.history.getPageTitle(makeURI(aURL));
-  } catch (ex) {}
+function fetchPageTitle(aURL, aCallback) {
+  let uri = makeURI(aURL);
+  if (!uri) {
+    aCallback(aURL);
+  }
 
-  return title || aURL;
+  // @see resource://gre/modules/PlacesUtils.jsm
+  window.PlacesUtils.promisePlaceInfo(uri).then(
+    function onSuccess(aPlaceInfo) {
+      aCallback(aPlaceInfo.title || aURL);
+    },
+    function onFailure(aReason) {
+      aCallback(aURL);
+    }
+  );
 }
 
 function makeURI(aURL) {
@@ -1522,25 +1531,26 @@ function customizeTabTooltip() {
 
   function onPopup(aEvent) {
     aEvent.stopPropagation();
-    let tooltip = aEvent.target;
     let tab = window.document.tooltipNode;
     if (tab.localName !== 'tab' || tab.mOverCloseButton) {
       return;
     }
 
-    // WORKAROUND: The tooltip is delayed-shown after a tab with a cursor is
-    // removed (e.g. clicking the middle button of mouse). Then, the tooltip
-    // is useless.
+    // WORKAROUND: The tooltip is delayed-shown after a tab under a cursor is
+    // removed (e.g. clicking the middle button of mouse on the tab). Then,
+    // the tooltip is useless.
     if (!tab.linkedBrowser) {
       return;
     }
 
+    let tooltip = aEvent.target;
     // add the information of the parent tab to a tab which is newly opened
     if (!tab.linkedBrowser.canGoBack && mReferrer.exists(tab)) {
-      // |createTooltip| would set the title of the tab by default
-      let label = tooltip.label;
-      label += '\n\nFrom: ' + mReferrer.getTitle(tab);
-      tooltip.setAttribute('label', label);
+      // the document title is fetched by async history API
+      mReferrer.fetchTitle(tab, function(aTitle) {
+        let label = tooltip.label + '\n\nFrom: ' + aTitle;
+        tooltip.setAttribute('label', label);
+      });
     }
   }
 }

@@ -183,18 +183,16 @@ const Referrer = {
     return false;
   },
 
-  getURL: function() {
-    if (this.referrer) {
-      return this.referrer.getURL(gBrowser.selectedTab);
-    }
-    return '';
-  },
+  fetchInfo: function(aCallback) {
+    let info = {};
 
-  getTitle: function() {
-    if (this.referrer) {
-      return this.referrer.getTitle(gBrowser.selectedTab);
-    }
-    return '';
+    info.URL = this.referrer.getURL(gBrowser.selectedTab);
+
+    // the document title is fetched by async history API
+    this.referrer.fetchTitle(gBrowser.selectedTab, function(aTitle) {
+      info.title = aTitle;
+      aCallback(info);
+    });
   }
 };
 
@@ -227,13 +225,15 @@ const Tooltip = {
     let referrer = backward && Referrer.exists();
     let disabled = button.disabled;
 
-    this.build(History.scan({
+    History.scan({
       backward: backward,
       referrer: referrer,
       disabled: disabled
-    }));
-
-    this.tooltip.openPopup(button, 'after_start', 0, 0, false, false);
+    },
+    function(aData) {
+      this.build(aData);
+      this.tooltip.openPopup(button, 'after_start', 0, 0, false, false);
+    }.bind(this));
   },
 
   build: function(aData) {
@@ -330,7 +330,14 @@ const Tooltip = {
  * Handler of history
  */
 const History = {
-  initData: function(aBackward, aReferrer) {
+  scan: function(aParam, aCallback) {
+    this.initData(aParam, function(aData) {
+      this.updateData(aParam, aData);
+      aCallback(aData);
+    }.bind(this));
+  },
+
+  initData: function(aParam, aCallback) {
     function Entry() {
       return {
         title: '',
@@ -340,34 +347,43 @@ const History = {
       };
     }
 
+    let {backward, referrer} = aParam;
+
     let data = {
-      backward: aBackward,
+      backward: backward,
       neighbor: Entry(),
       border:   Entry(),
       stop:     Entry(),
       referrer: Entry()
     };
 
-    if (aReferrer) {
-      data.referrer.title = Referrer.getTitle();
-      data.referrer.URL = Referrer.getURL();
+    if (referrer) {
+      Referrer.fetchInfo(function(aInfo) {
+        data.referrer.title = aInfo.title;
+        data.referrer.URL = aInfo.URL;
+
+        this.data = data;
+        aCallback(data);
+      }.bind(this));
+      return;
     }
 
-    return this.data = data;
+    this.data = data;
+    aCallback(data);
   },
 
-  scan: function({backward, referrer, disabled}) {
-    let data = this.initData(backward, referrer);
+  updateData: function(aParam, aData) {
+    let {backward, disabled} = aParam;
 
     if (disabled) {
-      return data;
+      return;
     }
 
     let sh = this.getSessionHistory();
     if (!sh ||
         (backward && sh.index === 0) ||
         (!backward && sh.index === sh.count - 1)) {
-      return data;
+      return;
     }
 
     let step = backward ? -1 : 1;
@@ -383,9 +399,9 @@ const History = {
     }
 
     [
-      [data.neighbor, sh.index + step],
-      [data.border, border - step],
-      [data.stop, backward ? 0 : sh.count - 1]
+      [aData.neighbor, sh.index + step],
+      [aData.border, border - step],
+      [aData.stop, backward ? 0 : sh.count - 1]
     ].
     forEach(function([entry, index]) {
       if (sh.index !== index) {
@@ -396,8 +412,6 @@ const History = {
         entry.distance = Math.abs(index - sh.index);
       }
     });
-
-    return data;
   },
 
   getSessionHistory: function() {
