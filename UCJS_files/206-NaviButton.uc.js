@@ -355,38 +355,6 @@ const History = {
     return this.data = data;
   },
 
-  jump: function(aEvent) {
-    let {shiftKey, ctrlKey} = aEvent;
-
-    let referrer = this.data.referrer.URL;
-    if (referrer) {
-      if (!gBrowser.canGoBack || (shiftKey && ctrlKey)) {
-        selectOrOpen(referrer);
-        return;
-      }
-    }
-
-    let index = -1;
-    if (!shiftKey && !ctrlKey) {
-      index = this.data.neighbor.index;
-    }
-    else if (shiftKey && !ctrlKey) {
-      index = this.data.border.index;
-    }
-    else if (ctrlKey && !shiftKey) {
-      index = this.data.stop.index;
-    }
-
-    if (index < 0) {
-      return;
-    }
-
-    if (aEvent.button === 1) {
-      gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
-    }
-    gBrowser.webNavigation.gotoIndex(index);
-  },
-
   scan: function({backward, referrer, disabled}) {
     let data = this.initData(backward, referrer);
 
@@ -462,6 +430,38 @@ const History = {
 
       return info;
     }
+  },
+
+  jump: function(aEvent) {
+    let {shiftKey, ctrlKey} = aEvent;
+
+    let referrer = this.data.referrer.URL;
+    if (referrer) {
+      if (!gBrowser.canGoBack || (shiftKey && ctrlKey)) {
+        selectOrOpen(referrer);
+        return;
+      }
+    }
+
+    let index = -1;
+    if (!shiftKey && !ctrlKey) {
+      index = this.data.neighbor.index;
+    }
+    else if (shiftKey && !ctrlKey) {
+      index = this.data.border.index;
+    }
+    else if (ctrlKey && !shiftKey) {
+      index = this.data.stop.index;
+    }
+
+    if (index < 0) {
+      return;
+    }
+
+    if (aEvent.button === 1) {
+      gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
+    }
+    gBrowser.webNavigation.gotoIndex(index);
   }
 };
 
