@@ -240,6 +240,7 @@ const kSiteList = [
       let css = '\
         /* content area container */\
         .col{\
+          float:none!important;\
           width:auto!important;\
         }\
         /* block items */\
