@@ -121,7 +121,6 @@ const kPref = {
     kPosType.PREV_ADJACENT_ANCESTOR,
     kPosType.ANYWHERE_OPENER,
     kPosType.ANYWHERE_PREV_SELECTED,
-    kPosType.ANYWHERE_OLDEST_UNREAD,
     kPosType.FIRST_END
   ],
   // for closing a selected pinned tab
