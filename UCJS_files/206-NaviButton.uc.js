@@ -349,7 +349,8 @@ const History = {
 
     let {backward, referrer} = aParam;
 
-    let data = {
+    // make a new property
+    this.data = {
       backward: backward,
       neighbor: Entry(),
       border:   Entry(),
@@ -359,17 +360,15 @@ const History = {
 
     if (referrer) {
       Referrer.fetchInfo(function(aInfo) {
-        data.referrer.title = aInfo.title;
-        data.referrer.URL = aInfo.URL;
+        this.data.referrer.title = aInfo.title;
+        this.data.referrer.URL = aInfo.URL;
 
-        this.data = data;
-        aCallback(data);
+        aCallback(this.data);
       }.bind(this));
       return;
     }
 
-    this.data = data;
-    aCallback(data);
+    aCallback(this.data);
   },
 
   updateData: function(aParam, aData) {
