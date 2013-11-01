@@ -82,6 +82,16 @@
   <key id="ucjs_key_StopAllRequest"
     keycode="VK_ESCAPE" modifiers="shift"
     oncommand="BrowserStop();"/>
+
+  <!-- Error Console -->
+  <key id="ucjs_key_ErrorConsole"
+    key="J" modifiers="control,alt,shift"
+    oncommand="toJavaScriptConsole();"/>
+
+  <!-- addon: DOM Inspector -->
+  <key id="key_inspectPage"
+    key="I" modifiers="control,alt,shift"
+    command="Tasks:InspectPage"/>
 </keyset>
 
 
