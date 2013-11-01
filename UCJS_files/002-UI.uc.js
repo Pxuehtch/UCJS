@@ -250,23 +250,23 @@ var mStatusField = (function() {
         .statuspanel-label{\
           font-weight:bolder!important;\
         }\
-        #statusbar-display:not([%%kStatusAttribute.LINKSTATE%%]) label{\
+        statuspanel:not([%%kStatusAttribute.LINKSTATE%%]) label{\
           color:brown!important;\
         }\
-        #statusbar-display[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
+        statuspanel[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
           color:green!important;\
         }\
-        #statusbar-display[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
+        statuspanel[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
           color:purple!important;\
         }\
-        #statusbar-display[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
+        statuspanel[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
           color:red!important;\
         }\
-        #statusbar-display[%%kStatusAttribute.MESSAGE%%] label{\
+        statuspanel[%%kStatusAttribute.MESSAGE%%] label{\
           color:blue!important;\
         }\
-        #statusbar-display[inactive],\
-        #statusbar-display[label=""]{\
+        statuspanel[inactive],\
+        statuspanel[label=""]{\
           display:none!important;\
         }\
       ';

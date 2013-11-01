@@ -301,66 +301,90 @@ var ucjsMisc = {};
 })();
 
 /**
- * Show the status text in the URL bar
- * @note The default statusbar is used when the fullscreen mode.
- * @require UI.uc.js
- *
- * TODO: The URLbar is initialized when the toolbar customization panel opens.
- * Observe it and fix our broken functions.
- * WORKAROUND: Restart Firefox after customizing.
+ * Show a status text in the URL bar
+ * @note The default statuspanel is used when the fullscreen mode
  */
 (function() {
-  // move '#statusbar-display' before 'input.urlbar-input' to control them
-  // by CSS
-  attachStatusField();
-  function attachStatusField() {
-    const {ucjsUI} = window;
-    let statusField = ucjsUI.StatusField.textBox;
-    let urlbarTextbox = ucjsUI.URLBar.textBox;
-    urlbarTextbox.insertBefore(statusField, urlbarTextbox.firstChild);
-  }
 
-  // Set the position of a status display
-  // @modified chrome://browser/content/browser.js::
-  // XULBrowserWindow::updateStatusField
-  const {XULBrowserWindow} = window;
-  var $updateStatusField = XULBrowserWindow.updateStatusField;
-  XULBrowserWindow.updateStatusField = function() {
-    // style of #statusbar-display
-    var style = this.statusTextField.style;
-    if (!window.fullScreen) {
-      // input.urlbar-input
-      let inputBox = this.statusTextField.nextSibling;
-      let {offsetWidth: width, offsetLeft: left, offsetTop: top} = inputBox;
+  const kState = {
+    hidden: 'ucjs_StatusInURLBar_hidden'
+  };
 
-      if (style.width !== width + 'px') {
-        style.width = width + 'px';
+  observeURLBar();
+  function observeURLBar() {
+    addEvent([gURLBar, 'focus', hideStatus, false]);
+    addEvent([gURLBar, 'mouseenter', hideStatus, false]);
+    addEvent([gURLBar, 'mouseleave', showStatus, false]);
+
+    function showStatus(aEvent) {
+      if (window.fullScreen) {
+        return;
       }
-      if (style.left !== left + 'px') {
-        style.left = left + 'px';
-      }
-      if (style.top !== top + 'px') {
-        style.top = top + 'px';
-      }
-    } else {
-      if (style.width) {
-        style.removeProperty('width');
-        style.removeProperty('left');
-        style.removeProperty('top');
+
+      let statusPanel = getStatusPanel();
+      if (statusPanel.hasAttribute(kState.hidden)) {
+        statusPanel.removeAttribute(kState.hidden);
       }
     }
 
+    function hideStatus(aEvent) {
+      if (window.fullScreen) {
+        return;
+      }
+
+      let statusPanel = getStatusPanel();
+      if (!statusPanel.hasAttribute(kState.hidden)) {
+        statusPanel.setAttribute(kState.hidden, true);
+      }
+    }
+  }
+
+  function getStatusPanel() {
+    // <statuspanel>
+    return window.XULBrowserWindow.statusTextField;
+  }
+
+  // @modified chrome://browser/content/browser.js::
+  // XULBrowserWindow::updateStatusField
+  const $updateStatusField = window.XULBrowserWindow.updateStatusField;
+  window.XULBrowserWindow.updateStatusField = function() {
     $updateStatusField.apply(this, arguments);
+
+    let statusPanelStyle = getStatusPanel().style;
+    let positions = ['top', 'left', 'width', 'height'];
+
+    if (!window.fullScreen) {
+      // <input.urlbar-input>
+      let urlbarInputRect = $ANONID('input', gURLBar).getBoundingClientRect();
+      positions.forEach(function(key) {
+        if (statusPanelStyle[key] !== urlbarInputRect[key] + 'px') {
+          statusPanelStyle[key] = urlbarInputRect[key] + 'px';
+        }
+      });
+    } else {
+      positions.forEach(function(key) {
+        if (statusPanelStyle[key]) {
+          statusPanelStyle.removeProperty(key);
+        }
+      });
+    }
   };
 
-  setChromeCSS('\
-    #main-window:not([inFullscreen]) #statusbar-display{\
-      -moz-appearance:none!important;\
+  const css = '\
+    #main-window:not([inFullscreen]) statuspanel[%%kState.hidden%%]{\
+      visibility:collapse!important;\
+    }\
+    #main-window:not([inFullscreen]) statuspanel{\
+      position:fixed!important;\
       margin:0!important;\
       padding:0!important;\
       max-width:none!important;\
+      border-radius:1.5px!important;\
+      background-color:hsl(0,0%,90%)!important;\
     }\
     #main-window:not([inFullscreen]) .statuspanel-inner{\
+      margin:0!important;\
+      padding:0!important;\
       height:1em!important;\
     }\
     #main-window:not([inFullscreen]) .statuspanel-inner:before{\
@@ -376,16 +400,10 @@ var ucjsMisc = {};
       border:none!important;\
       background:none transparent!important;\
     }\
-    #main-window:not([inFullscreen]) #urlbar:hover #statusbar-display,\
-    #main-window:not([inFullscreen]) #urlbar[focused] #statusbar-display{\
-      visibility:collapse!important;\
-    }\
-    #main-window:not([inFullscreen]) #urlbar:not(:hover):not([focused]) #statusbar-display:not([inactive])+.urlbar-input{\
-      border-radius:1.5px!important;\
-      background-color:hsl(0,0%,90%)!important;\
-      color:hsl(0,0%,90%)!important;\
-    }\
-  ');
+  ';
+
+  setChromeCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
+
 })();
 
 /**
