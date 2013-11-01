@@ -151,7 +151,7 @@ function getClickManager(aElement) {
  * Gets nsITypeAheadFind of the current browser
  */
 function getFastFind() {
-  return gBrowser.fastFind;
+  return gFindBar.browser.fastFind;
 }
 
 

@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note A default function is modified. see @modified
+// @note default functions are modified. see @modified
 
 
 (function(window, undefined) {
@@ -61,39 +61,48 @@ const kConfig = {
  * Wrapper of gFindBar
  * @see chrome://global/content/bindings/findbar.xml
  */
-var TextFinder = (function() {
-  // @see chrome://browser/content/browser.js
-  const {gFindBar} = window;
+const TextFinder = {
+  get isResultFound() {
+    return gFindBar._foundEditable || gFindBar._currentWindow;
+  },
 
-  return {
-    get isResultFound() {
-      return gFindBar._foundEditable || gFindBar._currentWindow;
-    },
-
-    get selectionController() {
-      var editable = gFindBar._foundEditable;
-      if (editable) {
-        try {
-          return editable.
-            QueryInterface(window.Ci.nsIDOMNSEditableElement).
-            editor.
-            selectionController;
-        } catch (ex) {}
-        return null;
-      }
-
-      if (gFindBar._currentWindow) {
-        return gFindBar._getSelectionController(gFindBar._currentWindow);
-      }
+  get selectionController() {
+    var editable = gFindBar._foundEditable;
+    if (editable) {
+      try {
+        return editable.
+          QueryInterface(window.Ci.nsIDOMNSEditableElement).
+          editor.
+          selectionController;
+      } catch (ex) {}
       return null;
     }
-  };
-})();
+
+    if (gFindBar._currentWindow) {
+      return gFindBar._getSelectionController(gFindBar._currentWindow);
+    }
+    return null;
+  }
+};
 
 /**
  * Main function
  */
 function FindAgainScroller_init() {
+  // @modified chrome://browser/content/browser.js::gFindBar
+  window.__defineGetter__('gFindBar', function() {
+    let initialized = window.gFindBarInitialized;
+    let findBar = window.gBrowser.getFindBar();
+
+    if (!initialized) {
+      attachFindAgainCommand();
+    }
+
+    return findBar;
+  });
+}
+
+function attachFindAgainCommand() {
   var mScrollObserver = ScrollObserver();
 
   // Optional functions
@@ -104,7 +113,6 @@ function FindAgainScroller_init() {
 
   // @modified chrome://global/content/bindings/findbar.xml::
   // onFindAgainCommand
-  const {gFindBar} = window;
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
     // take a snapshot of the state of scroll before finding
