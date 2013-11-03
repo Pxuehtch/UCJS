@@ -89,17 +89,18 @@ const TextFinder = {
  * Main function
  */
 function FindAgainScroller_init() {
-  // @modified chrome://browser/content/browser.js::gFindBar
-  window.__defineGetter__('gFindBar', function() {
-    let initialized = window.gFindBarInitialized;
-    let findBar = window.gBrowser.getFindBar();
+  // @modified chrome://browser/content/tabbrowser.xml::getFindBar
+  const $getFindBar = gBrowser.getFindBar;
+  gBrowser.getFindBar = function(aTab) {
+    let initialized = gBrowser.isFindBarInitialized(aTab);
+    let findBar = $getFindBar.apply(this, arguments);
 
     if (!initialized) {
       attachFindAgainCommand();
     }
 
     return findBar;
-  });
+  };
 }
 
 function attachFindAgainCommand() {
