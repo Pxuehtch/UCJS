@@ -313,11 +313,12 @@ var ucjsMisc = {};
   observeURLBar();
   function observeURLBar() {
     addEvent([gURLBar, 'focus', hideStatus, false]);
+    addEvent([gURLBar, 'blur', showStatus, false]);
     addEvent([gURLBar, 'mouseenter', hideStatus, false]);
     addEvent([gURLBar, 'mouseleave', showStatus, false]);
 
     function showStatus(aEvent) {
-      if (window.fullScreen) {
+      if (gURLBar.focused) {
         return;
       }
 
@@ -328,10 +329,6 @@ var ucjsMisc = {};
     }
 
     function hideStatus(aEvent) {
-      if (window.fullScreen) {
-        return;
-      }
-
       let statusPanel = getStatusPanel();
       if (!statusPanel.hasAttribute(kState.hidden)) {
         statusPanel.setAttribute(kState.hidden, true);
