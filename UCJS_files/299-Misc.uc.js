@@ -303,6 +303,8 @@ var ucjsMisc = {};
 /**
  * Show a status text in the URL bar
  * @note The default statuspanel is used when the fullscreen mode
+ *
+ * TODO: fix the overflowed width of status text (sometimes in loading a page)
  */
 (function() {
 
@@ -348,18 +350,18 @@ var ucjsMisc = {};
     $updateStatusField.apply(this, arguments);
 
     let statusPanelStyle = getStatusPanel().style;
-    let positions = ['top', 'left', 'width', 'height'];
+    let rectKeys = ['top', 'left', 'width', 'height'];
 
     if (!window.fullScreen) {
       // <input.urlbar-input>
       let urlbarInputRect = $ANONID('input', gURLBar).getBoundingClientRect();
-      positions.forEach(function(key) {
+      rectKeys.forEach(function(key) {
         if (statusPanelStyle[key] !== urlbarInputRect[key] + 'px') {
           statusPanelStyle[key] = urlbarInputRect[key] + 'px';
         }
       });
     } else {
-      positions.forEach(function(key) {
+      rectKeys.forEach(function(key) {
         if (statusPanelStyle[key]) {
           statusPanelStyle.removeProperty(key);
         }
