@@ -167,7 +167,7 @@ var ucjsMisc = {};
  */
 (function() {
 
-  // Toggles TAB-key focusing behavor.
+  // Toggles TAB-key focusing behavior
 
   // @pref see http://kb.mozillazine.org/Accessibility.tabfocus
   // 1: Give focus to text fields only
@@ -192,16 +192,16 @@ var ucjsMisc = {};
 
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_toggleTabFocus',
-    key: 'q',
-    modifiers: 'shift,control',
+    key: 'f',
+    modifiers: 'shift,control,alt',
     oncommand: command
   }));
 
   // Gives focus on the content area.
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_focusInContentArea',
-    key: 'q',
-    modifiers: 'control',
+    key: 'f',
+    modifiers: 'control,alt',
     oncommand: 'gBrowser.contentDocument.documentElement.focus();'
   }));
 
