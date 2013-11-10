@@ -185,14 +185,14 @@ const kGestureSet = [
     }
   },
   {
-    gestures: ['S&DRUL', 'DRULW+', 'DRULW-'],
+    gestures: ['S&DURD', 'DURDW+', 'DURDW-'], // shape of 'h'
     name: 'ホームだけにする',
     command: function() {
       window.ucjsUtil.openHomePages({doReplace: true});
     }
   },
   {
-    gestures: ['DURD'], // shape of 'h'.
+    gestures: ['DURD'], // shape of 'h'
     name: 'ホームを開く',
     command: function() {
       window.ucjsUtil.openHomePages();
