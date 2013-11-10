@@ -25,6 +25,7 @@
 
 <!-- command -->
 <commandset id="mainCommandSet">
+  <!-- overwrite the default -->
   <command id="cmd_find"
     oncommand="ucjsUI.FindBar.toggleFindbar();"/>
 
@@ -85,6 +86,7 @@
     oncommand="toJavaScriptConsole();"/>
 
   <!-- addon: DOM Inspector -->
+  <!-- overwrite the default -->
   <key id="key_inspectPage"
     key="I" modifiers="control,alt,shift"
     command="Tasks:InspectPage"/>
