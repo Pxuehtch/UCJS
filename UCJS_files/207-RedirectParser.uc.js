@@ -70,7 +70,7 @@ const kPreset = [
   },
   {
     name: 'Google 画像検索',
-    link: /^https?:\/\/(?:www|images)\.google\..+?\/imgres\?(?:.*?imgurl=(.+?)&)?(?:.*?imgrefurl=(.+?)&)?.+$/,
+    link: /^https?:\/\/(?:www|images)\.google\..+?\/imgres\?(?=.*?imgurl=([^&]+))(?=.*?imgrefurl=([^&]+)).*$/,
     items: [
       {
         replacement: '$1',
