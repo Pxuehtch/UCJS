@@ -223,25 +223,25 @@ const Prefs = (function() {
       return;
     }
 
-    try {
-      if (get(aKey) !== aValue) {
-        switch (typeof aValue) {
-          case 'boolean':
-            prefs.setBoolPref(aKey, aValue);
-            break;
-          case 'number':
-            prefs.setIntPref(aKey, aValue);
-            break;
-          case 'string':
-            {
-              let string = XPCOM.$I('SupportsString');
-              string.data = aValue;
-              prefs.setComplexValue(aKey, window.Ci.nsISupportsString, string);
-            }
-            break;
+    if (get(aKey) === aValue) {
+      return;
+    }
+
+    switch (typeof aValue) {
+      case 'boolean':
+        prefs.setBoolPref(aKey, aValue);
+        break;
+      case 'number':
+        prefs.setIntPref(aKey, aValue);
+        break;
+      case 'string':
+        {
+          let string = XPCOM.$I('SupportsString');
+          string.data = aValue;
+          prefs.setComplexValue(aKey, window.Ci.nsISupportsString, string);
         }
-      }
-    } catch (ex) {}
+        break;
+    }
   }
 
   function clear(aKey) {
