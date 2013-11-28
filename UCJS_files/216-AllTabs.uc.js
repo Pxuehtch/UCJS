@@ -7,7 +7,7 @@
 // @require Util.uc.js, UI.uc.js
 // @usage Access to the tab view button in the tab bar.
 // @note Some default functions are modified. see @modified
-// @see https://github.com/teramako/Pano/blob/master/chrome/content/pano-menu.sub.js
+
 
 (function(window, undefined) {
 

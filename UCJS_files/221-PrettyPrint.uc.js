@@ -403,7 +403,7 @@ const Beautifier = (function() {
    * @note this version doesn't support |wrap_line_length| option
    *
    * based on JS Beautifier beautify.js
-   * @see https://github.com/einars/js-beautify
+   * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
   let BuiltinBeautifier = {};
   window.XPCOMUtils.defineLazyModuleGetter(BuiltinBeautifier, 'js_beautify',
@@ -421,8 +421,11 @@ const Beautifier = (function() {
   }
 
   /**
-   * JS Beautifier beautify-css.js Apr 28, 2013
+   * JS Beautifier beautify-css.js [Apr 28, 2013]
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify-css.js
+   *
+   * TODO: version [Nov 22, 2013] seems to be incompatible with this user
+   * script. So stop updating until I find what wrong.
    *
    * The MIT License (MIT)
    *
