@@ -167,24 +167,6 @@ const kNoiseList = [
  */
 const kSiteList = [
   {
-    // @note Needed to put before 'Google Result'
-    name: 'Google Image Result',
-    include: [
-      /^https?:\/\/www\.google\.[a-z.]+\/[^#]*tb[ms]=isch[^#]*$/,
-      /^https?:\/\/www\.google\.[a-z.]+\/.*#.*tb[ms]=isch/,
-      /^https?:\/\/images\.google\.[a-z.]+\/search\?.+/
-    ],
-    quickScript: function(aDocument) {
-      var location = aDocument.location;
-      // switch to the old mode
-      if (!/[?&#]sout=1/.test(location.href)) {
-        location.replace(location.href + '&sout=1');
-        return false;
-      }
-      return true;
-    }
-  },
-  {
     name: 'Google Result',
     include: /^https?:\/\/www\.google\.[a-z.]+\/.*q=/,
     script: function(aDocument) {
@@ -238,11 +220,6 @@ const kSiteList = [
 
       // common styles
       let css = '\
-        /* content area container */\
-        .col{\
-          float:none!important;\
-          width:auto!important;\
-        }\
         /* block items */\
         .nrgt>tbody>tr>td,.ts>tbody>tr>td{\
           float:left!important;\
@@ -265,9 +242,20 @@ const kSiteList = [
           margin:0!important;\
         }';
 
+      // workaround for broken styles
+      // except for images, shopping
+      if (!testMode('isch|shop')) {
+        css += '\
+          /* content area container */\
+          .col{\
+            float:none!important;\
+            width:auto!important;\
+          }';
+      }
+
       // each item styles
-      // except for shopping, application, books, places
-      if (!testMode('shop|app|bks|plcs')) {
+      // except for images, shopping, application, books
+      if (!testMode('isch|shop|app|bks')) {
         css += '\
           .ucjs_sitestyle_samehost cite::before{\
             content:"=";\
@@ -288,8 +276,8 @@ const kSiteList = [
       }
 
       // multi-column
-      // except for shopping, places
-      if (!testMode('shop|plcs')) {
+      // except for images, shopping
+      if (!testMode('isch|shop')) {
         css += '\
           /* hide right pane */\
           #rhs,#rhscol,#leftnav+td+td{\
