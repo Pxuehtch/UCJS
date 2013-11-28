@@ -47,16 +47,22 @@ const XPCOM = (function() {
       IID: 'nsIDocumentEncoder'
     },
     'ScriptableUnicodeConverter': {
+      // @note no version number needed
       CID: '@mozilla.org/intl/scriptableunicodeconverter',
       IID: 'nsIScriptableUnicodeConverter'
     },
     'Timer': {
       CID: '@mozilla.org/timer;1',
       IID: 'nsITimer'
+    },
+    'SupportsString': {
+      CID: '@mozilla.org/supports-string;1',
+      IID: 'nsISupportsString'
     }//,
   };
 
   function getService(aName, aCIDParams) {
+    // @see resource://gre/modules/Services.jsm
     if (window.Services.hasOwnProperty(aName)) {
       return window.Services[aName];
     }
@@ -185,6 +191,7 @@ const Timer = (function() {
 
 /**
  * Preferences handler
+ * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/preferences/service.js
  */
 const Prefs = (function() {
   function getPrefs() {
@@ -201,7 +208,7 @@ const Prefs = (function() {
         case prefs.PREF_INT:
           return prefs.getIntPref(aKey);
         case prefs.PREF_STRING:
-          return prefs.getCharPref(aKey);
+          return prefs.getComplexValue(aKey, window.Ci.nsISupportsString).data;
       }
     } catch (ex) {}
     return aDefaultValue || null;
@@ -226,9 +233,13 @@ const Prefs = (function() {
             prefs.setIntPref(aKey, aValue);
             break;
           case 'string':
-            prefs.setCharPref(aKey, aValue);
+            {
+              let string = XPCOM.$I('SupportsString');
+              string.data = aValue;
+              prefs.setComplexValue(aKey, window.Ci.nsISupportsString, string);
+            }
             break;
-        };
+        }
       }
     } catch (ex) {}
   }
