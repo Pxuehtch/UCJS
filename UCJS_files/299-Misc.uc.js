@@ -41,12 +41,13 @@ var ucjsMisc = {};
  */
 (function() {
 
-  var tooltip = $ID('mainPopupSet').appendChild(
+  let tooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
       id: 'ucjs_misc_urltooltip'
     })
   );
 
+  const kTooltipShowDelay = 500; // [ms]
   let tooltipTimer = null;
 
   // @modified chrome://browser/content/urlbarBindings.xml::
@@ -60,7 +61,7 @@ var ucjsMisc = {};
       tooltip.label = this.value;
       tooltip.maxWidth = this.boxObject.width;
       tooltip.openPopup(this, 'after_start', 0, 0, false, false);
-    }.bind(this), 500);
+    }.bind(this), kTooltipShowDelay);
   };
 
   // @modified chrome://browser/content/urlbarBindings.xml::

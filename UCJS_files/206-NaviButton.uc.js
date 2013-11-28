@@ -206,7 +206,8 @@ const Tooltip = {
   },
 
   delayShow: function(aEvent) {
-    this.timer = setTimeout(this.show.bind(this), 500, aEvent);
+    const kTooltipShowDelay = 500; // [ms]
+    this.timer = setTimeout(this.show.bind(this), kTooltipShowDelay, aEvent);
   },
 
   hide: function(aEvent) {
