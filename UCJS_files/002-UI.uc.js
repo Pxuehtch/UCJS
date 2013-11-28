@@ -17,6 +17,22 @@ var ucjsUI = (function(window, undefined) {
 
 
 /**
+ * Imports
+ */
+const {
+  Timer: {
+    setImmediate
+  },
+  getNodeByAnonid: $ANONID,
+  getNodesByXPath: $X,
+  setEventListener: addEvent,
+  setChromeStyleSheet: setCSS,
+  scanPlacesDB
+} = window.ucjsUtil;
+// for debug
+const log = window.ucjsUtil.logMessage.bind(null, 'UI.uc.js');
+
+/**
  * Context area
  */
 var mContentArea = {
@@ -388,7 +404,7 @@ function manageContextMenuSeparators() {
     var contextMenu = container.contextMenu;
     addEvent([contextMenu, 'popupshowing', function(event) {
       if (event.target === contextMenu) {
-        setTimeout(manage, 0, $X('xul:menuseparator', contextMenu));
+        setImmediate(manage, $X('xul:menuseparator', contextMenu));
       }
     }, false]);
   });
@@ -431,33 +447,6 @@ function manageContextMenuSeparators() {
 
 function $ID(aId) {
   return window.document.getElementById(aId);
-}
-
-
-//********** Imports
-
-function $ANONID(aId, aContext) {
-  return window.ucjsUtil.getNodeByAnonid(aId, aContext);
-}
-
-function $X(aXPath, aContext) {
-  return window.ucjsUtil.getNodesByXPath(aXPath, aContext);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function setCSS(aCSS, aTitle) {
-  window.ucjsUtil.setChromeStyleSheet(aCSS);
-}
-
-function scanPlacesDB(aParam) {
-  return window.ucjsUtil.scanPlacesDB(aParam);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('UI.uc.js', aMsg);
 }
 
 

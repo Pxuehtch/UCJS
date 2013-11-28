@@ -142,7 +142,6 @@ const XPCOM = (function() {
 
 /**
  * Timer handler
- * Alternative native timers
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
  */
 const Timer = (function() {
@@ -151,13 +150,13 @@ const Timer = (function() {
   // instance constructor
   const createTimer = XPCOM.$C('Timer');
 
-  let timers = {};
   let lastID = 0;
+  let timers = {};
+  let immediates = new Map();
 
-  function setTimer(aType, aCallback, aDelay) {
+  function setTimer(aType, aCallback, aDelay, ...aParams) {
     let id = ++lastID;
     let timer = timers[id] = createTimer();
-    let args = Array.slice(arguments, 3);
 
     timer.initWithCallback({
       notify: function notify() {
@@ -165,7 +164,7 @@ const Timer = (function() {
           if (aType === TYPE_ONE_SHOT) {
             delete timers[id];
           }
-          aCallback.apply(null, args);
+          aCallback.apply(null, aParams);
         } catch (ex) {}
       }
     }, aDelay || 0, aType);
@@ -181,11 +180,54 @@ const Timer = (function() {
     }
   }
 
+  let dispatcher = _ => {
+    dispatcher.scheduled = false;
+
+    let ids = [id for ([id] of immediates)];
+    for (let id of ids) {
+      let immediate = immediates.get(id);
+      if (immediate) {
+        immediates.delete(id);
+        try {
+          immediate();
+        } catch (ex) {}
+      }
+    }
+  }
+
+  function setImmediate(aCallback, ...aParams) {
+    let id = ++lastID;
+
+    immediates.set(id, _ => aCallback.apply(aCallback, aParams));
+
+    if (!dispatcher.scheduled) {
+      dispatcher.scheduled = true;
+
+      let currentThread = XPCOM.$S('tm').currentThread;
+      currentThread.dispatch(dispatcher, currentThread.DISPATCH_NORMAL);
+    }
+    return id;
+  }
+
+  function clearImmediate(aID) {
+    immediates.delete(aID);
+  }
+
+  // all timers are cleared out on unload
+  setEventListener([window, 'unload', function() {
+    immediates.clear();
+    Object.keys(timers).forEach(unsetTimer);
+  }, false]);
+
   return {
     setTimeout: setTimer.bind(null, TYPE_ONE_SHOT),
-    setInterval: setTimer.bind(null, TYPE_REPEATING_SLACK),
     clearTimeout: unsetTimer.bind(null),
-    clearInterval: unsetTimer.bind(null)
+
+    setInterval: setTimer.bind(null, TYPE_REPEATING_SLACK),
+    clearInterval: unsetTimer.bind(null),
+
+    setImmediate: setImmediate.bind(null),
+    clearImmediate: clearImmediate.bind(null)
   };
 })();
 
