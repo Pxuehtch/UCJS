@@ -453,38 +453,40 @@ var ucjsMisc = {};
 (function() {
 
   function restartFx(aOption) {
-    const kPref_resume_from_crash = 'browser.sessionstore.resume_from_crash';
-    const kWaitingTime = 5000;
-
+    // @see resource://gre/modules/PrivateBrowsingUtils.jsm
+    // @see http://kb.mozillazine.org/Browser.sessionstore.resume_from_crash
     if (window.PrivateBrowsingUtils.isWindowPrivate(window) ||
-        getPref(kPref_resume_from_crash) !== false) {
+        getPref('browser.sessionstore.resume_from_crash') !== false) {
       doRestart(aOption);
       return;
     }
+
+    const kStateUpdateTopic = 'sessionstore-state-write-complete';
+    let stateUpdateObserving = true;
+    window.Services.obs.addObserver(onStateUpdated, kStateUpdateTopic, false);
+
+    const kWaitTime = 5000;
+    let waitTimer = setTimeout(onTimeExpired, kWaitTime);
 
     // to pin a tab will update the session store
     let pinnedTab = gBrowser.addTab('about:blank');
     gBrowser.pinTab(pinnedTab);
 
-    let stateUpdateTopic = 'sessionstore-state-write-complete';
-    let stateUpdateObserver = true;
-    window.Services.obs.addObserver(onStateUpdated, stateUpdateTopic, false);
-    let waitingTimer = setTimeout(onTimeExpired, kWaitingTime);
-
     function cleanup() {
+      if (stateUpdateObserving) {
+        window.Services.obs.removeObserver(onStateUpdated, kStateUpdateTopic);
+        stateUpdateObserving = false;
+      }
+
+      if (waitTimer) {
+        clearTimeout(waitTimer);
+        waitTimer = null;
+      }
+
+      // remove the dummy tab
       if (pinnedTab) {
-        // remove the dummy tab
         gBrowser.removeTab(pinnedTab);
         pinnedTab = null;
-      }
-
-      if (stateUpdateObserver) {
-        window.Services.obs.removeObserver(onStateUpdated, stateUpdateTopic);
-        stateUpdateObserver = false;
-      }
-      if (waitingTimer) {
-        clearTimeout(waitingTimer);
-        waitingTimer = null;
       }
     }
 
@@ -499,9 +501,9 @@ var ucjsMisc = {};
       let result = window.Services.prompt.confirm(
         null,
         'Misc.uc.js::RestartFx',
-        'Preprocessing for restart is interrupted.\n' +
-        'It takes time too much for updating the current session.\n' +
-        '[OK]: You can force to restart, but the previous session may be restored.'
+        'Preprocessing for restart has been interrupted.\n' +
+        '[OK] You can force to restart, but the previous session may be restored.\n' +
+        '[Cancel] To do nothing.'
       );
       if (result) {
         doRestart(aOption);
