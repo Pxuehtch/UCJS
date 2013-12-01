@@ -221,13 +221,13 @@ const Timer = (function() {
 
   return {
     setTimeout: setTimer.bind(null, TYPE_ONE_SHOT),
-    clearTimeout: unsetTimer.bind(null),
+    clearTimeout: unsetTimer,
 
     setInterval: setTimer.bind(null, TYPE_REPEATING_SLACK),
-    clearInterval: unsetTimer.bind(null),
+    clearInterval: unsetTimer,
 
-    setImmediate: setImmediate.bind(null),
-    clearImmediate: clearImmediate.bind(null)
+    setImmediate: setImmediate,
+    clearImmediate: clearImmediate
   };
 })();
 
