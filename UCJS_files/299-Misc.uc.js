@@ -303,9 +303,9 @@ var ucjsMisc = {};
 
 /**
  * Show a status text in the URL bar
- * @note The default statuspanel is used when the fullscreen mode
+ * @note The default status panel is used when the fullscreen mode
  *
- * TODO: fix the overflowed width of status text (sometimes in loading a page)
+ * TODO: fix the position gap of status panel (often in page loading)
  */
 (function() {
 
@@ -350,6 +350,12 @@ var ucjsMisc = {};
   window.XULBrowserWindow.updateStatusField = function() {
     $updateStatusField.apply(this, arguments);
 
+    // TODO: Should I change the timing of updating the panel rect in order to
+    // just fit the position?
+    updateStatusPanelRect();
+  };
+
+  function updateStatusPanelRect() {
     let statusPanelStyle = getStatusPanel().style;
     let rectKeys = ['top', 'left', 'width', 'height'];
 
@@ -368,7 +374,7 @@ var ucjsMisc = {};
         }
       });
     }
-  };
+  }
 
   const css = '\
     #main-window:not([inFullscreen]) statuspanel[%%kState.hidden%%]{\
