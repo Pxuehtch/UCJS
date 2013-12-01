@@ -20,6 +20,31 @@ var ucjsMisc = {};
 
 
 /**
+ * Imports
+ */
+const {
+  Prefs: {
+    get: getPref,
+    set: setPref
+  },
+  createNode: $E,
+  getNodeByAnonid: $ANONID,
+  toStringForUI: U,
+  setEventListener: addEvent,
+  setChromeStyleSheet: setChromeCSS,
+  scanPlacesDB
+} = window.ucjsUtil;
+
+function setGlobalAgentCSS(aCSS) {
+  return window.ucjsUtil.setGlobalStyleSheet(aCSS, 'AGENT_SHEET');
+}
+
+// for debug
+function log(aMessage) {
+  return window.ucjsUtil.logMessage('Misc.uc.js', aMessage);
+}
+
+/**
  * Sets style of Firefox window
  * @note This setting is for the themes of my Firefox and OS.
  *
@@ -545,46 +570,6 @@ var ucjsMisc = {};
 
 function $ID(aId) {
   return window.document.getElementById(aId);
-}
-
-
-//********** Imports
-
-function $E(aTag, aAttribute) {
-  return window.ucjsUtil.createNode(aTag, aAttribute);
-}
-
-function $ANONID(aId, aNode) {
-  return window.ucjsUtil.getNodeByAnonid(aId, aNode);
-}
-
-// |U()| converts embedded chars in the code for displaying properly.
-function U(aText) {
-  return window.ucjsUtil.toStringForUI(aText);
-}
-
-function setChromeCSS(aCSS) {
-  return window.ucjsUtil.setChromeStyleSheet(aCSS);
-}
-
-function setGlobalAgentCSS(aCSS) {
-  return window.ucjsUtil.setGlobalStyleSheet(aCSS, 'AGENT_SHEET');
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function getPref(aKey) {
-  return window.ucjsUtil.Prefs.get(aKey);
-}
-
-function setPref(aKey, aValue) {
-  window.ucjsUtil.Prefs.set(aKey, aValue);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
 }
 
 
