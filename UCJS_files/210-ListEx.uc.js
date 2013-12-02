@@ -15,6 +15,28 @@
 
 
 /**
+ * Imports
+ */
+const {
+  setEventListener: addEvent,
+  asyncScanPlacesDB
+} = window.ucjsUtil;
+
+// for debug
+function log(aMessage) {
+  return window.ucjsUtil.logMessage('ListEx.uc.js', aMessage);
+}
+
+const {
+  ContentArea: {
+    contextMenu: contentAreaContextMenu
+  },
+  Menuitem: {
+    setStateForUnreadTab
+  }
+} = window.ucjsUI;
+
+/**
  * Numbers of the listed items
  * @value {integer} [>0]
  *
@@ -46,7 +68,7 @@ const kID = {
 var mMenu = (function() {
 
   function init() {
-    var context = getContextMenu();
+    var context = contentAreaContextMenu;
     var refItem = context.firstChild;
 
     function addSeparator(id) {
@@ -76,7 +98,7 @@ var mMenu = (function() {
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
   // separators.
   function showContextMenu(aEvent) {
-    if (aEvent.target !== getContextMenu()) {
+    if (aEvent.target !== contentAreaContextMenu) {
       return;
     }
 
@@ -95,7 +117,7 @@ var mMenu = (function() {
   }
 
   function hideContextMenu(aEvent) {
-    if (aEvent.target !== getContextMenu()) {
+    if (aEvent.target !== contentAreaContextMenu) {
       return;
     }
 
@@ -643,32 +665,9 @@ function getFavicon(aIconURL) {
   return favicons.defaultFavicon.spec;
 }
 
-
-//********** Imports
-
-function getContextMenu() {
-  return window.ucjsUI.ContentArea.contextMenu;
-}
-
-function setStateForUnreadTab(aMenuitem, aTab) {
-  window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
-}
-
 // @note For <oncommand> attribute.
 function focusWindowAtIndex(aIndex) {
   return 'ucjsUtil.focusWindowAtIndex(' + aIndex + ');';
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function asyncScanPlacesDB(aParam) {
-  return window.ucjsUtil.asyncScanPlacesDB(aParam);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('ListEx.uc.js', aMsg);
 }
 
 
