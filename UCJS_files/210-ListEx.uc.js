@@ -160,14 +160,12 @@ var mHistoryList = (function() {
 
     makeMenuSeparator(popup);
 
-    let noRecent = makeDisabledMenuItem(popup, 'Recent: No history.');
-    asyncBuildRecentHistory(noRecent, function(aHasBuilt) {
-      if (aHasBuilt) {
-        noRecent.hidden = true;
+    let recentHistorySep = makeMenuSeparator(popup);
+    asyncBuildRecentHistory(recentHistorySep, function(aHasBuilt) {
+      if (!aHasBuilt) {
+        makeDisabledMenuItem(recentHistorySep, 'Recent: No history.');
       }
     });
-
-    makeMenuSeparator(popup);
 
     popup.appendChild($E('menuitem', {
       label: 'Open History Manager',
@@ -595,14 +593,20 @@ function $E(aTagOrNode, aAttribute) {
 }
 
 function makeDisabledMenuItem(aPopup, aLabel) {
-  return aPopup.appendChild($E('menuitem', {
+  let refItem = null;
+  if (aPopup.localName !== 'menupopup') {
+    refItem = aPopup;
+    aPopup = aPopup.parentNode;
+  }
+
+  return aPopup.insertBefore($E('menuitem', {
     label: aLabel,
     disabled: true
-  }));
+  }), refItem);
 }
 
 function makeMenuSeparator(aPopup) {
-  aPopup.appendChild($E('menuseparator'));
+  return aPopup.appendChild($E('menuseparator'));
 }
 
 function getPluralForm(aFormat, aCount, aLabels) {
