@@ -65,18 +65,18 @@ const kID = {
  * Menu settings
  * @member init {function}
  */
-var mMenu = (function() {
+const mMenu = (function() {
 
   function init() {
-    var context = contentAreaContextMenu;
-    var refItem = context.firstChild;
+    let context = contentAreaContextMenu;
+    let refItem = context.firstChild;
 
     function addSeparator(id) {
       context.insertBefore($E('menuseparator', {id: id}), refItem);
     }
 
     function addMenu(id, label, accesskey, build) {
-      var menu = context.insertBefore($E('menu', {
+      let menu = context.insertBefore($E('menu', {
         id: id,
         label: label,
         accesskey: accesskey
@@ -105,7 +105,7 @@ var mMenu = (function() {
     // @see chrome://browser/content/nsContextMenu.js
     const {gContextMenu} = window;
 
-    var hidden =
+    let hidden =
       gContextMenu.onLink ||
       gContextMenu.onTextInput ||
       gContextMenu.isTextSelected;
@@ -123,7 +123,7 @@ var mMenu = (function() {
 
     [kID.historyMenu, kID.openedMenu, kID.closedMenu].
     forEach(function(id) {
-      var menu = $ID(id);
+      let menu = $ID(id);
       while (menu.itemCount) {
         menu.removeItemAt(0);
       }
@@ -140,7 +140,7 @@ var mMenu = (function() {
  * List of the tab/recent history
  * @member build {function}
  */
-var mHistoryList = (function() {
+const mHistoryList = (function() {
 
   // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
@@ -149,7 +149,7 @@ var mHistoryList = (function() {
   function build(aEvent) {
     aEvent.stopPropagation();
 
-    var popup = aEvent.target;
+    let popup = aEvent.target;
     if (popup.hasChildNodes()) {
       return;
     }
@@ -343,12 +343,12 @@ var mHistoryList = (function() {
  * List of the opened tabs/windows
  * @member build {function}
  */
-var mOpenedList = (function() {
+const mOpenedList = (function() {
 
   function build(aEvent) {
     aEvent.stopPropagation();
 
-    var popup = aEvent.target;
+    let popup = aEvent.target;
     if (popup.hasChildNodes()) {
       return;
     }
@@ -456,12 +456,12 @@ var mOpenedList = (function() {
  * List of the closed tabs/windows
  * @member build {function}
  */
-var mClosedList = (function() {
+const mClosedList = (function() {
 
   function build(aEvent) {
     aEvent.stopPropagation();
 
-    var popup = aEvent.target;
+    let popup = aEvent.target;
     if (popup.hasChildNodes()) {
       return;
     }
@@ -478,12 +478,12 @@ var mClosedList = (function() {
   }
 
   function buildClosedTabs(aPopup) {
-    var sessionStore = getSessionStore();
+    let sessionStore = getSessionStore();
     if (sessionStore.getClosedTabCount(window) === 0) {
       return false;
     }
 
-    var closedTabs = JSON.parse(sessionStore.getClosedTabData(window));
+    let closedTabs = JSON.parse(sessionStore.getClosedTabData(window));
     for (let i = 0; i < closedTabs.length; i++) {
       let closedTab = closedTabs[i];
 
@@ -511,12 +511,12 @@ var mClosedList = (function() {
   }
 
   function buildClosedWindows(aPopup) {
-    var sessionStore = getSessionStore();
+    let sessionStore = getSessionStore();
     if (sessionStore.getClosedWindowCount() === 0) {
       return false;
     }
 
-    var closedWindows = JSON.parse(sessionStore.getClosedWindowData());
+    let closedWindows = JSON.parse(sessionStore.getClosedWindowData());
     for (let i = 0; i < closedWindows.length; i++) {
       let closedWindow = closedWindows[i];
 
@@ -616,13 +616,13 @@ function getPluralForm(aFormat, aCount, aLabels) {
 }
 
 function getListRange(aIndex, aCount) {
-  var maxNum = kMaxListItems;
+  let maxNum = kMaxListItems;
   if (maxNum <= 0) {
     return [0, aCount];
   }
 
-  var half = Math.floor(maxNum / 2);
-  var start = Math.max(aIndex - half, 0),
+  let half = Math.floor(maxNum / 2);
+  let start = Math.max(aIndex - half, 0),
       end = Math.min((start > 0) ? aIndex + half + 1 : maxNum, aCount);
   if (end === aCount) {
     start = Math.max(aCount - maxNum, 0);
@@ -649,11 +649,11 @@ function getTitle(aText) {
   return aText || PlacesUIUtils.getString('noTitle');
 }
 
-function getTooltip(aTitle, aURL) {
-  if (aTitle === aURL) {
+function getTooltip(aTitle, aInfo) {
+  if (aTitle === aInfo) {
     return aTitle;
   }
-  return [aTitle, aURL].join('\n');
+  return [aTitle, aInfo].join('\n');
 }
 
 function getFavicon(aIconURL) {
@@ -669,7 +669,8 @@ function getFavicon(aIconURL) {
   return favicons.defaultFavicon.spec;
 }
 
-// @note For <oncommand> attribute.
+// @return {string} string for <oncommand> attribute
+// TODO: assemble only with built-in functions
 function focusWindowAtIndex(aIndex) {
   return 'ucjsUtil.focusWindowAtIndex(' + aIndex + ');';
 }
