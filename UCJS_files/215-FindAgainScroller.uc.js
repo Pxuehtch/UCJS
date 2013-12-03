@@ -19,8 +19,6 @@
  */
 const {
   Timer: {
-    setTimeout,
-    clearTimeout,
     setInterval,
     clearInterval
   },
@@ -503,16 +501,13 @@ function SmoothScroll() {
     pitch: {far: 2, near: 6}
   };
 
-  var mTimerID;
-  var mStartTime;
-
-  var mState = {
+  const mState = {
     init: function({node, start, goal}) {
       if (!node || !start || !goal) {
         return false;
       }
 
-      var scrollable = testScrollable(node);
+      let scrollable = testScrollable(node);
       if (!scrollable) {
         return false;
       }
@@ -533,6 +528,44 @@ function SmoothScroll() {
     }
   };
 
+  const mStep = {
+    request: function(aCallback, aStep) {
+      this.callback = aCallback;
+
+      let startTime = window.performance.now();
+      this.param = {
+        step: aStep,
+        startTime: startTime,
+        lastTime: startTime
+      };
+
+      this.requestID = window.requestAnimationFrame(this.step.bind(this));
+    },
+
+    step: function(aTimeStamp) {
+      let nextStep = this.callback(this.param);
+      if (nextStep) {
+        this.param.step = nextStep;
+        this.param.lastTime = aTimeStamp;
+        this.requestID = window.requestAnimationFrame(this.step.bind(this));
+      }
+    },
+
+    cancel: function() {
+      if (!this.requestID) {
+        return false;
+      }
+
+      window.cancelAnimationFrame(this.requestID);
+
+      delete this.callback;
+      delete this.param;
+      delete this.requestID;
+
+      return true;
+    }
+  };
+
 
   //********** Functions
 
@@ -546,39 +579,37 @@ function SmoothScroll() {
 
     doScrollTo(mState.start);
 
-    mStartTime = Date.now();
-    doStep(getStep(mState.start), mStartTime);
+    mStep.request(doStep, getStep(mState.start));
   }
 
-  function doStep(aStep, aLastTime) {
-    var was = getScroll();
-    doScrollBy(aStep);
-    var now = getScroll();
+  function doStep({step, startTime, lastTime}) {
+    let was = getScroll();
+    doScrollBy(step);
+    let now = getScroll();
 
-    var currentTime = Date.now();
-    if (currentTime - mStartTime > 1000 ||
-        currentTime - aLastTime > 100) {
-      // it takes too much time. stop stepping and jump to goal
+    // it takes too much time. stop stepping and jump to goal
+    let currentTime = window.performance.now();
+    if (currentTime - startTime > 1000 ||
+        currentTime - lastTime > 100) {
       stopScroll(true);
+      return null;
     }
-    else if (was.delta.x * now.delta.x <= 0 &&
-             was.delta.y * now.delta.y <= 0) {
-      // reached the goal or went over. stop stepping at here
+
+    // reached the goal or went over. stop stepping at here
+    if (was.delta.x * now.delta.x <= 0 &&
+        was.delta.y * now.delta.y <= 0) {
       stopScroll(false);
+      return null;
     }
-    else {
-      mTimerID = setTimeout(doStep, 0, getStep(now.position), currentTime);
-    }
+
+    // next step
+    return getStep(now.position);
   }
 
   function stopScroll(aForceGoal) {
-    if (!mTimerID) {
+    if (!mStep.cancel()) {
       return;
     }
-
-    clearTimeout(mTimerID);
-    mTimerID = null;
-    mStartTime = null;
 
     if (aForceGoal) {
       doScrollTo(mState.goal);
@@ -619,7 +650,7 @@ function SmoothScroll() {
   }
 
   function getScroll() {
-    var x, y;
+    let x, y;
     if (mState.view) {
       x = mState.view.scrollX;
       y = mState.view.scrollY;
@@ -653,8 +684,8 @@ function SmoothScroll() {
   }
 
   function testScrollable(aNode) {
-    var view = null;
-    var scrollable = false;
+    let view = null;
+    let scrollable = false;
 
     if (aNode instanceof Window ||
         aNode instanceof HTMLHtmlElement ||
