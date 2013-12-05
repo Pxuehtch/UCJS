@@ -37,15 +37,20 @@ const {
 } = window.ucjsUI;
 
 /**
- * Numbers of the listed items
- * @value {integer} [>0]
- *
- * !!! WARNING !!!
- * *ALL* items will be listed if set to 0.
- * It can cause performance problems.
- * !!! WARNING !!!
+ * Preferences
  */
-const kMaxListItems = 10;
+const kPref = {
+  /**
+   * Numbers of the listed items
+   * @value {integer} [>0]
+   *
+   * !!! WARNING !!!
+   * *ALL* items will be listed if set to 0
+   * It can cause performance problems
+   * !!! WARNING !!!
+   */
+  maxListItems: 10
+};
 
 /**
  * Identifiers
@@ -309,7 +314,8 @@ const mHistoryList = (function() {
     ].join(' ');
 
     // -1: all results will be returned
-    let limit = (kMaxListItems > 0) ? kMaxListItems : -1;
+    const maxNum = kPref.maxListItems;
+    let limit = (maxNum > 0) ? maxNum : -1;
 
     asyncScanPlacesDB({
       expression: SQLExp,
@@ -616,7 +622,7 @@ function getPluralForm(aFormat, aCount, aLabels) {
 }
 
 function getListRange(aIndex, aCount) {
-  let maxNum = kMaxListItems;
+  let maxNum = kPref.maxListItems;
   if (maxNum <= 0) {
     return [0, aCount];
   }
