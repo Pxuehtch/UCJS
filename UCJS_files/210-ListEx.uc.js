@@ -76,28 +76,48 @@ const mMenu = (function() {
     let context = contentAreaContextMenu;
     let refItem = context.firstChild;
 
-    function addSeparator(id) {
-      context.insertBefore($E('menuseparator', {id: id}), refItem);
+    function addSeparator(aId) {
+      context.insertBefore($E('menuseparator', {
+        id: aId
+      }), refItem);
     }
 
-    function addMenu(id, label, accesskey, build) {
+    function addMenu(aId, aLabel, aAccesskey, aHandler) {
       let menu = context.insertBefore($E('menu', {
-        id: id,
-        label: label,
-        accesskey: accesskey
+        id: aId,
+        label: aLabel,
+        accesskey: aAccesskey
       }), refItem);
-      addEvent([menu.appendChild($E('menupopup')),
-        'popupshowing', build, false]);
+
+      addEvent([
+        menu.appendChild($E('menupopup')),
+        'popupshowing',
+        function(aEvent) {
+          buildMenu(aEvent, aHandler.build);
+        },
+        false
+      ]);
     }
 
     addSeparator(kID.startSeparator);
-    addMenu(kID.historyMenu, 'History Tab/Recent', 'H', mHistoryList.build);
-    addMenu(kID.openedMenu, 'Opened Tab/Window', 'O', mOpenedList.build);
-    addMenu(kID.closedMenu, 'Closed Tab/Window', 'C', mClosedList.build);
+    addMenu(kID.historyMenu, 'History Tab/Recent', 'H', mHistoryList);
+    addMenu(kID.openedMenu, 'Opened Tab/Window', 'O', mOpenedList);
+    addMenu(kID.closedMenu, 'Closed Tab/Window', 'C', mClosedList);
     addSeparator(kID.endSeparator);
 
     addEvent([context, 'popupshowing', showContextMenu, false]);
     addEvent([context, 'popuphiding', hideContextMenu, false]);
+  }
+
+  function buildMenu(aEvent, aBuilder) {
+    aEvent.stopPropagation();
+
+    let popup = aEvent.target;
+    if (popup.hasChildNodes()) {
+      return;
+    }
+
+    aBuilder(popup);
   }
 
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
@@ -115,9 +135,12 @@ const mMenu = (function() {
       gContextMenu.onTextInput ||
       gContextMenu.isTextSelected;
 
-    [kID.historyMenu, kID.openedMenu, kID.closedMenu].
-    forEach(function(id) {
-      gContextMenu.showItem(id, !hidden);
+    [
+      kID.historyMenu,
+      kID.openedMenu,
+      kID.closedMenu
+    ].forEach(function(aId) {
+      gContextMenu.showItem(aId, !hidden);
     });
   }
 
@@ -126,9 +149,12 @@ const mMenu = (function() {
       return;
     }
 
-    [kID.historyMenu, kID.openedMenu, kID.closedMenu].
-    forEach(function(id) {
-      let menu = $ID(id);
+    [
+      kID.historyMenu,
+      kID.openedMenu,
+      kID.closedMenu
+    ].forEach(function(aId) {
+      let menu = $ID(aId);
       while (menu.itemCount) {
         menu.removeItemAt(0);
       }
@@ -151,28 +177,21 @@ const mHistoryList = (function() {
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
   const kTitleFormat = ['[%time%] %title%', '%title%'];
 
-  function build(aEvent) {
-    aEvent.stopPropagation();
-
-    let popup = aEvent.target;
-    if (popup.hasChildNodes()) {
-      return;
+  function build(aPopup) {
+    if (!buildTabHistory(aPopup)) {
+      makeDisabledMenuItem(aPopup, 'Tab: No history.');
     }
 
-    if (!buildTabHistory(popup)) {
-      makeDisabledMenuItem(popup, 'Tab: No history.');
-    }
+    makeMenuSeparator(aPopup);
 
-    makeMenuSeparator(popup);
-
-    let recentHistorySep = makeMenuSeparator(popup);
+    let recentHistorySep = makeMenuSeparator(aPopup);
     asyncBuildRecentHistory(recentHistorySep, function(aHasBuilt) {
       if (!aHasBuilt) {
         makeDisabledMenuItem(recentHistorySep, 'Recent: No history.');
       }
     });
 
-    popup.appendChild($E('menuitem', {
+    aPopup.appendChild($E('menuitem', {
       label: 'Open History Manager',
       accesskey: 'H',
       command: 'Browser:ShowAllHistory'
@@ -351,17 +370,12 @@ const mHistoryList = (function() {
  */
 const mOpenedList = (function() {
 
-  function build(aEvent) {
-    aEvent.stopPropagation();
+  function build(aPopup) {
+    buildOpenedTabs(aPopup);
 
-    let popup = aEvent.target;
-    if (popup.hasChildNodes()) {
-      return;
-    }
+    makeMenuSeparator(aPopup);
 
-    buildOpenedTabs(popup);
-    makeMenuSeparator(popup);
-    buildOpenedWindows(popup);
+    buildOpenedWindows(aPopup);
   }
 
   function buildOpenedTabs(aPopup) {
@@ -464,22 +478,15 @@ const mOpenedList = (function() {
  */
 const mClosedList = (function() {
 
-  function build(aEvent) {
-    aEvent.stopPropagation();
-
-    let popup = aEvent.target;
-    if (popup.hasChildNodes()) {
-      return;
+  function build(aPopup) {
+    if (!buildClosedTabs(aPopup)) {
+      makeDisabledMenuItem(aPopup, 'No closed tabs.');
     }
 
-    if (!buildClosedTabs(popup)) {
-      makeDisabledMenuItem(popup, 'No closed tabs.');
-    }
+    makeMenuSeparator(aPopup);
 
-    makeMenuSeparator(popup);
-
-    if (!buildClosedWindows(popup)) {
-      makeDisabledMenuItem(popup, 'No closed windows.');
+    if (!buildClosedWindows(aPopup)) {
+      makeDisabledMenuItem(aPopup, 'No closed windows.');
     }
   }
 
