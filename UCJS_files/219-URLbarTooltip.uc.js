@@ -17,28 +17,27 @@
 
 /**
  * Identifiers
- * @note The names for stylings, |STYLE_XXX|, should be in sync with the keys
- * of |kStyle|.
  */
 const kID = {
-  panel: 'ucjs_URLbarTooltip_panel',
-  STYLE_HEADER: 'ucjs_URLbarTooltip_STYLE_HEADER',
-  STYLE_GROOVE: 'ucjs_URLbarTooltip_STYLE_GROOVE'
+  panel: 'ucjs_URLbarTooltip_panel'
 };
 
+/**
+ * CSS for items of panel
+ */
 const kStyle = {
-  STYLE_HEADER: {
-    'font-weight': 'bold',
-    'font-size': '110%',
-    'text-align': 'center',
-    'margin': '0'
-  },
-  STYLE_GROOVE: {
-    'border-top': '1px solid ThreeDShadow',
-    'border-bottom': '1px solid ThreeDHighlight',
-    'height': '0',
-    'margin': '0.2em 3px 0.1em'
-  }
+  header: [
+    'font-weight:bold',
+    'font-size:110%',
+    'text-align:center',
+    'margin:0'
+  ],
+  separator: [
+    'border-top:1px solid ThreeDShadow',
+    'border-bottom:1px solid ThreeDHighlight',
+    'height:0',
+    'margin:0.2em 3px 0.1em'
+  ]
 };
 
 /**
@@ -97,13 +96,11 @@ function buildContent() {
   let box = $E('vbox');
   box.appendChild($E('label', {
     value: kUI.title,
-    class: kID.STYLE_HEADER
+    style: makeCSS(kStyle.header)
   }));
   box.appendChild(makeGroup(getRestrictData(), kUI.restrictGroup));
   box.appendChild(makeGroup(getShortcutData(), kUI.shortcutGroup));
   panel.appendChild(box);
-
-  setStyles();
 }
 
 function makeGroup(aData, aGroupName) {
@@ -122,7 +119,7 @@ function makeGroup(aData, aGroupName) {
   aData.forEach(function(item) {
     if (item === 'separator') {
       row = $E('separator', {
-        class: kID.STYLE_GROOVE
+        style: makeCSS(kStyle.separator)
       });
     }
     else {
@@ -220,16 +217,6 @@ function getShortcutData() {
   );
 }
 
-function setStyles() {
-  for (let id in kStyle) {
-    Array.forEach($Class(kID[id]), function({style}) {
-      for (let [name, value] in Iterator(kStyle[id])) {
-        style.setProperty(name, value, 'important');
-      }
-    });
-  }
-}
-
 
 //********** Utilities
 
@@ -237,8 +224,8 @@ function $ID(aID) {
   return window.document.getElementById(aID);
 }
 
-function $Class(aClassName) {
-  return window.document.getElementsByClassName(aClassName);
+function makeCSS(aData) {
+  return aData.map((data) => data + '!important;').join('');
 }
 
 function getPrePath(aURL) {
