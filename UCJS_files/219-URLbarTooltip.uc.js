@@ -16,6 +16,24 @@
 
 
 /**
+ * Imports
+ */
+const {
+  Prefs: {
+    get: getPref
+  },
+  createNode: $E,
+  toStringForUI: U,
+  setEventListener: addEvent,
+  scanPlacesDB
+} = window.ucjsUtil;
+
+// for debug
+function log(aMessage) {
+  return window.ucjsUtil.logMessage('URLbarTooltip.uc.js', aMessage);
+}
+
+/**
  * Identifiers
  */
 const kID = {
@@ -234,33 +252,6 @@ function getPrePath(aURL) {
     prePath = prePath.substr(0, 40) + '...';
   }
   return prePath;
-}
-
-
-//********** Imports
-
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
-}
-
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function getPref(aKey) {
-  return window.ucjsUtil.Prefs.get(aKey);
-}
-
-function scanPlacesDB(aParam) {
-  return window.ucjsUtil.scanPlacesDB(aParam);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('URLbarTooltip.uc.js', aMsg);
 }
 
 
