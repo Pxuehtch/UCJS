@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        URLbarTooltip.uc.js
-// @description Show suggestion hints on a tooltip of the URL bar.
+// @description Shows suggestion hints on a tooltip of the URL bar
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage A tooltip panel will popup with 'ctrl + alt + mousemove' on the URL
-// bar.
+// @usage A tooltip panel will popup with 'Ctrl + Alt + MouseMove' on the URL
+// bar
 
 
 (function(window, undefined) {
@@ -43,9 +43,9 @@ const kStyle = {
 
 /**
  * UI strings
- * @note |U()| converts embedded chars in the code for displaying properly.
+ * @note |U()| converts Unicode characters for proper displaying
  */
-const kString = U({
+const kUI = U({
   title: 'Location bar suggestion hints',
   restrictGroup: 'Restrict',
   shortcutGroup: 'Shortcut'
@@ -54,12 +54,19 @@ const kString = U({
 
 //********** Functions
 
-function getURLbar() $ID('urlbar');
-function getPanel() $ID(kID.panel);
+function getURLbar() {
+  return $ID('urlbar');
+}
+
+function getPanel() {
+  return $ID(kID.panel);
+}
 
 function URLbarTooltip_init() {
-  $ID('mainPopupSet').
-  appendChild($E('panel', {id: kID.panel, backdrag: true}));
+  $ID('mainPopupSet').appendChild($E('panel', {
+    id: kID.panel,
+    backdrag: true
+  }));
 
   addEvent([getURLbar(), 'mousemove', showPanel, false]);
 }
@@ -80,16 +87,20 @@ function showPanel(aEvent) {
 }
 
 function buildContent() {
-  var panel = getPanel();
+  let panel = getPanel();
 
   // Remove existing content
-  panel.firstChild && panel.removeChild(panel.firstChild);
+  if (panel.firstChild) {
+    panel.removeChild(panel.firstChild);
+  }
 
-  var box = $E('vbox');
-  box.appendChild($E('label',
-    {value: kString.title, class: kID.STYLE_HEADER}));
-  box.appendChild(makeGroup(getRestrictData(), kString.restrictGroup));
-  box.appendChild(makeGroup(getShortcutData(), kString.shortcutGroup));
+  let box = $E('vbox');
+  box.appendChild($E('label', {
+    value: kUI.title,
+    class: kID.STYLE_HEADER
+  }));
+  box.appendChild(makeGroup(getRestrictData(), kUI.restrictGroup));
+  box.appendChild(makeGroup(getShortcutData(), kUI.shortcutGroup));
   panel.appendChild(box);
 
   setStyles();
@@ -110,11 +121,18 @@ function makeGroup(aData, aGroupName) {
   rows = grid.appendChild($E('rows'));
   aData.forEach(function(item) {
     if (item === 'separator') {
-      row = $E('separator', {class: kID.STYLE_GROOVE});
-    } else {
+      row = $E('separator', {
+        class: kID.STYLE_GROOVE
+      });
+    }
+    else {
       row = $E('row');
-      row.appendChild($E('label', {value: item.keyword}));
-      row.appendChild($E('label', {value: item.name}));
+      row.appendChild($E('label', {
+        value: item.keyword
+      }));
+      row.appendChild($E('label', {
+        value: item.name
+      }));
     }
     rows.appendChild(row);
   });
@@ -123,7 +141,8 @@ function makeGroup(aData, aGroupName) {
 }
 
 function getRestrictData() {
-  var prefs = {
+  // @see http://kb.mozillazine.org/Location_Bar_search
+  const kRestrictKeys = {
     'browser.urlbar.restrict.history': 'History',
     'browser.urlbar.restrict.bookmark': 'Bookmarks',
     'browser.urlbar.restrict.tag': 'Tagged',
@@ -133,12 +152,15 @@ function getRestrictData() {
     'browser.urlbar.match.url': 'Page urls'
   };
 
-  var data = [];
+  let data = [];
 
-  for (let key in prefs) {
+  for (let key in kRestrictKeys) {
     let keyword = getPref(key);
     if (keyword) {
-      data.push({keyword: keyword, name: prefs[key]});
+      data.push({
+        keyword: keyword,
+        name: kRestrictKeys[key]
+      });
     }
   }
 
