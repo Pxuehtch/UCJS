@@ -15,8 +15,25 @@
 
 
 /**
- * CSS styles of a textbox
- * @note The keys are linked with the return value of |getIMEState()|
+ * Imports
+ */
+const {
+  Timer: {
+    setTimeout,
+    clearTimeout
+  },
+  setEventListener: addEvent,
+  getFirstNodeByXPath: $X1
+} = window.ucjsUtil;
+
+// for debug
+function log(aMessage) {
+  return window.ucjsUtil.logMessage('IMEAware.uc.js', aMessage);
+}
+
+/**
+ * CSS styles of a textbox by IME state
+ * @note the keys are linked with the return value of |getIMEState()|
  */
 const kStyleSet = {
   'DISABLED': {
@@ -35,80 +52,130 @@ const kStyleSet = {
   }
 };
 
+/**
+ * Initialization
+ */
+function IMEAware_init() {
+  let mTextboxStyler = TextboxStyler();
+
+  // observe a focused element in the chrome and content area
+  // @note use the capture mode for event delegation
+  addEvent([window.document.documentElement, 'focus', (aEvent) => {
+    let node = aEvent.originalTarget;
+    // pick up a writable plain-text field
+    if (
+      (node instanceof HTMLTextAreaElement ||
+       (node instanceof HTMLInputElement &&
+        /^(?:text|search)$/.test(node.type))) &&
+      !node.readOnly
+    ) {
+      mTextboxStyler.init(node);
+    }
+  }, true]);
+
+  // clean-up when a browser window closes
+  addEvent([window, 'unload', (aEvent) => {
+    mTextboxStyler.uninit();
+  }, false]);
+}
 
 /**
- * Main handler
+ * Handler of the styling of a textbox by IME state
+ * @return {hash}
+ *   @member init {function}
+ *   @member uninit {function}
  */
-var mIMEAwareHandler = {
-  init: function(aNode) {
-    this.uninit();
+function TextboxStyler() {
+  let mTextbox;
+  let mDefaultStyle;
+  let mIMEState;
 
-    // define new members
-    this.isXBL = aNode.hasAttribute('anonid');
-    this.textbox = this.isXBL ?
-      $X1('ancestor::*[local-name()="textbox"]', aNode) : aNode;
-    this.defaultStyle = this.textbox.getAttribute('style');
-    this.IMEState = this.getIMEState();
+  /**
+   * Debounced update styles
+   * guarantees that a callback function is executed only once at the very
+   * end of a series of calls until the delay period expires
+   */
+  const StyleUpdater = {
+    set: function() {
+      let delay = 100;
 
-    this.setStyle();
+      this.clear();
+      this.timerID = setTimeout(updateStyle, delay);
+    },
+
+    clear: function() {
+      if (this.timerID) {
+        clearTimeout(this.timerID);
+        delete this.timerID;
+      }
+    }
+  };
+
+  function init(aNode) {
+    // clean-up existing handler
+    uninit();
+
+    mTextbox = aNode.hasAttribute('anonid') ?
+      $X1('ancestor::*[local-name()="textbox"]', aNode) :
+      aNode;
+    mDefaultStyle = mTextbox.getAttribute('style') || null;
+    mIMEState = getIMEState();
+
+    setStyle();
 
     // observe key events of IME keys
-    this.textbox.addEventListener('keydown', this, false);
-    this.textbox.addEventListener('keyup', this, false);
-    // observe events for finalization
-    this.textbox.addEventListener('blur', this, false);
+    mTextbox.addEventListener('keyup', handleEvent, false);
+    // 'keyup' is not occur when IME is turned off during the conversion
+    mTextbox.addEventListener('compositionend', handleEvent, false);
+
+    // observe events for clean-up
+    // 'blur' will raise also before a page unloads
+    mTextbox.addEventListener('blur', handleEvent, false);
     // watch 'pagehide' of a content window for when 'blur' unfired (e.g.
-    // a page navigation with a shortcut key)
-    if (this.textbox.ownerDocument instanceof HTMLDocument) {
-      this.textbox.ownerDocument.defaultView.
-      addEventListener('pagehide', this, false);
+    // a page navigation with shortcut key)
+    if (!inChromeWindow()) {
+      mTextbox.ownerDocument.defaultView.
+      addEventListener('pagehide', handleEvent, false);
     }
-  },
+  }
 
-  uninit: function() {
-    if (this.checkValidity()) {
-      this.textbox.removeEventListener('keydown', this, false);
-      this.textbox.removeEventListener('keyup', this, false);
-      this.textbox.removeEventListener('blur', this, false);
-      if (this.textbox.ownerDocument instanceof HTMLDocument) {
-        this.textbox.ownerDocument.defaultView.
-        removeEventListener('pagehide', this, false);
+  function uninit() {
+    if (checkValidity()) {
+      mTextbox.removeEventListener('keyup', handleEvent, false);
+      mTextbox.removeEventListener('compositionend', handleEvent, false);
+
+      mTextbox.removeEventListener('blur', handleEvent, false);
+      if (!inChromeWindow()) {
+        mTextbox.ownerDocument.defaultView.
+        removeEventListener('pagehide', handleEvent, false);
       }
 
-      this.restoreStyle();
+      restoreStyle();
     }
 
-    delete this.isXBL;
-    delete this.textbox;
-    delete this.defaultStyle;
-    delete this.IMEState;
-  },
+    mTextbox = null;
+    mDefaultStyle = null;
+    mIMEState = null;
+    StyleUpdater.clear();
+  }
 
-  updateStyle: function() {
-    if (this._delayedUpdateStyleTimer) {
-      clearTimeout(this._delayedUpdateStyleTimer);
-      delete this._delayedUpdateStyleTimer;
+  function updateStyle() {
+    if (!checkValidity()) {
+      return;
     }
 
-    // delay and ensure that IMEStatus is ready
-    this._delayedUpdateStyleTimer = setTimeout(function() {
-      if (!this.checkValidity()) {
-        return;
-      }
+    let ime = getIMEState();
+    if (mIMEState === ime) {
+      return;
+    }
+    mIMEState = ime;
 
-      var ime = this.getIMEState();
-      if (this.IMEState === ime) {
-        return;
-      }
-      this.IMEState = ime;
+    setStyle();
+  }
 
-      this.setStyle();
-    }.bind(this), 0);
-  },
-
-  setStyle: function() {
-    var styleSet = kStyleSet[this.IMEState];
-    var style = this.textbox.style;
+  function setStyle() {
+    let styleSet = kStyleSet[mIMEState];
+    let style = mTextbox.style;
 
     if (!('background-image' in styleSet) && 'background-color' in styleSet) {
       style.setProperty('background-image', 'none', 'important');
@@ -118,42 +185,51 @@ var mIMEAwareHandler = {
       style.setProperty(key, styleSet[key], 'important');
     }
 
-    if (this.isXBL) {
+    if (inChromeWindow()) {
       style.setProperty('-moz-appearance', 'none', 'important');
     }
-  },
+  }
 
-  restoreStyle: function() {
-    if (this.defaultStyle !== null) {
-      this.textbox.setAttribute('style', this.defaultStyle);
+  function restoreStyle() {
+    if (mDefaultStyle !== null) {
+      mTextbox.setAttribute('style', mDefaultStyle);
     } else {
-      this.textbox.removeAttribute('style');
+      mTextbox.removeAttribute('style');
     }
-  },
+  }
+
+  function inChromeWindow() {
+    return mTextbox.ownerDocument.defaultView.top === window;
+  }
 
   /**
    * checks whether a target textbox is alive
    * @return {boolean}
+   *
+   * TODO: this is a workaround for checking a dead object. consider a
+   * legitimate method instead.
    */
-  checkValidity: function() {
+  function checkValidity() {
+    const {Cu} = window;
+
     try {
-      return !!(this.textbox &&
-        window.Cu.getWeakReference(this.textbox).get());
+      return !!(mTextbox && Cu.getWeakReference(mTextbox).get());
     } catch (ex) {}
     return false;
-  },
+  }
 
   /**
    * gets the current state of IME
-   * @return {string} key in kStyleSet
+   * @return {string} key in |kStyleSet|
    */
-  getIMEState: function() {
+  function getIMEState() {
     const {Ci} = window;
 
-    var win = this.textbox.ownerDocument.defaultView;
+    let win = mTextbox.ownerDocument.defaultView;
     if (win) {
-      let imeMode = win.getComputedStyle(this.textbox, null).imeMode;
-      let utils = win.QueryInterface(Ci.nsIInterfaceRequestor).
+      let imeMode = win.getComputedStyle(mTextbox, null).imeMode;
+      let utils = win.
+        QueryInterface(Ci.nsIInterfaceRequestor).
         getInterface(Ci.nsIDOMWindowUtils);
 
       if (imeMode !== 'disabled' &&
@@ -162,81 +238,43 @@ var mIMEAwareHandler = {
       }
     }
     return 'DISABLED';
-  },
+  }
 
-  handleEvent: function(aEvent) {
+  function handleEvent(aEvent) {
     aEvent.stopPropagation();
 
     switch (aEvent.type) {
-      case 'keydown':
-        // '半角全角', 'カタカナひらがな':
-        // 1.'keyup' unfires when a key is released
-        // 2.'keyup' fires and then 'keydown' fires when a key is pressed down
-        // 3.the first 'keyup' unfires at a key pressed down just after on
-        //   focusing a textbox
-        // 4.in fx15: the keycode is not 229(VK_PROCESSKEY) but 0(Unidentified)
-        if (aEvent.keyCode === 0) {
-          this.updateStyle();
+      case 'keyup':
+        // TODO: use |aEvent.key| because |aEvent.keyCode| is deprecated
+        // XXX: I want to avoid making row of key names if using |aEvent.key|
+        // @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+        let keyCode = aEvent.keyCode;
+
+        // check IME related keys
+        if ((0x15 <= keyCode && keyCode <= 0x20) ||
+            (0xF0 <= keyCode && keyCode <= 0xF6)) {
+          StyleUpdater.set();
         }
         break;
-      case 'keyup':
-        // 'Alt+半角全角': 25(VK_KANJI)
-        // '変換': 28(VK_CONVERT)
-        // '無変換': 29(VK_NONCONVERT)
-        let keyCode = aEvent.keyCode;
-        if (keyCode === 25 || keyCode === 28 || keyCode === 29) {
-          this.updateStyle();
-        }
+      case 'compositionend':
+        StyleUpdater.set();
         break;
       case 'blur':
       case 'pagehide':
-        this.uninit();
+        uninit();
         break;
     }
   }
-};
 
-
-//********** Imports
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
+  return {
+    init: init,
+    uninit: uninit
+  };
 }
 
-function $X1(aXPath, aNode) {
-  return window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
-}
-
-
-//********** Entry point
-
-function IMEAware_init() {
-  function onFocus(aEvent) {
-    var node = aEvent.originalTarget;
-    if (
-      (node instanceof HTMLTextAreaElement ||
-       (node instanceof HTMLInputElement &&
-        /^(?:text|search)$/.test(node.type))) &&
-      !node.readOnly
-    ) {
-      mIMEAwareHandler.init(node);
-    }
-  }
-
-  function onUnload(aEvent) {
-    mIMEAwareHandler.uninit();
-  }
-
-  addEvent([window.document.documentElement,
-    'focus', onFocus, true]);
-  addEvent([window,
-    'unload', onUnload, false]);
-}
-
+/**
+ * Entry point
+ */
 IMEAware_init();
 
 
