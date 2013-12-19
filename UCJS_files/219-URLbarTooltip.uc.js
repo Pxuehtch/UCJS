@@ -50,6 +50,9 @@ const kStyle = {
     'text-align:center',
     'margin:0'
   ],
+
+  // match the style with the border of <groupbox>
+  // @see chrome://global/skin/groupbox.css
   separator: [
     'border-top:1px solid ThreeDShadow',
     'border-bottom:1px solid ThreeDHighlight',
@@ -96,7 +99,7 @@ function showPanel(aEvent) {
 
     // close the default tooltip
     // @see chrome://browser/content/urlbarBindings.xml::
-    // _initURLTooltip
+    // _hideURLTooltip
     getURLbar()._hideURLTooltip();
 
     getPanel().openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
@@ -106,7 +109,7 @@ function showPanel(aEvent) {
 function buildContent() {
   let panel = getPanel();
 
-  // Remove existing content
+  // remove existing content
   if (panel.firstChild) {
     panel.removeChild(panel.firstChild);
   }
@@ -247,9 +250,11 @@ function makeCSS(aData) {
 }
 
 function getPrePath(aURL) {
+  const kMaxLen = 40;
+
   let prePath = aURL.replace(/^(\w+:[/]*[^/]+).*$/, '$1');
-  if (prePath.length > 40) {
-    prePath = prePath.substr(0, 40) + '...';
+  if (prePath.length > kMaxLen) {
+    prePath = prePath.substr(0, kMaxLen) + '...';
   }
   return prePath;
 }
