@@ -105,7 +105,8 @@ const TimeKeeper = {
 function FindAgainScroller_init() {
   // @modified chrome://browser/content/tabbrowser.xml::getFindBar
   const $getFindBar = gBrowser.getFindBar;
-  gBrowser.getFindBar = function(aTab) {
+  gBrowser.getFindBar =
+  function UCJS_FindAgainScroller_getFindBar(aTab) {
     let initialized = gBrowser.isFindBarInitialized(aTab);
     let findBar = $getFindBar.apply(this, arguments);
 
@@ -128,8 +129,9 @@ function attachFindAgainCommand() {
 
   // @modified chrome://global/content/bindings/findbar.xml::
   // onFindAgainCommand
-  var $onFindAgainCommand = gFindBar.onFindAgainCommand;
-  gFindBar.onFindAgainCommand = function(aFindPrevious) {
+  const $onFindAgainCommand = gFindBar.onFindAgainCommand;
+  gFindBar.onFindAgainCommand =
+  function UCJS_FindAgainScroller_onFindAgainCommand(aFindPrevious) {
     // terminate the active processing
     if (mSmoothScroll) {
       mSmoothScroll.cancel();
