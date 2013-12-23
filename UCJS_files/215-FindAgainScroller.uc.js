@@ -625,10 +625,8 @@ function SmoothScroll() {
     doScrollBy(step);
     let now = getScroll();
 
-    // it takes too much time. stop stepping and jump to goal
-    let currentTime = window.performance.now();
-    if (currentTime - startTime > 1000 ||
-        currentTime - lastTime > 100) {
+    // took too much time. stop stepping and jump to goal
+    if (lastTime - startTime > 1000) {
       stop(true);
       return null;
     }
