@@ -279,23 +279,35 @@ function ScrollObserver() {
       mScrollable.addItem(aWindow);
     }
 
-    // register the typical elements that can be scrolled
-    // <div>, <p>: there may be many elements so that we grab the deepest one
-    // TODO: handle the big document.
-    // TODO: grab all scrollable elements.
-    if (doc.getElementsByTagName('*').length < 1000) {
-      let xpath = '//textarea|//pre|//ul|//ol' +
-        '|//div[not(descendant::div)]|//p[not(descendant::p)]';
+    // register the elements that can be scrolled
 
-      $X(xpath, root).reduce(function(scrollables, node) {
-        let scrollable = testScrollable(scrollables, node);
-        if (scrollable) {
-          scrollables.push(scrollable);
-          mScrollable.addItem(scrollable);
-        }
-        return scrollables;
-      }, []);
+    // WORKAROUND: skip a big document because of performance problems
+    // TODO: handle it
+    if (doc.getElementsByTagName('*').length > 1000) {
+      return;
     }
+
+    // WORKAROUND: find only the typical scrollable element
+    // @note <div>|<p>: there may be many elements so that we grab the deepest
+    // one
+    // TODO: grab all kind of scrollable elements
+    let xpath = [
+      '//textarea',
+      '//pre',
+      '//ul',
+      '//ol',
+      '//div[not(descendant::div)]',
+      '//p[not(descendant::p)]'
+    ].join('|');
+
+    $X(xpath, root).reduce((scrollables, node) => {
+      let scrollable = testScrollable(scrollables, node);
+      if (scrollable) {
+        scrollables.push(scrollable);
+        mScrollable.addItem(scrollable);
+      }
+      return scrollables;
+    }, []);
   }
 
   function testScrollable(aArray, aNode) {
