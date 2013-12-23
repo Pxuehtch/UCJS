@@ -130,6 +130,14 @@ function attachFindAgainCommand() {
   // onFindAgainCommand
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
+    // terminate the active processing
+    if (mSmoothScroll) {
+      mSmoothScroll.cancel();
+    }
+    if (mFoundBlink) {
+      mFoundBlink.cancel();
+    }
+
     // perform only the default behavior when a command is called in quick
     // succession (e.g. holding a shortcut key down)
     // because an observation of document and animations are useless when they
@@ -516,6 +524,7 @@ function HorizontalCentered() {
  * Handler for scrolling an element smoothly
  * @return {hash}
  *   start: {function}
+ *   cancel: {function}
  */
 function SmoothScroll() {
   const kOption = {
@@ -596,10 +605,7 @@ function SmoothScroll() {
 
   //********** Functions
 
-  function startScroll(aState) {
-    // terminate the current scrolling
-    stopScroll(false);
-
+  function start(aState) {
     if (!mState.init(aState)) {
       return;
     }
@@ -607,6 +613,11 @@ function SmoothScroll() {
     doScrollTo(mState.start);
 
     mStep.request(doStep, getStep(mState.start));
+  }
+
+  function cancel() {
+    // terminate the current scrolling at the current position
+    stop(false);
   }
 
   function doStep({step, startTime, lastTime}) {
@@ -618,14 +629,14 @@ function SmoothScroll() {
     let currentTime = window.performance.now();
     if (currentTime - startTime > 1000 ||
         currentTime - lastTime > 100) {
-      stopScroll(true);
+      stop(true);
       return null;
     }
 
     // reached the goal or went over. stop stepping at here
     if (was.delta.x * now.delta.x <= 0 &&
         was.delta.y * now.delta.y <= 0) {
-      stopScroll(false);
+      stop(false);
       return null;
     }
 
@@ -633,7 +644,7 @@ function SmoothScroll() {
     return getStep(now.position);
   }
 
-  function stopScroll(aForceGoal) {
+  function stop(aForceGoal) {
     if (!mStep.cancel()) {
       return;
     }
@@ -747,7 +758,8 @@ function SmoothScroll() {
   //********** Expose
 
   return {
-    start: startScroll
+    start: start,
+    cancel: cancel
   };
 }
 
@@ -755,6 +767,7 @@ function SmoothScroll() {
  * Blinking a found text between on and off a selection
  * @return {hash}
  *   start: {function}
+ *   cancel: {function}
  *
  * @note The selection becomes harder to see accoding to the page style. So I
  * have set the selection style in <userContent.css>.
@@ -787,8 +800,6 @@ function FoundBlink() {
   //********** Functions
 
   function init() {
-    uninit();
-
     var selectionController = TextFinder.selectionController;
     if (selectionController) {
       mSelectionController = selectionController;
@@ -836,6 +847,10 @@ function FoundBlink() {
     parseInt(duration / steps, 10));
   }
 
+  function cancel() {
+    uninit();
+  }
+
   function isRangeIntoView(aRange) {
     var {top, bottom} = aRange.getBoundingClientRect();
 
@@ -869,7 +884,8 @@ function FoundBlink() {
   //********** Expose
 
   return {
-    start: start
+    start: start,
+    cancel: cancel
   };
 }
 
