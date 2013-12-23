@@ -589,7 +589,7 @@ function SmoothScroll() {
 
     cancel: function() {
       if (!this.requestID) {
-        return false;
+        return;
       }
 
       window.cancelAnimationFrame(this.requestID);
@@ -597,8 +597,6 @@ function SmoothScroll() {
       delete this.callback;
       delete this.param;
       delete this.requestID;
-
-      return true;
     }
   };
 
@@ -643,9 +641,7 @@ function SmoothScroll() {
   }
 
   function stop(aForceGoal) {
-    if (!mStep.cancel()) {
-      return;
-    }
+    mStep.cancel();
 
     if (aForceGoal) {
       doScrollTo(mState.goal);
