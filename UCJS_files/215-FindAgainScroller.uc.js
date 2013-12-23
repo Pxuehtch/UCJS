@@ -84,6 +84,22 @@ const TextFinder = {
 };
 
 /**
+ * Handler of the interval of times
+ * @note used to observe consecutive calls of the find-again command
+ * @see |attachFindAgainCommand|
+ */
+const TimeKeeper = {
+  lastTime: window.performance.now(),
+
+  countInterval: function() {
+    let currentTime = window.performance.now();
+    let interval = currentTime - this.lastTime;
+    this.lastTime = currentTime;
+    return interval;
+  }
+};
+
+/**
  * Main function
  */
 function FindAgainScroller_init() {
@@ -114,6 +130,17 @@ function attachFindAgainCommand() {
   // onFindAgainCommand
   var $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand = function(aFindPrevious) {
+    // perform only the default behavior when a command is called in quick
+    // succession (e.g. holding a shortcut key down)
+    // because an observation of document and animations are useless when they
+    // are reset in a short time
+    // TODO: adjust the interval time
+    const kMaxIntervalToSkip = 500; // [ms]
+    if (TimeKeeper.countInterval() < kMaxIntervalToSkip) {
+      $onFindAgainCommand.apply(this, arguments);
+      return;
+    }
+
     // take a snapshot of the state of scroll before finding
     mScrollObserver.attach();
 
