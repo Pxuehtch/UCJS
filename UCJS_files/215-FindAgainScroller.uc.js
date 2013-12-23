@@ -25,38 +25,41 @@ const {
   getNodesByXPath: $X,
   setEventListener: addEvent
 } = window.ucjsUtil;
+
 // for debug
-const log = window.ucjsUtil.logMessage.bind(null, 'FindAgainScroller.uc.js');
+function log(aMessage) {
+  return window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMessage);
+}
 
 /**
  * Configurations
  */
 const kConfig = {
-  // Skip a found result that a user can not see (e.g. a text in a popup menu
-  // that does not popped up)
-  // @note If a document has only invisible results, they will be selected.
-  // @note WORKAROUND for Fx default behavior.
+  // skip a found result that a user can not see (e.g. a text in a folded
+  // dropdown menu)
+  // @note if a document has only invisible results, they will be selected
+  // @note this is a workaround for Fx default behavior
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
   skipInvisible: true,
 
-  // Center a found text horizontally
-  // @note The result is scrolled *vertically* centered by default. WORKAROUND
-  // for horizontally.
+  // center a found text horizontally
+  // @note the result is scrolled *vertically* centered by Fx default behavior,
+  // but not *horizontally*
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=171237
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=743103
   horizontalCentered: true,
 
-  // Scroll smoothly to a found text
-  // SmoothScroll() has the detail setting
+  // scroll smoothly to a found text
+  // @note |SmoothScroll| has the detail setting
   smoothScroll: true,
 
-  // Blink a found text
-  // FoundBlink() has the detail setting
+  // blink a found text
+  // @note |FoundBlink| has the detail setting
   foundBlink: true
 };
 
 /**
- * Wrapper of gFindBar
+ * Wrapper functions of |gFindBar|
  * @see chrome://global/content/bindings/findbar.xml
  */
 const TextFinder = {
@@ -65,7 +68,7 @@ const TextFinder = {
   },
 
   get selectionController() {
-    var editable = gFindBar._foundEditable;
+    let editable = gFindBar._foundEditable;
     if (editable) {
       try {
         return editable.
@@ -119,13 +122,13 @@ function FindAgainScroller_init() {
 }
 
 function attachFindAgainCommand() {
-  var mScrollObserver = ScrollObserver();
+  let mScrollObserver = ScrollObserver();
 
-  // Optional functions
-  var mSkipInvisible = kConfig.skipInvisible && SkipInvisible();
-  var mHCentered = kConfig.horizontalCentered && HorizontalCentered();
-  var mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
-  var mFoundBlink = kConfig.foundBlink && FoundBlink();
+  // optional functions
+  let mSkipInvisible = kConfig.skipInvisible && SkipInvisible();
+  let mHCentered = kConfig.horizontalCentered && HorizontalCentered();
+  let mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
+  let mFoundBlink = kConfig.foundBlink && FoundBlink();
 
   // @modified chrome://global/content/bindings/findbar.xml::
   // onFindAgainCommand
@@ -183,14 +186,14 @@ function attachFindAgainCommand() {
  *   scrollState: {hash}
  */
 function ScrollObserver() {
-  var mScrollable = Scrollable();
+  let mScrollable = Scrollable();
 
 
   //********** Functions
 
   function Scrollable() {
-    var mItems = new Map();
-    var mScrollState = null;
+    let mItems = new Map();
+    let mScrollState = null;
 
     function cleanup() {
       mItems.clear();
@@ -269,9 +272,9 @@ function ScrollObserver() {
     }
 
     // <frame> window has |contentDocument|
-    var doc = aWindow.contentDocument || aWindow.document;
+    let doc = aWindow.contentDocument || aWindow.document;
     // |body| returns <body> or <frameset> element
-    var root = doc.body || doc.documentElement;
+    let root = doc.body || doc.documentElement;
     if (!root) {
       return;
     }
@@ -337,7 +340,7 @@ function ScrollObserver() {
   }
 
   function getScroll(aNode) {
-    var x, y;
+    let x, y;
 
     if (aNode instanceof Window) {
       x = aNode.scrollX;
@@ -366,16 +369,16 @@ function ScrollObserver() {
  * @return {hash}
  *   test: {function}
  *
- * @note |test| is called as the loop condition in |onFindAgainCommand|.
+ * @note |test| is called as the loop condition in |onFindAgainCommand|
  */
 function SkipInvisible() {
-  // WORKAROUND: A fail-safe option to avoiding an infinite loop. This is for
+  // WORKAROUND: a fail-safe option to avoiding an infinite loop. this is for
   // when a document has only invisible results and then the comparing check
-  // of nodes does not work.
+  // of nodes does not work
   const kMaxTestingCount = 50;
 
-  var mTestingCount = 0;
-  var mFirstInvisible = null;
+  let mTestingCount = 0;
+  let mFirstInvisible = null;
 
 
   //********** Functions
@@ -388,7 +391,7 @@ function SkipInvisible() {
       return false;
     }
 
-    var invisible = getInvisibleResult();
+    let invisible = getInvisibleResult();
 
     if (invisible) {
       // the first test passed
@@ -412,14 +415,14 @@ function SkipInvisible() {
   }
 
   function getInvisibleResult() {
-    var selectionController = TextFinder.selectionController;
+    let selectionController = TextFinder.selectionController;
     // no result is found or error something
     if (!selectionController) {
       return null;
     }
 
     // get the text node that contains the find range object
-    var result = selectionController.
+    let result = selectionController.
       getSelection(window.Ci.nsISelectionController.SELECTION_NORMAL).
       getRangeAt(0).
       commonAncestorContainer;
@@ -488,7 +491,7 @@ function HorizontalCentered() {
   function getSelection() {
     const {Ci} = window;
 
-    var selectionController = TextFinder.selectionController;
+    let selectionController = TextFinder.selectionController;
 
     return selectionController &&
       selectionController.
@@ -542,12 +545,12 @@ function HorizontalCentered() {
  */
 function SmoothScroll() {
   const kOption = {
-    // Pitch of the scroll
-    // far: The goal is away from the current viewport over its width/height
-    // near: The goal comes within the w/h of the viewport
-    // * 8 pitches mean approaching to the goal by each remaining distance
+    // pitch of the scroll
+    // far: the goal is away from the current viewport over its width/height
+    // near: the goal comes within the w/h of the viewport
+    // @note 8 pitches mean approaching to the goal by each remaining distance
     // divided by 8
-    // * the bigger value, the slower moving
+    // @note the bigger value, the slower moving
     pitch: {far: 2, near: 6}
   };
 
@@ -777,38 +780,38 @@ function SmoothScroll() {
  *   start: {function}
  *   cancel: {function}
  *
- * @note The selection becomes harder to see accoding to the page style. So I
- * have set the selection style in <userContent.css>.
+ * @note the selection becomes harder to see accoding to the page style. so I
+ * have set the selection style in <userContent.css>
  * ::-moz-selection {
  *   color: white !important;
  *   background: blue !important;
  * }
  *
- * TODO: Use nsISelectionController::SELECTION_ATTENTION.
- * If the style of a found text selection (white text on green back) is changed
- * by the page style, I don't know how to fix it because <::-moz-selection> is
- * not applied to it.
+ * TODO: use |nsISelectionController::SELECTION_ATTENTION|
+ * if the style of a found text selection (default: white text on green back)
+ * is changed by the page style, I don't know how to fix it because
+ * <::-moz-selection> is not applied to it
  */
 function FoundBlink() {
   const kOption = {
-    // Duration of blinking (millisecond)
+    // duration of blinking [millisecond]
     duration: 2000,
-    // The number of times to blink (even number)
-    // * 6 steps mean on->off->on->off->on->off->on
+    // the number of times to blink [even number]
+    // @note 6 steps mean on->off->on->off->on->off->on
     steps: 12
   };
 
-  var mTimerID;
-  var mSelectionController;
+  let mTimerID;
+  let mSelectionController;
 
-  // Attach a cleaner when the selection is removed by clicking
+  // attach a cleaner when the selection is removed by clicking
   addEvent([gBrowser.mPanelContainer, 'mousedown', uninit, false]);
 
 
   //********** Functions
 
   function init() {
-    var selectionController = TextFinder.selectionController;
+    let selectionController = TextFinder.selectionController;
     if (selectionController) {
       mSelectionController = selectionController;
       return true;
@@ -833,9 +836,9 @@ function FoundBlink() {
       return;
     }
 
-    var {duration, steps} = kOption;
-    var limits = steps, blinks = 0;
-    var range = getRange();
+    let {duration, steps} = kOption;
+    let limits = steps, blinks = 0;
+    let range = getRange();
 
     mTimerID = setInterval(function() {
       // do nothing until the selection is into the view
@@ -849,7 +852,7 @@ function FoundBlink() {
         return;
       }
 
-      // |blinks| odd: on, even: off
+      // ON when |blinks| is odd, OFF when even
       setDisplay(!!(blinks++ % 2));
     },
     parseInt(duration / steps, 10));
@@ -860,7 +863,7 @@ function FoundBlink() {
   }
 
   function isRangeIntoView(aRange) {
-    var {top, bottom} = aRange.getBoundingClientRect();
+    let {top, bottom} = aRange.getBoundingClientRect();
 
     return 0 <= top && bottom <= window.innerHeight;
   }
