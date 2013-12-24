@@ -18,10 +18,6 @@
  * Imports
  */
 const {
-  Timer: {
-    setInterval,
-    clearInterval
-  },
   getNodesByXPath: $X,
   setEventListener: addEvent
 } = window.ucjsUtil;
@@ -148,7 +144,7 @@ function attachFindAgainCommand() {
     // because an observation of document and animations are useless when they
     // are reset in a short time
     // TODO: adjust the interval time
-    const kMaxIntervalToSkip = 500; // [ms]
+    const kMaxIntervalToSkip = 500; // [millisecond]
     if (TimeKeeper.countInterval() < kMaxIntervalToSkip) {
       $onFindAgainCommand.apply(this, arguments);
       return;
@@ -187,9 +183,6 @@ function attachFindAgainCommand() {
  */
 function ScrollObserver() {
   let mScrollable = Scrollable();
-
-
-  //********** Functions
 
   function Scrollable() {
     let mItems = new Map();
@@ -380,9 +373,6 @@ function SkipInvisible() {
   let mTestingCount = 0;
   let mFirstInvisible = null;
 
-
-  //********** Functions
-
   function test() {
     // WORKAROUND: force to exit from a loop of testing
     if (++mTestingCount > kMaxTestingCount) {
@@ -545,7 +535,7 @@ function HorizontalCentered() {
  */
 function SmoothScroll() {
   const kOption = {
-    // pitch of the scroll
+    // pitch of a scroll [integer]
     // far: the goal is away from the current viewport over its width/height
     // near: the goal comes within the w/h of the viewport
     // @note 8 pitches mean approaching to the goal by each remaining distance
@@ -569,7 +559,12 @@ function SmoothScroll() {
       this.node = node;
       this.start = start;
       this.goal = goal;
+      this.frameAnimator = FrameAnimator(onEnterFrame);
+      this.param = {
+        step: getStep(start)
+      };
 
+      this.initialized = true;
       return true;
     },
 
@@ -578,47 +573,11 @@ function SmoothScroll() {
       delete this.node;
       delete this.start;
       delete this.goal;
-    }
-  };
-
-  const mStep = {
-    request: function(aCallback, aStep) {
-      this.callback = aCallback;
-
-      let startTime = window.performance.now();
-      this.param = {
-        step: aStep,
-        startTime: startTime,
-        lastTime: startTime
-      };
-
-      this.requestID = window.requestAnimationFrame(this.step.bind(this));
-    },
-
-    step: function(aTimeStamp) {
-      let nextStep = this.callback(this.param);
-      if (nextStep) {
-        this.param.step = nextStep;
-        this.param.lastTime = aTimeStamp;
-        this.requestID = window.requestAnimationFrame(this.step.bind(this));
-      }
-    },
-
-    cancel: function() {
-      if (!this.requestID) {
-        return;
-      }
-
-      window.cancelAnimationFrame(this.requestID);
-
-      delete this.callback;
+      delete this.frameAnimator;
       delete this.param;
-      delete this.requestID;
+      delete this.initialized;
     }
   };
-
-
-  //********** Functions
 
   function start(aState) {
     if (!mState.init(aState)) {
@@ -627,44 +586,51 @@ function SmoothScroll() {
 
     doScrollTo(mState.start);
 
-    mStep.request(doStep, getStep(mState.start));
+    mState.frameAnimator.request();
   }
 
-  function cancel() {
-    // terminate the current scrolling at the current position
-    stop(false);
-  }
+  function onEnterFrame(aTime) {
+    let {step} = mState.param;
 
-  function doStep({step, startTime, lastTime}) {
     let was = getScroll();
     doScrollBy(step);
     let now = getScroll();
 
     // took too much time. stop stepping and jump to goal
-    if (lastTime - startTime > 1000) {
+    if (aTime.current - aTime.start > 1000) {
       stop(true);
-      return null;
+      return false;
     }
 
     // reached the goal or went over. stop stepping at here
     if (was.delta.x * now.delta.x <= 0 &&
         was.delta.y * now.delta.y <= 0) {
       stop(false);
-      return null;
+      return false;
     }
 
-    // next step
-    return getStep(now.position);
+    // ready for the next frame
+    mState.param.step = getStep(now.position);
+    return true;
   }
 
   function stop(aForceGoal) {
-    mStep.cancel();
+    if (!mState.initialized) {
+      return;
+    }
+
+    mState.frameAnimator.cancel();
 
     if (aForceGoal) {
       doScrollTo(mState.goal);
     }
 
     mState.uninit();
+  }
+
+  function cancel() {
+    // terminate scrolling at the current position
+    stop(false);
   }
 
   function getStep(aPosition) {
@@ -794,72 +760,87 @@ function SmoothScroll() {
  */
 function FoundBlink() {
   const kOption = {
-    // duration of blinking [millisecond]
+    // duration of time for blinks [millisecond]
+    // @note a blinking will be canceled when the duration is exipred
     duration: 2000,
-    // the number of times to blink [even number]
+    // number of times to blink [even number]
     // @note 6 steps mean on->off->on->off->on->off->on
     steps: 12
   };
 
-  let mTimerID;
-  let mSelectionController;
+  const mState = {
+    init:  function() {
+      let selectionController = TextFinder.selectionController;
+      if (!selectionController) {
+        return false;
+      }
+
+      this.selectionController = selectionController;
+
+      let {duration, steps} = kOption;
+      this.frameAnimator = FrameAnimator(onEnterFrame, {
+        interval: parseInt(duration / steps, 10)
+      });
+      this.param = {
+        duration: duration,
+        blinks: 0,
+        range: getRange()
+      };
+
+      this.initialized = true;
+      return true;
+    },
+
+    uninit:  function() {
+      delete this.selectionController;
+      delete this.animator;
+      delete this.param;
+      delete this.initialized;
+    }
+  };
 
   // attach a cleaner when the selection is removed by clicking
-  addEvent([gBrowser.mPanelContainer, 'mousedown', uninit, false]);
-
-
-  //********** Functions
-
-  function init() {
-    let selectionController = TextFinder.selectionController;
-    if (selectionController) {
-      mSelectionController = selectionController;
-      return true;
-    }
-    return false;
-  }
-
-  function uninit() {
-    if (mTimerID) {
-      clearInterval(mTimerID);
-      mTimerID = null;
-    }
-
-    if (mSelectionController) {
-      setDisplay(true);
-      mSelectionController = null;
-    }
-  }
+  addEvent([gBrowser.mPanelContainer, 'mousedown', mState.uninit, false]);
 
   function start() {
-    if (!init()) {
+    if (!mState.init()) {
       return;
     }
 
-    let {duration, steps} = kOption;
-    let limits = steps, blinks = 0;
-    let range = getRange();
+    mState.frameAnimator.request();
+  }
 
-    mTimerID = setInterval(function() {
-      // do nothing until the selection is into the view
-      if (blinks === 0 && limits-- > 0 && !isRangeIntoView(range)) {
-        return;
-      }
+  function onEnterFrame(aTime) {
+    let {duration, blinks, range} = mState.param;
 
-      // break when blinks end or the trial limit is expired
-      if (blinks === steps || limits <= 0) {
-        uninit();
-        return;
-      }
+    // registered duration is expired
+    if (aTime.current - aTime.start > duration) {
+      cancel();
+      return false;
+    }
 
-      // ON when |blinks| is odd, OFF when even
-      setDisplay(!!(blinks++ % 2));
-    },
-    parseInt(duration / steps, 10));
+    // do not blink until the selection comes into the view
+    if (blinks > 0 || isRangeIntoView(range)) {
+      // show the selection when |blinks| is odd, not when even(include 0)
+      setDisplay(!!(blinks % 2));
+      mState.param.blinks++;
+    }
+
+    // ready for the next frame
+    return true;
   }
 
   function cancel() {
-    uninit();
+    if (!mState.initialized) {
+      return;
+    }
+
+    mState.frameAnimator.cancel();
+
+    // show a selection display
+    setDisplay(true);
+
+    mState.uninit();
   }
 
   function isRangeIntoView(aRange) {
@@ -871,7 +852,7 @@ function FoundBlink() {
   function getRange() {
     const {SELECTION_NORMAL} = window.Ci.nsISelectionController;
 
-    return mSelectionController.
+    return mState.selectionController.
       getSelection(SELECTION_NORMAL).
       getRangeAt(0);
   }
@@ -886,8 +867,8 @@ function FoundBlink() {
     let type = aShow ? SELECTION_ON : SELECTION_OFF;
 
     try {
-      mSelectionController.setDisplaySelection(type);
-      mSelectionController.repaintSelection(SELECTION_NORMAL);
+      mState.selectionController.setDisplaySelection(type);
+      mState.selectionController.repaintSelection(SELECTION_NORMAL);
     } catch (ex) {}
   }
 
@@ -896,6 +877,72 @@ function FoundBlink() {
 
   return {
     start: start,
+    cancel: cancel
+  };
+}
+
+/**
+ * Handler of the frame animation
+ * @return {hash}
+ *   request: {function}
+ *   cancel: {function}
+ *
+ * @note used in |SmoothScroll| and |FoundBlink|
+ * TODO: should I make this function as a class for creating multiple
+ * instances?
+ */
+function FrameAnimator(aCallback, aOption) {
+  let mCallback;
+  let mTime;
+  let mRequestID;
+
+  init(aCallback, aOption);
+
+  function init(aCallback, aOption) {
+    let {interval} = aOption || {};
+
+    mCallback = aCallback;
+
+    let now = window.performance.now();
+    mTime = {
+      start: now,
+      last: now,
+      current: now,
+      interval: interval || 0
+    };
+  }
+
+  function uninit() {
+    mCallback = null;
+    mTime = null;
+    mRequestID = null;
+  }
+
+  function request() {
+    mRequestID = window.requestAnimationFrame(onEnterFrame);
+  }
+
+  function onEnterFrame(aTimeStamp) {
+    mTime.current = aTimeStamp;
+
+    if (!mTime.interval || aTimeStamp - mTime.last >= mTime.interval) {
+      if (!mCallback(mTime)) {
+        return;
+      }
+      mTime.last = aTimeStamp;
+    }
+
+    mRequestID = window.requestAnimationFrame(onEnterFrame);
+  }
+
+  function cancel() {
+    window.cancelAnimationFrame(mRequestID);
+
+    uninit();
+  }
+
+  return {
+    request: request,
     cancel: cancel
   };
 }
