@@ -761,7 +761,7 @@ function SmoothScroll() {
 function FoundBlink() {
   const kOption = {
     // duration of time for blinks [millisecond]
-    // @note a blinking will be canceled when the duration is exipred
+    // @note a blinking will be canceled when the duration is expired
     duration: 2000,
     // number of times to blink [even number]
     // @note 6 steps mean on->off->on->off->on->off->on
@@ -800,7 +800,7 @@ function FoundBlink() {
   };
 
   // attach a cleaner when the selection is removed by clicking
-  addEvent([gBrowser.mPanelContainer, 'mousedown', mState.uninit, false]);
+  addEvent([gBrowser.mPanelContainer, 'mousedown', cancel, false]);
 
   function start() {
     if (!mState.init()) {
@@ -813,9 +813,9 @@ function FoundBlink() {
   function onEnterFrame(aTime) {
     let {duration, blinks, range} = mState.param;
 
-    // registered duration is expired
+    // the duration is expired. stop blinking and display the selection
     if (aTime.current - aTime.start > duration) {
-      cancel();
+      cancel(true);
       return false;
     }
 
@@ -830,15 +830,16 @@ function FoundBlink() {
     return true;
   }
 
-  function cancel() {
+  function cancel(aForceSelect) {
     if (!mState.initialized) {
       return;
     }
 
     mState.frameAnimator.cancel();
 
-    // show a selection display
-    setDisplay(true);
+    if (aForceSelect) {
+      setDisplay(true);
+    }
 
     mState.uninit();
   }
