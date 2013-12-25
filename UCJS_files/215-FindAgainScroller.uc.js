@@ -28,9 +28,9 @@ function log(aMessage) {
 }
 
 /**
- * Configurations
+ * Preferences
  */
-const kConfig = {
+const kPref = {
   // skip a found result that a user can not see (e.g. a text in a folded
   // dropdown menu)
   // @note if a document has only invisible results, they will be selected
@@ -121,10 +121,10 @@ function attachFindAgainCommand() {
   let mScrollObserver = ScrollObserver();
 
   // optional functions
-  let mSkipInvisible = kConfig.skipInvisible && SkipInvisible();
-  let mHCentered = kConfig.horizontalCentered && HorizontalCentered();
-  let mSmoothScroll = kConfig.smoothScroll && SmoothScroll();
-  let mFoundBlink = kConfig.foundBlink && FoundBlink();
+  let mSkipInvisible = kPref.skipInvisible && SkipInvisible();
+  let mHCentered = kPref.horizontalCentered && HorizontalCentered();
+  let mSmoothScroll = kPref.smoothScroll && SmoothScroll();
+  let mFoundBlink = kPref.foundBlink && FoundBlink();
 
   // @modified chrome://global/content/bindings/findbar.xml::
   // onFindAgainCommand
