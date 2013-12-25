@@ -815,7 +815,7 @@ function FoundBlink() {
 
     // the duration is expired. stop blinking and display the selection
     if (aTime.current - aTime.start > duration) {
-      cancel(true);
+      stop(true);
       return false;
     }
 
@@ -830,7 +830,7 @@ function FoundBlink() {
     return true;
   }
 
-  function cancel(aForceSelect) {
+  function stop(aForceSelect) {
     if (!mState.initialized) {
       return;
     }
@@ -842,6 +842,11 @@ function FoundBlink() {
     }
 
     mState.uninit();
+  }
+
+  function cancel() {
+    // terminate blinking and stay the display state of selection
+    stop(false);
   }
 
   function isRangeIntoView(aRange) {
