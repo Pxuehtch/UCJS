@@ -188,15 +188,9 @@ function ScrollObserver() {
     let mItems = new Map();
     let mScrollState = null;
 
-    function cleanup() {
+    function uninit() {
       mItems.clear();
-
-      if (mScrollState !== null) {
-        delete mScrollState.node;
-        delete mScrollState.start;
-        delete mScrollState.goal;
-        mScrollState = null;
-      }
+      mScrollState = null;
     }
 
     function addItem(aNode) {
@@ -242,7 +236,7 @@ function ScrollObserver() {
     }
 
     return {
-      cleanup: cleanup,
+      uninit: uninit,
       addItem: addItem,
       check: check,
       get scrollState() mScrollState
@@ -254,7 +248,7 @@ function ScrollObserver() {
   }
 
   function detach() {
-    mScrollable.cleanup();
+    mScrollable.uninit();
   }
 
   function scanScrollables(aWindow) {
@@ -569,13 +563,13 @@ function SmoothScroll() {
     },
 
     uninit: function() {
-      delete this.view;
-      delete this.node;
-      delete this.start;
-      delete this.goal;
-      delete this.frameAnimator;
-      delete this.param;
-      delete this.initialized;
+      this.view = null;
+      this.node = null;
+      this.start = null;
+      this.goal = null;
+      this.frameAnimator = null;
+      this.param = null;
+      this.initialized = null;
     }
   };
 
@@ -792,10 +786,10 @@ function FoundBlink() {
     },
 
     uninit:  function() {
-      delete this.selectionController;
-      delete this.animator;
-      delete this.param;
-      delete this.initialized;
+      this.selectionController = null;
+      this.animator = null;
+      this.param = null;
+      this.initialized = null;
     }
   };
 
