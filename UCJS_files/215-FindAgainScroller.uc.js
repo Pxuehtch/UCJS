@@ -158,11 +158,17 @@ function attachFindAgainCommand() {
     } while (mSkipInvisible && mSkipInvisible.test());
 
     if (TextFinder.isResultFound) {
-      if (mHCentered && mScrollObserver.check()) {
-        mHCentered.align(mScrollObserver.scrollState);
+      if (mHCentered) {
+        let scrollState = mScrollObserver.check();
+        if (scrollState) {
+          mHCentered.align(scrollState);
+        }
       }
-      if (mSmoothScroll && mScrollObserver.check()) {
-        mSmoothScroll.start(mScrollObserver.scrollState);
+      if (mSmoothScroll) {
+        let scrollState = mScrollObserver.check();
+        if (scrollState) {
+          mSmoothScroll.start(scrollState);
+        }
       }
       if (mFoundBlink) {
         mFoundBlink.start();
@@ -179,7 +185,6 @@ function attachFindAgainCommand() {
  *   attach: {function}
  *   detach: {function}
  *   check: {function}
- *   scrollState: {hash}
  */
 function ScrollObserver() {
   let mScrollable = Scrollable();
@@ -199,17 +204,17 @@ function ScrollObserver() {
 
     function check() {
       if (!mItems.size) {
-        return false;
+        return null;
       }
 
       updateScrollState();
 
-      return !!mScrollState;
+      return mScrollState;
     }
 
     function updateScrollState() {
       // update the goal
-      // once the scrolled node is found, we simply observe it.
+      // once the scrolled node is found, we simply observe it
       if (mScrollState) {
         let {node, goal} = mScrollState;
         let now = getScroll(node);
@@ -224,7 +229,7 @@ function ScrollObserver() {
         let now = getScroll(node);
         if (now.x !== scroll.x || now.y !== scroll.y) {
           // @note |mScrollState| is used as the parameters of
-          // |SmoothScroll::start|, |HorizontalCentered::align|.
+          // |SmoothScroll::start|, |HorizontalCentered::align|
           mScrollState = {
             node: node,
             start: scroll,
@@ -238,8 +243,7 @@ function ScrollObserver() {
     return {
       uninit: uninit,
       addItem: addItem,
-      check: check,
-      get scrollState() mScrollState
+      check: check
     };
   }
 
@@ -346,8 +350,7 @@ function ScrollObserver() {
   return {
     attach: attach,
     detach: detach,
-    check: mScrollable.check,
-    get scrollState() mScrollable.scrollState
+    check: mScrollable.check
   };
 }
 
