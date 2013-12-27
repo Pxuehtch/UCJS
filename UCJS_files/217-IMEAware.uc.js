@@ -106,7 +106,7 @@ function TextboxStyler() {
     clear: function() {
       if (this.timerID) {
         clearTimeout(this.timerID);
-        delete this.timerID;
+        this.timerID = null;
       }
     }
   };

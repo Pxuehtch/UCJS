@@ -536,7 +536,7 @@ var mTabSelector = {
   clear: function() {
     if (this.timer) {
       clearInterval(this.timer);
-      delete this.timer;
+      this.timer = null;
     }
   },
 
@@ -600,6 +600,7 @@ var mTabSuspender = {
     var timer = id && this.timers[id];
     if (timer) {
       clearTimeout(timer);
+      // delete the property that is not used anymore
       delete this.timers[id];
     }
   },
@@ -733,6 +734,7 @@ var mSessionStore = {
         this.isRestoring = false;
 
         if (this.isResumeStartup) {
+          // delete the property that is not used anymore
           delete this.isResumeStartup;
           this.persistTabAttribute();
         }

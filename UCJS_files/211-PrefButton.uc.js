@@ -168,6 +168,7 @@ const Items = [
         }
       }
 
+      // lazy definition
       delete this.plugin;
       return this.plugin = plugin;
     },

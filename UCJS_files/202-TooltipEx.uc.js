@@ -102,7 +102,7 @@ var TooltipHandler = {
       this._mTarget.ownerDocument.defaultView.
       removeEventListener('unload', this, false);
 
-      delete this._mTarget;
+      this._mTarget = null;
     }
   },
 
@@ -127,7 +127,7 @@ var TooltipHandler = {
       this._mTitleStore.delete(node);
     }
 
-    delete this._mTitleStore;
+    this._mTitleStore = null;
   },
 
   init: function() {

@@ -170,6 +170,7 @@ const BrowserProgressListener = {
  */
 const Referrer = {
   get referrer() {
+    // lazy definition
     delete this.referrer;
     return this.referrer =
       window.ucjsTabEx &&
@@ -213,7 +214,7 @@ const Tooltip = {
   hide: function(aEvent) {
     if (this.timer) {
       clearTimeout(this.timer);
-      delete this.timer;
+      this.timer = null;
     }
 
     this.tooltip.hidePopup();

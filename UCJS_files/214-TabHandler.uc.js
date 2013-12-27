@@ -117,7 +117,7 @@ var mTabBarClickEvent = {
       }.bind(this), kClickThresholdTimer);
     } else if (aVal === false) {
       clearTimeout(this.mouseDownTimer);
-      delete this.mouseDownTimer;
+      this.mouseDownTimer = null;
     }
   },
 
@@ -134,7 +134,7 @@ var mTabBarClickEvent = {
       }.bind(this), kClickThresholdTimer);
     } else if (aVal === false) {
       clearTimeout(this.mouseUpTimer);
-      delete this.mouseUpTimer;
+      this.mouseUpTimer = null;
     }
   },
 

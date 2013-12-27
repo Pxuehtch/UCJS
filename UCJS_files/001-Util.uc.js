@@ -73,6 +73,7 @@ const XPCOM = (function() {
 
     if (!(kServices[aName] instanceof window.Ci.nsISupports)) {
       let service = create(kServices[aName], aCIDParams, 'getService');
+      // lazy definition
       delete kServices[aName];
       kServices[aName] = service
     }
@@ -162,6 +163,7 @@ const Timer = (function() {
       notify: function notify() {
         try {
           if (aType === TYPE_ONE_SHOT) {
+            // delete the property that is not used anymore
             delete timers[id];
           }
           aCallback.apply(null, aParams);
@@ -174,6 +176,7 @@ const Timer = (function() {
 
   function unsetTimer(aID) {
     let timer = timers[aID];
+    // delete the property that is not used anymore
     delete timers[aID];
     if (timer) {
       timer.cancel();
@@ -747,6 +750,7 @@ function openTabs(aURLs, aOption) {
   aOption = aOption || {};
   var {inBackground} = aOption;
   var {ucjsReplace} = aOption;
+  // delete the option that is useless for the following functions
   delete aOption.ucjsReplace;
 
   var firstTabAdded;
@@ -787,6 +791,7 @@ function openTab(aURL, aOption) {
   aOption = aOption || {};
   var {inBackground} = aOption;
   var {ucjsTrustURL} = aOption;
+  // delete the option that is useless for the following functions
   delete aOption.ucjsTrustURL;
 
   if (!ucjsTrustURL) {
@@ -810,6 +815,7 @@ function loadPage(aURL, aOption) {
     allowThirdPartyFixup, fromExternal, isUTF8
   } = aOption;
   var {ucjsTrustURL} = aOption;
+  // delete the option that is useless for the following functions
   delete aOption.ucjsTrustURL;
 
   if (!ucjsTrustURL) {
