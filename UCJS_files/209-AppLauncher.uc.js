@@ -326,30 +326,41 @@ function AppLauncher_init() {
 }
 
 function initAppList() {
-  let apps = kAppList.filter(function(app) {
+  // filter valid list items
+  let apps = kAppList.filter((app) => {
     let {name, type, extensions, path, disabled} = app;
 
+    // 1.required properties
     if (!disabled && name && type && path) {
-      if (kTypeAction.some(function(item) item.type === type)) {
+      // 2.valid action type
+      if (kTypeAction.some((item) => item.type === type)) {
+        // 3.required 'extentions' property if type is 'file'
         if (type !== 'file' || (extensions && extensions.length)) {
-          let isValid = checkApp(app);
-          if (isValid && type === 'file') {
-            FileExtUtil.updateFileExt(extensions);
+          // 4.valid application
+          if (checkApp(app)) {
+            if (type === 'file') {
+              FileExtUtil.updateFileExt(extensions);
+            }
+            return true;
           }
-          return isValid;
         }
       }
     }
     return false;
   });
 
-  let order = kTypeAction.map(function({type}) type);
-  apps.sort(function(a, b) {
-    return order.indexOf(a.type) - order.indexOf(b.type) ||
-           a.name.localeCompare(b.name);
-  });
+  if (!apps.length) {
+    return null;
+  }
 
-  return apps.length ? apps : null;
+  // sort items in type actions order and then alphabetical order
+  let order = kTypeAction.map(({type}) => type);
+  apps.sort((a, b) =>
+    order.indexOf(a.type) - order.indexOf(b.type) ||
+    a.name.localeCompare(b.name)
+  );
+
+  return apps;
 }
 
 function makeMainMenu(aAppList) {
