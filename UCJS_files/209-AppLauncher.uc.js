@@ -25,6 +25,9 @@
 
 /**
  * Application list
+ *
+ * @note don't add a property 'index' that is reserved for internal use
+ * @see |initAppList()|
  */
 const kAppList = [
   {
@@ -276,6 +279,7 @@ const kUI = {
  */
 const kID = {
   mainMenu: 'ucjs_applauncher_menu',
+  appIndexKey: 'ucjs_applauncher_appIndex',
   actionKey: 'ucjs_applauncher_action',
   startSeparator: 'ucjs_applauncher_startsep',
   endSeparator: 'ucjs_applauncher_endsep'
@@ -360,6 +364,11 @@ function initAppList() {
     a.name.localeCompare(b.name)
   );
 
+  // set the array index inside each item
+  // TODO: avoid adding a new property that could cause an unexpected conflict
+  // in a constant |kAppList|
+  apps.forEach((app, i) => app.index = i);
+
   return apps;
 }
 
@@ -371,7 +380,33 @@ function makeMainMenu(aAppList) {
   });
 
   var popup = $E('menupopup');
-  addEvent([popup, 'popupshowing', doBrowse, false]);
+
+  addEvent([popup, 'popupshowing', (aEvent) => {
+    aEvent.stopPropagation();
+
+    let target = aEvent.target;
+    if (target.parentElement.id !== kID.mainMenu) {
+      return;
+    }
+
+    doBrowse(target);
+  }, false]);
+
+  addEvent([popup, 'command', (aEvent) => {
+    aEvent.stopPropagation();
+
+    let target = aEvent.target;
+    if (!target.hasAttribute(kID.appIndexKey)) {
+      return;
+    }
+
+    let appIndex = +(target.getAttribute(kID.appIndexKey));
+    if (appIndex < 0) {
+      return;
+    }
+
+    doAction(aAppList[appIndex], target.getAttribute(kID.actionKey));
+  }, false]);
 
   makeAppMenu(popup, aAppList);
   makeActionItems(popup, aAppList);
@@ -394,7 +429,11 @@ function makeAppMenu(aPopup, aAppList) {
   let appMenuPopup = $E('menupopup');
 
   aAppList.forEach(function(app) {
-    addAppMenuItem(appMenuPopup, 'launchTool', app);
+    addMenuItem(appMenuPopup, {
+      action: 'launchTool',
+      app: app,
+      inAppMenu: true
+    });
   });
 
   appMenu.appendChild(appMenuPopup);
@@ -430,65 +469,66 @@ function makeActionItems(aPopup, aAppList) {
     }
 
     actions.forEach(function(action) {
-      addActionMenuItem(aPopup, action, app);
+      addMenuItem(aPopup, {
+        action: action,
+        app: app
+      });
     });
   });
 
   addSeparator(aPopup);
-  addActionMenuItem(aPopup, 'noActions');
-}
-
-function addAppMenuItem(aPopup, aAction, aApp) {
-  let label = makeMenuItemLabel(aApp, aAction, true);
-  addMenuItem(aPopup, aAction, aApp, label);
-}
-
-function addActionMenuItem(aPopup, aAction, aApp) {
-  let label = makeMenuItemLabel(aApp, aAction, false);
-  addMenuItem(aPopup, aAction, aApp, label);
-}
-
-function addMenuItem(aPopup, aAction, aApp, aLabel) {
-  let item = $E('menuitem', {
-    label: U(aLabel),
-    user: [kID.actionKey, aAction]
+  addMenuItem(aPopup, {
+    action: 'noActions',
+    app: null
   });
+}
 
-  if (aApp) {
-    addEvent([item, 'command', function() {
-      doAction(aApp, aAction);
-    }, false]);
-  }
-  else {
-    $E(item, {disabled: true});
-  }
+function addMenuItem(aPopup, aParam) {
+  let {action, app, inAppMenu} = aParam;
+
+  let appIndex = app ? app.index : -1;
+
+  let item = $E('menuitem', {
+    label: U(makeMenuItemLabel(aParam)),
+    disabled: appIndex < 0 || null,
+    user: [
+      {
+        key: kID.appIndexKey,
+        value: appIndex
+      },
+      {
+        key: kID.actionKey,
+        value: action
+      }
+    ]
+  });
 
   aPopup.appendChild(item);
 }
 
-function makeMenuItemLabel(aApp, aAction, aInAppMenu) {
+function makeMenuItemLabel({app, action, inAppMenu}) {
   let label;
 
-  if (aInAppMenu) {
-    let type = kString.type[aApp.type];
-    if (aApp.type === 'file') {
-      type = type.replace('%1', aApp.extensions.join(','));
+  if (inAppMenu) {
+    let type = kString.type[app.type];
+    if (app.type === 'file') {
+      type = type.replace('%1', app.extensions.join(','));
     }
     label = kString.appMenuItem.
-      replace('%type%', type).replace('%name%', aApp.name);
+      replace('%type%', type).replace('%name%', app.name);
   }
   else {
-    label = kString.action[FileExtUtil.getBaseAction(aAction)];
-    if (aApp) {
-      label = label.replace('%1', aApp.name);
+    label = kString.action[FileExtUtil.getBaseAction(action)];
+    if (app) {
+      label = label.replace('%1', app.name);
     }
   }
 
   return label;
 }
 
-function doBrowse(aEvent) {
-  // XPath for the useless menu-separator
+function doBrowse(aPopup) {
+  // XPath for the useless menu-separator;
   // 1.it is the first visible item in the menu
   // 2.it is the last visible item in the menu
   // 3.the next visible item is a menu-separator
@@ -500,14 +540,8 @@ function doBrowse(aEvent) {
       actionKey + actions.join('" or ' + actionKey) + '"]';
   }
 
-  aEvent.stopPropagation();
-  var popup = aEvent.target;
-  if (popup.parentElement.id !== kID.mainMenu) {
-    return;
-  }
-
   // Hide all menu items and show the others
-  Array.forEach(popup.childNodes, function(node) {
+  Array.forEach(aPopup.childNodes, function(node) {
     var hidden = node.localName === 'menuitem';
     if (node.hidden !== hidden) {
       node.hidden = hidden;
@@ -515,13 +549,13 @@ function doBrowse(aEvent) {
   });
 
   // Show the menu items with available actions
-  $X(availableItem(getAvailableActions()), popup).
+  $X(availableItem(getAvailableActions()), aPopup).
   forEach(function(node) {
     node.hidden = false;
   });
 
   // Hide the useless separators
-  $X(uselessSeparator, popup).
+  $X(uselessSeparator, aPopup).
   forEach(function(node) {
     node.hidden = true;
   });
@@ -701,20 +735,32 @@ function isTextDocument(aDocument) {
 }
 
 function addSeparator(aPopup, aID) {
-  return aPopup.appendChild($E('menuseparator', {id: aID}));
+  return aPopup.appendChild($E('menuseparator', {
+    id: aID
+  }));
 }
 
 function $E(aTagOrNode, aAttribute) {
   let node = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) : aTagOrNode;
+    window.document.createElement(aTagOrNode) :
+    aTagOrNode;
+
+  let setAttribute = (aKey, aValue) => {
+    if (aValue !== null && aValue !== undefined) {
+      node.setAttribute(aKey, aValue);
+    }
+  };
 
   if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (name === 'user') {
-        [name, value] = value;
-      }
-      if (value !== null && value !== undefined) {
-        node.setAttribute(name, value);
+    for (let [key, value] in Iterator(aAttribute)) {
+      switch (key) {
+      case 'user':
+        value.forEach(({key, value}) => {
+          setAttribute(key, value);
+        });
+        break;
+      default:
+        setAttribute(key, value);
       }
     }
   }
