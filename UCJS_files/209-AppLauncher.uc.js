@@ -5,9 +5,9 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage Access to items in the main context menu.
+// @usage access to items in the main context menu
 
-// @note A resource file that is passed to the application will be saved in
+// @note a resource file that is passed to the application will be saved in
 // your temporary folder. See |doAction()|, |Util::getSaveFilePath()|
 
 
@@ -252,7 +252,7 @@ const kString = {
  */
 const kLinkExtension = {
   // for <openFile>
-  // @note SET NO VALUES. they will be automatically created with
+  // @note *SET NO VALUES* they will be automatically created with
   // |kAppList.extensions|. see |FileExtUtil::updateFileExt()|
   file:  [],
   // for <viewLinkSource>
@@ -303,7 +303,7 @@ const FileExtUtil = {
 
     // update array with the unique extensions
     kLinkExtension['file'] =
-    fileExts.filter(function(ext, i, array) array.indexOf(ext) === i);
+    fileExts.filter((ext, i, array) => array.indexOf(ext) === i);
   },
 
   matchExt: function(aURL, aType) {
@@ -322,7 +322,7 @@ const FileExtUtil = {
 //********** Functions
 
 function AppLauncher_init() {
-  var appList = initAppList();
+  let appList = initAppList();
 
   if (appList) {
     makeMainMenu(appList);
@@ -373,13 +373,13 @@ function initAppList() {
 }
 
 function makeMainMenu(aAppList) {
-  var menu = $E('menu', {
+  let menu = $E('menu', {
     id: kID.mainMenu,
     label: U(kUI.mainMenuLabel),
     accesskey: kUI.mainMenuAccesskey
   });
 
-  var popup = $E('menupopup');
+  let popup = $E('menupopup');
 
   addEvent([popup, 'popupshowing', (aEvent) => {
     aEvent.stopPropagation();
@@ -415,7 +415,7 @@ function makeMainMenu(aAppList) {
 
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
   // separators.
-  var context = getContextMenu();
+  let context = getContextMenu();
   addSeparator(context, kID.startSeparator);
   context.appendChild(menu);
   addSeparator(context, kID.endSeparator);
@@ -428,7 +428,7 @@ function makeAppMenu(aPopup, aAppList) {
 
   let appMenuPopup = $E('menupopup');
 
-  aAppList.forEach(function(app) {
+  aAppList.forEach((app) => {
     addMenuItem(appMenuPopup, {
       action: 'launchTool',
       app: app,
@@ -443,7 +443,7 @@ function makeAppMenu(aPopup, aAppList) {
 function makeActionItems(aPopup, aAppList) {
   let lastType;
 
-  aAppList.forEach(function(app) {
+  aAppList.forEach((app) => {
     let type = app.type;
 
     if (type !== lastType) {
@@ -452,7 +452,7 @@ function makeActionItems(aPopup, aAppList) {
     }
 
     let actions;
-    kTypeAction.some(function(item) {
+    kTypeAction.some((item) => {
       if (item.type === type) {
         actions = item.actions;
         return true;
@@ -461,14 +461,14 @@ function makeActionItems(aPopup, aAppList) {
     });
 
     if (type === 'file') {
-      actions = actions.reduce(function(a, b) {
-        return a.concat(app.extensions.map(function(ext) {
+      actions = actions.reduce((a, b) => {
+        return a.concat(app.extensions.map((ext) => {
           return FileExtUtil.makeFileAction(b, ext);
         }));
       }, []);
     }
 
-    actions.forEach(function(action) {
+    actions.forEach((action) => {
       addMenuItem(aPopup, {
         action: action,
         app: app
@@ -515,7 +515,8 @@ function makeMenuItemLabel({app, action, inAppMenu}) {
       type = type.replace('%1', app.extensions.join(','));
     }
     label = kString.appMenuItem.
-      replace('%type%', type).replace('%name%', app.name);
+      replace('%type%', type).
+      replace('%name%', app.name);
   }
   else {
     label = kString.action[FileExtUtil.getBaseAction(action)];
@@ -535,14 +536,14 @@ function doBrowse(aPopup) {
   const uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
 
   function availableItem(actions) {
-    var actionKey = '@' + kID.actionKey + '="';
+    let actionKey = '@' + kID.actionKey + '="';
     return 'xul:menuitem[' +
       actionKey + actions.join('" or ' + actionKey) + '"]';
   }
 
   // Hide all menu items and show the others
-  Array.forEach(aPopup.childNodes, function(node) {
-    var hidden = node.localName === 'menuitem';
+  Array.forEach(aPopup.childNodes, (node) => {
+    let hidden = node.localName === 'menuitem';
     if (node.hidden !== hidden) {
       node.hidden = hidden;
     }
@@ -550,13 +551,13 @@ function doBrowse(aPopup) {
 
   // Show the menu items with available actions
   $X(availableItem(getAvailableActions()), aPopup).
-  forEach(function(node) {
+  forEach((node) => {
     node.hidden = false;
   });
 
   // Hide the useless separators
   $X(uselessSeparator, aPopup).
-  forEach(function(node) {
+  forEach((node) => {
     node.hidden = true;
   });
 }
@@ -565,9 +566,9 @@ function getAvailableActions() {
   // @see chrome://browser/content/nsContextMenu.js
   const {gContextMenu} = window;
 
-  var actions = [];
+  let actions = [];
 
-  var onMedia = false;
+  let onMedia = false;
   if (gContextMenu.onImage ||
       gContextMenu.onCanvas ||
       isImageDocument(gContextMenu.target.ownerDocument)) {
@@ -789,7 +790,7 @@ function getContextMenu() {
   return Util.getContextMenu();
 }
 
-// |U()| converts embedded chars in the code for displaying properly.
+// |U()| converts embedded Unicode strings in this file for proper displaying
 function U(aStr) {
   return Util.toStringForUI(aStr);
 }
@@ -867,10 +868,10 @@ function WebBrowserPersist() {
 //********** Functions
 
 function checkApp(aApp) {
-  // @note |toStringForUI| converts embedded characters of |kAppList::path|
-  // for system internal using
+  // @note |toStringForUI| converts embedded Unicode strings of
+  // |kAppList::path| for system internal using
   let path = toStringForUI(aApp.path);
-  kSpecialFolderAliases.forEach(function(alias) {
+  kSpecialFolderAliases.forEach((alias) => {
     if (path.contains(alias)) {
       path = path.replace(
         RegExp(alias, 'g'),
@@ -910,16 +911,16 @@ function runApp(aApp, aTargetURL, aSaveInfo) {
 }
 
 function execute(aApp, aTargetURL) {
-  var appFile = getAppFile(aApp.path);
+  let appFile = getAppFile(aApp.path);
   if (!appFile) {
     warn('Not executed', ['The application is not available now', aApp.path]);
     return;
   }
 
-  // @note |toStringForUI| converts embedded characters of |kAppList::args|
-  // for system internal using
-  var args = getAppArgs(toStringForUI(aApp.args), aTargetURL);
-  var process = Process();
+  // @note |toStringForUI| converts embedded Unicode strings of
+  // |kAppList::args| for system internal using
+  let args = getAppArgs(toStringForUI(aApp.args), aTargetURL);
+  let process = Process();
   process.init(appFile);
   // @note Use 'wide string' version for Unicode arguments.
   process.runwAsync(args, args.length);
@@ -958,7 +959,7 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
             responseStatus = httpChannel.responseStatus;
           } catch (ex) {
             // @throws NS_ERROR_NOT_AVAILABLE;
-            // |requestSucceeded| throws when an invalid URL is requested.
+            // |requestSucceeded| throws when an invalid URL is requested
           }
 
           if (!requestSucceeded) {
@@ -1070,11 +1071,11 @@ function getAppArgs(aArgs, aURL) {
   }
 
   if (aURL) {
-    return aArgs.map(function(arg) arg.replace(/%URL%/g, aURL));
+    return aArgs.map((arg) => arg.replace(/%URL%/g, aURL));
   }
 
   // remove arguments with %URL% when the application is launched as tool
-  return aArgs.filter(function(arg) !arg.contains('%URL%'));
+  return aArgs.filter((arg) => !arg.contains('%URL%'));
 }
 
 function getSpecialDirectory(aAlias) {
@@ -1110,14 +1111,16 @@ function getPrivacyContextFor(aDocument) {
 }
 
 function warn(aTitle, aMsg) {
+  const kMaxLen = 200;
+
   if (!Array.isArray(aMsg)) {
     aMsg = [aMsg];
   }
 
-  var msg = log('Error: ' + aTitle + '\n' + aMsg.join('\n'));
+  let msg = log('Error: ' + aTitle + '\n' + aMsg.join('\n'));
 
-  if (msg.length > 200) {
-    msg = msg.substr(0, 200) + '\n...(see console log)';
+  if (msg.length > kMaxLen) {
+    msg = msg.substr(0, kMaxLen) + '\n...(see console log)';
   }
 
   Services.prompt.alert(null, null, msg);
