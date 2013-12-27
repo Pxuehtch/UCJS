@@ -183,7 +183,7 @@ const Timer = (function() {
     }
   }
 
-  let dispatcher = _ => {
+  let dispatcher = () => {
     dispatcher.scheduled = false;
 
     let ids = [id for ([id] of immediates)];
@@ -196,12 +196,12 @@ const Timer = (function() {
         } catch (ex) {}
       }
     }
-  }
+  };
 
   function setImmediate(aCallback, ...aParams) {
     let id = ++lastID;
 
-    immediates.set(id, _ => aCallback.apply(aCallback, aParams));
+    immediates.set(id, () => aCallback.apply(aCallback, aParams));
 
     if (!dispatcher.scheduled) {
       dispatcher.scheduled = true;
