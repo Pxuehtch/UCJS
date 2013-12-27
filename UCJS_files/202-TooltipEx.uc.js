@@ -124,8 +124,8 @@ var TooltipHandler = {
       if (node && !node.title) {
         node.title = title;
       }
-      this._mTitleStore.delete(node);
     }
+    this._mTitleStore.clear();
 
     this._mTitleStore = null;
   },
