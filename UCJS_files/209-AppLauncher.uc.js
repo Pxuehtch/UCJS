@@ -5,10 +5,14 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage access to items in the main context menu
 
-// @note a resource file that is passed to the application will be saved in
-// your temporary folder. See |doAction()|, |Util::getSaveFilePath()|
+// @usage access to items in the main context menu
+// @note the available items change depending on where the menu opens
+// @see |getAvailableActions()|
+
+// @note a resource file that is passed to an application will be saved in
+// your temporary folder if download needed
+// @see |doAction()|, |Util::getSaveFilePath()|
 
 
 /**
@@ -21,6 +25,23 @@
 
 
 "use strict";
+
+
+/**
+ * Import from |Util|
+ */
+const {
+  checkApp,
+  runApp,
+  makeURIURL,
+  getContextMenu,
+  addEvent,
+  getNodesByXPath: $X,
+  // converts embedded Unicode strings in this file for proper displaying
+  toStringForUI: U,
+  // for debug
+  log
+} = Util;
 
 
 /**
@@ -461,6 +482,7 @@ function makeActionItems(aPopup, aAppList) {
     });
 
     if (type === 'file') {
+      // make actions with extensions
       actions = actions.reduce((a, b) => {
         return a.concat(app.extensions.map((ext) => {
           return FileExtUtil.makeFileAction(b, ext);
@@ -529,19 +551,19 @@ function makeMenuItemLabel({app, action, inAppMenu}) {
 }
 
 function doBrowse(aPopup) {
-  // XPath for the useless menu-separator;
+  // XPath for a <menuitem> with avalable actions
+  let availableItem = (actions) => {
+    let key = '@' + kID.actionKey + '="';
+    return 'xul:menuitem[' + key + actions.join('" or ' + key) + '"]';
+  };
+
+  // XPath for a useless <menuseparator>;
   // 1.it is the first visible item in the menu
   // 2.it is the last visible item in the menu
-  // 3.the next visible item is a menu-separator
-  const uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
+  // 3.the next visible item is a menu separator
+  let uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
 
-  function availableItem(actions) {
-    let actionKey = '@' + kID.actionKey + '="';
-    return 'xul:menuitem[' +
-      actionKey + actions.join('" or ' + actionKey) + '"]';
-  }
-
-  // Hide all menu items and show the others
+  // hide all menu items and show the others
   Array.forEach(aPopup.childNodes, (node) => {
     let hidden = node.localName === 'menuitem';
     if (node.hidden !== hidden) {
@@ -549,13 +571,13 @@ function doBrowse(aPopup) {
     }
   });
 
-  // Show the menu items with available actions
+  // show the menu items with available actions
   $X(availableItem(getAvailableActions()), aPopup).
   forEach((node) => {
     node.hidden = false;
   });
 
-  // Hide the useless separators
+  // hide the useless menu separators
   $X(uselessSeparator, aPopup).
   forEach((node) => {
     node.hidden = true;
@@ -770,44 +792,6 @@ function $E(aTagOrNode, aAttribute) {
 }
 
 
-/**
- * Import from |Util| parameter
- */
-
-function checkApp(aApp) {
-  return Util.checkApp(aApp);
-}
-
-function runApp(aApp, aTargetURL, aSaveInfo) {
-  Util.runApp(aApp, aTargetURL, aSaveInfo);
-}
-
-function makeURIURL(aURL) {
-  return Util.makeURIURL(aURL);
-}
-
-function getContextMenu() {
-  return Util.getContextMenu();
-}
-
-// |U()| converts embedded Unicode strings in this file for proper displaying
-function U(aStr) {
-  return Util.toStringForUI(aStr);
-}
-
-function addEvent(aData) {
-  Util.addEvent(aData);
-}
-
-function $X(aXPath, aNode) {
-  return Util.getNodesByXPath(aXPath, aNode);
-}
-
-function log(aMsg) {
-  return Util.log(aMsg);
-}
-
-
 //********** Entry Point
 
 AppLauncher_init();
@@ -883,6 +867,7 @@ function checkApp(aApp) {
 
   let appFile = getAppFile(path);
   if (appFile) {
+    // @note overwrites the property value
     aApp.path = path;
     return true;
   }
@@ -922,7 +907,7 @@ function execute(aApp, aTargetURL) {
   let args = getAppArgs(toStringForUI(aApp.args), aTargetURL);
   let process = Process();
   process.init(appFile);
-  // @note Use 'wide string' version for Unicode arguments.
+  // @note use 'wide string' version for Unicode arguments
   process.runwAsync(args, args.length);
 }
 
@@ -1074,7 +1059,7 @@ function getAppArgs(aArgs, aURL) {
     return aArgs.map((arg) => arg.replace(/%URL%/g, aURL));
   }
 
-  // remove arguments with %URL% when the application is launched as tool
+  // remove arguments with %URL% when the application is launched as 'tool'
   return aArgs.filter((arg) => !arg.contains('%URL%'));
 }
 
