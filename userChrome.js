@@ -205,6 +205,10 @@ function ScriptList() {
   var mJscripts, mOverlays;
 
   function uninit() {
+    [mJscripts, mOverlays].
+    forEach((items) => {
+      items.forEach((item) => item.uninit());
+    });
     mJscripts = null;
     mOverlays = null;
   }
@@ -289,8 +293,7 @@ function ScriptList() {
         } else if (entry.isFile()) {
           ext = checkExt(entry);
           if (ext) {
-            // do not forget 'new'
-            script = new UserScript(entry);
+            script = UserScript(entry);
             if (ext === 'js') {
               mJscripts.push(script);
             } else {
@@ -366,118 +369,6 @@ function ScriptList() {
     }
   }
 
-  /**
-   * UserScript class
-   */
-  function UserScript() {
-    this.init.apply(this, arguments);
-  }
-
-  UserScript.prototype.file = null;
-  UserScript.prototype.meta = null;
-
-  UserScript.prototype.init = function UserScript_init(aFile) {
-    this.file = aFile;
-    this.meta = scanMetaData(aFile);
-  };
-
-  UserScript.prototype.uninit = function UserScript_uninit() {
-    delete this.file;
-    delete this.meta;
-  };
-
-  UserScript.prototype.getURL = function UserScript_getURL(aType) {
-    const {getURLSpecFromFile, getChromeDirectory, getLastModifiedTime} = Util;
-    const D = window.decodeURIComponent;
-
-    var file = this.file;
-    function path() getURLSpecFromFile(file);
-    function chrome() getURLSpecFromFile(getChromeDirectory());
-
-    switch (aType) {
-      case 'FILENAME':
-        return file.leafName;
-      case 'FOLDER':
-        return D(path()).slice(D(chrome()).length, -(file.leafName.length));
-      case 'IN_CHROME':
-        return D(path().slice(chrome().length));
-      case 'RUN':
-        return path() + '?' + (kSystem.validateScriptAtRun ?
-          getLastModifiedTime(file) : file.lastModifiedTime);
-    }
-    return D(path());
-  };
-
-  UserScript.prototype.testTarget = function UserScript_testTarget(aURL) {
-    return MetaData_isIncludedURL(this.meta, aURL);
-  };
-
-  UserScript.prototype.getMetaList = function UserScript_getMetaList() {
-    return MetaData_getList(this.meta);
-  };
-
-  /**
-   * MetaData handlers
-   */
-  function scanMetaData(aFile) {
-    const {readFile} = Util;
-
-    const META_DATA_RE = /^\s*\/\/\s*==UserScript==\s*\n(?:.*\n)*?\s*\/\/\s*==\/UserScript==\s*\n/m;
-    const META_ENTRY_RE = /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
-
-    var data = {
-      'name': [],
-      'description': [],
-      'include': [],
-      'exclude': []
-    };
-
-    var meta = (readFile(aFile).match(META_DATA_RE) || [''])[0];
-    var matches, key, value;
-    while ((matches = META_ENTRY_RE.exec(meta))) {
-      [, key, value] = matches;
-      if (key in data) {
-        data[key].push(value);
-      }
-    }
-
-    return data;
-  }
-
-  function MetaData_isIncludedURL(aMetaData, aURL) {
-    const {getBrowserURL, testURL} = Util;
-
-    var browserURL = getBrowserURL();
-
-    var test = function(str) {
-      return testURL(str.replace(/^main$/i, browserURL), aURL);
-    }
-
-    var exclude = aMetaData.exclude;
-    if (exclude.length && exclude.some(test)) {
-      return false;
-    }
-
-    var include = aMetaData.include;
-    if (!include.length) {
-      include[0] = browserURL;
-    }
-    return include.some(test);
-  }
-
-  function MetaData_getList(aMetaData) {
-    const kForm = '@%key%: %value%',
-          kNoMetaData = '[No meta data]';
-
-    var list = [];
-    for (let [key, values] in Iterator(aMetaData)) {
-      list = list.concat(values.map(function(value) {
-        return kForm.replace('%key%', key).replace('%value%', value);
-      }));
-    }
-    return list.length ? list.join('\n') : kNoMetaData;
-  }
-
 
   //********** expose
   return {
@@ -486,6 +377,108 @@ function ScriptList() {
     get: getData,
     run: runData
   };
+}
+
+/**
+ * UserScript handler
+ *
+ * @note the member functions are cached for multiple instances created
+ * TODO: I prefer this module pattern to the prototype one. but the prototype
+ * may be better for performance
+ */
+function UserScript(aFile) {
+  let mFile = aFile;
+  let mMetaData = UserScript_getMetaData(aFile);
+
+  return {
+    uninit: () => {
+      mFile = null;
+      mMetaData = null;
+    },
+    getURL: UserScript_getURL.bind(null, mFile),
+    testTarget: UserScript_testTarget.bind(null, mMetaData),
+    getMetaList: UserScript_getMetaList.bind(null, mMetaData)
+  };
+}
+
+function UserScript_getMetaData(aFile) {
+  const {readFile} = Util;
+
+  const META_DATA_RE = /^\s*\/\/\s*==UserScript==\s*\n(?:.*\n)*?\s*\/\/\s*==\/UserScript==\s*\n/m;
+  const META_ENTRY_RE = /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
+
+  var data = {
+    'name': [],
+    'description': [],
+    'include': [],
+    'exclude': []
+  };
+
+  var meta = (readFile(aFile).match(META_DATA_RE) || [''])[0];
+  var matches, key, value;
+  while ((matches = META_ENTRY_RE.exec(meta))) {
+    [, key, value] = matches;
+    if (key in data) {
+      data[key].push(value);
+    }
+  }
+
+  return data;
+}
+
+function UserScript_getURL(aFile, aType) {
+  const {getURLSpecFromFile, getChromeDirectory, getLastModifiedTime} = Util;
+  const D = window.decodeURIComponent;
+
+  function path() getURLSpecFromFile(aFile);
+  function chrome() getURLSpecFromFile(getChromeDirectory());
+
+  switch (aType) {
+    case 'FILENAME':
+      return aFile.leafName;
+    case 'FOLDER':
+      return D(path()).slice(D(chrome()).length, -(aFile.leafName.length));
+    case 'IN_CHROME':
+      return D(path().slice(chrome().length));
+    case 'RUN':
+      return path() + '?' + (kSystem.validateScriptAtRun ?
+        getLastModifiedTime(aFile) : aFile.lastModifiedTime);
+  }
+  return D(path());
+}
+
+function UserScript_testTarget(aMetaData, aURL) {
+  const {getBrowserURL, testURL} = Util;
+
+  var browserURL = getBrowserURL();
+
+  var test = function(str) {
+    return testURL(str.replace(/^main$/i, browserURL), aURL);
+  }
+
+  var exclude = aMetaData.exclude;
+  if (exclude.length && exclude.some(test)) {
+    return false;
+  }
+
+  var include = aMetaData.include;
+  if (!include.length) {
+    include[0] = browserURL;
+  }
+  return include.some(test);
+}
+
+function UserScript_getMetaList(aMetaData) {
+  const kForm = '@%key%: %value%',
+        kNoMetaData = '[No meta data]';
+
+  var list = [];
+  for (let [key, values] in Iterator(aMetaData)) {
+    list = list.concat(values.map(function(value) {
+      return kForm.replace('%key%', key).replace('%value%', value);
+    }));
+  }
+  return list.length ? list.join('\n') : kNoMetaData;
 }
 
 /**
