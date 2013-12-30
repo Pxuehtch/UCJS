@@ -104,8 +104,10 @@ function ScriptLoader() {
   var mScriptList = ScriptList();
 
   function uninit() {
-    mScriptList.uninit();
-    mScriptList = null;
+    if (mScriptList) {
+      mScriptList.uninit();
+      mScriptList = null;
+    }
   }
 
   function init() {
@@ -205,12 +207,19 @@ function ScriptList() {
   var mJscripts, mOverlays;
 
   function uninit() {
-    [mJscripts, mOverlays].
-    forEach((items) => {
-      items.forEach((item) => item.uninit());
-    });
-    mJscripts = null;
-    mOverlays = null;
+    let uninitData = (aData) => {
+      aData.forEach((item) => item.uninit());
+    };
+
+    if (mJscripts) {
+      uninitData(mJscripts);
+      mJscripts = null;
+    }
+
+    if (mOverlays) {
+      uninitData(mOverlays);
+      mOverlays = null;
+    }
   }
 
   function init() {
@@ -390,11 +399,18 @@ function UserScript(aFile) {
   let mFile = aFile;
   let mMetaData = UserScript_getMetaData(aFile);
 
-  return {
-    uninit: () => {
+  function uninit() {
+    if (mFile) {
       mFile = null;
+    }
+
+    if (mMetaData) {
       mMetaData = null;
-    },
+    }
+  }
+
+  return {
+    uninit: uninit,
     getURL: UserScript_getURL.bind(null, mFile),
     testTarget: UserScript_testTarget.bind(null, mMetaData),
     getMetaList: UserScript_getMetaList.bind(null, mMetaData)
