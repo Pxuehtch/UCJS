@@ -676,59 +676,57 @@ function Log(aEnabled) {
     return exports;
   }
 
-  var format = function(aForm, aAttribute) {
+  let output = (aValue) => {
+    const {log} = Util;
+
+    log(Array.isArray(aValue) ? aValue.join('\n') : aValue);
+  };
+
+  let format = (aForm, aAttribute) => {
     for (let [name, value] in Iterator(aAttribute)) {
       aForm = aForm.replace('%' + name + '%', String(value));
     }
     return aForm;
   };
 
-  var output = function(aValue, aDepth) {
-    const {log} = Util;
+  let addIndent = (aValue, aDepth) => {
+    let indent = aDepth ? Array(aDepth + 1).join('  ') + '+- ' : '';
+    let data;
 
-    var indent = aDepth ? Array(aDepth + 1).join('  ') + '+- ' : '';
-    var data;
-
-    if (typeof aValue === 'string') {
-      data = aValue;
-    } else if (aValue === undefined) {
-      data = '<undefined>';
-    } else if (aValue === null) {
-      data = '<null>';
-    } else {
-      let json;
-      try {
-        json = JSON.stringify(aValue);
-      } catch (ex) {
-        data = '<JSON error>';
-      }
-      // iterates over the properties of an object
-      // TODO: Nested objects handling.
-      if (/^{.+}$/.test(json)) {
-        let obj = JSON.parse(json);
-        data = [];
-        for (let key in obj) {
-          data.push(key + ': ' + obj[key]);
-        }
-      }
-    }
-    if (!data) {
-      data = '<something>';
+    switch (true) {
+      case (typeof aValue === 'string'):
+        data = aValue;
+        break;
+      case (aValue === undefined):
+        data = '<undefined>';
+        break;
+      case (aValue === null):
+        data = '<null>';
+        break;
+      case (Array.isArray(aValue)):
+        // TODO: format
+        data = aValue.toSource();
+        break;
+      case (aValue.constructor === Object):
+        // TODO: handle nested objects
+        data = Object.keys(aValue).map((key) => key + ': ' + aValue[key]);
+        break;
+      default:
+        data = '<something>';
     }
 
     if (Array.isArray(data)) {
-      log(data.map(function(item) indent + item).join('\n'));
-    } else {
-      log(indent + data);
+      return data.map((item) => indent + item).join('\n');
     }
+    return indent + data;
   };
 
-  exports.list = function(aCaption, ...aValues) {
-    output(format('%caption% ----------', {'caption': aCaption}));
+  exports.list = (aCaption, ...aValues) => {
+    aValues.unshift(format('%caption% ----------', {
+      'caption': aCaption
+    }));
 
-    for (let i = 0, l = aValues.length; i < l; i++) {
-      output(aValues[i], i + 1);
-    }
+    output(aValues.map((value, i) => addIndent(value, i)));
   };
 
   exports.counter = function(aHeader) {
