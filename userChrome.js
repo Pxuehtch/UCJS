@@ -3,9 +3,10 @@
 // @description User-script loader for userChromeJS extention
 // ==/UserScript==
 
-// @note Exposes a property in the global scope. |window[kSystem.loaderName]|
-// @note cf. http://userchromejs.mozdev.org/
-// @note cf. https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
+// @note exposes new property in the global scope; |window[kSystem.loaderName]|
+
+// @see http://userchromejs.mozdev.org/
+// @see https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
 
 
 (function(window, undefined) {
@@ -15,22 +16,23 @@
 
 
 /**
- * User configurations
+ * User preferences
  */
-const kConfig = {
+const kPref = {
   // Script subfolders under your chrome folder
-  // Required to register at least one subfolder
-  // Adding '/' at the end, scripts are scanned in the descendant directories
+  // @note required to register at least one subfolder
+  // @note adding '/' at the end, scripts are scanned in the descendant
+  // directories
   scriptFolders: ['UCJS_files', 'UCJS_tmp/'],
 
-  // File extensions to select which of java-script or xul-overlay
-  // the script runs as
-  // Tests exact match from the first dot(.) of a file name
+  // File extensions to select which of java-script or xul-overlay a script
+  // runs as
+  // @note tests exact match from the first dot(.) of a file name
   jscriptExts: ['.uc.js'],
   overlayExts: ['.uc.xul', '.xul'],
 
   // URL list of chrome XUL files which is blocked to load scripts
-  // Wildcard '*' is available
+  // @note wildcard '*' is available
   blockXULs: [
     'chrome://global/content/commonDialog.xul',
     'chrome://browser/content/preferences/*',
@@ -42,7 +44,7 @@ const kConfig = {
 };
 
 /**
- * System configs
+ * System preferences
  */
 const kSystem = {
   // Log the activity of this script to the error console
@@ -54,8 +56,8 @@ const kSystem = {
   // ID of <overlay> for overlayed scripts
   overlayContainerID: 'userChrome_js_overlay',
 
-  // Timing to validate the modified time of a script
-  // in order to update the startup cache of Firefox
+  // Timing to validate the modified time of a script in order to update the
+  // startup cache of Firefox
   // @value {boolean}
   //   true: always when the script runs
   //   false: only when the script is first scanned
@@ -63,24 +65,25 @@ const kSystem = {
 };
 
 
-//********** Entry point
+/**
+ * Main
+ */
 
-// initialize the common utility and the console logger
-var Util = Util(),
-    Log = Log(kSystem.logging);
+// common utility
+let Util = Util();
+// console logger
+let Log = Log(kSystem.logging);
 
 ucjsScriptLoader_init();
 
-
-//********** Modules
-
 function ucjsScriptLoader_init() {
-  var scriptLoader = ScriptLoader();
+  let scriptLoader = ScriptLoader();
 
   if (scriptLoader.init()) {
-    // expose a property in |window|
     let scriptList = scriptLoader.getScriptList();
+
     if (scriptList) {
+      // exposes new property in |window|
       window[kSystem.loaderName] = {scriptList: scriptList};
     }
 
@@ -88,7 +91,8 @@ function ucjsScriptLoader_init() {
       window.removeEventListener('unload', onUnload, false);
       scriptLoader.uninit();
     }, false);
-  } else {
+  }
+  else {
     scriptLoader.uninit();
   }
 }
@@ -101,7 +105,7 @@ function ucjsScriptLoader_init() {
  *   @member getScriptList {function}
  */
 function ScriptLoader() {
-  var mScriptList = ScriptList();
+  let mScriptList;
 
   function uninit() {
     if (mScriptList) {
@@ -119,13 +123,16 @@ function ScriptLoader() {
       });
       return false;
     }
+
     Log.list('Init window', {
       'URL': document.location.href,
       'Title': (window.content || window).document.title
     });
 
+    mScriptList = ScriptList();
     mScriptList.init();
     mScriptList.run(document);
+
     if (inBrowserWindow()) {
       watchSidebar();
     }
@@ -142,7 +149,8 @@ function ScriptLoader() {
     }, false);
 
     function initSidebar(aEvent) {
-      var target = aEvent.originalTarget;
+      let target = aEvent.originalTarget;
+
       if (!(target instanceof XULDocument)) {
         /* noisy, comment out
         Log.list('Not init sidebar', {
@@ -151,12 +159,14 @@ function ScriptLoader() {
         */
         return;
       }
+
       if (isBlockURL(target)) {
         Log.list('Not init sidebar', {
           'Blocked URL': target.location.href
         });
         return;
       }
+
       Log.list('Init sidebar', {
         'URL': target.location.href,
         'Title': document.getElementById('sidebar-title').value
@@ -182,12 +192,15 @@ function ScriptLoader() {
   function isBlockURL({location}) {
     const {testURL} = Util;
 
-    var URL = location.href;
+    let URL = location.href;
+
     return !/^chrome:.+\.xul$/i.test(URL) ||
-      kConfig.blockXULs.some(function(xul) testURL(xul, URL));
+           kPref.blockXULs.some((xul) => testURL(xul, URL));
   }
 
-  //********** expose
+  /**
+   * exports
+   */
   return {
     init: init,
     uninit: uninit,
@@ -204,7 +217,7 @@ function ScriptLoader() {
  *   @member run {function}
  */
 function ScriptList() {
-  var mJscripts, mOverlays;
+  let mJscripts, mOverlays;
 
   function uninit() {
     let uninitData = (aData) => {
@@ -225,15 +238,18 @@ function ScriptList() {
   function init() {
     const {getTopBrowserWindow} = Util;
 
-    var win = getTopBrowserWindow();
-    var loader = win ? win[kSystem.loaderName] : null;
+    let win = getTopBrowserWindow();
+    let loader = win ? win[kSystem.loaderName] : null;
+
     if (loader) {
       copyData(loader.scriptList);
+
       Log.list('Copy script data from', {
         'URL': win.location.href,
         'Title': (win.content || win).document.title
       });
-    } else {
+    }
+    else {
       scanData();
     }
   }
@@ -258,9 +274,10 @@ function ScriptList() {
     mJscripts = [];
     mOverlays = [];
 
-    var chrome = getChromeDirectory();
-    kConfig.scriptFolders.forEach(function(folder) {
-      var match, deeper, directory, exists;
+    let chrome = getChromeDirectory();
+
+    kPref.scriptFolders.forEach((folder) => {
+      let match, deeper, directory, exists;
 
       // 'dir1/dir2' -> match[1]='dir1/dir2', match[2]=''
       // 'dir1/dir2/' -> match[1]='dir1/dir2', match[2]='/'
@@ -271,7 +288,8 @@ function ScriptList() {
 
       deeper = !!match[2];
       directory = chrome.clone();
-      exists = match[1].split('/').every(function(segment) {
+
+      exists = match[1].split('/').every((segment) => {
         if (segment) {
           try {
             directory.append(segment);
@@ -289,8 +307,9 @@ function ScriptList() {
     });
 
     function scanDirectory(aDirectory, aDeeper) {
-      var list = getEntryList(aDirectory), entry;
-      var ext, script;
+      let list = getEntryList(aDirectory), entry;
+      let ext, script;
+
       while ((entry = getNextEntry(list))) {
         if (entry.isHidden()) {
           continue;
@@ -299,15 +318,20 @@ function ScriptList() {
         if (aDeeper && entry.isDirectory()) {
           // recursively
           scanDirectory(entry, aDeeper);
-        } else if (entry.isFile()) {
+        }
+        else if (entry.isFile()) {
           ext = checkExt(entry);
+
           if (ext) {
             script = UserScript(entry);
+
             if (ext === 'js') {
               mJscripts.push(script);
-            } else {
+            }
+            else {
               mOverlays.push(script);
             }
+
             log(script.getURL('IN_CHROME'));
           }
         }
@@ -315,13 +339,15 @@ function ScriptList() {
     }
 
     function checkExt(aFile) {
-      var dot = aFile.leafName.indexOf('.');
+      let dot = aFile.leafName.indexOf('.');
+
       if (dot > -1) {
         let ext = aFile.leafName.substr(dot);
-        if (kConfig.jscriptExts.indexOf(ext) > -1) {
+
+        if (kPref.jscriptExts.indexOf(ext) > -1) {
           return 'js';
         }
-        if (kConfig.overlayExts.indexOf(ext) > -1) {
+        if (kPref.overlayExts.indexOf(ext) > -1) {
           return 'xul';
         }
       }
@@ -331,7 +357,7 @@ function ScriptList() {
 
   function runData(aDocument) {
     // ensure that scripts will run at the end of loader
-    setTimeout(function(doc) {
+    setTimeout((doc) => {
       setTimeout(runJscripts, 0, doc);
       setTimeout(runOverlays, 0, doc);
     }, 0, aDocument);
@@ -341,10 +367,12 @@ function ScriptList() {
     const log = Log.counter('Run JS');
     const {loadJscript} = Util;
 
-    var URL = aDocument.location.href;
-    mJscripts.forEach(function(script) {
+    let URL = aDocument.location.href;
+
+    mJscripts.forEach((script) => {
       if (script.testTarget(URL)) {
         log(script.getURL('IN_CHROME'));
+
         loadJscript(script.getURL('RUN'), aDocument);
       }
     });
@@ -365,21 +393,25 @@ function ScriptList() {
       '</overlay>'
     ].join('').replace('%ID%', kSystem.overlayContainerID);
 
-    var URL = aDocument.location.href;
-    var xuls = '';
-    mOverlays.forEach(function(script) {
+    let URL = aDocument.location.href;
+    let xuls = '';
+
+    mOverlays.forEach((script) => {
       if (script.testTarget(URL)) {
         log(script.getURL('IN_CHROME'));
+
         xuls += XUL.replace('%URL%', script.getURL('RUN'));
       }
     });
+
     if (xuls) {
       loadOverlay(DATA.replace('%XULS%', xuls), aDocument);
     }
   }
 
-
-  //********** expose
+  /**
+   * exports
+   */
   return {
     init: init,
     uninit: uninit,
@@ -389,11 +421,17 @@ function ScriptList() {
 }
 
 /**
- * UserScript handler
+ * UserScript constructor
+ * @return {hash}
+ *   @member uninit {function}
+ *   @member getURL {function}
+ *   @member testTarget {function}
+ *   @member getMetaList {function}
  *
- * @note the member functions are cached for multiple instances created
- * TODO: I prefer this module pattern to the prototype one. but the prototype
- * may be better for performance
+ * @note this creates multiple instances so some functions are cached outside
+ * for performance
+ * TODO: I prefer this module pattern to the prototype one. but the prototypal
+ * may be better for a constructor
  */
 function UserScript(aFile) {
   let mFile = aFile;
@@ -420,20 +458,24 @@ function UserScript(aFile) {
 function UserScript_getMetaData(aFile) {
   const {readFile} = Util;
 
-  const META_DATA_RE = /^\s*\/\/\s*==UserScript==\s*\n(?:.*\n)*?\s*\/\/\s*==\/UserScript==\s*\n/m;
-  const META_ENTRY_RE = /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
+  const META_DATA_RE =
+    /^\s*\/\/\s*==UserScript==\s*\n(?:.*\n)*?\s*\/\/\s*==\/UserScript==\s*\n/m;
+  const META_ENTRY_RE =
+    /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
 
-  var data = {
+  let data = {
     'name': [],
     'description': [],
     'include': [],
     'exclude': []
   };
 
-  var meta = (readFile(aFile).match(META_DATA_RE) || [''])[0];
-  var matches, key, value;
+  let meta = (readFile(aFile).match(META_DATA_RE) || [''])[0];
+  let matches, key, value;
+
   while ((matches = META_ENTRY_RE.exec(meta))) {
     [, key, value] = matches;
+
     if (key in data) {
       data[key].push(value);
     }
@@ -446,54 +488,69 @@ function UserScript_getURL(aFile, aType) {
   const {getURLSpecFromFile, getChromeDirectory, getLastModifiedTime} = Util;
   const D = window.decodeURIComponent;
 
-  function path() getURLSpecFromFile(aFile);
-  function chrome() getURLSpecFromFile(getChromeDirectory());
+  let path = () => getURLSpecFromFile(aFile);
+  let chrome = () => getURLSpecFromFile(getChromeDirectory());
 
   switch (aType) {
+    // a file name
     case 'FILENAME':
       return aFile.leafName;
+    // a path of folders under the chrome folder
     case 'FOLDER':
       return D(path()).slice(D(chrome()).length, -(aFile.leafName.length));
+    // a path under the chrome folder
     case 'IN_CHROME':
       return D(path().slice(chrome().length));
+    // a full path with the unique identifier to run a script
+    // @note no escaped for internal using
     case 'RUN':
-      return path() + '?' + (kSystem.validateScriptAtRun ?
-        getLastModifiedTime(aFile) : aFile.lastModifiedTime);
+      return path() + '?' +
+        (kSystem.validateScriptAtRun ?
+         getLastModifiedTime(aFile) :
+         aFile.lastModifiedTime);
   }
+  // a full path
   return D(path());
 }
 
 function UserScript_testTarget(aMetaData, aURL) {
   const {getBrowserURL, testURL} = Util;
 
-  var browserURL = getBrowserURL();
+  let browserURL = getBrowserURL();
 
-  var test = function(str) {
+  let test = function(str) {
     return testURL(str.replace(/^main$/i, browserURL), aURL);
   }
 
-  var exclude = aMetaData.exclude;
+  let exclude = aMetaData.exclude;
+
   if (exclude.length && exclude.some(test)) {
     return false;
   }
 
-  var include = aMetaData.include;
+  let include = aMetaData.include;
+
   if (!include.length) {
     include[0] = browserURL;
   }
+
   return include.some(test);
 }
 
 function UserScript_getMetaList(aMetaData) {
-  const kForm = '@%key%: %value%',
-        kNoMetaData = '[No meta data]';
+  const kForm = '@%key%: %value%';
+  const kNoMetaData = '[No meta data]';
 
-  var list = [];
+  let list = [];
+
   for (let [key, values] in Iterator(aMetaData)) {
-    list = list.concat(values.map(function(value) {
-      return kForm.replace('%key%', key).replace('%value%', value);
-    }));
+    list = list.concat(values.map((value) =>
+      kForm.
+      replace('%key%', key).
+      replace('%value%', value)
+    ));
   }
+
   return list.length ? list.join('\n') : kNoMetaData;
 }
 
@@ -504,43 +561,35 @@ function UserScript_getMetaList(aMetaData) {
 function Util() {
   const {classes: Cc, interfaces: Ci} = window.Components;
 
-  function $S(aCID, aIID) {
-    return Cc[aCID].getService(Ci[aIID]);
-  }
-
-  function $I(aCID, aIID) {
-    return Cc[aCID].createInstance(Ci[aIID]);
-  }
-
-  function QI(aNode, aIID) {
-    return aNode.QueryInterface(Ci[aIID]);
-  }
+  let $S = (aCID, aIID) => Cc[aCID].getService(Ci[aIID]);
+  let $I = (aCID, aIID) => Cc[aCID].createInstance(Ci[aIID]);
+  let QI = (aNode, aIID) => aNode.QueryInterface(Ci[aIID]);
 
   function getLastModifiedTime(aFile) {
-    var lf = $I('@mozilla.org/file/local;1', 'nsIFile');
+    let localFile = $I('@mozilla.org/file/local;1', 'nsIFile');
 
     try {
-      lf.initWithPath(aFile.path);
-      return lf.lastModifiedTime;
+      localFile.initWithPath(aFile.path);
+      return localFile.lastModifiedTime;
     } catch (ex) {}
     return '';
   }
 
   function readFile(aFile) {
-    var fis = $I('@mozilla.org/network/file-input-stream;1',
+    let fileIS = $I('@mozilla.org/network/file-input-stream;1',
       'nsIFileInputStream');
-    var cis = $I('@mozilla.org/intl/converter-input-stream;1',
+    let convIS = $I('@mozilla.org/intl/converter-input-stream;1',
       'nsIConverterInputStream');
-    var data = {}, size;
+    let data = {}, size;
 
     try {
-      fis.init(aFile, 0x01, 0, 0);
-      size = fis.available();
-      cis.init(fis, 'UTF-8', size, cis.DEFAULT_REPLACEMENT_CHARACTER);
-      cis.readString(size, data);
+      fileIS.init(aFile, 0x01, 0, 0);
+      size = fileIS.available();
+      convIS.init(fileIS, 'UTF-8', size, convIS.DEFAULT_REPLACEMENT_CHARACTER);
+      convIS.readString(size, data);
     } finally {
-      cis.close();
-      fis.close();
+      convIS.close();
+      fileIS.close();
     }
 
     // set line-breaks in LF
@@ -626,13 +675,16 @@ function Util() {
     };
 
     return kDateFormat.replace(/%(0)?(\d+)?(ms|[YMDhms])/g,
-      function(match, pad, width, type) {
+      (match, pad, width, type) => {
         let value = String(map[type]);
+
         width = width && parseInt(width);
+
         if (0 < width && value.length !== width) {
           if (value.length < width) {
             value = Array(width).join(!!pad ? '0' : ' ') + value;
           }
+
           return value.substr(-width);
         }
         return value;
@@ -640,7 +692,9 @@ function Util() {
     );
   }
 
-  //********** expose
+  /**
+   * exports
+   */
   return {
     getLastModifiedTime: getLastModifiedTime,
     readFile: readFile,
@@ -667,7 +721,8 @@ function Log(aEnabled) {
     return function(){};
   }
 
-  var exports = {
+  // @note define valid members of the same name
+  let exports = {
     list: noop,
     counter: noop
   };
@@ -721,6 +776,9 @@ function Log(aEnabled) {
     return indent + data;
   };
 
+  /**
+   * exports
+   */
   exports.list = (aCaption, ...aValues) => {
     aValues.unshift(format('%caption% ----------', {
       'caption': aCaption
@@ -729,13 +787,19 @@ function Log(aEnabled) {
     output(aValues.map((value, i) => addIndent(value, i)));
   };
 
-  exports.counter = function(aHeader) {
-    var form = format('%header%: %count%. %value%', {'header': aHeader});
-    var count = 0;
+  exports.counter = (aHeader) => {
+    let form = format('%header%: %count%. %value%', {
+      'header': aHeader
+    });
 
-    return function(aValue) {
-      output(format(form, {'count': ++count, 'value': aValue}));
-    }
+    let count = 0;
+
+    return (aValue) => {
+      output(format(form, {
+        'count': ++count,
+        'value': aValue
+      }));
+    };
   };
 
   return exports;
