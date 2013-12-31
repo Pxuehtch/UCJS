@@ -3,7 +3,8 @@
 // @description User-script loader for userChromeJS extention
 // ==/UserScript==
 
-// @note exposes new property in the global scope; |window[kSystem.loaderName]|
+// @note exposes new property in the global scope;
+// |window[kSystem.loaderName]|
 
 // @see http://userchromejs.mozdev.org/
 // @see https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
@@ -56,24 +57,24 @@ const kSystem = {
   // ID of <overlay> for overlayed scripts
   overlayContainerID: 'userChrome_js_overlay',
 
-  // Timing to validate the modified time of a script in order to update the
-  // startup cache of Firefox
-  // @value {boolean}
-  //   true: always when the script runs
-  //   false: only when the script is first scanned
-  validateScriptAtRun: false
+  // Check the cache of a script whenever the script runs on sub-windows
+  // set true for debug, and a script that had been modified would be applied
+  // without restart on sub-windows
+  // @note this loader checks the cache when the startup browser window opens,
+  // and usually the cached script runs on windows thereafter
+  checkCacheAtRun: false
 };
 
-
 /**
- * Main
+ * Common utilities
  */
-
-// common utility
 let Util = Util();
 // console logger
 let Log = Log(kSystem.logging);
 
+/**
+ * Main function
+ */
 ucjsScriptLoader_init();
 
 function ucjsScriptLoader_init() {
@@ -502,10 +503,13 @@ function UserScript_getURL(aFile, aType) {
     case 'IN_CHROME':
       return D(path().slice(chrome().length));
     // a full path with the unique identifier to run a script
-    // @note no escaped for internal using
+    // @note no escaped for internal use as a parameter to execute an
+    // application
+    // @note requesting a filename with the modified time can update the script
+    // cache
     case 'RUN':
       return path() + '?' +
-        (kSystem.validateScriptAtRun ?
+        (kSystem.checkCacheAtRun ?
          getLastModifiedTime(aFile) :
          aFile.lastModifiedTime);
   }
