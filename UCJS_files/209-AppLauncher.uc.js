@@ -43,7 +43,6 @@ const {
   log
 } = Util;
 
-
 /**
  * Application list
  *
@@ -281,8 +280,10 @@ const kLinkExtension = {
   // for <viewLinkImage>
   image: ['bmp', 'gif', 'jpg', 'png'],
   // for <openLinkMedia>
-  media: ['asf', 'asx', 'avi', 'flv', 'mid', 'mov', 'mp3', 'mp4', 'mpg','ogg',
-          'ogv', 'pls', 'ra', 'ram', 'rm', 'wav', 'wax', 'webm', 'wma', 'wmv',
+  media: ['asf', 'asx', 'avi', 'flv', 'mid',
+          'mov', 'mp3', 'mp4', 'mpg', 'ogg',
+          'ogv', 'pls', 'ra', 'ram', 'rm',
+          'wav', 'wax', 'webm', 'wma', 'wmv',
           'wvx']
 };
 
@@ -983,10 +984,12 @@ function getSaveFilePath(aURI, aDocument) {
 
   fileName = kFileNameForm.replace('%FILENAME%', fileName);
 
-  let dir = getSpecialDirectory('TmpD');
   // @see chrome://global/content/contentAreaUtils.js::
   // validateFileName()
-  dir.append(window.validateFileName(fileName.replace('%NUM%', '')));
+  fileName = window.validateFileName(fileName);
+
+  let dir = getSpecialDirectory('TmpD');
+  dir.append(fileName.replace('%NUM%', ''));
 
   let uniqueNum = 0;
   while (dir.exists()) {
@@ -1029,25 +1032,26 @@ function makeFileName(aURI, aDocument) {
   }
 
   if (fileName) {
-    fileName = crop(fileName, kMaxFileNameLen);
+    if (fileName.length > kMaxFileNameLen) {
+      let half = Math.floor(kMaxFileNameLen / 2);
+      // TODO: '%ellipsis%' would be unique
+      fileName = fileName.substr(0, half) + '%ellipsis%' +
+        fileName.substr(-half);
+    }
+
+    fileName = fileName.trim().
+      replace(/[\s-_]+/g, '_').
+      replace(/_\W_/g, '_').
+      replace(/^_|_$/g, '').
+      replace('%ellipsis%', '__');
+
     if (extension) {
       fileName += '.' + extension;
     }
+
     return fileName;
   }
   return null;
-}
-
-function crop(aStr, aLen) {
-  function trim(str) {
-    return str.trim().replace(/[\s-_]+/g, '_');
-  }
-
-  if (aStr.length > aLen) {
-    let half = Math.floor(aLen / 2);
-    return trim(aStr.substr(0, half) + '_' + aStr.substr(-half));
-  }
-  return aStr;
 }
 
 function getAppArgs(aArgs, aURL) {
