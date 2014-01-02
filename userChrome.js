@@ -59,9 +59,9 @@ const kSystem = {
 
   // Check the cache of a script whenever the script runs on sub-windows
   // set true for debug, and a script that had been modified would be applied
-  // without restart on sub-windows
+  // on sub-windows without restart
   // @note this loader checks the cache when the startup browser window opens,
-  // and usually the cached script runs on windows thereafter
+  // and usually the cached script runs on sub-windows thereafter
   checkCacheAtRun: false
 };
 
@@ -745,6 +745,7 @@ function Log(aEnabled) {
     for (let [name, value] in Iterator(aAttribute)) {
       aForm = aForm.replace('%' + name + '%', String(value));
     }
+
     return aForm;
   };
 
@@ -771,7 +772,7 @@ function Log(aEnabled) {
         data = Object.keys(aValue).map((key) => key + ': ' + aValue[key]);
         break;
       default:
-        data = '<something>';
+        data = '<unknown>: ' + aValue.toString();
     }
 
     if (Array.isArray(data)) {
