@@ -743,17 +743,20 @@ function SmoothScroll() {
  *   start: {function}
  *   cancel: {function}
  *
- * @note the selection becomes harder to see accoding to the page style. so I
- * have set the selection style in <userContent.css>
- * ::-moz-selection {
- *   color: white !important;
- *   background: blue !important;
- * }
+ * @note the blinking color set is the normal selection style (default: white
+ * text on blue back)
+ * @note the selection becomes harder to see accoding to a page style. so I
+ * have set the selection style in <userContent.css>;
+ *   ::-moz-selection {
+ *     color: white !important;
+ *     background: blue !important;
+ *   }
  *
  * TODO: use |nsISelectionController::SELECTION_ATTENTION|
  * if the style of a found text selection (default: white text on green back)
- * is changed by the page style, I don't know how to fix it because
- * <::-moz-selection> is not applied to it
+ * is overwritten by a page style, I don't know how to fix it because
+ * <::-moz-selection> is not applied to it. For now I use |SELECTION_NORMAL| so
+ * that the blinking color set can be restyled by <::-moz-selection>
  */
 function FoundBlink() {
   const kOption = {
