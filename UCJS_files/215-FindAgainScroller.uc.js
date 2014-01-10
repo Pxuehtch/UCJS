@@ -358,18 +358,18 @@ function ScrollObserver() {
  * @note |test| is called as the loop condition in |onFindAgainCommand|
  */
 function SkipInvisible() {
-  // WORKAROUND: a fail-safe option to avoiding an infinite loop. this is for
-  // when a document has only invisible results and then the comparing check
-  // of nodes does not work
-  const kMaxTestingCount = 50;
+  // WORKAROUND: a fail-safe option to avoid an infinite loop for when a
+  // document has only invisible results, in addition, when the comparing
+  // check of nodes does not work
+  const kMaxTestCount = 50;
 
-  let mTestingCount = 0;
+  let mTestCount = 0;
   let mFirstInvisible = null;
 
   function test() {
     // WORKAROUND: force to exit from a loop of testing
-    if (++mTestingCount > kMaxTestingCount) {
-      mTestingCount = 0;
+    if (++mTestCount > kMaxTestCount) {
+      mTestCount = 0;
       mFirstInvisible = null;
       return false;
     }
@@ -392,7 +392,7 @@ function SkipInvisible() {
     // not found
     // 1.no invisible result is found
     // 2.an invisible result is found but it has been tested ever
-    mTestingCount = 0;
+    mTestCount = 0;
     mFirstInvisible = null;
     return false;
   }
