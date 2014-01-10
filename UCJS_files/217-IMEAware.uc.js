@@ -154,10 +154,11 @@ function TextboxStyler() {
       restoreStyle();
     }
 
+    StyleUpdater.clear();
+
     mTextbox = null;
     mDefaultStyle = null;
     mIMEState = null;
-    StyleUpdater.clear();
   }
 
   function updateStyle() {
