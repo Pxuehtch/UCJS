@@ -88,11 +88,9 @@ const TextFinder = {
  * @see |attachFindAgainCommand|
  */
 const TimeKeeper = {
-  lastTime: window.performance.now(),
-
   countInterval: function() {
     let currentTime = window.performance.now();
-    let interval = currentTime - this.lastTime;
+    let interval = currentTime - (this.lastTime || 0);
     this.lastTime = currentTime;
     return interval;
   }
