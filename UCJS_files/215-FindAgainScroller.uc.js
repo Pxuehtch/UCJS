@@ -255,7 +255,8 @@ function ScrollObserver() {
 
   function scanScrollables(aWindow) {
     if (aWindow.frames) {
-      Array.forEach(aWindow.frames, function(frame) {
+      Array.forEach(aWindow.frames, (frame) => {
+        // recursively scan for a frame window
         scanScrollables(frame);
       });
     }
@@ -337,12 +338,15 @@ function ScrollObserver() {
       y = aNode.scrollTop;
     }
 
-    return {x: x, y: y};
+    return {
+      x: x,
+      y: y
+     };
   }
 
-
-  //********** Expose
-
+  /**
+   * Expose
+   */
   return {
     attach: attach,
     detach: detach,
@@ -450,9 +454,9 @@ function SkipInvisible() {
     return true;
   }
 
-
-  //********** Expose
-
+  /**
+   * Expose
+   */
   return {
     test: test
   };
@@ -512,9 +516,9 @@ function HorizontalCentered() {
     }
   }
 
-
-  //********** Expose
-
+  /**
+   * Expose
+   */
   return {
     align: align
   };
@@ -732,12 +736,15 @@ function SmoothScroll() {
   }
 
   function Position(aX, aY) {
-    return {x: aX, y: aY};
+    return {
+      x: aX,
+      y: aY
+    };
   }
 
-
-  //********** Expose
-
+  /**
+   * Expose
+   */
   return {
     start: start,
     cancel: cancel
@@ -885,9 +892,9 @@ function FoundBlink() {
     } catch (ex) {}
   }
 
-
-  //********** Expose
-
+  /**
+   * Expose
+   */
   return {
     start: start,
     cancel: cancel
@@ -960,9 +967,9 @@ function FrameAnimator(aCallback, aOption) {
   };
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 FindAgainScroller_init();
 
 

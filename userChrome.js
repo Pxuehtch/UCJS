@@ -502,11 +502,9 @@ function UserScript_getURL(aFile, aType) {
     // a path under the chrome folder
     case 'IN_CHROME':
       return D(path().slice(chrome().length));
-    // a full path with the unique identifier to run a script
-    // @note no escaped for internal use as a parameter to execute an
-    // application
-    // @note requesting a filename with the modified time can update the script
-    // cache
+    // a full path with the modified time to run a script
+    // @note requesting a filename with the unique identifier can update the
+    // script cache
     case 'RUN':
       return path() + '?' +
         (kSystem.checkCacheAtRun ?
