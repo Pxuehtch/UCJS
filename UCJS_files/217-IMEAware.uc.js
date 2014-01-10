@@ -76,6 +76,7 @@ function IMEAware_init() {
   // clean-up when a browser window closes
   addEvent([window, 'unload', (aEvent) => {
     mTextboxStyler.uninit();
+    mTextboxStyler = null;
   }, false]);
 }
 
