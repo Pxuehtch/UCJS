@@ -549,6 +549,8 @@ function SmoothScroll() {
       }
 
       this.view = scrollable.view;
+      this.width = scrollable.width;
+      this.height = scrollable.height;
       this.node = node;
       this.start = start;
       this.goal = goal;
@@ -563,6 +565,8 @@ function SmoothScroll() {
 
     uninit: function() {
       this.view = null;
+      this.width = null;
+      this.height = null;
       this.node = null;
       this.start = null;
       this.goal = null;
@@ -629,20 +633,11 @@ function SmoothScroll() {
   function getStep(aPosition) {
     const {far, near} = kOption.pitch;
 
-    let width, height;
-    if (mState.view) {
-      width = mState.view.innerWidth;
-      height = mState.view.innerHeight;
-    } else {
-      width = mState.node.clientWidth;
-      height = mState.node.clientHeight;
-    }
-
     let dX = mState.goal.x - aPosition.x,
         dY = mState.goal.y - aPosition.y;
 
-    let pitchX = (Math.abs(dX) < width) ? near : far,
-        pitchY = (Math.abs(dY) < height) ? near : far;
+    let pitchX = (Math.abs(dX) < mState.width) ? near : far,
+        pitchY = (Math.abs(dY) < mState.height) ? near : far;
 
     return Position(round(dX / pitchX), round(dY / pitchY));
   }
@@ -694,21 +689,37 @@ function SmoothScroll() {
   function testScrollable(aNode) {
     let view = null;
     let scrollable = false;
+    let width, height;
 
     if (aNode instanceof Window ||
         aNode instanceof HTMLHtmlElement ||
         aNode instanceof HTMLBodyElement) {
       view = getWindow(aNode);
+
       scrollable = view.scrollMaxX || view.scrollMaxY;
+
+      if (scrollable) {
+        width = view.innerWidth;
+        height = view.innerHeight;
+      }
     }
     else if (aNode instanceof Element) {
       scrollable =
         aNode.scrollHeight > aNode.clientHeight ||
         aNode.scrollWidth > aNode.clientWidth;
+
+      if (scrollable) {
+        width = aNode.clientWidth;
+        height = aNode.clientHeight;
+      }
     }
 
     if (scrollable) {
-      return {view: view};
+      return {
+        view: view,
+        width: width,
+        height: height
+      };
     }
     return null;
   }
