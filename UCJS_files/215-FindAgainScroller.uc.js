@@ -304,26 +304,24 @@ function ScrollObserver() {
     }, []);
   }
 
-  function testScrollable(aArray, aNode) {
-    function isRegistered(aNode) {
-      return aArray.indexOf(aNode) > -1;
-    }
+  function testScrollable(aRegisteredNodes, aBaseNode) {
+    let isRegistered = (aNode) => aRegisteredNodes.indexOf(aNode) > -1;
 
-    function isScrollable(aNode) {
-      return aNode.clientHeight < aNode.scrollHeight ||
-             aNode.clientWidth < aNode.scrollWidth;
-    }
+    let isScrollable = (aNode) =>
+      aNode.clientHeight < aNode.scrollHeight ||
+      aNode.clientWidth  < aNode.scrollWidth;
 
-    while (aNode && !(aNode instanceof HTMLBodyElement)) {
-      if (aNode.nodeType === Node.ELEMENT_NODE) {
-        if (isRegistered(aNode)) {
+    let node = aBaseNode;
+    while (node && !(node instanceof HTMLBodyElement)) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (isRegistered(node)) {
           return null;
         }
-        if (isScrollable(aNode)) {
-          return aNode;
+        if (isScrollable(node)) {
+          return node;
         }
       }
-      aNode = aNode.parentNode;
+      node = node.parentNode;
     }
     return null;
   }
