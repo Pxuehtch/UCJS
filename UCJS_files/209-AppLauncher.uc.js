@@ -61,7 +61,7 @@ const kAppList = [
     // @see |kSpecialFolderAliases|
     // %ProgF%: program files folder
     // %LocalAppData%: local application data folder
-    path: '%ProgF%\\Internet Explorer\\iexplore.exe',
+    path: '%ProgF%/Internet Explorer/iexplore.exe',
 
     // [optional] Commandline arguments
     // %URL% is replaced with the proper URL of each action
@@ -78,55 +78,55 @@ const kAppList = [
     // extensions of a link URL that is passed to the application
     type: 'file',
     extensions: ['asx', 'wax', 'wvx'],
-    path: '%ProgF%\\Windows Media Player\\wmplayer.exe',
+    path: '%ProgF%/Windows Media Player/wmplayer.exe',
     args: ['/prefetch:1', '%URL%']
   },
   {
     name: 'Foxit',
     type: 'file',
     extensions: ['pdf'],
-    path: 'C:\\PF\\FoxitReader\\Foxit Reader.exe'
+    path: 'C:/PF/FoxitReader/Foxit Reader.exe'
   },
   {
     name: 'Opera',
     type: 'browse',
-    path: '%ProgF%\\Opera\\opera.exe'
+    path: '%ProgF%/Opera/opera.exe'
   },
   {
     name: 'Chrome',
     type: 'browse',
-    path: '%LocalAppData%\\Google\\Chrome\\Application\\chrome.exe'
+    path: '%LocalAppData%/Google/Chrome/Application/chrome.exe'
   },
   {
     name: 'unDonut',
     type: 'browse',
-    path: 'C:\\PF\\unDonut\\unDonut.exe'
+    path: 'C:/PF/unDonut/unDonut.exe'
   },
   {
     name: 'TB',
     type: 'mail',
-    path: '%ProgF%\\Mozilla Thunderbird\\thunderbird.exe'
+    path: '%ProgF%/Mozilla Thunderbird/thunderbird.exe'
   },
   {
     name: 'TB',
     type: 'news',
-    path: '%ProgF%\\Mozilla Thunderbird\\thunderbird.exe',
+    path: '%ProgF%/Mozilla Thunderbird/thunderbird.exe',
     args: ['-news', '%URL%']
   },
   {
     name: 'MassiGra',
     type: 'image',
-    path: 'C:\\PF\\MassiGra\\MassiGra.exe'
+    path: 'C:/PF/MassiGra/MassiGra.exe'
   },
   {
     name: 'MPC',
     type: 'media',
-    path: 'C:\\PF\\MPC-HC\\mpc-hc.exe'
+    path: 'C:/PF/MPC-HC/mpc-hc.exe'
   },
   {
     name: 'Irvine',
     type: 'download',
-    path: 'C:\\PF\\Irvine\\irvine.exe'
+    path: 'C:/PF/Irvine/irvine.exe'
   },
   {
     name: '',
@@ -136,12 +136,12 @@ const kAppList = [
   {
     name: 'VxEditor',
     type: 'text',
-    path: 'C:\\PF\\VxEditor\\VxEditor.exe'
+    path: 'C:/PF/VxEditor/VxEditor.exe'
   },
   {
     name: 'KeePass2',
     type: 'tool',
-    path: 'C:\\PF\\KeePass2\\KeePass.exe'
+    path: 'C:/PF/KeePass2/KeePass.exe'
   }
 ];
 
@@ -853,15 +853,16 @@ function WebBrowserPersist() {
 //********** Functions
 
 function checkApp(aApp) {
+  let path = aApp.path.replace(/[/]/g, '\\');
+
   // @note |toStringForUI| converts embedded Unicode strings of
   // |kAppList::path| for system internal using
-  let path = toStringForUI(aApp.path);
+  path = toStringForUI(path);
   kSpecialFolderAliases.forEach((alias) => {
     if (path.contains(alias)) {
       path = path.replace(
         RegExp(alias, 'g'),
-        getSpecialDirectory(alias.replace(/%/g, '')).
-        path.replace(/\\/g, '\\\\')
+        getSpecialDirectory(alias.replace(/%/g, '')).path
       );
     }
   });
@@ -869,7 +870,7 @@ function checkApp(aApp) {
   let appFile = getAppFile(path);
   if (appFile) {
     // @note overwrites the property value
-    aApp.path = path;
+    aApp.path = appFile.path;
     return true;
   }
   return false;
