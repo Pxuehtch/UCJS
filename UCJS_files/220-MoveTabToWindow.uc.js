@@ -16,27 +16,26 @@
 
 /**
  * Settings for UI
- * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kBundle = {
   menu: {
     id: 'ucjs_moveTabToWindow_menu',
-    label: U('他のウィンドウへ移動'),
+    label: '他のウィンドウへ移動',
     accesskey: 'W'
   },
   otherWindow: {
-    label: U('%title% [%tabsNum% tab%s%]')
+    label: '%title% [%tabsNum% tab%s%]'
   },
   hasSameURL: {
     style: 'color:red;',
-    tooltiptext: U('同じ URL のタブあり')
+    tooltiptext: '同じ URL のタブあり'
   },
   isPrivate: {
-    tooltiptext: U('プライベートウィンドウ')
+    tooltiptext: 'プライベートウィンドウ'
   },
   newWindow: {
     id: 'ucjs_moveTabToWindow_newWindow',
-    label: U('新しいウィンドウ')
+    label: '新しいウィンドウ'
   }
 };
 
@@ -261,10 +260,6 @@ function $ID(aId) {
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
-}
-
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function addEvent(aData) {

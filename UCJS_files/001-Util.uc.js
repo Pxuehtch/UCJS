@@ -889,64 +889,6 @@ function removeAllTabsBut(aTab) {
 
 //********** Miscellaneous function
 
-function convertFromUTF16(aStr, aCharset) {
-  if (!aCharset) {
-    return null;
-  }
-
-  var converter = XPCOM.$I('ScriptableUnicodeConverter');
-
-  converter.charset = aCharset;
-
-  try {
-    return converter.ConvertFromUnicode(aStr);
-  } catch (ex) {}
-  return aStr;
-}
-
-function convertToUTF16(aStr, aCharset) {
-  var converter = XPCOM.$I('ScriptableUnicodeConverter');
-
-  converter.charset = aCharset || 'UTF-8';
-
-  try {
-    return converter.ConvertToUnicode(aStr);
-  } catch (ex) {}
-  return aStr;
-}
-
-/**
- * Converts UTF-8 characters that are emmbeded in a user script into UTF-16 so
- * that they can be displayed properly for UI
- * @param aData {string|hash}
- * @return {}
- *
- * @note If |aData| is hash, it allows the nested array or hash but the end
- * value should be a string.
- */
-function toStringForUI(aData) {
-  if (!aData) {
-    return aData;
-  }
-
-  if (typeof aData === 'string') {
-    return convertToUTF16(aData, 'UTF-8');
-  }
-
-  if (Array.isArray(aData)) {
-    return aData.map(function(value) toStringForUI(value));
-  }
-
-  if (/^{.+}$/.test(JSON.stringify(aData))) {
-    for (let key in aData) {
-      aData[key] = toStringForUI(aData[key]);
-    }
-    return aData;
-  }
-
-  return aData;
-}
-
 function getWindowList(aType) {
   if (aType !== null) {
     aType = aType || 'navigator:browser';
@@ -1226,19 +1168,15 @@ function asyncScanPlacesDB(aParam) {
 //********** Log function
 
 function logMessage(aTarget, aMessage) {
-  function U(value) {
-    return toStringForUI(value);
-  }
-
   if (Array.isArray(aMessage)) {
     aMessage = aMessage.join('\n');
   }
 
   const kMessageFormat = '[%target%]\n%message%';
-  let formatMessage = U(kMessageFormat.
+  let formatMessage = kMessageFormat.
     replace('%target%', aTarget).
-    replace('%message%', aMessage));
-  let formatDate = U(getFormatDate());
+    replace('%message%', aMessage);
+  let formatDate = getFormatDate();
 
   // for the error console
   XPCOM.$S('console').logStringMessage(
@@ -1320,7 +1258,6 @@ return {
   removeTab: removeTab,
   removeAllTabsBut: removeAllTabsBut,
 
-  toStringForUI: toStringForUI,
   focusWindow: focusWindow,
   focusWindowAtIndex: focusWindowAtIndex,
   setGlobalStyleSheet: setGlobalStyleSheet,

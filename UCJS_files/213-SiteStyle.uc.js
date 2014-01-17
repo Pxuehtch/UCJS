@@ -24,13 +24,12 @@ const kID = {
 
 /**
  * Settings for UI
- * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kUI = {
   PREFMENU: {
-    label: U('ucjsSiteStyle'),
+    label: 'ucjsSiteStyle',
     accesskey: 'S',
-    disabledTip: U('登録サイトなし')
+    disabledTip: '登録サイトなし'
   }
 };
 
@@ -742,10 +741,6 @@ function $S(aSelector, aContext) {
 
 function $S1(aSelector, aContext) {
   return window.ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
-}
-
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function addEvent(aData) {

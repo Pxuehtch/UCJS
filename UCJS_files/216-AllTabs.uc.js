@@ -23,10 +23,8 @@
  * the plural form of numbers is avalable;
  * '%key{None;A key;%key keys}' ->
  * key=0:'None', key=1:'A key', key=#(>=2):'# keys'
- *
- * @note |U()| converts embedded chars in the code for displaying properly.
  */
-const kFormat = U({
+const kFormat = {
   GROUPS_MENU: 'Groups',
 
   UNTITLED_GROUP: '(Untitled)',
@@ -38,7 +36,7 @@ const kFormat = U({
 
   TAB_TOOLTIP: '[%index/%count] %group\n%title',
   TABVIEW_TOOLTIP: 'Group: %group\nTab: %tab (Pinned: %pinned)'
-});
+};
 
 /**
  * Identifiers
@@ -523,10 +521,6 @@ function format(aFormat, aAttribute) {
 
 function setStateForUnreadTab(aMenuitem, aTab) {
   window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
-}
-
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function addEvent(aData) {

@@ -17,10 +17,9 @@
 
 /**
  * UI bundle
- * @note |U()| converts embedded chars in the code for displaying properly.
  */
 const kUIBundle = {
-  menu: U({
+  menu: {
     id: 'ucjs_scriptList_menu',
     label: 'userChrome.js [登録: %COUNT%]',
     accesskey: 'u',
@@ -28,9 +27,9 @@ const kUIBundle = {
     selectLabel: 'Open scripts list...',
     selectAccesskey: 'l',
     selectTip:   'スクリプトリストを開く'
-  }),
+  },
 
-  panel: U({
+  panel: {
     id: 'ucjs_scriptList_panel',
     title: '<userChrome.js> Script List',
     scriptDataListID: 'ucjs_scriptList_scriptDataList',
@@ -38,7 +37,7 @@ const kUIBundle = {
     scriptInfoCaption: 'Information: [#%SELECTED% / %COUNT%]',
     scriptInfoBoxID: 'ucjs_scriptList_scriptInfoBox',
     closeButton: '閉じる'
-  })
+  }
 };
 
 
@@ -303,10 +302,6 @@ function $ID(aID) {
 
 
 //********** Imports
-
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
-}
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute);

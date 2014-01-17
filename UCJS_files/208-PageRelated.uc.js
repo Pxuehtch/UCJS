@@ -28,12 +28,11 @@ const kID = {
 
 /**
  * UI strings
- * @note |U()| converts embedded chars in the code for displaying properly.
  */
-const kString = U({
+const kString = {
   warnParameter: '注意：パラメータ付 URL',
   openAll: 'すべて開く'
-});
+};
 
 /**
  * Preset list
@@ -245,8 +244,9 @@ function getAvailableMenus() {
   }
 
   kPreset.forEach(function({category, items}) {
-    // @note |U()| for UI display.
-    let menu = $E('menu', {label: U(category)});
+    let menu = $E('menu', {
+      label: category
+    });
     let popup = $E('menupopup');
 
     let URLs = [];
@@ -262,8 +262,7 @@ function getAvailableMenus() {
       );
 
       popup.appendChild($E('menuitem', {
-        // @note |U()| for UI display.
-        label: U(data.name),
+        label: data.name,
         open: [URL],
         tooltiptext: URL
       }));
@@ -344,10 +343,6 @@ function commandForOpenURLs(aURLsArray) {
 
 function getURLBarContextMenu() {
   return window.ucjsUI.URLBar.contextMenu;
-}
-
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function addEvent(aData) {

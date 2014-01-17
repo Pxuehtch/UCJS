@@ -29,7 +29,6 @@ const {
   },
   createNode: $E,
   getNodeByAnonid: $ANONID,
-  toStringForUI: U,
   setEventListener: addEvent,
   setChromeStyleSheet: setChromeCSS,
   scanPlacesDB
@@ -298,7 +297,7 @@ function log(aMessage) {
 
   menu = $E('menu', {
     id: 'ucjs_tabcontext_openNewTab',
-    label: U('新しいタブ'),
+    label: '新しいタブ',
     accesskey: 'N'
   });
 
@@ -307,7 +306,7 @@ function log(aMessage) {
   }));
 
   popup.appendChild($E('menuitem', {
-    label: U('スタートページ'),
+    label: 'スタートページ',
     oncommand: 'ucjsUtil.openHomePages();',
     accesskey: 'S'
   }));

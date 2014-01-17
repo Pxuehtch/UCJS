@@ -929,7 +929,6 @@ function GestureManager() {
 
   /**
    * Creates a display string
-   * @note |U()| converts embedded chars in the code for displaying properly.
    */
   function toString() {
     const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
@@ -937,10 +936,10 @@ function GestureManager() {
     var str = kFormat[0].replace('%GESTURE%', buildGesture());
 
     if (mMatchItem) {
-      str += kFormat[1].replace('%NAME%', U(mMatchItem.name));
+      str += kFormat[1].replace('%NAME%', mMatchItem.name);
     }
     if (mError) {
-      str += kFormat[2].replace('%ERROR%', U(mError));
+      str += kFormat[2].replace('%ERROR%', mError);
     }
 
     return str;
@@ -1108,10 +1107,6 @@ function setOverLink(aEnabled) {
 
 function updateStatusbarText(aText) {
   window.ucjsUI.StatusField.message(aText);
-}
-
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function addEvent(aData) {

@@ -100,7 +100,7 @@ const kPreset = [
 
       // do not request a URL with parameters for security
       if (/[?#].*$/.test(data)) {
-        updateLabel(U('注意：パラメータ付 URL'));
+        updateLabel('注意：パラメータ付 URL');
         return;
       }
 
@@ -281,7 +281,7 @@ function makeItem(aType, aData, aService) {
     replace('%URL%', URL).replace('%DATA%', aData);
 
   let item = $E('menuitem', {
-    label: U(label),
+    label: label,
     tooltiptext: tooltip,
     open: URL
   });
@@ -365,11 +365,6 @@ function commandForOpenURL(aURL) {
     '{inBackground:event.button===1,relatedToCurrent:true});';
 
   return command.replace('%URL%', aURL);
-}
-
-// |U()| converts embedded chars in the code for displaying properly.
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function getSelectionAtCursor() {

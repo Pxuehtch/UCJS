@@ -37,8 +37,6 @@ const {
   getContextMenu,
   addEvent,
   getNodesByXPath: $X,
-  // converts embedded Unicode strings in this file for proper displaying
-  toStringForUI: U,
   // for debug
   log
 } = Util;
@@ -397,7 +395,7 @@ function initAppList() {
 function makeMainMenu(aAppList) {
   let menu = $E('menu', {
     id: kID.mainMenu,
-    label: U(kUI.mainMenuLabel),
+    label: kUI.mainMenuLabel,
     accesskey: kUI.mainMenuAccesskey
   });
 
@@ -445,7 +443,7 @@ function makeMainMenu(aAppList) {
 
 function makeAppMenu(aPopup, aAppList) {
   let appMenu = $E('menu', {
-    label: U(kUI.appMenuLabel)
+    label: kUI.appMenuLabel
   });
 
   let appMenuPopup = $E('menupopup');
@@ -512,7 +510,7 @@ function addMenuItem(aPopup, aParam) {
   let appIndex = app ? app.index : -1;
 
   let item = $E('menuitem', {
-    label: U(makeMenuItemLabel(aParam)),
+    label: makeMenuItemLabel(aParam),
     disabled: appIndex < 0 || null,
     user: [
       {
@@ -855,9 +853,6 @@ function WebBrowserPersist() {
 function checkApp(aApp) {
   let path = aApp.path.replace(/[/]/g, '\\');
 
-  // @note |toStringForUI| converts embedded Unicode strings of
-  // |kAppList::path| for system internal using
-  path = toStringForUI(path);
   kSpecialFolderAliases.forEach((alias) => {
     if (path.contains(alias)) {
       path = path.replace(
@@ -904,9 +899,7 @@ function execute(aApp, aTargetURL) {
     return;
   }
 
-  // @note |toStringForUI| converts embedded Unicode strings of
-  // |kAppList::args| for system internal using
-  let args = getAppArgs(toStringForUI(aApp.args), aTargetURL);
+  let args = getAppArgs(aApp.args, aTargetURL);
   let process = Process();
   process.init(appFile);
   // @note use 'wide string' version for Unicode arguments
@@ -1132,10 +1125,6 @@ function getContextMenu() {
   return window.ucjsUI.ContentArea.contextMenu;
 }
 
-function toStringForUI(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
-}
-
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
 }
@@ -1156,7 +1145,6 @@ return {
   runApp: runApp,
   makeURIURL: makeURIURL,
   getContextMenu: getContextMenu,
-  toStringForUI: toStringForUI,
   addEvent: addEvent,
   getNodesByXPath: getNodesByXPath,
   log: log

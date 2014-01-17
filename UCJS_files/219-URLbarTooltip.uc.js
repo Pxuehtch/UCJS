@@ -23,7 +23,6 @@ const {
     get: getPref
   },
   createNode: $E,
-  toStringForUI: U,
   setEventListener: addEvent,
   scanPlacesDB
 } = window.ucjsUtil;
@@ -63,13 +62,12 @@ const kStyle = {
 
 /**
  * UI strings
- * @note |U()| converts Unicode characters for proper displaying
  */
-const kUI = U({
+const kUI = {
   title: 'Location bar suggestion hints',
   restrictGroup: 'Restrict',
   shortcutGroup: 'Shortcut'
-});
+};
 
 
 //********** Functions

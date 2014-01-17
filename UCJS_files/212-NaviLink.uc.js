@@ -40,19 +40,16 @@ const kPref = {
  *   set xpath of an element for navigation
  *   any element which has <href> attribute: opens its URL
  *   <input> element: submits with its form
- *
- * @note |U()| encodes an embedded string with the proper character code for
- * UI displaying
  */
 const kPresetNavi = [
   {
-    name: U('Google Search'),
+    name: 'Google Search',
     URL: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:#|search|webhp)/,
     prev: 'id("nav")//td[1]/a | id("nf")/parent::a',
     next: 'id("nav")//td[last()]/a | id("nn")/parent::a'
   },
   {
-    name: U('DuckDuckGo Search'),
+    name: 'DuckDuckGo Search',
     URL: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
     prev: '//input[@class="navbutton" and @value[contains(.,"Prev")]]',
     next: '//input[@class="navbutton" and @value[contains(.,"Next")]]'
@@ -74,38 +71,37 @@ const kPresetNavi = [
  *   a capitalized text of <type> will be displayed if <label> is empty
  *
  * @note displayed in the declared order
- * @note |U()| for UI display
  */
 const kNaviLinkType = [
   {
     type: 'top',
     synonym: 'home|origin'
-    //,label: U('トップページ')
+    //,label: 'トップページ'
   },
   {
     type: 'up',
     synonym: 'parent'
-    //,label: U('親ページ')
+    //,label: '親ページ'
   },
   {
     type: 'first',
     synonym: 'begin|start'
-    //,label: U('最初のページ')
+    //,label: '最初のページ'
   },
   {
     type: 'prev',
     synonym: 'previous'
-    //,label: U('前のページ')
+    //,label: '前のページ'
   },
   {
     type: 'next',
     synonym: 'child'
-    //,label: U('次のページ')
+    //,label: '次のページ'
   },
   {
     type: 'last',
     synonym: 'end'
-    //,label: U('最後のページ')
+    //,label: '最後のページ'
   },
   {
     type: 'contents',
@@ -159,53 +155,50 @@ const kNaviLinkType = [
  *   a capitalized text of <type> will be displayed if <label> is empty
  *
  * @note displayed in the declared order
- * @note |U()| for UI display
  */
 const kPageInfoType = [
   {
     type: 'meta'
-    //,label: U('メタ情報')
+    //,label: 'メタ情報'
   },
   {
     type: 'feed'
-    //,label: U('フィード')
+    //,label: 'フィード'
   },
   {
     type: 'stylesheet'
-    //,label: U('スタイルシート')
+    //,label: 'スタイルシート'
   },
   {
     type: 'script'
-    //,label: U('スクリプト')
+    //,label: 'スクリプト'
   },
   {
     type: 'favicon'
-    //,label: U('ファビコン')
+    //,label: 'ファビコン'
   }
 ];
 
 /**
  * Types of the prev/next navigation
  * @note The values is displayed.
- * @note |U()| for UI display.
  */
-const kSiblingScanType = U({
+const kSiblingScanType = {
   preset:    'プリセット',
   official:  '公式',
   searching: '推測(リンク)',
   numbering: '推測(URL)'
-});
+};
 
 /**
  * Strings format
  * @note The values is displayed through |F()|.
- * @note |U()| for UI display.
  */
 const kFormat = {
   // for the main categories
-  upper: U('上の階層'),
-  prev: U('前ページ - %scanType%'),
-  next: U('次ページ - %scanType%'),
+  upper: '上の階層',
+  prev: '前ページ - %scanType%',
+  next: '次ページ - %scanType%',
   naviLink: 'Navi Link',
   pageInfo: 'Page Info',
 
@@ -218,7 +211,7 @@ const kFormat = {
   submit: '<submit mode>',
 
   // for the sub items of <Navi Link>/<Page Info>
-  tooManyItems: U('項目が多いので表示を制限'),
+  tooManyItems: '項目が多いので表示を制限',
   type: ['%title%', '%title% (%count%)'],
   item: ['%title%', '%title% [%attributes%]'],
   meta: '%name%: %content%'
@@ -1963,10 +1956,6 @@ function addEvent(aData) {
 
 function unescURLChar(aURL) {
   return window.ucjsUtil.unescapeURLCharacters(aURL);
-}
-
-function U(aText) {
-  return window.ucjsUtil.toStringForUI(aText);
 }
 
 function openURL(aURL, aInTab, aOption) {

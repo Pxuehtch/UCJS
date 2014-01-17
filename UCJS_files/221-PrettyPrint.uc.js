@@ -53,7 +53,7 @@ const MenuHandler = (function() {
 
     let prettifySourcePageItem = $E('menuitem', {
       id: kUI.prettifySourcePage.id,
-      label: U(kUI.prettifySourcePage.label),
+      label: kUI.prettifySourcePage.label,
       accesskey: kUI.prettifySourcePage.accesskey
     });
     addEvent([prettifySourcePageItem, 'command', doCommand, false]);
@@ -512,11 +512,6 @@ function warn(aMessage) {
 
 function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute);
-}
-
-// |U()| converts embedded chars in the code for displaying properly.
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function addEvent(aData) {

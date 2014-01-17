@@ -140,7 +140,7 @@ function initMenu() {
   let ui = kUI.menu;
   let menu = $E('menu', {
     id: ui.id,
-    label: U(ui.label),
+    label: ui.label,
     accesskey: ui.accesskey
   });
   menu.appendChild($E('menupopup'));
@@ -203,7 +203,7 @@ function makeMenuItems(aParseList) {
       replace('%name%', preset.name);
 
     popup.appendChild($E('menuitem', {
-      label: U(title),
+      label: title,
       disabled: true
     }));
   }
@@ -232,7 +232,7 @@ function makeMenuItems(aParseList) {
         ui = kUI.item.preset;
         // show a text in label and tooltip instead of URL
         label = tooltiptext =
-        U(ui.empty.replace('%description%', description));
+          ui.empty.replace('%description%', description);
         action = 'none';
         disabled = true;
       }
@@ -269,7 +269,7 @@ function makeMenuItems(aParseList) {
       tooltiptext = URL;
     }
     if (tips.length) {
-      tooltiptext = U(tips.join('\n')) + '\n' + tooltiptext;
+      tooltiptext = tips.concat(tooltiptext).join('\n');
     }
 
     popup.appendChild($E('menuitem', {
@@ -613,11 +613,6 @@ function unescURLChars(aStr) {
 
 function unescURLforUI(aURL) {
   return window.ucjsUtil.unescapeURLForUI(aURL);
-}
-
-// |U()| converts embedded chars in the code for displaying properly.
-function U(aStr) {
-  return window.ucjsUtil.toStringForUI(aStr);
 }
 
 function getPref(aKey, aDefaultValue) {

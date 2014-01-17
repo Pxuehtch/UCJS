@@ -626,7 +626,7 @@ function Util() {
 
   function loadJscript(aPath, aDocument) {
     $S('@mozilla.org/moz/jssubscript-loader;1', 'mozIJSSubScriptLoader').
-    loadSubScript(aPath, aDocument.defaultView);
+    loadSubScript(aPath, aDocument.defaultView, 'UTF-8');
   }
 
   function loadOverlay(aData, aDocument) {
