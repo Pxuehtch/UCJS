@@ -1001,7 +1001,14 @@ function getSaveFilePath(aURI, aDocument) {
 
 function makeFileName(aURI, aDocument) {
   const kMaxFileNameLen = 32;
+  const kEllipsis = '__';
   const kDataImageFileName = 'data_image';
+
+  let trim = (aStr) =>
+    aStr.trim().
+    replace(/[\s-_]+/g, '_').
+    replace(/_\W_/g, '_').
+    replace(/^_|_$/g, '');
 
   let fileName, extension;
   if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
@@ -1031,27 +1038,24 @@ function makeFileName(aURI, aDocument) {
     }
   }
 
-  if (fileName) {
-    if (fileName.length > kMaxFileNameLen) {
-      let half = Math.floor(kMaxFileNameLen / 2);
-      // TODO: '%ellipsis%' would be unique
-      fileName = fileName.substr(0, half) + '%ellipsis%' +
-        fileName.substr(-half);
-    }
-
-    fileName = fileName.trim().
-      replace(/[\s-_]+/g, '_').
-      replace(/_\W_/g, '_').
-      replace(/^_|_$/g, '').
-      replace('%ellipsis%', '__');
-
-    if (extension) {
-      fileName += '.' + extension;
-    }
-
-    return fileName;
+  if (!fileName) {
+    return null;
   }
-  return null;
+
+  if (fileName.length > kMaxFileNameLen) {
+    let half = Math.floor(kMaxFileNameLen / 2);
+    fileName =
+      [fileName.substr(0, half), fileName.substr(-half)].
+      map(trim).join(kEllipsis);
+  } else {
+    fileName = trim(fileName);
+  }
+
+  if (extension) {
+    fileName += '.' + extension;
+  }
+
+  return fileName;
 }
 
 function getAppArgs(aArgs, aURL) {
