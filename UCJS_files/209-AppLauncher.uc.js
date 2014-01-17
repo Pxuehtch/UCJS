@@ -65,7 +65,7 @@ const kAppList = [
 
     // [optional] Commandline arguments
     // %URL% is replaced with the proper URL of each action
-    // If omitted or empty, it equals to <args: '%URL%'>
+    // If absent or empty array, it equals to <args: ['%URL%']>
     // If launched as tool, arguments that have %URL% are ignored
     args: ['-new', '%URL%'],
 
@@ -1060,7 +1060,12 @@ function makeFileName(aURI, aDocument) {
 }
 
 function getAppArgs(aArgs, aURL) {
-  if (!aArgs) {
+  if (aURL) {
+    // escape the path separator
+    aURL = aURL.replace(/\\/g, '\\\\');
+  }
+
+  if (!aArgs || !aArgs.length) {
     return aURL ? [aURL] : [];
   }
 
