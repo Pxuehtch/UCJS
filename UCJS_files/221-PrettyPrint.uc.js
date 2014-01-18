@@ -499,10 +499,6 @@ function scanTextType(aContentType) {
   return null;
 }
 
-function $ID(aId) {
-  return window.document.getElementById(aId);
-}
-
 function warn(aMessage) {
   window.Services.prompt.alert(null, 'PrettyPrint.uc.js', aMessage);
 }
@@ -512,6 +508,10 @@ function warn(aMessage) {
 
 function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

@@ -1090,10 +1090,6 @@ function doCmd(aCommand) {
   }
 }
 
-function $ID(aId) {
-  return window.document.getElementById(aId);
-}
-
 
 //********** Imports
 
@@ -1107,6 +1103,10 @@ function setOverLink(aEnabled) {
 
 function updateStatusbarText(aText) {
   window.ucjsUI.StatusField.message(aText);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

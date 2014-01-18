@@ -23,6 +23,7 @@ const {
     get: getPref
   },
   createNode: $E,
+  getNodeById: $ID,
   setEventListener: addEvent,
   scanPlacesDB
 } = window.ucjsUtil;
@@ -238,10 +239,6 @@ function getShortcutData() {
 
 
 //********** Utilities
-
-function $ID(aID) {
-  return window.document.getElementById(aID);
-}
 
 function makeCSS(aData) {
   return aData.map((data) => data + '!important;').join('');

@@ -504,15 +504,15 @@ function selectOrOpen(aURL, aOption) {
   gBrowser.loadOneTab(aURL, {inBackground: inBackground});
 }
 
-function $ID(aId) {
-  return window.document.getElementById(aId);
-}
-
 
 //********** Imports
 
 function $E(aTag) {
   return window.ucjsUtil.createNode(aTag);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function log(aStr) {

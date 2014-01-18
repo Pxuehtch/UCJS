@@ -303,10 +303,6 @@ function getSeparators() {
   return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
 }
 
-function $ID(aID) {
-  return window.document.getElementById(aID);
-}
-
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'open') {
     aNode.setAttribute('oncommand', commandForOpenURLs(aValue));
@@ -340,6 +336,10 @@ function addEvent(aData) {
 
 function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function log(aMsg) {

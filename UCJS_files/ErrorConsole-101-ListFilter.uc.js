@@ -63,17 +63,14 @@ function toggle(aEvent) {
 }
 
 
-//********** Utilities
-
-function $ID(aID) {
-  return window.document.getElementById(aID);
-}
-
-
 //********** Imports
 
 function $E(aTag) {
   return window.ucjsUtil.createNode(aTag);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

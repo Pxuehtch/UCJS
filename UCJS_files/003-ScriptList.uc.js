@@ -296,15 +296,15 @@ function F(aForm, aAttribute) {
   return aForm;
 }
 
-function $ID(aID) {
-  return window.document.getElementById(aID);
-}
-
 
 //********** Imports
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

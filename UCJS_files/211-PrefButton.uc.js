@@ -343,17 +343,14 @@ function setStyleSheet() {
 }
 
 
-//********** Utilities
-
-function $ID(aId) {
-  return window.document.getElementById(aId);
-}
-
-
 //********** Imports
 
 function $E(aTag) {
   return window.ucjsUtil.createNode(aTag);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

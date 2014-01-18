@@ -445,10 +445,6 @@ function handleAttribute(aNode, aName, aValue) {
   return false;
 }
 
-function $ID(aId) {
-  return window.document.getElementById(aId);
-}
-
 function $T(aText) {
   return window.document.createTextNode(aText);
 }
@@ -458,6 +454,10 @@ function $T(aText) {
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

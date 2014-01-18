@@ -28,6 +28,7 @@ const {
     set: setPref
   },
   createNode: $E,
+  getNodeById: $ID,
   getNodeByAnonid: $ANONID,
   setEventListener: addEvent,
   setChromeStyleSheet: setChromeCSS,
@@ -563,13 +564,6 @@ function log(aMessage) {
   window.ucjsMisc.restartFx = restartFx;
 
 })();
-
-
-//********** Utilities
-
-function $ID(aId) {
-  return window.document.getElementById(aId);
-}
 
 
 })(this);

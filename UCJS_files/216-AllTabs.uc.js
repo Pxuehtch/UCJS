@@ -163,16 +163,16 @@ function initCSS() {
 
 function moveAllTabsMenuToTabViewButton() {
   // Hide default alltabs-button
-  hideElement($(kID.ALLTABS_BUTTON));
+  hideElement($ID(kID.ALLTABS_BUTTON));
 
   // Attach alltabs-contextmenu to tabview-button
-  var tabview = $(kID.TABVIEW_BUTTON);
-  tabview.appendChild($(kID.ALLTABS_POPUP));
+  var tabview = $ID(kID.TABVIEW_BUTTON);
+  tabview.appendChild($ID(kID.ALLTABS_POPUP));
   tabview.contextMenu = kID.ALLTABS_POPUP;
 }
 
 function customizeAllTabsPopupFunction() {
-  var alltabsPopup = $(kID.ALLTABS_POPUP);
+  var alltabsPopup = $ID(kID.ALLTABS_POPUP);
 
   // @modified chrome://browser/content/tabbrowser.xml::
   // _setMenuitemAttributes
@@ -186,21 +186,21 @@ function customizeAllTabsPopupFunction() {
 }
 
 function customizeTabViewButtonTooltip() {
-  var tooltip = $('mainPopupSet').appendChild(
+  var tooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
       id: kID.TABVIEW_TOOLTIP
     })
   );
   addEvent([tooltip, 'popupshowing', onPopupShowing, false]);
 
-  var tabview = $(kID.TABVIEW_BUTTON);
+  var tabview = $ID(kID.TABVIEW_BUTTON);
   tabview.removeAttribute('tooltiptext');
   tabview.setAttribute('tooltip', kID.TABVIEW_TOOLTIP);
 }
 
 function customizeTabTooltip() {
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
-  addEvent([$(kID.TAB_TOOLTIP), 'popupshowing', function(event) {
+  addEvent([$ID(kID.TAB_TOOLTIP), 'popupshowing', function(event) {
     event.stopPropagation();
     let tab = window.document.tooltipNode;
     if (tab.localName !== 'tab' || tab.mOverCloseButton) {
@@ -220,7 +220,7 @@ function customizeTabTooltip() {
 }
 
 function initAllTabsMenu() {
-  var alltabsPopup = $(kID.ALLTABS_POPUP);
+  var alltabsPopup = $ID(kID.ALLTABS_POPUP);
   addEvent([alltabsPopup, 'popupshowing', onPopupShowing, true]);
   addEvent([alltabsPopup, 'popuphidden', onPopupHidden, true]);
   // WORKAROUND: See |onCommand()|
@@ -231,7 +231,7 @@ function initAllTabsMenu() {
       id: kID.GROUPS_MENU,
       label: kFormat.GROUPS_MENU
     }),
-    $(kID.ALLTABS_POPUP_SEPARATOR)
+    $ID(kID.ALLTABS_POPUP_SEPARATOR)
   );
   addEvent([groupsMenu, 'click', onCommand, false]);
 
@@ -292,7 +292,7 @@ function onCommand(aEvent) {
     Array.some(element.menupopup.childNodes, function(item) {
       if (item.selected) {
         mTabs.selectAt(item.getAttribute(kID.ATTR_TABPOS));
-        closeMenus($(kID.ALLTABS_POPUP));
+        closeMenus($ID(kID.ALLTABS_POPUP));
         return true;
       }
       return false;
@@ -336,10 +336,10 @@ function onPopupShowing(aEvent) {
   // Popup of the alltabs menu
   else if (popup.id === kID.ALLTABS_POPUP) {
     if (mTabView.groupItems.length < 2) {
-      $(kID.GROUPS_MENU).disabled = true;
+      $ID(kID.GROUPS_MENU).disabled = true;
     }
 
-    let refItem = $(kID.ALLTABS_POPUP_SEPARATOR).nextSibling;
+    let refItem = $ID(kID.ALLTABS_POPUP_SEPARATOR).nextSibling;
 
     // About pinned tabs
     let pinnedCount = mTabs.pinnedCount;
@@ -429,18 +429,18 @@ function onPopupHidden(aEvent) {
 
   // Popup of the alltabs menu
   if (popup.id === kID.ALLTABS_POPUP) {
-    $(kID.GROUPS_MENU).disabled = false;
+    $ID(kID.GROUPS_MENU).disabled = false;
 
-    let groupsPopup = $(kID.GROUPS_MENUPOPUP);
+    let groupsPopup = $ID(kID.GROUPS_MENUPOPUP);
     while (groupsPopup.hasChildNodes()) {
       groupsPopup.removeChild(groupsPopup.firstChild);
     }
 
-    if ($(kID.PINNEDTABS_TAG_MENUITEM)) {
-      popup.removeChild($(kID.PINNEDTABS_TAG_MENUITEM));
+    if ($ID(kID.PINNEDTABS_TAG_MENUITEM)) {
+      popup.removeChild($ID(kID.PINNEDTABS_TAG_MENUITEM));
     }
-    if ($(kID.GROUP_TAG_MENUITEM)) {
-      popup.removeChild($(kID.GROUP_TAG_MENUITEM));
+    if ($ID(kID.GROUP_TAG_MENUITEM)) {
+      popup.removeChild($ID(kID.GROUP_TAG_MENUITEM));
     }
 
     mTabGroups.clear();
@@ -459,13 +459,6 @@ function createTabMenuItem(aTab, aPopup, aRefItem) {
   menuItem.tab = aTab;
 
   aPopup.insertBefore(menuItem, aRefItem);
-}
-
-
-// Utilities
-
-function $(aId) {
-  return window.document.getElementById(aId);
 }
 
 function handleAttribute(aNode, aName, aValue) {
@@ -517,6 +510,10 @@ function setStateForUnreadTab(aMenuitem, aTab) {
 
 function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

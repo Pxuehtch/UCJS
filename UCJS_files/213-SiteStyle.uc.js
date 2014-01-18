@@ -627,7 +627,7 @@ var PageObserver = (function() {
  */
 var PrefMenu = (function() {
   function init() {
-    var menu = window.document.getElementById('menu_ToolsPopup').
+    var menu = $ID('menu_ToolsPopup').
     appendChild($E('menu', {
       id: kID.PREFMENU,
       label: kUI.PREFMENU.label,
@@ -733,6 +733,10 @@ var PageCSS = (function() {
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function $S(aSelector, aContext) {

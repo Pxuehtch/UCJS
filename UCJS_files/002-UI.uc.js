@@ -23,6 +23,7 @@ const {
   Timer: {
     setImmediate
   },
+  getNodeById: $ID,
   getNodeByAnonid: $ANONID,
   getNodesByXPath: $X,
   setEventListener: addEvent,
@@ -440,13 +441,6 @@ function manageContextMenuSeparators() {
 
     return node && node.localName !== 'menuseparator';
   }
-}
-
-
-//********** Utility
-
-function $ID(aId) {
-  return window.document.getElementById(aId);
 }
 
 

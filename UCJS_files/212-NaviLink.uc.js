@@ -1861,10 +1861,6 @@ function handleAttribute(aNode, aName, aValue) {
   return true;
 }
 
-function $ID(aID){
-  return window.document.getElementById(aID);
-}
-
 /**
  * String formatter
  * @param aFormat {string|string[]} see |kFormat|
@@ -1936,6 +1932,10 @@ function $X1(aXPath) {
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

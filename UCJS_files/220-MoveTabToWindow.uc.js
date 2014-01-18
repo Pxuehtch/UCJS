@@ -251,15 +251,15 @@ function isWindowPrivate(aWindow) {
   return window.PrivateBrowsingUtils.isWindowPrivate(aWindow);
 }
 
-function $ID(aId) {
-  return window.document.getElementById(aId);
-}
-
 
 //********** Imports
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
+}
+
+function $ID(aId) {
+  return window.ucjsUtil.getNodeById(aId);
 }
 
 function addEvent(aData) {

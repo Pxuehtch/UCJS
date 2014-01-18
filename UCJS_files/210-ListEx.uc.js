@@ -18,6 +18,7 @@
  * Imports
  */
 const {
+  getNodeById: $ID,
   setEventListener: addEvent,
   asyncScanPlacesDB
 } = window.ucjsUtil;
@@ -580,10 +581,6 @@ const mClosedList = (function() {
 
 
 //********** Utilities
-
-function $ID(aID) {
-  return window.document.getElementById(aID);
-}
 
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {

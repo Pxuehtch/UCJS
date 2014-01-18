@@ -488,7 +488,20 @@ function createNode(aTagOrNode, aAttribute, aAttributeHandler) {
   return node;
 }
 
-// @note Only for XUL element.
+/**
+ * Wrapper of |getElementById|
+ *
+ * @note use only for XUL element
+ */
+function getNodeById(aId) {
+  return window.document.getElementById(aId);
+}
+
+/**
+ * Wrapper of |getAnonymousElementByAttribute|
+ *
+ * @note use only for XUL element
+ */
 function getNodeByAnonid(aId, aContext) {
   return window.document.
     getAnonymousElementByAttribute(aContext, 'anonid', aId);
@@ -1247,6 +1260,7 @@ return {
   getFocusedWindow: getFocusedWindow,
   getFocusedDocument: getFocusedDocument,
   createNode: createNode,
+  getNodeById: getNodeById,
   getNodeByAnonid: getNodeByAnonid,
   getNodesByAttribute: getNodesByAttribute,
   getFirstNodeBySelector: getFirstNodeBySelector,
