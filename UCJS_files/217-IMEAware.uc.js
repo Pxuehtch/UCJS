@@ -124,9 +124,9 @@ function TextboxStyler() {
 
     setStyle();
 
-    // observe key events of IME keys
+    // observe key event of IME keys
     mTextbox.addEventListener('keyup', handleEvent, false);
-    // 'keyup' is not occur when IME is turned off during the conversion
+    // 'keyup' does not occur when IME is turned off during the conversion
     mTextbox.addEventListener('compositionend', handleEvent, false);
 
     // observe events for clean-up
@@ -208,8 +208,8 @@ function TextboxStyler() {
    * checks whether a target textbox is alive
    * @return {boolean}
    *
-   * TODO: this is a workaround for checking a dead object. consider a
-   * legitimate method instead.
+   * TODO: this is a workaround for checking a dead object
+   * consider a legitimate method instead
    */
   function checkValidity() {
     const {Cu} = window;

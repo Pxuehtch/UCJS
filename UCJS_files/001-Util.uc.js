@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name Util.uc.js
-// @description Common utilities.
+// @description Common utilities
 // @include main
 // @include chrome://global/content/console.xul
 // ==/UserScript==
@@ -9,14 +9,14 @@
 // @include chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @include chrome://browser/content/history/history-panel.xul
 
-// @usage Access to functions through the global scope,
+// @usage Access to functions through the global scope;
 // |window.ucjsUtil.XXX|
 
-// @note Note the definitions only in the main window (e.g. gBrowser) when
-// including in the other window.
+// @note note the definitions only in the main window (e.g. gBrowser) when
+// including in the other window
 
 
-var ucjsUtil = (function(window, undefined) {
+const ucjsUtil = (function(window, undefined) {
 
 
 "use strict";
@@ -110,7 +110,7 @@ const XPCOM = (function() {
 
     try {
       let res = window.Cc[CID][aMethod]();
-      IID.forEach(function(id) {
+      IID.forEach((id) => {
         res.QueryInterface(window.Ci[id]);
       });
       return res;
@@ -212,7 +212,7 @@ const Timer = (function() {
   }
 
   // all timers are cleared out on unload
-  setEventListener([window, 'unload', function() {
+  setEventListener([window, 'unload', () => {
     immediates.clear();
     Object.keys(timers).forEach(unsetTimer);
   }, false]);
@@ -301,7 +301,7 @@ const Prefs = (function() {
 //********** DOM functions
 
 function setEventListener(aData) {
-  var [target, type, listener, capture] = aData;
+  let [target, type, listener, capture] = aData;
   if (!target || !type || !listener) {
     return;
   }
@@ -330,9 +330,9 @@ function setEventListener(aData) {
  */
 function getSelectionAtCursor(aOption) {
   const kMaxCharLen = 150;
-  var {event, charLen} = aOption || {};
+  let {event, charLen} = aOption || {};
 
-  var node, rangeParent, rangeOffset;
+  let node, rangeParent, rangeOffset;
   if (event) {
     // event mode
     node = event.target;
@@ -347,12 +347,12 @@ function getSelectionAtCursor(aOption) {
     rangeOffset = window.document.popupRangeOffset;
   }
 
-  var selection = getSelectionController(node);
+  let selection = getSelectionController(node);
   if (!selection) {
     return null;
   }
 
-  var text = '';
+  let text = '';
 
   // scan ranges with the range offset
   for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
@@ -399,7 +399,7 @@ function getSelectionController(aNode) {
     return null;
   }
   // 2. get a window selection
-  var win = aNode.ownerDocument.defaultView || getFocusedWindow();
+  let win = aNode.ownerDocument.defaultView || getFocusedWindow();
   return win.getSelection();
 }
 
@@ -408,8 +408,8 @@ function getSelectedTextInRange(aRange) {
     return '';
   }
 
-  var type = 'text/plain';
-  var encoder = XPCOM.$I('DocumentEncoder', {type: type});
+  let type = 'text/plain';
+  let encoder = XPCOM.$I('DocumentEncoder', {type: type});
 
   encoder.init(
     aRange.startContainer.ownerDocument,
@@ -490,7 +490,7 @@ function getNodeByAnonid(aId, aContext) {
  *   if in the main browser window, returns a content window (top or frame)
  */
 function getFocusedWindow() {
-  var focusedWindow = window.document.commandDispatcher.focusedWindow;
+  let focusedWindow = window.document.commandDispatcher.focusedWindow;
 
   if (window.document.documentElement.
       getAttribute('windowtype') === 'navigator:browser') {
@@ -502,18 +502,18 @@ function getFocusedWindow() {
 }
 
 function getFocusedDocument() {
-  var win = getFocusedWindow();
+  let win = getFocusedWindow();
 
   return win.contentDocument || win.document;
 }
 
 function getNodesByAttribute(aAttribute, aContext) {
-  var {name, value, tag} = aAttribute;
+  let {name, value, tag} = aAttribute;
   if (!name) {
     throw Error('attribute name is required');
   }
 
-  var xpath = 'descendant::' + (tag || '*') +
+  let xpath = 'descendant::' + (tag || '*') +
     (value ?
     '[contains(concat(" ",@' + name + '," ")," ' + value + ' ")]' :
     '[@' + name + ']');
@@ -522,20 +522,20 @@ function getNodesByAttribute(aAttribute, aContext) {
 }
 
 function getFirstNodeBySelector(aSelector, aContext) {
-  var node = aContext || getFocusedDocument();
+  let node = aContext || getFocusedDocument();
 
   return node.querySelector(aSelector);
 }
 
 function getNodesBySelector(aSelector, aContext) {
-  var node = aContext || getFocusedDocument();
+  let node = aContext || getFocusedDocument();
 
   // @return {static NodeList}
   return node.querySelectorAll(aSelector);
 }
 
 function getFirstNodeByXPath(aXPath, aContext) {
-  var result = evaluateXPath(
+  let result = evaluateXPath(
     aXPath,
     aContext,
     XPathResult.FIRST_ORDERED_NODE_TYPE
@@ -545,13 +545,13 @@ function getFirstNodeByXPath(aXPath, aContext) {
 }
 
 function getNodesByXPath(aXPath, aContext) {
-  var result = evaluateXPath(
+  let result = evaluateXPath(
     aXPath,
     aContext,
     XPathResult.ORDERED_NODE_SNAPSHOT_TYPE
   );
 
-  var nodes = new Array(result ? result.snapshotLength : 0);
+  let nodes = new Array(result ? result.snapshotLength : 0);
 
   for (let i = 0, len = nodes.length; i < len; i++) {
     nodes[i] = result.snapshotItem(i);
@@ -561,19 +561,20 @@ function getNodesByXPath(aXPath, aContext) {
 }
 
 function evaluateXPath(aXPath, aContext, aType) {
-  var doc, base;
+  let doc, base;
 
   if (aContext instanceof Document) {
     doc  = aContext;
     base = doc.documentElement;
-  } else {
+  }
+  else {
     doc  = aContext ? aContext.ownerDocument : getFocusedDocument();
     base = aContext || doc.documentElement;
   }
 
-  var resolver;
+  let resolver;
 
-  var defaultNS = null;
+  let defaultNS = null;
   try {
     defaultNS = base.lookupNamespaceURI(null);
   } catch (ex) {}
@@ -581,17 +582,16 @@ function evaluateXPath(aXPath, aContext, aType) {
   if (defaultNS) {
     let tmpPrefix = '__NS__';
     aXPath = fixNamespacePrefixForXPath(aXPath, tmpPrefix);
-    resolver = function(prefix) {
-      return (prefix === tmpPrefix) ?
-        defaultNS : lookupNamespaceURI(prefix);
-    };
-  } else {
-    resolver = function(prefix) {
-      return lookupNamespaceURI(prefix);
-    };
+    resolver = (prefix) =>
+      (prefix === tmpPrefix) ?
+      defaultNS :
+      lookupNamespaceURI(prefix);
+  }
+  else {
+    resolver = (prefix) => lookupNamespaceURI(prefix);
   }
 
-  var result = null;
+  let result = null;
   try {
     result = doc.evaluate(aXPath, base, resolver, aType, null);
   } catch (ex) {}
@@ -657,10 +657,11 @@ function checkSecurity(aURL) {
 
 function unescapeURLCharacters(aURL) {
   const kURLChars = {
-    "21":"!", "23":"#", "24":"$", "25":"%", "26":"&", "27":"'", "28":"(",
-    "29":")",
-    "2a":"*", "2b":"+", "2c":",", "2d":"-", "2e":".", "2f":"/",
-    "3a":":", "3b":";", "3d":"=", "3f":"?", "40":"@", "5f":"_", "7e":"~"
+    "21":"!", "23":"#", "24":"$", "25":"%", "26":"&",
+    "27":"'", "28":"(", "29":")", "2a":"*", "2b":"+",
+    "2c":",", "2d":"-", "2e":".", "2f":"/", "3a":":",
+    "3b":";", "3d":"=", "3f":"?", "40":"@", "5f":"_",
+    "7e":"~"
   };
 
   if (!aURL) {
@@ -679,7 +680,7 @@ function unescapeURLForUI(aURL, aCharset) {
     return '';
   }
 
-  var charset = aCharset || getFocusedDocument().characterSet;
+  let charset = aCharset || getFocusedDocument().characterSet;
 
   return XPCOM.$S('TextToSubURI').unEscapeURIForUI(charset, aURL);
 }
@@ -693,25 +694,25 @@ function resolveURL(aURL, aBaseURL) {
     return aURL;
   }
 
-  var baseURL = aBaseURL || getFocusedDocument().documentURI;
+  let baseURL = aBaseURL || getFocusedDocument().documentURI;
 
   // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
   return window.makeURLAbsolute(baseURL, aURL);
 }
 
 function openNewWindow(aURL, aOption) {
-  var URL = resolveURL(aURL);
+  let URL = resolveURL(aURL);
   if (!URL) {
     return;
   }
 
   aOption = aOption || {};
-  var {inBackground} = aOption;
+  let {inBackground} = aOption;
 
   checkSecurity(URL);
 
   // @see chrome://browser/content/utilityOverlay.js::openNewWindowWith()
-  var newWin = window.
+  let newWin = window.
     openNewWindowWith(URL, getFocusedDocument(), null, false);
 
   if (inBackground) {
@@ -723,10 +724,10 @@ function openNewWindow(aURL, aOption) {
 
 function openHomePages(aOption) {
   aOption = aOption || {};
-  var {doReplace, onlyFirstPage} = aOption;
+  let {doReplace, onlyFirstPage} = aOption;
 
   // @see chrome://browser/content/browser.js::gHomeButton
-  var homePages = window.gHomeButton.getHomePage().split('|');
+  let homePages = window.gHomeButton.getHomePage().split('|');
   if (onlyFirstPage) {
     homePages = homePages[0];
   }
@@ -743,25 +744,26 @@ function openTabs(aURLs, aOption) {
   }
 
   aOption = aOption || {};
-  var {inBackground} = aOption;
-  var {ucjsReplace} = aOption;
+  let {inBackground} = aOption;
+  let {ucjsReplace} = aOption;
   // delete the option that is useless for the following functions
   delete aOption.ucjsReplace;
 
-  var firstTabAdded;
+  let firstTabAdded;
 
   if (ucjsReplace) {
     // @see chrome://browser/content/browser.js::BrowserOpenTab
     window.BrowserOpenTab();
     removeAllTabsBut(gBrowser.selectedTab);
     firstTabAdded = loadPage(aURLs.shift(), aOption);
-  } else {
+  }
+  else {
     if (!inBackground) {
       firstTabAdded = openTab(aURLs.shift(), aOption);
     }
   }
 
-  aURLs.forEach(function(url) {
+  aURLs.forEach((url) => {
     openTab(url, aOption);
   });
 
@@ -778,14 +780,14 @@ function openURLIn(aURL, aInTab, aOption) {
 }
 
 function openTab(aURL, aOption) {
-  var URL = resolveURL(aURL);
+  let URL = resolveURL(aURL);
   if (!URL) {
     return;
   }
 
   aOption = aOption || {};
-  var {inBackground} = aOption;
-  var {ucjsTrustURL} = aOption;
+  let {inBackground} = aOption;
+  let {ucjsTrustURL} = aOption;
   // delete the option that is useless for the following functions
   delete aOption.ucjsTrustURL;
 
@@ -799,17 +801,17 @@ function openTab(aURL, aOption) {
 }
 
 function loadPage(aURL, aOption) {
-  var URL = resolveURL(aURL);
+  let URL = resolveURL(aURL);
   if (!URL) {
     return;
   }
 
   aOption = aOption || {};
-  var {
+  let {
     referrerURI, charset, postData,
     allowThirdPartyFixup, fromExternal, isUTF8
   } = aOption;
-  var {ucjsTrustURL} = aOption;
+  let {ucjsTrustURL} = aOption;
   // delete the option that is useless for the following functions
   delete aOption.ucjsTrustURL;
 
@@ -818,7 +820,7 @@ function loadPage(aURL, aOption) {
   }
 
   const {Ci} = window;
-  var flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
+  let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
   if (allowThirdPartyFixup) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
   }
@@ -840,7 +842,7 @@ function loadPage(aURL, aOption) {
  */
 function removeTab(aTab, aOption) {
   aOption = aOption || {};
-  var {safeBlock} = aOption;
+  let {safeBlock} = aOption;
 
   if (safeBlock) {
     // do not close;
@@ -871,7 +873,7 @@ function removeAllTabsBut(aTab) {
     gBrowser.selectedTab = aTab;
   }
 
-  var tabs = gBrowser.visibleTabs;
+  let tabs = gBrowser.visibleTabs;
 
   for (let i = tabs.length - 1, tab; i >= 0; i--) {
     tab = tabs[i];
@@ -893,7 +895,7 @@ function getWindowList(aType) {
 }
 
 function focusWindow(aWindow) {
-  var wins = getWindowList(null), win;
+  let wins = getWindowList(null), win;
 
   while (wins.hasMoreElements()) {
     win = wins.getNext();
@@ -905,8 +907,8 @@ function focusWindow(aWindow) {
 }
 
 function focusWindowAtIndex(aIdx) {
-  var wins = getWindowList(null), win;
-  var idx = 0;
+  let wins = getWindowList(null), win;
+  let idx = 0;
 
   while (wins.hasMoreElements()) {
     win = wins.getNext();
@@ -972,11 +974,10 @@ function registerChromeStyleSheet(aCSS) {
 
   let dataURI = 'data:text/css,' + encodeURIComponent(css);
 
-  let styleSheets = window.document.styleSheets;
-  let exists = Array.some(styleSheets, function(styleSheet) {
-    return styleSheet.href === dataURI;
-  });
-  if (exists) {
+  if (Array.some(
+    window.document.styleSheets,
+    (styleSheet) => styleSheet.href === dataURI
+  )) {
     return;
   }
 
@@ -1068,7 +1069,7 @@ function scanPlacesDB(aParam) {
 
     while (statement.executeStep()) {
       let res = {};
-      columns.forEach(function(name) {
+      columns.forEach((name) => {
         res[name] = statement.row[name];
       });
       rows.push(res);
@@ -1132,7 +1133,7 @@ function asyncScanPlacesDB(aParam) {
         let row;
         while ((row = aResultSet.getNextRow())) {
           let res = {};
-          columns.forEach(function(name) {
+          columns.forEach((name) => {
             res[name] = row.getResultByName(name);
           });
           this.rows.push(res);
@@ -1178,7 +1179,7 @@ function logMessage(aTarget, aMessage) {
     [formatDate, formatMessage].join('\n'));
 
   // for the web console
-  var win = XPCOM.$S('BrowserGlue').getMostRecentBrowserWindow();
+  let win = XPCOM.$S('BrowserGlue').getMostRecentBrowserWindow();
   if (win) {
     win.content.console.log(formatMessage);
   }
@@ -1204,9 +1205,11 @@ function getFormatDate(aOption) {
   };
 
   return format.replace(/%(0)?(\d+)?(ms|[YMDhms])/g,
-    function(match, pad, width, type) {
+    (match, pad, width, type) => {
       let value = String(map[type]);
+
       width = width && parseInt(width);
+
       if (0 < width && value.length !== width) {
         if (value.length < width) {
           value = Array(width).join(!!pad ? '0' : ' ') + value;

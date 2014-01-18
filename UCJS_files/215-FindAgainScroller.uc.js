@@ -283,7 +283,7 @@ function ScrollObserver() {
     }
 
     // WORKAROUND: find only the typical scrollable element
-    // @note <div>|<p>: there may be many elements so that we grab the deepest
+    // @note <div>|<p>: there may be many elements, so that we grab the deepest
     // one
     // TODO: grab all kind of scrollable elements
     let xpath = [

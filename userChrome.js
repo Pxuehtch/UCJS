@@ -58,8 +58,8 @@ const kSystem = {
   overlayContainerID: 'userChrome_js_overlay',
 
   // Check the cache of a script whenever the script runs on sub-windows
-  // set true for debug, and a script that had been modified would be applied
-  // on sub-windows without restart
+  // set true for debug, and a script that is modified will be applied on the
+  // new opened sub-windows without restart
   // @note this loader checks the cache when the startup browser window opens,
   // and usually the cached script runs on sub-windows thereafter
   checkCacheAtRun: false

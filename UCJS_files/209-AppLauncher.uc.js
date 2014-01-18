@@ -7,7 +7,7 @@
 // @require Util.uc.js, UI.uc.js
 
 // @usage access to items in the main context menu
-// @note the available items change depending on where the menu opens
+// @note available menu items will vary depending on where the menu opens
 // @see |getAvailableActions()|
 
 // @note a resource file that is passed to an application will be saved in
@@ -49,33 +49,37 @@ const {
  */
 const kAppList = [
   {
-    // Displayed name
+    // display name
     name: 'IE',
 
+    // type for available actions
     // @see |kTypeAction|
     type: 'browse',
 
-    // Alias of the special folder is available
+    // executable file path
+    // @note some alias of the special folder is available
     // @see |kSpecialFolderAliases|
-    // %ProgF%: program files folder
-    // %LocalAppData%: local application data folder
+    //   %ProgF%: program files folder
+    //   %LocalAppData%: local application data folder
     path: '%ProgF%/Internet Explorer/iexplore.exe',
 
-    // [optional] Commandline arguments
-    // %URL% is replaced with the proper URL of each action
-    // If absent or empty array, it equals to <args: ['%URL%']>
-    // If launched as tool, arguments that have %URL% are ignored
+    // [optional] commandline arguments
+    // @note %URL% is replaced with the proper URL of each action
+    // @note if absent or empty array, it equals to <args: ['%URL%']>
+    // @note if launched as tool, an argument that contains %URL% is ignored
     args: ['-new', '%URL%'],
 
-    // [optional] This item is disabled
+    // [optional] this item is disabled
     disabled: true
   },
   {
     name: 'WMP',
-    // If <type> is 'file', and also set <extensions> to describe the file
-    // extensions of a link URL that is passed to the application
+
+    // @note if <type> is 'file', you should set <extensions> to describe the
+    // file extensions of a link URL that is passed to the application
     type: 'file',
     extensions: ['asx', 'wax', 'wvx'],
+
     path: '%ProgF%/Windows Media Player/wmplayer.exe',
     args: ['/prefetch:1', '%URL%']
   },
