@@ -46,11 +46,6 @@ const XPCOM = (function() {
       CID: '@mozilla.org/layout/documentEncoder;1',
       IID: 'nsIDocumentEncoder'
     },
-    'ScriptableUnicodeConverter': {
-      // @note no version number needed
-      CID: '@mozilla.org/intl/scriptableunicodeconverter',
-      IID: 'nsIScriptableUnicodeConverter'
-    },
     'Timer': {
       CID: '@mozilla.org/timer;1',
       IID: 'nsITimer'
