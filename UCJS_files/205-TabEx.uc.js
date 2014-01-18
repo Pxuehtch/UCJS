@@ -331,7 +331,7 @@ var mTabOpener = {
   init: function() {
     // @modified chrome://browser/content/tabbrowser.xml::addTab
     var $addTab = gBrowser.addTab;
-    gBrowser.addTab = function(
+    gBrowser.addTab = function ucjsTabEx_addTab(
       aURI, // {string}
       aReferrerURI, // {nsIURI}
       aCharset,

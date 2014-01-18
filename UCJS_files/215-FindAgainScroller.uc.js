@@ -103,7 +103,7 @@ function FindAgainScroller_init() {
   // @modified chrome://browser/content/tabbrowser.xml::getFindBar
   const $getFindBar = gBrowser.getFindBar;
   gBrowser.getFindBar =
-  function UCJS_FindAgainScroller_getFindBar(aTab) {
+  function ucjsFindAgainScroller_getFindBar(aTab) {
     let initialized = gBrowser.isFindBarInitialized(aTab);
     let findBar = $getFindBar.apply(this, arguments);
 
@@ -128,7 +128,7 @@ function attachFindAgainCommand() {
   // onFindAgainCommand
   const $onFindAgainCommand = gFindBar.onFindAgainCommand;
   gFindBar.onFindAgainCommand =
-  function UCJS_FindAgainScroller_onFindAgainCommand(aFindPrevious) {
+  function ucjsFindAgainScroller_onFindAgainCommand(aFindPrevious) {
     // terminate the active processing
     if (mSmoothScroll) {
       mSmoothScroll.cancel();

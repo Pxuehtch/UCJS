@@ -177,7 +177,8 @@ function customizeAllTabsPopupFunction() {
   // @modified chrome://browser/content/tabbrowser.xml::
   // _setMenuitemAttributes
   var $_setMenuitemAttributes = alltabsPopup._setMenuitemAttributes;
-  alltabsPopup._setMenuitemAttributes = function(aMenuitem, aTab) {
+  alltabsPopup._setMenuitemAttributes =
+  function ucjsAllTabs_setMenuitemAttributes(aMenuitem, aTab) {
     $_setMenuitemAttributes.apply(this, arguments);
 
     // indicate the state of an unread tab

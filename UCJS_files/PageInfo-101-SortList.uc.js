@@ -101,8 +101,10 @@ function sort(aData, aColumnIndex, aAscending) {
  * Disables the default sort functions
  * @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
  */
-window.gMetaView.onPageMediaSort = function() {};
-window.gImageView.onPageMediaSort = function() {};
+window.gMetaView.onPageMediaSort =
+  function ucjsSortList_MetaView_onPageMediaSort() {};
+window.gImageView.onPageMediaSort =
+  function ucjsSortList_ImageView_onPageMediaSort() {};
 
 /**
  * Clean up when the Page Info window is closed

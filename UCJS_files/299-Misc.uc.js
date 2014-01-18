@@ -77,7 +77,8 @@ function log(aMessage) {
 
   // @modified chrome://browser/content/urlbarBindings.xml::
   // _initURLTooltip
-  $ID('urlbar')._initURLTooltip = function() {
+  $ID('urlbar')._initURLTooltip =
+  function ucjsMisc_uncropTooltip_initURLTooltip() {
     if (this.focused || !this._contentIsCropped || tooltipTimer) {
       return;
     }
@@ -91,7 +92,8 @@ function log(aMessage) {
 
   // @modified chrome://browser/content/urlbarBindings.xml::
   // _hideURLTooltip
-  $ID('urlbar')._hideURLTooltip = function() {
+  $ID('urlbar')._hideURLTooltip =
+  function ucjsMisc_uncropTooltip_hideURLTooltip() {
     if (tooltipTimer) {
       clearTimeout(tooltipTimer);
       tooltipTimer = null;
@@ -372,7 +374,8 @@ function log(aMessage) {
   // @modified chrome://browser/content/browser.js::
   // XULBrowserWindow::updateStatusField
   const $updateStatusField = window.XULBrowserWindow.updateStatusField;
-  window.XULBrowserWindow.updateStatusField = function() {
+  window.XULBrowserWindow.updateStatusField =
+  function ucjsMisc_showStatusToURLBar_updateStatusField() {
     $updateStatusField.apply(this, arguments);
 
     // TODO: Should I change the timing of updating the panel rect in order to

@@ -209,7 +209,8 @@ var mStatusField = (function() {
     // @modified chrome://browser/content/browser.js::
     // XULBrowserWindow::setOverLink
     const $setOverLink = XULBrowserWindow.setOverLink;
-    XULBrowserWindow.setOverLink = function(url, anchorElt) {
+    XULBrowserWindow.setOverLink =
+    function ucjsUI_StatusField_setOverLink(url, anchorElt) {
       if (disableSetOverLink) {
         return;
       }
@@ -249,7 +250,8 @@ var mStatusField = (function() {
     // @modified chrome://browser/content/browser.js::
     // XULBrowserWindow::updateStatusField
     const $updateStatusField = XULBrowserWindow.updateStatusField;
-    XULBrowserWindow.updateStatusField = function() {
+    XULBrowserWindow.updateStatusField =
+    function ucjsUI_StatusField_updateStatusField() {
       // suppress the display except a message
       if (messageStatus) {
         return;
