@@ -1520,6 +1520,9 @@ function modifySystemSetting() {
 
 /**
  * Customizes the tab tooltip
+ *
+ * TODO: consider to combine the customizations of tab tooltip into one
+ * @see |AllTabs::customizeTabTooltip|
  */
 function customizeTabTooltip() {
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
