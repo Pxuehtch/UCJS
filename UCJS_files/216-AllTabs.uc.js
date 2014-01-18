@@ -468,21 +468,13 @@ function $(aId) {
   return window.document.getElementById(aId);
 }
 
-function $E(aTagName, aAttribute) {
-  var node = window.document.createElement(aTagName);
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (name === 'user') {
-        [name, value] = value;
-      }
-      if (value !== null && value !== undefined) {
-        node.setAttribute(name, value);
-      }
-    }
+function handleAttribute(aNode, aName, aValue) {
+  if (aName === 'user') {
+    let [name, value] = aValue;
+    aNode.setAttribute(name, value);
+    return true;
   }
-
-  return node;
+  return false;
 }
 
 function hideElement(aElement) {
@@ -521,6 +513,10 @@ function format(aFormat, aAttribute) {
 
 function setStateForUnreadTab(aMenuitem, aTab) {
   window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
+}
+
+function $E(aTag, aAttribute) {
+  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
 }
 
 function addEvent(aData) {

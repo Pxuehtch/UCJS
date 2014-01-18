@@ -69,12 +69,12 @@ function $ID(aID) {
   return window.document.getElementById(aID);
 }
 
-function $E(aTag) {
-  return window.document.createElement(aTag);
-}
-
 
 //********** Imports
+
+function $E(aTag) {
+  return window.ucjsUtil.createNode(aTag);
+}
 
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);

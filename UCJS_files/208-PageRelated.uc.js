@@ -307,25 +307,14 @@ function $ID(aID) {
   return window.document.getElementById(aID);
 }
 
-function $E(aTag, aAttribute) {
-  var node = window.document.createElement(aTag);
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        if (name === 'open') {
-          node.setAttribute('oncommand', commandForOpenURLs(value));
-          // @see chrome://browser/content/utilityOverlay.js::
-          // checkForMiddleClick
-          node.setAttribute('onclick', 'checkForMiddleClick(this,event);');
-        } else {
-          node.setAttribute(name, value);
-        }
-      }
-    }
+function handleAttribute(aNode, aName, aValue) {
+  if (aName === 'open') {
+    aNode.setAttribute('oncommand', commandForOpenURLs(aValue));
+    // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+    aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
+    return true;
   }
-
-  return node;
+  return false;
 }
 
 
@@ -347,6 +336,10 @@ function getURLBarContextMenu() {
 
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
+
+function $E(aTag, aAttribute) {
+  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
 }
 
 function log(aMsg) {

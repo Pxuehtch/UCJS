@@ -1848,33 +1848,17 @@ function getBaseDomain(aURI) {
   return getHost(aURI);
 }
 
-/**
- * Creates an element with the attributes
- */
-function $E(aTagOrNode, aAttribute) {
-  let node = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) : aTagOrNode;
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (value === null || value === undefined) {
-        continue;
-      }
-
-      switch (name) {
-        case 'open':
-        case 'submit':
-          node[kID.data] = {};
-          node[kID.data][name] = value;
-          break;
-        default:
-          node.setAttribute(name, value);
-          break;
-      }
-    }
+function handleAttribute(aNode, aName, aValue) {
+  switch (aName) {
+    case 'open':
+    case 'submit':
+      aNode[kID.data] = {};
+      aNode[kID.data][aName] = aValue;
+      break;
+    default:
+      return false;
   }
-
-  return node;
+  return true;
 }
 
 function $ID(aID){
@@ -1948,6 +1932,10 @@ function $SA(aSelector) {
 
 function $X1(aXPath) {
   return window.ucjsUtil.getFirstNodeByXPath(aXPath);
+}
+
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
 }
 
 function addEvent(aData) {

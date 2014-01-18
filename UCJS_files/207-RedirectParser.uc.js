@@ -526,47 +526,29 @@ function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
-function $E(aTag, aAttributes) {
-  let element = window.document.createElement(aTag);
-
-  if (aAttributes) {
-    for (let [name, value] in Iterator(aAttributes)) {
-      if (value === null || value === undefined) {
-        continue;
-      }
-
-      switch (name) {
-        case 'styles':
-          value.join(';').split(/;+/).forEach(function(style) {
-            let [propName, propValue] =
-            style.split(':').map(function(str) {
-              return str.trim();
-            });
-
-            if (propName && propValue) {
-              element.style.setProperty(propName, propValue, '');
-            }
-          });
-          break;
-        case 'action': {
-          let command = makeActionCommand(value);
-          if (command) {
-            element.setAttribute('oncommand', command);
-            // @see chrome://browser/content/utilityOverlay.js::
-            // checkForMiddleClick
-            element.setAttribute('onclick',
-              'checkForMiddleClick(this,event);');
-          }
-          break;
+function handleAttribute(aNode, aName, aValue) {
+  switch (aName) {
+    case 'styles':
+      aValue.join(';').split(/;+/).forEach((style) => {
+        let [propName, propValue] = style.split(':').map((str) => str.trim());
+        if (propName && propValue) {
+          aNode.style.setProperty(propName, propValue, '');
         }
-        default:
-          element.setAttribute(name, value);
-          break;
+      });
+      break;
+    case 'action': {
+      let command = makeActionCommand(aValue);
+      if (command) {
+        aNode.setAttribute('oncommand', command);
+        // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+        aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
       }
+      break;
     }
+    default:
+      return false;
   }
-
-  return element;
+  return true;
 }
 
 function makeActionCommand(aValue) {
@@ -621,6 +603,10 @@ function getPref(aKey, aDefaultValue) {
 
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
+
+function $E(aTag, aAttribute) {
+  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
 }
 
 function log(aMsg) {

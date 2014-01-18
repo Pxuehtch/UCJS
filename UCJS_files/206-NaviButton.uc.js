@@ -508,12 +508,12 @@ function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
-function $E(aTag) {
-  return window.document.createElement(aTag);
-}
-
 
 //********** Imports
+
+function $E(aTag) {
+  return window.ucjsUtil.createNode(aTag);
+}
 
 function log(aStr) {
   return window.ucjsUtil.logMessage('NaviButton.uc.js', aStr);

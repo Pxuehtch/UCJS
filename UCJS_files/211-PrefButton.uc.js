@@ -349,12 +349,12 @@ function $ID(aId) {
   return window.document.getElementById(aId);
 }
 
-function $E(aTag) {
-  return window.document.createElement(aTag);
-}
-
 
 //********** Imports
+
+function $E(aTag) {
+  return window.ucjsUtil.createNode(aTag);
+}
 
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);

@@ -437,23 +437,12 @@ function copyToClipboard(aText) {
   copyString(aText);
 }
 
-function $E(aTagOrNode, aAttribute) {
-  let node = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) : aTagOrNode;
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        if (name === 'tiptext') {
-          node[kID.TIP_TEXT] = value;
-        } else {
-          node.setAttribute(name, value);
-        }
-      }
-    }
+function handleAttribute(aNode, aName, aValue) {
+  if (aName === 'tiptext') {
+    aNode[kID.TIP_TEXT] = aValue;
+    return true;
   }
-
-  return node;
+  return false;
 }
 
 function $ID(aId) {
@@ -466,6 +455,10 @@ function $T(aText) {
 
 
 //********** Imports
+
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
+}
 
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);

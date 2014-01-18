@@ -331,26 +331,14 @@ function $ID(aID) {
   return window.document.getElementById(aID);
 }
 
-function $E(aTagOrNode, aAttribute) {
-  let node = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) : aTagOrNode;
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        if (name === 'open') {
-          node.setAttribute('oncommand', commandForOpenURL(value));
-          // @see chrome://browser/content/utilityOverlay.js::
-          // checkForMiddleClick
-          node.setAttribute('onclick', 'checkForMiddleClick(this,event);');
-        } else {
-          node.setAttribute(name, value);
-        }
-      }
-    }
+function handleAttribute(aNode, aName, aValue) {
+  if (aName === 'open') {
+    aNode.setAttribute('oncommand', commandForOpenURL(aValue));
+    // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+    aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
+    return true;
   }
-
-  return node;
+  return false;
 }
 
 
@@ -373,6 +361,10 @@ function getSelectionAtCursor() {
 
 function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
+}
+
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
 }
 
 function log(aMsg) {

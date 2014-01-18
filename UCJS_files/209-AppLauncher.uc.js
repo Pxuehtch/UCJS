@@ -41,6 +41,10 @@ const {
   log
 } = Util;
 
+function $E(aTag, aAttribute) {
+  return Util.createNode(aTag, aAttribute, handleAttribute);
+}
+
 /**
  * Application list
  *
@@ -766,32 +770,16 @@ function addSeparator(aPopup, aID) {
   }));
 }
 
-function $E(aTagOrNode, aAttribute) {
-  let node = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) :
-    aTagOrNode;
-
-  let setAttribute = (aKey, aValue) => {
-    if (aValue !== null && aValue !== undefined) {
-      node.setAttribute(aKey, aValue);
-    }
-  };
-
-  if (!!aAttribute) {
-    for (let [key, value] in Iterator(aAttribute)) {
-      switch (key) {
-      case 'user':
-        value.forEach(({key, value}) => {
-          setAttribute(key, value);
-        });
-        break;
-      default:
-        setAttribute(key, value);
+function handleAttribute(aNode, aName, aValue) {
+  if (aName === 'user') {
+    aValue.forEach(({key, value}) => {
+      if (value !== null && value !== undefined) {
+        aNode.setAttribute(key, value);
       }
-    }
+    });
+    return true;
   }
-
-  return node;
+  return false;
 }
 
 
@@ -1133,6 +1121,10 @@ function addEvent(aData) {
   window.ucjsUtil.setEventListener(aData);
 }
 
+function createNode(aTag, aAttribute, aAttributeHandler) {
+  return window.ucjsUtil.createNode(aTag, aAttribute, aAttributeHandler);
+}
+
 function getNodesByXPath(aXPath, aNode) {
   return window.ucjsUtil.getNodesByXPath(aXPath, aNode);
 }
@@ -1150,6 +1142,7 @@ return {
   makeURIURL: makeURIURL,
   getContextMenu: getContextMenu,
   addEvent: addEvent,
+  createNode: createNode,
   getNodesByXPath: getNodesByXPath,
   log: log
 };

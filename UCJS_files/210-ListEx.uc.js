@@ -22,6 +22,10 @@ const {
   asyncScanPlacesDB
 } = window.ucjsUtil;
 
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
+}
+
 // for debug
 function log(aMessage) {
   return window.ucjsUtil.logMessage('ListEx.uc.js', aMessage);
@@ -581,28 +585,20 @@ function $ID(aID) {
   return window.document.getElementById(aID);
 }
 
-function $E(aTagOrNode, aAttribute) {
-  let node = (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) : aTagOrNode;
-
-  if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
-      if (value !== null && value !== undefined) {
-        if (name === 'icon') {
-          node.style.listStyleImage = 'url(' + value + ')';
-        } else if (name === 'action') {
-          node.setAttribute('oncommand', value);
-          // @see chrome://browser/content/utilityOverlay.js::
-          // checkForMiddleClick
-          node.setAttribute('onclick', 'checkForMiddleClick(this,event);');
-        } else {
-          node.setAttribute(name, value);
-        }
-      }
-    }
+function handleAttribute(aNode, aName, aValue) {
+  switch (aName) {
+    case 'icon':
+      aNode.style.listStyleImage = 'url(' + aValue + ')';
+      break;
+    case 'action':
+      aNode.setAttribute('oncommand', aValue);
+      // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+      aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
+      break;
+    default:
+      return false;
   }
-
-  return node;
+  return true;
 }
 
 function makeDisabledMenuItem(aPopup, aLabel) {
