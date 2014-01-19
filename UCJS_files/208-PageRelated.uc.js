@@ -19,6 +19,29 @@
 
 
 /**
+ * Imports
+ */
+const {
+  getNodeById: $ID,
+  setEventListener: addEvent
+} = window.ucjsUtil;
+
+function $E(aTag, aAttribute) {
+  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
+}
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
+}
+
+const {
+  URLBar: {
+    contextMenu: URLBarContextMenu
+  }
+} = window.ucjsUI;
+
+/**
  * Identifiers
  */
 const kID = {
@@ -195,7 +218,7 @@ var AliasFixup = (function() {
 //********** Functions
 
 function initMenu() {
-  var contextMenu = getURLBarContextMenu();
+  var contextMenu = URLBarContextMenu;
 
   setSeparators(contextMenu);
 
@@ -204,7 +227,7 @@ function initMenu() {
 
 function showContextMenu(aEvent) {
   var contextMenu = aEvent.target;
-  if (contextMenu !== getURLBarContextMenu()) {
+  if (contextMenu !== URLBarContextMenu) {
     return;
   }
 
@@ -313,9 +336,6 @@ function handleAttribute(aNode, aName, aValue) {
   return false;
 }
 
-
-//********** Imports
-
 function commandForOpenURLs(aURLsArray) {
   var URLs = JSON.stringify(aURLsArray);
   var inBG = (aURLsArray.length > 1) ? 'true' : 'event.button===1';
@@ -324,26 +344,6 @@ function commandForOpenURLs(aURLsArray) {
     '%URLs%,{inBackground:%inBG%,relatedToCurrent:true});';
 
   return command.replace('%URLs%', URLs).replace('%inBG%', inBG);
-}
-
-function getURLBarContextMenu() {
-  return window.ucjsUI.URLBar.contextMenu;
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function $E(aTag, aAttribute) {
-  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
 }
 
 

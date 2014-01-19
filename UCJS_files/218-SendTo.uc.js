@@ -16,6 +16,30 @@
 
 
 /**
+ * Imports
+ */
+const {
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  getSelectionAtCursor
+} = window.ucjsUtil;
+
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
+}
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('SendTo.uc.js', aMsg);
+}
+
+const {
+  ContentArea: {
+    contextMenu: contentAreaContextMenu
+  }
+} = window.ucjsUI;
+
+/**
  * Identifiers
  */
 const kID = {
@@ -199,7 +223,7 @@ var AliasFixup = (function() {
 //********** Functions
 
 function initMenu() {
-  var contextMenu = getContextMenu();
+  var contextMenu = contentAreaContextMenu;
 
   setSeparators(contextMenu, contextMenu.firstChild);
 
@@ -208,7 +232,7 @@ function initMenu() {
 
 function showContextMenu(aEvent) {
   var contextMenu = aEvent.target;
-  if (contextMenu !== getContextMenu()) {
+  if (contextMenu !== contentAreaContextMenu) {
     return;
   }
 
@@ -337,38 +361,11 @@ function handleAttribute(aNode, aName, aValue) {
   return false;
 }
 
-
-//********** Imports
-
-function getContextMenu() {
-  return window.ucjsUI.ContentArea.contextMenu;
-}
-
 function commandForOpenURL(aURL) {
   let command = 'ucjsUtil.openTab("%URL%",' +
     '{inBackground:event.button===1,relatedToCurrent:true});';
 
   return command.replace('%URL%', aURL);
-}
-
-function getSelectionAtCursor() {
-  return window.ucjsUtil.getSelectionAtCursor();
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('SendTo.uc.js', aMsg);
 }
 
 

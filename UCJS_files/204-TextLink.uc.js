@@ -23,6 +23,20 @@
 
 
 /**
+ * Imports
+ */
+const {
+  getFirstNodeByXPath: $X1,
+  setEventListener: addEvent,
+  openTab
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('TextLink.uc.js', aMsg);
+}
+
+/**
  * URL string handler
  * @return {hash}
  *   @member guess {function}
@@ -133,8 +147,7 @@ var mURLUtil = (function() {
 //********** Functions
 
 function TextLink_init() {
-  addEvent([gBrowser.mPanelContainer,
-    'dblclick', handleEvent, false]);
+  addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
 }
 
 function handleEvent(aEvent) {
@@ -153,7 +166,10 @@ function handleEvent(aEvent) {
 
   if (URL) {
     selection.removeAllRanges();
-    openTab(URL);
+
+    openTab(URL, {
+      relatedToCurrent: true
+    });
   }
 }
 
@@ -206,7 +222,7 @@ function initRange(aRange, aSourceRange) {
     var text;
 
     while (count < kCharsBuffer) {
-      node = $X(aXPath, node);
+      node = $X1(aXPath, node);
       if (!node) {
         break;
       }
@@ -296,25 +312,6 @@ function encodeToPlain(aRange) {
 function isTextDocument(aDoc) {
   // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
   return aDoc && window.mimeTypeIsTextBased(aDoc.contentType);
-}
-
-
-//********** Imports
-
-function $X(aXPath, aNode) {
-  return window.ucjsUtil.getFirstNodeByXPath(aXPath, aNode);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function openTab(aURL) {
-  window.ucjsUtil.openTab(aURL, {relatedToCurrent: true});
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TextLink.uc.js', aMsg);
 }
 
 

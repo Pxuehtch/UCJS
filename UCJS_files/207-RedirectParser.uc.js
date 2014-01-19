@@ -15,6 +15,34 @@
 
 
 /**
+ * Imports
+ */
+const {
+  Prefs: {
+    get: getPref
+  },
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  unescapeURLCharacters: unescURLChars,
+  unescapeURLForUI: unescURLforUI
+} = window.ucjsUtil;
+
+function $E(aTag, aAttribute) {
+  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
+}
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
+}
+
+const {
+  ContentArea: {
+    contextMenu: contentAreaContextMenu
+  }
+} = window.ucjsUI;
+
+/**
  * Whether the access key of a menu item is expressed with underline
  * @note valid values are string 'true' or 'false', and missing key or empty
  * value equals 'false'
@@ -134,7 +162,7 @@ function RedirectParser_init() {
 }
 
 function initMenu() {
-  let context = getContextMenu();
+  let context = contentAreaContextMenu;
   let refItem = $ID('context-sep-copylink');
 
   let ui = kUI.menu;
@@ -151,7 +179,7 @@ function initMenu() {
 }
 
 function showContextMenu(aEvent) {
-  if (aEvent.target === getContextMenu()) {
+  if (aEvent.target === contentAreaContextMenu) {
     // @see chrome://browser/content/nsContextMenu.js
     const {showItem, linkURL, mediaURL} = window.gContextMenu;
 
@@ -165,7 +193,7 @@ function showContextMenu(aEvent) {
 }
 
 function hideContextMenu(aEvent) {
-  if (aEvent.target === getContextMenu()) {
+  if (aEvent.target === contentAreaContextMenu) {
     let menu = $ID(kUI.menu.id);
     while (menu.itemCount) {
       menu.removeItemAt(0);
@@ -554,63 +582,20 @@ function makeActionCommand(aValue) {
   }
 
   let command;
+
   switch (action) {
     case 'open':
-      command = getOpenTabCommand(URL);
+      command = 'ucjsUtil.openTab("%URL%",{inBackground:event.button===1});';
       break;
     case 'copy':
       command = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
         'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
-      command = command.replace('%URL%', URL);
       break;
     default:
       return '';
   }
 
-  return command;
-}
-
-
-//********** Imports
-
-function getContextMenu() {
-  return window.ucjsUI.ContentArea.contextMenu;
-}
-
-/**
- * Makes a string for the |oncommand| attribute of an element
- */
-function getOpenTabCommand(aURL) {
-  let command = 'ucjsUtil.openTab("%URL%",{inBackground:event.button===1});';
   return command.replace('%URL%', aURL);
-}
-
-function unescURLChars(aStr) {
-  return window.ucjsUtil.unescapeURLCharacters(aStr);
-}
-
-function unescURLforUI(aURL) {
-  return window.ucjsUtil.unescapeURLForUI(aURL);
-}
-
-function getPref(aKey, aDefaultValue) {
-  return window.ucjsUtil.Prefs.get(aKey, aDefaultValue);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function $E(aTag, aAttribute) {
-  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
 }
 
 

@@ -30,6 +30,31 @@
 
 
 /**
+ * Imports
+ */
+const {
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  getSelectionAtCursor,
+  openTab
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
+}
+
+const {
+  ContentArea: {
+    contextMenu: contentAreaContextMenu
+  },
+  StatusField: {
+    setOverLink,
+    message: updateStatusText
+  }
+} = window.ucjsUI;
+
+/**
  * Gesture signs for kGestureSet
  */
 const kGestureSign = {
@@ -659,6 +684,10 @@ function MouseManager() {
     return rv;
   }
 
+  function enableContextMenu(aEnable) {
+    contentAreaContextMenu.hidden = !aEnable;
+  }
+
   return {
     update: update
   };
@@ -923,16 +952,16 @@ function GestureManager() {
 
     if (mError) {
       // HACK: Display the status after its values have been cleared.
-      setTimeout(function(value) updateStatusbarText(value), 0, str);
+      setTimeout(function(value) updateStatusText(value), 0, str);
     } else {
-      updateStatusbarText(str);
+      updateStatusText(str);
     }
 
     return str;
   }
 
   function clearStatusText() {
-    updateStatusbarText('');
+    updateStatusText('');
   }
 
   /**
@@ -1096,41 +1125,6 @@ function doCmd(aCommand) {
     // @see chrome://global/content/globalOverlay.js::goDoCommand
     window.goDoCommand(aCommand);
   }
-}
-
-
-//********** Imports
-
-function enableContextMenu(aEnable) {
-  window.ucjsUI.ContentArea.contextMenu.hidden = !aEnable;
-}
-
-function setOverLink(aEnabled) {
-  window.ucjsUI.StatusField.setOverLink(aEnabled);
-}
-
-function updateStatusbarText(aText) {
-  window.ucjsUI.StatusField.message(aText);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  return window.ucjsUtil.setEventListener(aData);
-}
-
-function getSelectionAtCursor(aOption) {
-  return window.ucjsUtil.getSelectionAtCursor(aOption);
-}
-
-function openTab(aURL, aOption) {
-  return window.ucjsUtil.openTab(aURL, aOption);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
 }
 
 

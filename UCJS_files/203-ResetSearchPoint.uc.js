@@ -19,11 +19,23 @@
 "use strict";
 
 
-//********** Functions
+/**
+ * Imports
+ */
+const {
+  setEventListener: addEvent,
+} = window.ucjsUtil;
 
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
+}
+
+/**
+ * Main function
+ */
 function ResetSearchPoint_init() {
-  addEvent([gBrowser.mPanelContainer,
-    'dblclick', handleEvent, false]);
+  addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
 }
 
 function handleEvent(aEvent) {
@@ -152,17 +164,6 @@ function getClickManager(aElement) {
  */
 function getFastFind() {
   return gFindBar.browser.fastFind;
-}
-
-
-//********** Imports
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
 }
 
 

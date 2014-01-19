@@ -20,6 +20,33 @@ const ucjsNaviLink = (function(window, undefined) {
 "use strict";
 
 
+/**
+ * Imports
+ */
+const {
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  getNodesBySelector: $SA,
+  getFirstNodeByXPath: $X1,
+  openURL,
+  unescapeURLCharacters: unescURLChar
+} = window.ucjsUtil;
+
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
+}
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
+}
+
+const {
+  URLBar: {
+    contextMenu: URLBarContextMenu
+  }
+} = window.ucjsUI;
+
 const kPref = {
   // show the unregistered navigation links
   // @see |kNaviLinkType| for the registered types
@@ -240,7 +267,7 @@ const kID = (function() {
  */
 const MenuUI = (function() {
   function init() {
-    let contextMenu = getURLBarContextMenu();
+    let contextMenu = URLBarContextMenu;
 
     setSeparators(contextMenu);
 
@@ -297,7 +324,7 @@ const MenuUI = (function() {
     aEvent.stopPropagation();
 
     let contextMenu = aEvent.target;
-    if (contextMenu !== getURLBarContextMenu()) {
+    if (contextMenu !== URLBarContextMenu) {
       return;
     }
 
@@ -327,7 +354,7 @@ const MenuUI = (function() {
     aEvent.stopPropagation();
 
     let contextMenu = aEvent.target;
-    if (contextMenu !== getURLBarContextMenu()) {
+    if (contextMenu !== URLBarContextMenu) {
       return;
     }
 
@@ -1915,45 +1942,6 @@ function trim(aText) {
     return aText.trim().replace(/\s+/g, ' ');
   }
   return '';
-}
-
-
-//********** Imports
-
-function getURLBarContextMenu() {
-  return window.ucjsUI.URLBar.contextMenu;
-}
-
-function $SA(aSelector) {
-  return window.ucjsUtil.getNodesBySelector(aSelector);
-}
-
-function $X1(aXPath) {
-  return window.ucjsUtil.getFirstNodeByXPath(aXPath);
-}
-
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function unescURLChar(aURL) {
-  return window.ucjsUtil.unescapeURLCharacters(aURL);
-}
-
-function openURL(aURL, aOption) {
-  window.ucjsUtil.openURL(aURL, aOption);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
 }
 
 

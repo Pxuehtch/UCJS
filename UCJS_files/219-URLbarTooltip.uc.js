@@ -29,8 +29,8 @@ const {
 } = window.ucjsUtil;
 
 // for debug
-function log(aMessage) {
-  return window.ucjsUtil.logMessage('URLbarTooltip.uc.js', aMessage);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('URLbarTooltip.uc.js', aMsg);
 }
 
 /**

@@ -40,8 +40,8 @@ function setGlobalAgentCSS(aCSS) {
 }
 
 // for debug
-function log(aMessage) {
-  return window.ucjsUtil.logMessage('Misc.uc.js', aMessage);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
 }
 
 /**

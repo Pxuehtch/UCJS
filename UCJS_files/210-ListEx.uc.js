@@ -28,8 +28,8 @@ function $E(aTagOrNode, aAttribute) {
 }
 
 // for debug
-function log(aMessage) {
-  return window.ucjsUtil.logMessage('ListEx.uc.js', aMessage);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ListEx.uc.js', aMsg);
 }
 
 const {

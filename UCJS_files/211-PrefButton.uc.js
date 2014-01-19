@@ -19,6 +19,25 @@
 
 
 /**
+ * Imports
+ */
+const {
+  Prefs: {
+    get: getPref,
+    set: setPref
+  },
+  createNode: $E,
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  setChromeStyleSheet: setCSS
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
+}
+
+/**
  * Identifiers
  */
 const kID = {
@@ -340,37 +359,6 @@ function setStyleSheet() {
   ';
 
   setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
-}
-
-
-//********** Imports
-
-function $E(aTag) {
-  return window.ucjsUtil.createNode(aTag);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function setCSS(aCSS) {
-  window.ucjsUtil.setChromeStyleSheet(aCSS);
-}
-
-function getPref(aKey, aDefaultValue) {
-  return window.ucjsUtil.Prefs.get(aKey, aDefaultValue);
-}
-
-function setPref(aKey, aValue) {
-  window.ucjsUtil.Prefs.set(aKey, aValue);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
 }
 
 

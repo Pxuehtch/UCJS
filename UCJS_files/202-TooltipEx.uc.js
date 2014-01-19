@@ -15,6 +15,28 @@
 
 
 /**
+ * Imports
+ */
+const {
+  getNodeById: $ID,
+  setEventListener: addEvent,
+} = window.ucjsUtil;
+
+function $E(aTagOrNode, aAttribute) {
+  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
+}
+
+function unescURLForUI(aURL, aBaseURL) {
+  const util = window.ucjsUtil;
+  return util.unescapeURLForUI(util.resolveURL(aURL, aBaseURL));
+}
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUti.logMessage('TooltipEx.uc.js', aMsg);
+}
+
+/**
  * Max width of tooltip panel
  * @value {integer} [em] number of characters > 0
  */
@@ -447,30 +469,6 @@ function handleAttribute(aNode, aName, aValue) {
 
 function $T(aText) {
   return window.document.createTextNode(aText);
-}
-
-
-//********** Imports
-
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function unescURLForUI(aURL, aBaseURL) {
-  return window.ucjsUtil.unescapeURLForUI(
-    window.ucjsUtil.resolveURL(aURL, aBaseURL));
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
 }
 
 

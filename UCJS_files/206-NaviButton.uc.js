@@ -31,6 +31,19 @@
 
 
 /**
+ * Imports
+ */
+const {
+  createNode: $E,
+  getNodeById: $ID
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('NaviButton.uc.js', aMsg);
+}
+
+/**
  * Identifiers
  */
 const kID = {
@@ -502,21 +515,6 @@ function selectOrOpen(aURL, aOption) {
     }
   }
   gBrowser.loadOneTab(aURL, {inBackground: inBackground});
-}
-
-
-//********** Imports
-
-function $E(aTag) {
-  return window.ucjsUtil.createNode(aTag);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function log(aStr) {
-  return window.ucjsUtil.logMessage('NaviButton.uc.js', aStr);
 }
 
 

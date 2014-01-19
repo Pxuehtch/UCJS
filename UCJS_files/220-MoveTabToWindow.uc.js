@@ -15,6 +15,20 @@
 
 
 /**
+ * Imports
+ */
+const {
+  createNode: $E,
+  getNodeById: $ID,
+  setEventListener: addEvent
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
+}
+
+/**
  * Settings for UI
  */
 const kBundle = {
@@ -249,25 +263,6 @@ function getWindowEnumerator() {
 function isWindowPrivate(aWindow) {
   // @see resource://gre/modules/PrivateBrowsingUtils.jsm
   return window.PrivateBrowsingUtils.isWindowPrivate(aWindow);
-}
-
-
-//********** Imports
-
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
 }
 
 

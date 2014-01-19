@@ -16,6 +16,26 @@
 
 
 /**
+ * Imports
+ */
+const {
+  createNode: $E,
+  getNodeById: $ID,
+  setEventListener: addEvent
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('PrettyPrint.uc.js', aMsg);
+}
+
+const {
+  ContentArea: {
+    contextMenu: contentAreaContextMenu
+  }
+} = window.ucjsUI;
+
+/**
  * Text type constants
  * this is used to set a beautifier method and set the syntax highlight mode
  * for the Scratchpad editor
@@ -48,7 +68,7 @@ const MenuHandler = (function() {
   }
 
   function init() {
-    let context = getContextMenu();
+    let context = contentAreaContextMenu;
     addEvent([context, 'popupshowing', showContextMenu, false]);
 
     let prettifySourcePageItem = $E('menuitem', {
@@ -63,7 +83,7 @@ const MenuHandler = (function() {
 
   function showContextMenu(aEvent) {
     let contextMenu = aEvent.target;
-    if (contextMenu !== getContextMenu()) {
+    if (contextMenu !== contentAreaContextMenu) {
       return;
     }
 
@@ -501,29 +521,6 @@ function scanTextType(aContentType) {
 
 function warn(aMessage) {
   window.Services.prompt.alert(null, 'PrettyPrint.uc.js', aMessage);
-}
-
-
-//********** Imports
-
-function $E(aTag, aAttribute) {
-  return window.ucjsUtil.createNode(aTag, aAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('PrettyPrint.uc.js', aMsg);
-}
-
-function getContextMenu() {
-  return window.ucjsUI.ContentArea.contextMenu;
 }
 
 

@@ -16,6 +16,20 @@ var ucjsWebService = (function(window, undefined) {
 
 
 /**
+ * Imports
+ */
+const {
+  getFirstNodeByXPath: $X1,
+  getNodesByXPath: $XA,
+  openTab
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('WebService.uc.js', aMsg);
+}
+
+/**
  * Preset list
  * @value {hash[]}
  *   type: {string}
@@ -327,25 +341,6 @@ function reSubmit(aData, aSubmit, aLess) {
     textInput.focus();
   }
   return true;
-}
-
-
-//********** Imports
-
-function openTab(aURL, aOption) {
-  return window.ucjsUtil.openTab(aURL, aOption);
-}
-
-function $X1(aXPath, aContext) {
-  return window.ucjsUtil.getFirstNodeByXPath(aXPath, aContext);
-}
-
-function $XA(aXPath, aContext) {
-  return window.ucjsUtil.getNodesByXPath(aXPath, aContext);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('WebService.uc.js', aMsg);
 }
 
 

@@ -31,11 +31,13 @@ const {
   setEventListener: addEvent,
   openTab,
   removeTab,
-  setChromeStyleSheet,
   scanPlacesDB
 } = window.ucjsUtil;
+
 // for debug
-const log = window.ucjsUtil.logMessage.bind(null, 'TabEx.uc.js');
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('TabEx.uc.js', aMsg);
+}
 
 /**
  * Identifier

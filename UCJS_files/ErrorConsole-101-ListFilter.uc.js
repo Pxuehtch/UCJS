@@ -14,6 +14,22 @@
 
 
 /**
+ * Imports
+ */
+const {
+  createNode: $E,
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  setGlobalStyleSheet,
+  removeGlobalStyleSheet
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
+}
+
+/**
  * Selector for filtering
  * @note Each key is set to the label of UI
  */
@@ -62,31 +78,12 @@ function toggle(aEvent) {
   toggleCSS(kSelector[label] + hidden, !checked);
 }
 
-
-//********** Imports
-
-function $E(aTag) {
-  return window.ucjsUtil.createNode(aTag);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
 function toggleCSS(aCSS, aHidden) {
   if (aHidden) {
-    window.ucjsUtil.setGlobalStyleSheet(aCSS, 'USER_SHEET');
+    setGlobalStyleSheet(aCSS, 'USER_SHEET');
   } else {
-    window.ucjsUtil.removeGlobalStyleSheet(aCSS, 'USER_SHEET');
+    removeGlobalStyleSheet(aCSS, 'USER_SHEET');
   }
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
 }
 
 

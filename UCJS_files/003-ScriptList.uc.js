@@ -16,6 +16,20 @@
 
 
 /**
+ * Imports
+ */
+const {
+  createNode: $E,
+  getNodeById: $ID,
+  setEventListener: addEvent
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
+}
+
+/**
  * UI bundle
  */
 const kUIBundle = {
@@ -294,25 +308,6 @@ function F(aForm, aAttribute) {
     aForm = aForm.replace('%' + name + '%', String(value));
   }
   return aForm;
-}
-
-
-//********** Imports
-
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('ScriptList.uc.js', aMsg);
 }
 
 

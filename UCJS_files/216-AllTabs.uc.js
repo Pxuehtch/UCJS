@@ -16,6 +16,30 @@
 
 
 /**
+ * Imports
+ */
+const {
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  setChromeStyleSheet: setCSS
+} = window.ucjsUtil;
+
+function $E(aTag, aAttribute) {
+  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
+}
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
+}
+
+const {
+  Menuitem: {
+    setStateForUnreadTab
+  }
+} = window.ucjsUI;
+
+/**
  * String format for UI
  *
  * @usage see |format()|
@@ -506,33 +530,6 @@ function format(aFormat, aAttribute) {
     aFormat = aFormat.replace('%' + name, value);
   }
   return aFormat;
-}
-
-
-//********** Imports
-
-function setStateForUnreadTab(aMenuitem, aTab) {
-  window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
-}
-
-function $E(aTag, aAttribute) {
-  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function setCSS(aCSS, aTitle) {
-  window.ucjsUtil.setChromeStyleSheet(aCSS);
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('AllTabs.uc.js', aMsg);
 }
 
 

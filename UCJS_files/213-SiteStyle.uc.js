@@ -15,6 +15,23 @@
 
 
 /**
+ * Imports
+ */
+const {
+  createNode: $E,
+  getNodeById: $ID,
+  setEventListener: addEvent,
+  getNodesBySelector: $S,
+  getFirstNodeBySelector: $S1,
+  setContentStyleSheet
+} = window.ucjsUtil;
+
+// for debug
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
+}
+
+/**
  * Identifiers
  */
 const kID = {
@@ -704,7 +721,7 @@ var NoisyURLHandler = (function() {
 var PageCSS = (function() {
   function set(aDocument, aCSS) {
     if (/^(?:complete|interactive)$/.test(aDocument.readyState)) {
-      setContentStyleSheet(aDocument, aCSS);
+      setCSS(aDocument, aCSS);
       return;
     }
 
@@ -719,48 +736,21 @@ var PageCSS = (function() {
     function onReady() {
       cleanup();
 
-      setContentStyleSheet(aDocument, aCSS);
+      setCSS(aDocument, aCSS);
     }
+  }
+
+  function setCSS(aDocument, aCSS) {
+    setContentStyleSheet(aCSS, {
+      document: aDocument,
+      id: kID.STYLESHEET
+    });
   }
 
   return {
     set: set
   };
 })();
-
-
-//********** Imports
-
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute);
-}
-
-function $ID(aId) {
-  return window.ucjsUtil.getNodeById(aId);
-}
-
-function $S(aSelector, aContext) {
-  return window.ucjsUtil.getNodesBySelector(aSelector, aContext);
-}
-
-function $S1(aSelector, aContext) {
-  return window.ucjsUtil.getFirstNodeBySelector(aSelector, aContext);
-}
-
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
-}
-
-function setContentStyleSheet(aDocument, aCSS) {
-  window.ucjsUtil.setContentStyleSheet(aCSS, {
-    document: aDocument,
-    id: kID.STYLESHEET
-  });
-}
-
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
-}
 
 
 //********** Entry point

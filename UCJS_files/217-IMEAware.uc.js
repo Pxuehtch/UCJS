@@ -27,8 +27,8 @@ const {
 } = window.ucjsUtil;
 
 // for debug
-function log(aMessage) {
-  return window.ucjsUtil.logMessage('IMEAware.uc.js', aMessage);
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('IMEAware.uc.js', aMsg);
 }
 
 /**

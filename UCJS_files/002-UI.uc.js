@@ -30,8 +30,11 @@ const {
   setChromeStyleSheet: setCSS,
   scanPlacesDB
 } = window.ucjsUtil;
+
 // for debug
-const log = window.ucjsUtil.logMessage.bind(null, 'UI.uc.js');
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('UI.uc.js', aMsg);
+}
 
 /**
  * Context area

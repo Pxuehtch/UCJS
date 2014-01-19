@@ -24,8 +24,11 @@ const {
   },
   setEventListener: addEvent
 } = window.ucjsUtil;
+
 // for debug
-const log = window.ucjsUtil.logMessage.bind(null, 'TabHandler.uc.js');
+function log(aMsg) {
+  return window.ucjsUtil.logMessage('TabHandler.uc.js', aMsg);
+}
 
 /**
  * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
