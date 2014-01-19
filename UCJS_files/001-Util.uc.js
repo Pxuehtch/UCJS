@@ -810,8 +810,17 @@ function openTabs(aURLs, aOption) {
   }
 }
 
-function openURLIn(aURL, aInTab, aOption) {
-  if (aInTab) {
+function openURL(aURL, aOption) {
+  aOption = aOption || {};
+
+  let {
+    inTab
+  } = aOption;
+
+  // delete the option that is useless for the following functions
+  delete aOption.inTab;
+
+  if (inTab) {
     return openTab(aURL, aOption);
   }
   return loadPage(aURL, aOption);
@@ -1289,7 +1298,7 @@ return {
   openWindow: openNewWindow,
   openHomePages: openHomePages,
   openTabs: openTabs,
-  openURLIn: openURLIn,
+  openURL: openURL,
   openTab: openTab,
   loadPage: loadPage,
   removeTab: removeTab,

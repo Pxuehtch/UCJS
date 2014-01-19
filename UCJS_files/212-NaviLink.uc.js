@@ -282,11 +282,13 @@ const MenuUI = (function() {
       }
 
       let [inTab, inBG] = [aEvent.button === 1,  aEvent.ctrlKey];
-      openURL(data.open, inTab, {
+      openURL(data.open, {
+        inTab: inTab,
         inBackground: inBG,
         relatedToCurrent: true
       });
-    } else if (data.submit) {
+    }
+    else if (data.submit) {
       data.submit.submit();
     }
   }
@@ -1946,8 +1948,8 @@ function unescURLChar(aURL) {
   return window.ucjsUtil.unescapeURLCharacters(aURL);
 }
 
-function openURL(aURL, aInTab, aOption) {
-  window.ucjsUtil.openURLIn(aURL, aInTab, aOption);
+function openURL(aURL, aOption) {
+  window.ucjsUtil.openURL(aURL, aOption);
 }
 
 function log(aMsg) {
