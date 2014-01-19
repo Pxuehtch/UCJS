@@ -730,7 +730,10 @@ function openNewWindow(aURL, aOption) {
   }
 
   aOption = aOption || {};
-  let {inBackground} = aOption;
+
+  let {
+    inBackground
+  } = aOption;
 
   checkSecurity(URL);
 
@@ -747,7 +750,11 @@ function openNewWindow(aURL, aOption) {
 
 function openHomePages(aOption) {
   aOption = aOption || {};
-  let {doReplace, onlyFirstPage} = aOption;
+
+  let {
+    doReplace,
+    onlyFirstPage
+  } = aOption;
 
   // @see chrome://browser/content/browser.js::gHomeButton
   let homePages = window.gHomeButton.getHomePage().split('|');
@@ -755,26 +762,34 @@ function openHomePages(aOption) {
     homePages = homePages[0];
   }
 
-  openTabs(homePages, {ucjsReplace: doReplace, ucjsTrustURL: true});
+  openTabs(homePages, {
+    doReplace: doReplace,
+    trustURL: true
+  });
 }
 
 function openTabs(aURLs, aOption) {
   if (typeof aURLs === 'string') {
     aURLs = aURLs.split('|');
   }
+
   if (!Array.isArray(aURLs) || aURLs.length === 0) {
     return;
   }
 
   aOption = aOption || {};
-  let {inBackground} = aOption;
-  let {ucjsReplace} = aOption;
+
+  let {
+    inBackground,
+    doReplace
+  } = aOption;
+
   // delete the option that is useless for the following functions
-  delete aOption.ucjsReplace;
+  delete aOption.doReplace;
 
   let firstTabAdded;
 
-  if (ucjsReplace) {
+  if (doReplace) {
     // @see chrome://browser/content/browser.js::BrowserOpenTab
     window.BrowserOpenTab();
     removeAllTabsBut(gBrowser.selectedTab);
