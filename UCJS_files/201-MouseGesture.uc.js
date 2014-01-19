@@ -302,14 +302,22 @@ const kGestureSet = [
     gestures: ['LINK#U', 'IMAGE#U'],
     name: '新タブに開く',
     command: function({dragData}) {
-      openTab(dragData, false);
+      openTab(dragData, {
+        inBackground: false,
+        relatedToCurrent: true,
+        allowImageData: true
+      });
     }
   },
   {
     gestures: ['LINK#D', 'IMAGE#D'],
     name: '裏タブで開く',
     command: function({dragData}) {
-      openTab(dragData, true);
+      openTab(dragData, {
+        inBackground: true,
+        relatedToCurrent: true,
+        allowImageData: true
+      });
     }
   }
 ];
@@ -1117,12 +1125,8 @@ function getSelectionAtCursor(aOption) {
   return window.ucjsUtil.getSelectionAtCursor(aOption);
 }
 
-function openTab(aURL, aBG) {
-  window.ucjsUtil.openTab(aURL, {
-    inBackground: aBG,
-    relatedToCurrent: true,
-    ucjsTrustURL: /^data:image\/(?:gif|jpg|png);base64,/.test(aURL)
-  });
+function openTab(aURL, aOption) {
+  return window.ucjsUtil.openTab(aURL, aOption);
 }
 
 function log(aMsg) {

@@ -669,13 +669,25 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
 
 //********** Page/Tab/Window function
 
-function checkSecurity(aURL) {
+function checkSecurity(aURL, aOption) {
+  aOption = aOption || {};
+
+  let {
+    trustURL,
+    allowImageData
+  } = aOption;
+
+  if (!trustURL && allowImageData) {
+    trustURL = /^data:image\/(?:gif|jpg|png);base64,/.test(aURL);
+  }
+
+  const {Ci} = window;
+  let flag = trustURL ?
+    Ci.nsIScriptSecurityManager.STANDARD :
+    Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL;
+
   // @see chrome://global/content/contentAreaUtils.js::urlSecurityCheck()
-  window.urlSecurityCheck(
-    aURL,
-    gBrowser.contentPrincipal,
-    window.Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL
-  );
+  window.urlSecurityCheck(aURL, gBrowser.contentPrincipal, flag);
 }
 
 function unescapeURLCharacters(aURL) {
@@ -833,14 +845,21 @@ function openTab(aURL, aOption) {
   }
 
   aOption = aOption || {};
-  let {inBackground} = aOption;
-  let {ucjsTrustURL} = aOption;
-  // delete the option that is useless for the following functions
-  delete aOption.ucjsTrustURL;
 
-  if (!ucjsTrustURL) {
-    checkSecurity(URL);
-  }
+  let {
+    inBackground,
+    trustURL,
+    allowImageData
+  } = aOption;
+
+  // delete the option that is useless for the following functions
+  delete aOption.trustURL;
+  delete aOption.allowImageData;
+
+  checkSecurity(URL, {
+    trustURL: trustURL,
+    allowImageData: allowImageData
+  });
 
   aOption.inBackground = inBackground === true;
 
@@ -854,20 +873,26 @@ function loadPage(aURL, aOption) {
   }
 
   aOption = aOption || {};
-  let {
-    referrerURI, charset, postData,
-    allowThirdPartyFixup, fromExternal, isUTF8
-  } = aOption;
-  let {ucjsTrustURL} = aOption;
-  // delete the option that is useless for the following functions
-  delete aOption.ucjsTrustURL;
 
-  if (!ucjsTrustURL) {
-    checkSecurity(URL);
-  }
+  let {
+    referrerURI,
+    charset,
+    postData,
+    allowThirdPartyFixup,
+    fromExternal,
+    isUTF8,
+    trustURL,
+    allowImageData
+  } = aOption;
+
+  checkSecurity(URL, {
+    trustURL: trustURL,
+    allowImageData: allowImageData
+  });
 
   const {Ci} = window;
   let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
+
   if (allowThirdPartyFixup) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
   }
@@ -889,7 +914,10 @@ function loadPage(aURL, aOption) {
  */
 function removeTab(aTab, aOption) {
   aOption = aOption || {};
-  let {safeBlock} = aOption;
+
+  let {
+    safeBlock
+  } = aOption;
 
   if (safeBlock) {
     // do not close;
