@@ -776,7 +776,7 @@ function openHomePages(aOption) {
 
   openTabs(homePages, {
     doReplace: doReplace,
-    trustURL: true
+    skipSecurityCheck: true
   });
 }
 
@@ -848,18 +848,22 @@ function openTab(aURL, aOption) {
 
   let {
     inBackground,
+    skipSecurityCheck,
     trustURL,
     allowImageData
   } = aOption;
 
   // delete the option that is useless for the following functions
+  delete aOption.skipSecurityCheck;
   delete aOption.trustURL;
   delete aOption.allowImageData;
 
-  checkSecurity(URL, {
-    trustURL: trustURL,
-    allowImageData: allowImageData
-  });
+  if (!skipSecurityCheck) {
+    checkSecurity(URL, {
+      trustURL: trustURL,
+      allowImageData: allowImageData
+    });
+  }
 
   aOption.inBackground = inBackground === true;
 
@@ -881,14 +885,17 @@ function loadPage(aURL, aOption) {
     allowThirdPartyFixup,
     fromExternal,
     isUTF8,
+    skipSecurityCheck,
     trustURL,
     allowImageData
   } = aOption;
 
-  checkSecurity(URL, {
-    trustURL: trustURL,
-    allowImageData: allowImageData
-  });
+  if (!skipSecurityCheck) {
+    checkSecurity(URL, {
+      trustURL: trustURL,
+      allowImageData: allowImageData
+    });
+  }
 
   const {Ci} = window;
   let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
