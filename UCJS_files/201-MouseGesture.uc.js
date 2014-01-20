@@ -301,28 +301,40 @@ const kGestureSet = [
     gestures: ['TEXT#UR'],
     name: '加えて再検索 (Focus)',
     command: function({dragData}) {
-      window.ucjsWebService.reSubmitMore(dragData);
+      window.ucjsWebService.updateFormInput(dragData, {
+        moreData: true,
+        doFocus: true
+      });
     }
   },
   {
     gestures: ['S&TEXT#UR'],
     name: '加えて再検索 (Submit)',
     command: function({dragData}) {
-      window.ucjsWebService.reSubmitMore(dragData, true);
+      window.ucjsWebService.updateFormInput(dragData, {
+        moreData: true,
+        doSubmit: true
+      });
     }
   },
   {
     gestures: ['TEXT#DR'],
     name: '除いて再検索 (Focus)',
     command: function({dragData}) {
-      window.ucjsWebService.reSubmitLess(dragData);
+      window.ucjsWebService.updateFormInput(dragData, {
+        lessData: true,
+        doFocus: true
+      });
     }
   },
   {
     gestures: ['S&TEXT#DR'],
     name: '除いて再検索 (Submit)',
     command: function({dragData}) {
-      window.ucjsWebService.reSubmitLess(dragData, true);
+      window.ucjsWebService.updateFormInput(dragData, {
+        lessData: true,
+        doSubmit: true
+      });
     }
   },
   {

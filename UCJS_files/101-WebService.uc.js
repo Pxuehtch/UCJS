@@ -311,15 +311,29 @@ function inputAndSubmit(aForm, aData) {
   }
 }
 
-function reSubmit(aData, aSubmit, aLess) {
-  const kAvoidInput =
-    'descendant::input[@type="password"]|descendant::textarea';
-  const kTextInput =
-    'descendant::input[not(@disabled or @hidden or @readonly) and @type="text"]';
+function updateFormInput(aData, aOption) {
+  const kInputType = {
+    exclude: 'descendant::input[@type="password"]|descendant::textarea',
+    include: 'descendant::input[not(@disabled or @hidden or @readonly) and @type="text"]'
+  };
 
-  var textForm = null, textInput = null;
-  Array.some(window.content.document.forms, function(form) {
-    var inputs = !$X1(kAvoidInput, form) && $XA(kTextInput, form);
+  if (!aData) {
+    return;
+  }
+
+  let {
+    lessData,
+    doSubmit
+  } = aOption || {};
+
+  let textForm = null,
+      textInput = null;
+
+  Array.some(window.content.document.forms, (form) => {
+    let inputs =
+      !$X1(kInputType.exclude, form) &&
+      $XA(kInputType.include, form);
+
     if (inputs && inputs.length === 1) {
       textForm = form;
       textInput = inputs[0];
@@ -329,18 +343,18 @@ function reSubmit(aData, aSubmit, aLess) {
   });
 
   if (!textInput || !textInput.value) {
-    return false;
+    return;
   }
 
   textInput.value +=
-    (aLess ? ' -' : ' ') + '"' + aData.trim().replace(/\s+/g, ' ') + '"';
+    (lessData ? ' -' : ' ') + '"' + aData.trim().replace(/\s+/g, ' ') + '"';
 
-  if (aSubmit) {
+  if (doSubmit) {
     textForm.submit();
-  } else {
+  }
+  else {
     textInput.focus();
   }
-  return true;
 }
 
 
@@ -349,13 +363,7 @@ function reSubmit(aData, aSubmit, aLess) {
 return {
   open: open,
   get: get,
-
-  reSubmitLess: function(aData, aSubmit) {
-    return reSubmit(aData, aSubmit, true);
-  },
-  reSubmitMore: function(aData, aSubmit) {
-    return reSubmit(aData, aSubmit, false);
-  }
+  updateFormInput: updateFormInput
 };
 
 
