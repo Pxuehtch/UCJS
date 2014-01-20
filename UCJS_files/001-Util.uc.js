@@ -330,7 +330,11 @@ function setEventListener(aData) {
  */
 function getSelectionAtCursor(aOption) {
   const kMaxCharLen = 150;
-  let {event, charLen} = aOption || {};
+
+  let {
+    event,
+    charLen
+  } = aOption || {};
 
   let node, rangeParent, rangeOffset;
   if (event) {
@@ -670,12 +674,10 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
 //********** Page/Tab/Window function
 
 function checkSecurity(aURL, aOption) {
-  aOption = aOption || {};
-
   let {
     trustURL,
     allowImageData
-  } = aOption;
+  } = aOption || {};
 
   if (!trustURL && allowImageData) {
     trustURL = /^data:image\/(?:gif|jpg|png);base64,/.test(aURL);
@@ -741,11 +743,9 @@ function openNewWindow(aURL, aOption) {
     return;
   }
 
-  aOption = aOption || {};
-
   let {
     inBackground
-  } = aOption;
+  } = aOption || {};
 
   checkSecurity(URL);
 
@@ -761,12 +761,10 @@ function openNewWindow(aURL, aOption) {
 }
 
 function openHomePages(aOption) {
-  aOption = aOption || {};
-
   let {
     doReplace,
     onlyFirstPage
-  } = aOption;
+  } = aOption || {};
 
   // @see chrome://browser/content/browser.js::gHomeButton
   let homePages = window.gHomeButton.getHomePage().split('|');
@@ -789,15 +787,15 @@ function openTabs(aURLs, aOption) {
     return;
   }
 
-  aOption = aOption || {};
-
   let {
     inBackground,
     doReplace
-  } = aOption;
+  } = aOption || {};
 
   // delete the option that is useless for the following functions
-  delete aOption.doReplace;
+  if (aOption) {
+    delete aOption.doReplace;
+  }
 
   let firstTabAdded;
 
@@ -823,14 +821,14 @@ function openTabs(aURLs, aOption) {
 }
 
 function openURL(aURL, aOption) {
-  aOption = aOption || {};
-
   let {
     inTab
-  } = aOption;
+  } = aOption || {};
 
   // delete the option that is useless for the following functions
-  delete aOption.inTab;
+  if (aOption) {
+    delete aOption.inTab;
+  }
 
   if (inTab) {
     return openTab(aURL, aOption);
@@ -844,19 +842,19 @@ function openTab(aURL, aOption) {
     return;
   }
 
-  aOption = aOption || {};
-
   let {
     inBackground,
     skipSecurityCheck,
     trustURL,
     allowImageData
-  } = aOption;
+  } = aOption || {};
 
   // delete the option that is useless for the following functions
-  delete aOption.skipSecurityCheck;
-  delete aOption.trustURL;
-  delete aOption.allowImageData;
+  if (aOption) {
+    delete aOption.skipSecurityCheck;
+    delete aOption.trustURL;
+    delete aOption.allowImageData;
+  }
 
   if (!skipSecurityCheck) {
     checkSecurity(URL, {
@@ -865,6 +863,10 @@ function openTab(aURL, aOption) {
     });
   }
 
+  // @note set explicit |false| to open in a foreground tab
+  // if absent, it will default to the |browser.tabs.loadInBackground|
+  // preference in |gBrowser.loadOneTab|
+  aOption = aOption || {};
   aOption.inBackground = inBackground === true;
 
   return gBrowser.loadOneTab(URL, aOption);
@@ -876,8 +878,6 @@ function loadPage(aURL, aOption) {
     return;
   }
 
-  aOption = aOption || {};
-
   let {
     referrerURI,
     charset,
@@ -888,7 +888,7 @@ function loadPage(aURL, aOption) {
     skipSecurityCheck,
     trustURL,
     allowImageData
-  } = aOption;
+  } = aOption || {};
 
   if (!skipSecurityCheck) {
     checkSecurity(URL, {
@@ -920,11 +920,9 @@ function loadPage(aURL, aOption) {
  * @see chrome://browser/content/tabbrowser.xml::removeTab
  */
 function removeTab(aTab, aOption) {
-  aOption = aOption || {};
-
   let {
     safeBlock
-  } = aOption;
+  } = aOption || {};
 
   if (safeBlock) {
     // do not close;
@@ -1010,7 +1008,9 @@ function removeGlobalStyleSheet(aCSS, aType) {
 }
 
 function registerGlobalStyleSheet(aCSS, aType, aOption) {
-  let {remove} = aOption || {};
+  let {
+    remove
+  } = aOption || {};
 
   let css = normalizeCSS(aCSS);
   if (!css) {
@@ -1073,7 +1073,10 @@ function registerChromeStyleSheet(aCSS) {
 }
 
 function registerContentStyleSheet(aCSS, aOption) {
-  let {document, id} = aOption || {};
+  let {
+    document,
+    id
+  } = aOption || {};
 
   let css = normalizeCSS(aCSS);
   if (!css) {
@@ -1130,7 +1133,11 @@ function normalizeCSS(aCSS) {
  *   null: no result
  */
 function scanPlacesDB(aParam) {
-  const {expression, params, columns} = aParam || {};
+  const {
+    expression,
+    params,
+    columns
+  } = aParam || {};
 
   // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils, Ci} = window;
@@ -1188,8 +1195,12 @@ function scanPlacesDB(aParam) {
  */
 function asyncScanPlacesDB(aParam) {
   const {
-    expression, params, columns,
-    onSuccess, onError, onCancel
+    expression,
+    params,
+    columns,
+    onSuccess,
+    onError,
+    onCancel
   } = aParam || {};
 
   // @see resource://gre/modules/PlacesUtils.jsm
@@ -1272,7 +1283,11 @@ function logMessage(aTarget, aMessage) {
 function getFormatDate(aOption) {
   const kStandardFormat = '%04Y/%02M/%02D %02h:%02m:%02s.%03ms';
 
-  let {format, time} = aOption || {};
+  let {
+    format,
+    time
+  } = aOption || {};
+
   format = format || kStandardFormat;
 
   let date = time ? new Date(time) : new Date();
