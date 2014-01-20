@@ -292,7 +292,9 @@ const kGestureSet = [
     gestures: ['TEXT#D'],
     name: 'ページ内検索',
     command: function({dragData}) {
-      window.ucjsUI.FindBar.findWith(dragData, true);
+      window.ucjsUI.FindBar.findWith(dragData, {
+        doHighlight: true
+      });
     }
   },
   {

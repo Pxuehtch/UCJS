@@ -107,10 +107,14 @@ var mFindBar = {
     }
   },
 
-  findWith: function(aText, aHighlight) {
+  findWith: function(aText, aOption) {
     if (!aText) {
       return;
     }
+
+    let {
+      doHighlight
+    } = aOption || {};
 
     if (this.text) {
       this.clearText();
@@ -120,7 +124,7 @@ var mFindBar = {
     this.text = aText;
     gFindBar.onFindAgainCommand();
 
-    if (aHighlight) {
+    if (doHighlight) {
       this.toggleHighlight(true);
     }
   },
