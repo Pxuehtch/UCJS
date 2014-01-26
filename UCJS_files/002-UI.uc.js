@@ -1,16 +1,16 @@
 // ==UserScript==
 // @name        UI.uc.js
-// @description Helpers for user interface of the main browser.
+// @description Helpers for user interface of the main browser
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
 // @require [optional] TabEx.uc.js
-// @note Some default functions are modified. see @modified.
-// @usage Access to items through global property (ucjsUI.XXX).
+// @note some default functions are modified. see @modified
+// @usage access to items through global property; |ucjsUI.XXX|
 
 
-var ucjsUI = (function(window, undefined) {
+const ucjsUI = (function(window, undefined) {
 
 
 "use strict";
@@ -39,7 +39,7 @@ function log(aMsg) {
 /**
  * Context area
  */
-var mContentArea = {
+const mContentArea = {
   get contextMenu() {
     return $ID('contentAreaContextMenu');
   }
@@ -49,7 +49,7 @@ var mContentArea = {
  * Location bar
  * @see chrome://browser/content/urlbarBindings.xml
  */
-var mURLBar = {
+const mURLBar = {
   get textBox() {
     return $ANONID('textbox-input-box', gURLBar);
   },
@@ -63,7 +63,7 @@ var mURLBar = {
  * Find bar
  * @see chrome://global/content/bindings/findbar.xml
  */
-var mFindBar = {
+const mFindBar = {
   get textBox() {
     return gFindBar.getElement('findbar-textbox');
   },
@@ -141,7 +141,7 @@ var mFindBar = {
 /**
  * Status bar
  */
-var mStatusField = (function() {
+const mStatusField = (function() {
   // @see chrome://browser/content/browser.js::XULBrowserWindow
   const {XULBrowserWindow} = window;
 
@@ -223,7 +223,7 @@ var mStatusField = (function() {
       }
 
       // WORKAROUND: sometimes |setOverLink| is called on mouseover event (e.g.
-      // on history/bookmark sidebar), so we discard redundant callings.
+      // on history/bookmark sidebar), so we discard redundant callings
       if (lastOverLinkURL === url) {
         return;
       }
@@ -296,7 +296,7 @@ var mStatusField = (function() {
           visibility:collapse!important;\
         }\
       ';
-      setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
+      setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
     }
 
     function getLinkState(aURL, aAnchorElt) {
@@ -371,9 +371,9 @@ var mStatusField = (function() {
     };
   })();
 
-
-  //********** Expose
-
+  /**
+   * Expose
+   */
   return {
     get textBox() {
       return getTextBox();
@@ -387,7 +387,7 @@ var mStatusField = (function() {
  * Menuitems of a popup menu
  * @require TabEx.uc.js
  */
-var mMenuitem = {
+const mMenuitem = {
   setStateForUnreadTab: function(aMenuitem, aTab) {
     const kATTR_UNREADTAB = 'ucjs_ui_menuitem_unreadTab';
 
@@ -403,16 +403,13 @@ var mMenuitem = {
   }
 };
 
-
-//********** Functions
-
 /**
  * Manages the visibility of menu separators in the context menu
  */
 function manageContextMenuSeparators() {
-  [mContentArea, mURLBar].forEach(function(container) {
-    var contextMenu = container.contextMenu;
-    addEvent([contextMenu, 'popupshowing', function(event) {
+  [mContentArea, mURLBar].forEach((container) => {
+    let contextMenu = container.contextMenu;
+    addEvent([contextMenu, 'popupshowing', (event) => {
       if (event.target === contextMenu) {
         setImmediate(manage, $X('xul:menuseparator', contextMenu));
       }
@@ -420,9 +417,9 @@ function manageContextMenuSeparators() {
   });
 
   function manage(aSeparators) {
-    var last = null;
+    let last = null;
 
-    Array.forEach(aSeparators, function(separator) {
+    Array.forEach(aSeparators, (separator) => {
       if (separator.hidden) {
         separator.hidden = false;
       }
@@ -442,8 +439,8 @@ function manageContextMenuSeparators() {
   function shouldShow(aSeparator, aSibling) {
     // @see chrome://browser/content/utilityOverlay.js::
     // isElementVisible()
-    var isElementVisible = window.isElementVisible;
-    var node = aSeparator;
+    const isElementVisible = window.isElementVisible;
+    let node = aSeparator;
     do {
       node = node[aSibling];
     } while (node && !isElementVisible(node));
@@ -452,18 +449,18 @@ function manageContextMenuSeparators() {
   }
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function UI_init() {
   manageContextMenuSeparators();
 }
 
 UI_init();
 
-
-//********** Exports
-
+/**
+ * Exports
+ */
 return {
   ContentArea: mContentArea,
   URLBar: mURLBar,

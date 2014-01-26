@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        AllTabs.uc.js
-// @description Unifies alltabs-button and tabview-button.
+// @description Unifies alltabs-button and tabview-button
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage Access to the tab view button in the tab bar.
-// @note Some default functions are modified. see @modified
+// @usage access to the tab view button in the tab bar
+// @note some default functions are modified. see @modified
 
 
 (function(window, undefined) {
@@ -66,14 +66,14 @@ const kFormat = {
  * Identifiers
  */
 const kID = {
-  // Default id
+  // default ID
   TABVIEW_BUTTON: 'tabview-button',
   ALLTABS_BUTTON: 'alltabs-button',
   ALLTABS_POPUP: 'alltabs-popup',
   ALLTABS_POPUP_SEPARATOR: 'alltabs-popup-separator',
   TAB_TOOLTIP: 'tabbrowser-tab-tooltip',
 
-  // Custom id
+  // custom ID
   TABVIEW_TOOLTIP: 'ucjs_alltabs_tabview_tooltip',
   GROUPS_MENU: 'ucjs_alltabs_groups_menu',
   GROUPS_MENUPOPUP: 'ucjs_alltabs_groups_menupopup',
@@ -88,15 +88,18 @@ const kID = {
  * Wrapper of tabs
  * @see chrome://browser/content/tabbrowser.xml
  */
-var mTabs = {
-  get count()
-    gBrowser.tabs.length,
+const mTabs = {
+  get count() {
+    return gBrowser.tabs.length;
+  },
 
-  get pinnedCount()
-    gBrowser._numPinnedTabs,
+  get pinnedCount() {
+    return gBrowser._numPinnedTabs;
+  },
 
-  get visibleCount()
-    gBrowser.visibleTabs.length - gBrowser._numPinnedTabs,
+  get visibleCount() {
+    return gBrowser.visibleTabs.length - gBrowser._numPinnedTabs;
+  },
 
   selectAt: function(aIndex) {
     gBrowser.tabContainer.selectedIndex = parseInt(aIndex, 10);
@@ -105,23 +108,28 @@ var mTabs = {
 
 /**
  * Wrapper of TabView
- * @see chrome://browser/content/browser.js::
- * TabView
+ * @see chrome://browser/content/browser.js::TabView
+ * @see chrome://browser/content/tabview.js
  */
-var mTabView = {
-  get GroupItems()
-    window.TabView.getContentWindow().GroupItems,
+const mTabView = {
+  get GroupItems() {
+    return window.TabView.getContentWindow().GroupItems;
+  },
 
-  get groupItems()
-    this.GroupItems.groupItems,
+  get groupItems() {
+    return this.GroupItems.groupItems;
+  },
 
-  get activeGroupItem()
-    this.GroupItems.getActiveGroupItem(),
+  get activeGroupItem() {
+    return this.GroupItems.getActiveGroupItem();
+  },
 
-  get activeGroupName()
-    this.activeGroupItem.getTitle(),
+  get activeGroupName() {
+    return this.activeGroupItem.getTitle();
+  },
 
   init: function() {
+    // initialize the |TabView| handler
     window.TabView._initFrame();
   }
 };
@@ -129,24 +137,25 @@ var mTabView = {
 /**
  * Tab groups handler
  */
-var mTabGroups = {
+const mTabGroups = {
   groups: [],
 
-  get count()
-    this.groups.length,
+  get count() {
+    return this.groups.length;
+  },
 
   add: function(aGroupItem) {
-    var children = aGroupItem.getChildren();
+    let children = aGroupItem.getChildren();
 
     this.groups.push({
-      tabs: children.map(function(tabItem) tabItem.tab),
+      tabs: children.map((tabItem) => tabItem.tab),
       topTab: children.length ? aGroupItem.getTopChild().tab : null
     });
   },
 
   clear: function() {
-    this.groups.forEach(function(group) {
-      group.tabs.forEach(function(tab) {
+    this.groups.forEach((group) => {
+      group.tabs.forEach((tab) => {
         tab = null;
       });
       group.tabs.length = 0;
@@ -161,8 +170,9 @@ var mTabGroups = {
 };
 
 
-//********** Functions
-
+/**
+ * Main function
+ */
 function AllTabs_init() {
   mTabView.init();
   initCSS();
@@ -174,7 +184,7 @@ function AllTabs_init() {
 }
 
 function initCSS() {
-  var css = '\
+  let css = '\
     #%%kID.GROUPS_MENU%% menu,\
     #%%kID.PINNEDTABS_TAG_MENUITEM%%,\
     #%%kID.GROUP_TAG_MENUITEM%%{\
@@ -182,25 +192,25 @@ function initCSS() {
     }\
   ';
 
-  setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
+  setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
 }
 
 function moveAllTabsMenuToTabViewButton() {
-  // Hide default alltabs-button
+  // hide default alltabs-button
   hideElement($ID(kID.ALLTABS_BUTTON));
 
-  // Attach alltabs-contextmenu to tabview-button
-  var tabview = $ID(kID.TABVIEW_BUTTON);
+  // attach alltabs-contextmenu to tabview-button
+  let tabview = $ID(kID.TABVIEW_BUTTON);
   tabview.appendChild($ID(kID.ALLTABS_POPUP));
   tabview.contextMenu = kID.ALLTABS_POPUP;
 }
 
 function customizeAllTabsPopupFunction() {
-  var alltabsPopup = $ID(kID.ALLTABS_POPUP);
+  let alltabsPopup = $ID(kID.ALLTABS_POPUP);
 
   // @modified chrome://browser/content/tabbrowser.xml::
   // _setMenuitemAttributes
-  var $_setMenuitemAttributes = alltabsPopup._setMenuitemAttributes;
+  const $_setMenuitemAttributes = alltabsPopup._setMenuitemAttributes;
   alltabsPopup._setMenuitemAttributes =
   function ucjsAllTabs_setMenuitemAttributes(aMenuitem, aTab) {
     $_setMenuitemAttributes.apply(this, arguments);
@@ -211,14 +221,14 @@ function customizeAllTabsPopupFunction() {
 }
 
 function customizeTabViewButtonTooltip() {
-  var tooltip = $ID('mainPopupSet').appendChild(
+  let tooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
       id: kID.TABVIEW_TOOLTIP
     })
   );
   addEvent([tooltip, 'popupshowing', onPopupShowing, false]);
 
-  var tabview = $ID(kID.TABVIEW_BUTTON);
+  let tabview = $ID(kID.TABVIEW_BUTTON);
   tabview.removeAttribute('tooltiptext');
   tabview.setAttribute('tooltip', kID.TABVIEW_TOOLTIP);
 }
@@ -231,7 +241,7 @@ function customizeTabViewButtonTooltip() {
  */
 function customizeTabTooltip() {
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
-  addEvent([$ID(kID.TAB_TOOLTIP), 'popupshowing', function(event) {
+  addEvent([$ID(kID.TAB_TOOLTIP), 'popupshowing', (event) => {
     event.stopPropagation();
     let tab = window.document.tooltipNode;
     if (tab.localName !== 'tab' || tab.mOverCloseButton) {
@@ -251,13 +261,13 @@ function customizeTabTooltip() {
 }
 
 function initAllTabsMenu() {
-  var alltabsPopup = $ID(kID.ALLTABS_POPUP);
+  let alltabsPopup = $ID(kID.ALLTABS_POPUP);
   addEvent([alltabsPopup, 'popupshowing', onPopupShowing, true]);
   addEvent([alltabsPopup, 'popuphidden', onPopupHidden, true]);
-  // WORKAROUND: See |onCommand()|
+  // WORKAROUND: see |onCommand()|
   addEvent([alltabsPopup, 'click', onCommand, false]);
 
-  var groupsMenu = alltabsPopup.insertBefore(
+  let groupsMenu = alltabsPopup.insertBefore(
     $E('menu', {
       id: kID.GROUPS_MENU,
       label: kFormat.GROUPS_MENU
@@ -274,12 +284,12 @@ function initAllTabsMenu() {
 }
 
 function makeGroupMenu(aGroupItem, aOption) {
-  var {current, index} = aOption || {};
+  let {current, index} = aOption || {};
 
-  var count = aGroupItem.getChildren().length,
+  let count = aGroupItem.getChildren().length,
       title = aGroupItem.getTitle();
 
-  var menu = $E('menu', {
+  let menu = $E('menu', {
     class: 'menu-iconic',
     label: format(kFormat.GROUP_STATE, {
       count: count,
@@ -298,7 +308,7 @@ function makeGroupMenu(aGroupItem, aOption) {
 }
 
 function makeTabMenuItem(aTab, aOption) {
-  var {selected} = aOption || {};
+  let {selected} = aOption || {};
 
   return $E('menuitem', {
     class: 'menuitem-iconic alltabs-item menuitem-with-favicon',
@@ -316,11 +326,11 @@ function onCommand(aEvent) {
     return;
   }
 
-  var element = aEvent.target;
+  let element = aEvent.target;
 
-  // Menu of a group in the groups menu
+  // menu of a group in the groups menu
   if (element.hasAttribute(kID.ATTR_GROUPINDEX)) {
-    Array.some(element.menupopup.childNodes, function(item) {
+    Array.some(element.menupopup.childNodes, (item) => {
       if (item.selected) {
         mTabs.selectAt(item.getAttribute(kID.ATTR_TABPOS));
         closeMenus($ID(kID.ALLTABS_POPUP));
@@ -330,16 +340,16 @@ function onCommand(aEvent) {
     });
   }
 
-  // Menuitem of a tab in the group menu in the groups menu
+  // menuitem of a tab in the group menu in the groups menu
   else if (element.hasAttribute(kID.ATTR_TABPOS)) {
     mTabs.selectAt(element.getAttribute(kID.ATTR_TABPOS));
   }
 
-  // Menuitem of a tab in the alltabs menu
-  // WORKAROUND: An *unselected* tab will be selected by the command of the
+  // menuitem of a tab in the alltabs menu
+  // WORKAROUND: an *unselected* tab will be selected by the command of the
   // menuitem with a tab of the active group. But nothing happens for a
   // *selected* tab. It is especially wrong that a selected tab which is
-  // scrolled out stays invisible. So ensures to make a selected tab visible.
+  // scrolled out stays invisible. so, ensures to make a selected tab visible
   // @see chrome://browser/content/tabbrowser.xml::
   // <binding id="tabbrowser-alltabs-popup">::<handler event="command">
   else if (element.parentNode.id === kID.ALLTABS_POPUP &&
@@ -351,9 +361,9 @@ function onCommand(aEvent) {
 
 function onPopupShowing(aEvent) {
   aEvent.stopPropagation();
-  var popup = aEvent.target;
+  let popup = aEvent.target;
 
-  // Popup of the tabview-button tooltip
+  // popup of the tabview-button tooltip
   if (popup.id === kID.TABVIEW_TOOLTIP) {
     popup.setAttribute('label',
       format(kFormat.TABVIEW_TOOLTIP, {
@@ -364,7 +374,7 @@ function onPopupShowing(aEvent) {
     );
   }
 
-  // Popup of the alltabs menu
+  // popup of the alltabs menu
   else if (popup.id === kID.ALLTABS_POPUP) {
     if (mTabView.groupItems.length < 2) {
       $ID(kID.GROUPS_MENU).disabled = true;
@@ -372,7 +382,7 @@ function onPopupShowing(aEvent) {
 
     let refItem = $ID(kID.ALLTABS_POPUP_SEPARATOR).nextSibling;
 
-    // About pinned tabs
+    // about pinned tabs
     let pinnedCount = mTabs.pinnedCount;
     if (pinnedCount) {
       let pinnedTabsTag = $E('menuitem', {
@@ -385,14 +395,14 @@ function onPopupShowing(aEvent) {
       });
       popup.insertBefore(pinnedTabsTag, refItem);
 
-      gBrowser.visibleTabs.forEach(function(tab) {
+      gBrowser.visibleTabs.forEach((tab) => {
         if (tab.pinned) {
           createTabMenuItem(tab, popup, refItem);
         }
       });
     }
 
-    // About tabs of the active group
+    // about tabs of the active group
     let visibleCount = mTabs.visibleCount;
     if (visibleCount) {
       let groupTag = $E('menuitem', {
@@ -406,7 +416,7 @@ function onPopupShowing(aEvent) {
       });
       popup.insertBefore(groupTag, refItem);
 
-      // WORKAROUND: We can find menuitems with the proper overflowed tabs.
+      // WORKAROUND: we can find menuitems with the proper overflowed tabs
       // @usage in CSS
       // #GROUP_TAG_MENUITEM[ATTR_TABOVERFLOWED]~.alltabs-item:not([tabIsVisible])
       if (gBrowser.tabContainer.hasAttribute('overflow')) {
@@ -415,14 +425,14 @@ function onPopupShowing(aEvent) {
     }
   }
 
-  // Popup of the groups menu
+  // popup of the groups menu
   else if (popup.id === kID.GROUPS_MENUPOPUP) {
     if (popup.hasChildNodes()) {
       return;
     }
 
-    var activeGroupItem = mTabView.activeGroupItem;
-    Array.forEach(mTabView.groupItems, function(groupItem) {
+    let activeGroupItem = mTabView.activeGroupItem;
+    Array.forEach(mTabView.groupItems, (groupItem) => {
       mTabGroups.add(groupItem);
 
       popup.appendChild(
@@ -434,7 +444,7 @@ function onPopupShowing(aEvent) {
     });
   }
 
-  // Popup of a group menu in the groups menu
+  // popup of a group menu in the groups menu
   else if (popup.parentNode.hasAttribute(kID.ATTR_GROUPINDEX)) {
     if (popup.hasChildNodes()) {
       return;
@@ -444,7 +454,7 @@ function onPopupShowing(aEvent) {
       getAt(popup.parentNode.getAttribute(kID.ATTR_GROUPINDEX));
 
     let topTab = group.topTab;
-    group.tabs.forEach(function(tab) {
+    group.tabs.forEach((tab) => {
       popup.appendChild(
         makeTabMenuItem(tab, {
           selected: tab === topTab
@@ -456,9 +466,9 @@ function onPopupShowing(aEvent) {
 
 function onPopupHidden(aEvent) {
   aEvent.stopPropagation();
-  var popup = aEvent.target;
+  let popup = aEvent.target;
 
-  // Popup of the alltabs menu
+  // popup of the alltabs menu
   if (popup.id === kID.ALLTABS_POPUP) {
     $ID(kID.GROUPS_MENU).disabled = false;
 
@@ -480,7 +490,7 @@ function onPopupHidden(aEvent) {
 
 // @see chrome://browser/content/tabbrowser.xml::_createTabMenuItem
 function createTabMenuItem(aTab, aPopup, aRefItem) {
-  var menuItem = $E('menuitem', {
+  let menuItem = $E('menuitem', {
     class: 'menuitem-iconic alltabs-item menuitem-with-favicon'
   });
 
@@ -532,9 +542,9 @@ function format(aFormat, aAttribute) {
   return aFormat;
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 AllTabs_init();
 
 

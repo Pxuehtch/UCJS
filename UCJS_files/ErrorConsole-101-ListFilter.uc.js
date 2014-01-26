@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        ListFilter.uc.js
-// @description Filter of results of some category in the error console.
+// @description Filter of results of some category in the error console
 // @include     chrome://global/content/console.xul
 // ==/UserScript==
 
@@ -51,20 +51,18 @@ const kStyle = {
   }
 };
 
-
-//********** Functions
-
 function makeUI() {
-  var toolbar = $ID('ToolbarMode');
+  let toolbar = $ID('ToolbarMode');
 
   let container = $E('hbox', {
     id: kID.container
   });
 
   for (let key in kSelector) {
-    let element = $E('checkbox');
-    element.setAttribute('label', key);
-    element.setAttribute('checked', true);
+    let element = $E('checkbox', {
+      label: key,
+      checked: true
+    });
     addEvent([element, 'command', onCommand, false]);
 
     container.appendChild(element);
@@ -74,7 +72,7 @@ function makeUI() {
 }
 
 function uninit(aEvent) {
-  var {hidden} = kStyle;
+  let {hidden} = kStyle;
 
   for (let key in kSelector) {
     toggleCSS(kSelector[key] + hidden, false);
@@ -93,17 +91,17 @@ function onCommand(aEvent) {
   toggleCSS(kSelector[label] + '{' + css + '}', !checked);
 }
 
-function toggleCSS(aCSS, aHidden) {
-  if (aHidden) {
+function toggleCSS(aCSS, aDoRegister) {
+  if (aDoRegister) {
     setGlobalStyleSheet(aCSS, 'USER_SHEET');
   } else {
     removeGlobalStyleSheet(aCSS, 'USER_SHEET');
   }
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function ListFilter_init() {
   makeUI();
   addEvent([window, 'unload', uninit, false]);

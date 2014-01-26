@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name        PrefButton.uc.js
-// @description Adds buttons for setting the preferences.
+// @description Adds buttons for setting the preferences
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage Access to items on the navigation toolbar.
-// @note Some about:config preferences are changed. see @pref
+// @usage access to items on the navigation toolbar
+// @note some about:config preferences are changed. see @pref
 
-// @note The styles are adjusted to the themes of my Firefox. see
+// @note the styles are adjusted to the themes of my Fx and OS. see
 // |setStyleSheet()|
 
 
@@ -239,12 +239,12 @@ function PrefButton_init() {
   setStyleSheet();
   makeButtons();
 
-  addEvent([gBrowser, 'select', function() {
+  addEvent([gBrowser, 'select', () => {
     updateState({tabMode: true});
   }, false]);
 
   gBrowser.addProgressListener(BrowserProgressListener);
-  addEvent([window, 'unload', function() {
+  addEvent([window, 'unload', () => {
     gBrowser.removeProgressListener(BrowserProgressListener);
   }, false]);
 }
@@ -252,7 +252,7 @@ function PrefButton_init() {
 function updateState(aOption) {
   let {tabMode} = aOption || {};
 
-  Items.forEach(function(item, i) {
+  Items.forEach((item, i) => {
     if (item.disabled || (tabMode && !item.tabMode)) {
       return;
     }
@@ -292,7 +292,7 @@ function makeButtons() {
   hbox.id = kID.CONTAINER;
   addEvent([hbox, 'click', doCommand, false]);
 
-  Items.forEach(function(item, i) {
+  Items.forEach((item, i) => {
     if (item.disabled) {
       return;
     }
@@ -321,8 +321,8 @@ function makeButtons() {
 }
 
 function setStyleSheet() {
-  // @note the styles are adjusted to the themes of my Firefox
-  // @note on condition that the height of the toolbar-menubar is 24pt
+  // @note the styles are adjusted to my themes
+  // @note assuming that the height of the toolbar-menubar is 24pt
   let css = '\
     #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\
@@ -358,12 +358,12 @@ function setStyleSheet() {
     }\
   ';
 
-  setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));
+  setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 PrefButton_init();
 
 
