@@ -30,6 +30,13 @@ function log(aMsg) {
 }
 
 /**
+ * Identifier
+ */
+const kID = {
+  container: 'ucjs_listFilter_container'
+};
+
+/**
  * Selector for filtering
  * @note Each key is set to the label of UI
  */
@@ -50,8 +57,9 @@ const kStyle = {
 function makeUI() {
   var toolbar = $ID('ToolbarMode');
 
-  var container = $E('hbox');
-  container.id = 'ucjs_listFilter_container';
+  let container = $E('hbox', {
+    id: kID.container
+  });
 
   for (let key in kSelector) {
     let element = $E('checkbox');
