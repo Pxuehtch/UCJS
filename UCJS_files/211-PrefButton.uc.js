@@ -327,8 +327,8 @@ function setStyleSheet() {
     #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\
     }\
-    .%%kID.ITEM%%,\
-    .%%kID.ITEM%%:focus{\
+    .%%kID.ITEM%%{\
+      -moz-user-focus:ignore;\
       -moz-appearance:none;\
       width:20px;\
       min-width:20px;\
