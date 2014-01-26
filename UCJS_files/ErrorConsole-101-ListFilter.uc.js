@@ -39,7 +39,9 @@ const kSelector = {
 };
 
 const kStyle = {
-  hidden: '{display:none;}'
+  hidden: {
+    'visibility': 'collapse'
+  }
 };
 
 
@@ -55,7 +57,7 @@ function makeUI() {
     let element = $E('checkbox');
     element.setAttribute('label', key);
     element.setAttribute('checked', true);
-    addEvent([element, 'command', toggle, false]);
+    addEvent([element, 'command', onCommand, false]);
 
     container.appendChild(element);
   }
@@ -71,11 +73,16 @@ function uninit(aEvent) {
   }
 }
 
-function toggle(aEvent) {
-  var {label, checked} = aEvent.target;
-  var {hidden} = kStyle;
+function onCommand(aEvent) {
+  let {label, checked} = aEvent.target;
+  let {hidden} = kStyle;
+  let css = '';
 
-  toggleCSS(kSelector[label] + hidden, !checked);
+  for (let key in hidden) {
+    css += key + ':' + hidden[key] + '!important;';
+  }
+
+  toggleCSS(kSelector[label] + '{' + css + '}', !checked);
 }
 
 function toggleCSS(aCSS, aHidden) {

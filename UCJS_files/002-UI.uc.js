@@ -293,7 +293,7 @@ var mStatusField = (function() {
         }\
         statuspanel[inactive],\
         statuspanel[label=""]{\
-          display:none!important;\
+          visibility:collapse!important;\
         }\
       ';
       setCSS(css.replace(/%%(.+?)%%/g, function($0, $1) eval($1)));

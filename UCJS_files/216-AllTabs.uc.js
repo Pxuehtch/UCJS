@@ -502,7 +502,7 @@ function handleAttribute(aNode, aName, aValue) {
 }
 
 function hideElement(aElement) {
-  aElement.setAttribute('style', 'display:none');
+  aElement.style.setProperty('visibility', 'collapse', 'important');
 }
 
 /**
