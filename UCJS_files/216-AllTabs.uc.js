@@ -164,13 +164,13 @@ var mTabGroups = {
 //********** Functions
 
 function AllTabs_init() {
+  mTabView.init();
   initCSS();
   moveAllTabsMenuToTabViewButton();
   customizeAllTabsPopupFunction();
   customizeTabViewButtonTooltip();
   customizeTabTooltip();
   initAllTabsMenu();
-  mTabView.init();
 }
 
 function initCSS() {
