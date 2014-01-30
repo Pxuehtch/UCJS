@@ -214,8 +214,9 @@ var AliasFixup = (function() {
   };
 })();
 
-
-//********** Functions
+function PageRelated_init() {
+  initMenu()
+}
 
 function initMenu() {
   var contextMenu = URLBarContextMenu;
@@ -346,13 +347,9 @@ function commandForOpenURLs(aURLsArray) {
   return command.replace('%URLs%', URLs).replace('%inBG%', inBG);
 }
 
-
-//********** Entry point
-
-function PageRelated_init() {
-  initMenu()
-}
-
+/**
+ * Entry point
+ */
 PageRelated_init();
 
 

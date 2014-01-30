@@ -219,8 +219,9 @@ var AliasFixup = (function() {
   };
 })();
 
-
-//********** Functions
+function SendTo_init() {
+  initMenu();
+}
 
 function initMenu() {
   var contextMenu = contentAreaContextMenu;
@@ -368,13 +369,9 @@ function commandForOpenURL(aURL) {
   return command.replace('%URL%', aURL);
 }
 
-
-//********** Entry point
-
-function SendTo_init() {
-  initMenu();
-}
-
+/**
+ * Entry point
+ */
 SendTo_init();
 
 

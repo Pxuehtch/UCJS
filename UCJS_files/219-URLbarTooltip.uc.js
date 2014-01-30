@@ -70,9 +70,6 @@ const kUI = {
   shortcutGroup: 'Shortcut'
 };
 
-
-//********** Functions
-
 function getURLbar() {
   return $ID('urlbar');
 }
@@ -82,6 +79,10 @@ function getPanel() {
 }
 
 function URLbarTooltip_init() {
+  initPanel();
+}
+
+function initPanel() {
   $ID('mainPopupSet').appendChild($E('panel', {
     id: kID.panel,
     backdrag: true
@@ -237,9 +238,6 @@ function getShortcutData() {
   );
 }
 
-
-//********** Utilities
-
 function makeCSS(aData) {
   return aData.map((data) => data + '!important;').join('');
 }
@@ -254,9 +252,9 @@ function getPrePath(aURL) {
   return prePath;
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 URLbarTooltip_init();
 
 
