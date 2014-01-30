@@ -78,8 +78,8 @@ const kPresetNavi = [
   {
     name: 'DuckDuckGo Search',
     URL: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
-    prev: '//input[@class="navbutton" and @value[contains(.,"Prev")]]',
-    next: '//input[@class="navbutton" and @value[contains(.,"Next")]]'
+    prev: './/input[@class="navbutton" and @value[contains(.,"Prev")]]',
+    next: './/input[@class="navbutton" and @value[contains(.,"Next")]]'
   }
   //,
 ];
