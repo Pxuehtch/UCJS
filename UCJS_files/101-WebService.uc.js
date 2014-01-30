@@ -20,7 +20,6 @@ var ucjsWebService = (function(window, undefined) {
  */
 const {
   getFirstNodeByXPath: $X1,
-  getNodesByXPath: $XA,
   openTab
 } = window.ucjsUtil;
 
@@ -303,7 +302,8 @@ function evaluate(aParams, aPreset) {
 }
 
 function inputAndSubmit(aForm, aData) {
-  var form = $X1(aForm.form), input = $X1(aForm.input);
+  var form = $X1(aForm.form),
+      input = $X1(aForm.input);
 
   if (form && input) {
     input.value = aData;
@@ -313,8 +313,8 @@ function inputAndSubmit(aForm, aData) {
 
 function updateFormInput(aData, aOption) {
   const kInputType = {
-    exclude: 'descendant::input[@type="password"]|descendant::textarea',
-    include: 'descendant::input[not(@disabled or @hidden or @readonly) and @type="text"]'
+    exclude: './/input[@type="password"]|.//textarea',
+    include: './/input[not(@disabled or @hidden or @readonly) and @type="text"]'
   };
 
   if (!aData) {
@@ -330,13 +330,13 @@ function updateFormInput(aData, aOption) {
       textInput = null;
 
   Array.some(window.content.document.forms, (form) => {
-    let inputs =
+    let input =
       !$X1(kInputType.exclude, form) &&
-      $XA(kInputType.include, form);
+      $X1(kInputType.include, form);
 
-    if (inputs && inputs.length === 1) {
+    if (input) {
       textForm = form;
-      textInput = inputs[0];
+      textInput = input;
       return true;
     }
     return false
