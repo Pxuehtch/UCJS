@@ -20,7 +20,7 @@
  */
 const {
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   setChromeStyleSheet: setCSS
 } = window.ucjsUtil;
 
@@ -226,7 +226,7 @@ function customizeTabViewButtonTooltip() {
       id: kID.TABVIEW_TOOLTIP
     })
   );
-  addEvent([tooltip, 'popupshowing', onPopupShowing, false]);
+  addEvent(tooltip, 'popupshowing', onPopupShowing, false);
 
   let tabview = $ID(kID.TABVIEW_BUTTON);
   tabview.removeAttribute('tooltiptext');
@@ -241,7 +241,7 @@ function customizeTabViewButtonTooltip() {
  */
 function customizeTabTooltip() {
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
-  addEvent([$ID(kID.TAB_TOOLTIP), 'popupshowing', (event) => {
+  addEvent($ID(kID.TAB_TOOLTIP), 'popupshowing', (event) => {
     event.stopPropagation();
     let tab = window.document.tooltipNode;
     if (tab.localName !== 'tab' || tab.mOverCloseButton) {
@@ -257,15 +257,15 @@ function customizeTabTooltip() {
       title: tooltip.label
     });
     tooltip.setAttribute('label', label);
-  }, false]);
+  }, false);
 }
 
 function initAllTabsMenu() {
   let alltabsPopup = $ID(kID.ALLTABS_POPUP);
-  addEvent([alltabsPopup, 'popupshowing', onPopupShowing, true]);
-  addEvent([alltabsPopup, 'popuphidden', onPopupHidden, true]);
+  addEvent(alltabsPopup, 'popupshowing', onPopupShowing, true);
+  addEvent(alltabsPopup, 'popuphidden', onPopupHidden, true);
   // WORKAROUND: see |onCommand()|
-  addEvent([alltabsPopup, 'click', onCommand, false]);
+  addEvent(alltabsPopup, 'click', onCommand, false);
 
   let groupsMenu = alltabsPopup.insertBefore(
     $E('menu', {
@@ -274,7 +274,7 @@ function initAllTabsMenu() {
     }),
     $ID(kID.ALLTABS_POPUP_SEPARATOR)
   );
-  addEvent([groupsMenu, 'click', onCommand, false]);
+  addEvent(groupsMenu, 'click', onCommand, false);
 
   groupsMenu.appendChild(
     $E('menupopup', {

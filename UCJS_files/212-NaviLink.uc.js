@@ -25,9 +25,9 @@ const ucjsNaviLink = (function(window, undefined) {
  */
 const {
   getNodeById: $ID,
-  setEventListener: addEvent,
   getNodesBySelector: $SA,
   getFirstNodeByXPath: $X1,
+  addEvent,
   openURL,
   unescapeURLCharacters: unescURLChar
 } = window.ucjsUtil;
@@ -271,10 +271,10 @@ const MenuUI = (function() {
 
     setSeparators(contextMenu);
 
-    addEvent([contextMenu, 'click', onClick, false]);
-    addEvent([contextMenu, 'command', onCommand, false]);
-    addEvent([contextMenu, 'popupshowing', onPopupShowing, false]);
-    addEvent([contextMenu, 'popuphiding', onPopupHiding, false]);
+    addEvent(contextMenu, 'click', onClick, false);
+    addEvent(contextMenu, 'command', onCommand, false);
+    addEvent(contextMenu, 'popupshowing', onPopupShowing, false);
+    addEvent(contextMenu, 'popuphiding', onPopupHiding, false);
   }
 
   function onClick(aEvent) {

@@ -23,7 +23,7 @@
  */
 const {
   getNodeById: $ID,
-  setEventListener: addEvent
+  addEvent
 } = window.ucjsUtil;
 
 function $E(aTag, aAttribute) {
@@ -222,7 +222,7 @@ function initMenu() {
 
   setSeparators(contextMenu);
 
-  addEvent([contextMenu, 'popupshowing', showContextMenu, false]);
+  addEvent(contextMenu, 'popupshowing', showContextMenu, false);
 }
 
 function showContextMenu(aEvent) {

@@ -22,7 +22,7 @@ const {
     get: getPref
   },
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   unescapeURLCharacters: unescURLChars,
   unescapeURLForUI: unescURLforUI
 } = window.ucjsUtil;
@@ -174,8 +174,8 @@ function initMenu() {
   menu.appendChild($E('menupopup'));
   context.insertBefore(menu, refItem);
 
-  addEvent([context, 'popupshowing', showContextMenu, false]);
-  addEvent([context, 'popuphiding', hideContextMenu, false]);
+  addEvent(context, 'popupshowing', showContextMenu, false);
+  addEvent(context, 'popuphiding', hideContextMenu, false);
 }
 
 function showContextMenu(aEvent) {

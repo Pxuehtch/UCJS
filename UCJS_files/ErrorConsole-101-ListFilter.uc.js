@@ -19,7 +19,7 @@
 const {
   createNode: $E,
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   setGlobalStyleSheet,
   removeGlobalStyleSheet
 } = window.ucjsUtil;
@@ -63,7 +63,7 @@ function makeUI() {
       label: key,
       checked: true
     });
-    addEvent([element, 'command', onCommand, false]);
+    addEvent(element, 'command', onCommand, false);
 
     container.appendChild(element);
   }
@@ -104,7 +104,7 @@ function toggleCSS(aCSS, aDoRegister) {
  */
 function ListFilter_init() {
   makeUI();
-  addEvent([window, 'unload', uninit, false]);
+  addEvent(window, 'unload', uninit, false);
 }
 
 ListFilter_init();

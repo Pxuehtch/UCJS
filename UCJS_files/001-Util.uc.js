@@ -212,10 +212,10 @@ const Timer = (function() {
   }
 
   // all timers are cleared out on unload
-  setEventListener([window, 'unload', () => {
+  addEvent(window, 'unload', () => {
     immediates.clear();
     Object.keys(timers).forEach(unsetTimer);
-  }, false]);
+  }, false);
 
   return {
     setTimeout: setTimer.bind(null, TYPE_ONE_SHOT),
@@ -300,18 +300,18 @@ const Prefs = (function() {
 
 //********** DOM functions
 
-function setEventListener(aData) {
-  let [target, type, listener, capture] = aData;
-  if (!target || !type || !listener) {
+function addEvent(aTarget, aType, aListener, aCapture) {
+  if (!aTarget || !aType || !aListener) {
     return;
   }
 
-  capture = !!capture;
+  aCapture = !!aCapture;
 
-  target.addEventListener(type, listener, capture);
-  window.addEventListener('unload', function removeEvent() {
-    target.removeEventListener(type, listener, capture);
-    window.removeEventListener('unload', removeEvent, false);
+  aTarget.addEventListener(aType, aListener, aCapture);
+
+  window.addEventListener('unload', function remover() {
+    aTarget.removeEventListener(aType, aListener, aCapture);
+    window.removeEventListener('unload', remover, false);
   }, false);
 }
 
@@ -1329,7 +1329,7 @@ return {
   Timer: Timer,
   Prefs: Prefs,
 
-  setEventListener: setEventListener,
+  addEvent: addEvent,
   getSelectionAtCursor: getSelectionAtCursor,
   getFocusedWindow: getFocusedWindow,
   getFocusedDocument: getFocusedDocument,

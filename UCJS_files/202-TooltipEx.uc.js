@@ -19,7 +19,7 @@
  */
 const {
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {
@@ -153,8 +153,8 @@ var TooltipHandler = {
   },
 
   init: function() {
-    addEvent([gBrowser.mPanelContainer, 'mousemove', this, false]);
-    addEvent([this.create(), 'popuphiding', this, false]);
+    addEvent(gBrowser.mPanelContainer, 'mousemove', this, false);
+    addEvent(this.create(), 'popuphiding', this, false);
   },
 
   handleEvent: function(aEvent) {
@@ -194,7 +194,7 @@ var TooltipHandler = {
     var copymenu = $E('menuitem', {
       label: 'Copy'
     });
-    addEvent([copymenu, 'command', this, false]);
+    addEvent(copymenu, 'command', this, false);
 
     var popup = $E('menupopup', {
       onpopuphiding: 'event.stopPropagation();'

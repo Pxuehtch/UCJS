@@ -23,7 +23,7 @@
  * Imports
  */
 const {
-  setEventListener: addEvent,
+  addEvent,
 } = window.ucjsUtil;
 
 // for debug
@@ -35,7 +35,7 @@ function log(aMsg) {
  * Main function
  */
 function ResetSearchPoint_init() {
-  addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
+  addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, false);
 }
 
 function handleEvent(aEvent) {

@@ -19,7 +19,7 @@
  */
 const {
   getNodesByXPath: $X,
-  setEventListener: addEvent
+  addEvent
 } = window.ucjsUtil;
 
 // for debug
@@ -814,7 +814,7 @@ function FoundBlink() {
   };
 
   // attach a cleaner when the selection is removed by clicking
-  addEvent([gBrowser.mPanelContainer, 'mousedown', cancel, false]);
+  addEvent(gBrowser.mPanelContainer, 'mousedown', cancel, false);
 
   function start() {
     if (!mState.init()) {

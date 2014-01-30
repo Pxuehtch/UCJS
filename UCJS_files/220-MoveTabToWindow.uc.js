@@ -20,7 +20,7 @@
 const {
   createNode: $E,
   getNodeById: $ID,
-  setEventListener: addEvent
+  addEvent
 } = window.ucjsUtil;
 
 // for debug
@@ -62,7 +62,7 @@ function MoveTabToWindow_init() {
 
 function buildMenu() {
   var tabContextMenu = getTabContextMenu();
-  addEvent([tabContextMenu, 'popupshowing', updateMenu, false]);
+  addEvent(tabContextMenu, 'popupshowing', updateMenu, false);
 
   var menu = $E('menu', {
     id: kBundle.menu.id,
@@ -78,7 +78,7 @@ function buildMenu() {
     label: kBundle.newWindow.label,
     oncommand: 'gBrowser.replaceTabWithWindow(TabContextMenu.contextTab);'
   }));
-  addEvent([popup, 'command', onCommand, false]);
+  addEvent(popup, 'command', onCommand, false);
   menu.appendChild(popup);
 
   var defaultItem = $ID('context_openTabInWindow');

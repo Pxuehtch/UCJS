@@ -30,7 +30,7 @@ const {
   createNode: $E,
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
-  setEventListener: addEvent,
+  addEvent,
   setChromeStyleSheet: setChromeCSS,
   scanPlacesDB
 } = window.ucjsUtil;
@@ -168,7 +168,7 @@ function log(aMsg) {
 
   var tabPressed = false;
 
-  addEvent([gBrowser.mPanelContainer, 'keypress',
+  addEvent(gBrowser.mPanelContainer, 'keypress',
   function (event) {
     if (event.keyCode === event.DOM_VK_TAB) {
       if (tabPressed) {
@@ -178,14 +178,14 @@ function log(aMsg) {
       }
       tabPressed = true;
     }
-  }, true]);
+  }, true);
 
-  addEvent([gBrowser.mPanelContainer, 'keyup',
+  addEvent(gBrowser.mPanelContainer, 'keyup',
   function (event) {
     if (event.keyCode === event.DOM_VK_TAB) {
       tabPressed = false;
     }
-  }, true]);
+  }, true);
 
 })();
 
@@ -203,9 +203,9 @@ function log(aMsg) {
   const kPrefTabFocus = 'accessibility.tabfocus';
 
   var defaultTabFocus = getPref(kPrefTabFocus);
-  addEvent([window, 'unload', function() {
+  addEvent(window, 'unload', function() {
     setPref(kPrefTabFocus, defaultTabFocus);
-  }, false]);
+  }, false);
 
   var command = '\
     (function(){\
@@ -240,7 +240,7 @@ function log(aMsg) {
  */
 (function() {
 
-  addEvent([gBrowser.mPanelContainer, 'mousedown', onMouseDown, true]);
+  addEvent(gBrowser.mPanelContainer, 'mousedown', onMouseDown, true);
 
   function onMouseDown(aEvent) {
     let link;
@@ -342,10 +342,10 @@ function log(aMsg) {
 
   observeURLBar();
   function observeURLBar() {
-    addEvent([gURLBar, 'focus', hideStatus, false]);
-    addEvent([gURLBar, 'blur', showStatus, false]);
-    addEvent([gURLBar, 'mouseenter', hideStatus, false]);
-    addEvent([gURLBar, 'mouseleave', showStatus, false]);
+    addEvent(gURLBar, 'focus', hideStatus, false);
+    addEvent(gURLBar, 'blur', showStatus, false);
+    addEvent(gURLBar, 'mouseenter', hideStatus, false);
+    addEvent(gURLBar, 'mouseleave', showStatus, false);
 
     function showStatus(aEvent) {
       if (gURLBar.focused) {

@@ -34,7 +34,7 @@
  */
 const {
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   getSelectionAtCursor,
   openTab
 } = window.ucjsUtil;
@@ -381,27 +381,27 @@ function MouseGesture() {
   function registerEvents() {
     var pc = gBrowser.mPanelContainer;
 
-    addEvent([pc, 'mousedown', onMouseDown, false]);
-    addEvent([pc, 'mousemove', onMouseMove, false]);
-    addEvent([pc, 'mouseup', onMouseUp, false]);
-    addEvent([pc, 'wheel', onMouseWheel, false]);
-    addEvent([pc, 'keydown', onKeyDown, false]);
-    addEvent([pc, 'keyup', onKeyUp, false]);
-    addEvent([pc, 'contextmenu', onContextMenu, false]);
-    addEvent([pc, 'click', onClick, false]);
+    addEvent(pc, 'mousedown', onMouseDown, false);
+    addEvent(pc, 'mousemove', onMouseMove, false);
+    addEvent(pc, 'mouseup', onMouseUp, false);
+    addEvent(pc, 'wheel', onMouseWheel, false);
+    addEvent(pc, 'keydown', onKeyDown, false);
+    addEvent(pc, 'keyup', onKeyUp, false);
+    addEvent(pc, 'contextmenu', onContextMenu, false);
+    addEvent(pc, 'click', onClick, false);
 
-    addEvent([pc, 'dragstart', onDragStart, false]);
-    addEvent([pc, 'dragend', onDragEnd, false]);
+    addEvent(pc, 'dragstart', onDragStart, false);
+    addEvent(pc, 'dragend', onDragEnd, false);
     // @note use 'dragover' (not 'dragenter') to check the coordinate
-    addEvent([pc, 'dragover', onDragOver, false]);
+    addEvent(pc, 'dragover', onDragOver, false);
     // WORKAROUND: use capture mode to detect a drop event that is trapped by
     // content script (e.g. gist.github.com)
     // TODO: need to check the mode of the other events
-    addEvent([pc, 'drop', onDrop, true]);
+    addEvent(pc, 'drop', onDrop, true);
 
     // WORKAROUND: observe a XUL popup in the content area for cancelling the
     // gestures on it
-    addEvent([window, 'mouseup', onGlobalMouseUp, false]);
+    addEvent(window, 'mouseup', onGlobalMouseUp, false);
   }
 
 

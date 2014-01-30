@@ -27,7 +27,7 @@
  */
 const {
   getFirstNodeByXPath: $X1,
-  setEventListener: addEvent,
+  addEvent,
   openTab
 } = window.ucjsUtil;
 
@@ -147,7 +147,7 @@ var mURLUtil = (function() {
 //********** Functions
 
 function TextLink_init() {
-  addEvent([gBrowser.mPanelContainer, 'dblclick', handleEvent, false]);
+  addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, false);
 }
 
 function handleEvent(aEvent) {

@@ -20,9 +20,9 @@
 const {
   createNode: $E,
   getNodeById: $ID,
-  setEventListener: addEvent,
   getNodesBySelector: $S,
   getFirstNodeBySelector: $S1,
+  addEvent,
   setContentStyleSheet
 } = window.ucjsUtil;
 
@@ -498,15 +498,15 @@ var PageObserver = (function() {
 
   const mProgressListener = {
     init: function() {
-      addEvent([gBrowser.tabContainer, 'TabClose', function(aEvent) {
+      addEvent(gBrowser.tabContainer, 'TabClose', function(aEvent) {
         var browser = aEvent.target.linkedBrowser;
         mBrowserState.delete(browser);
-      }, false]);
+      }, false);
 
       gBrowser.addTabsProgressListener(mProgressListener);
-      addEvent([window, 'unload', function() {
+      addEvent(window, 'unload', function() {
         gBrowser.removeTabsProgressListener(mProgressListener);
-      }, false]);
+      }, false);
     },
 
     onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation,
@@ -650,7 +650,7 @@ var PrefMenu = (function() {
       label: kUI.PREFMENU.label,
       accesskey: kUI.PREFMENU.accesskey
     }));
-    addEvent([menu, 'command', doCommand, false]);
+    addEvent(menu, 'command', doCommand, false);
 
     if (kSiteList.length) {
       let popup = $E('menupopup', {

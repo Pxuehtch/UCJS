@@ -28,7 +28,7 @@ const {
   },
   createNode: $E,
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   setChromeStyleSheet: setCSS
 } = window.ucjsUtil;
 
@@ -239,14 +239,14 @@ function PrefButton_init() {
   setStyleSheet();
   makeButtons();
 
-  addEvent([gBrowser, 'select', () => {
+  addEvent(gBrowser, 'select', () => {
     updateState({tabMode: true});
-  }, false]);
+  }, false);
 
   gBrowser.addProgressListener(BrowserProgressListener);
-  addEvent([window, 'unload', () => {
+  addEvent(window, 'unload', () => {
     gBrowser.removeProgressListener(BrowserProgressListener);
-  }, false]);
+  }, false);
 }
 
 function updateState(aOption) {
@@ -290,7 +290,7 @@ function makeButtons() {
 
   let hbox = $E('hbox');
   hbox.id = kID.CONTAINER;
-  addEvent([hbox, 'click', doCommand, false]);
+  addEvent(hbox, 'click', doCommand, false);
 
   Items.forEach((item, i) => {
     if (item.disabled) {

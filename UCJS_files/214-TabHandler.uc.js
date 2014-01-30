@@ -22,7 +22,7 @@ const {
     setTimeout,
     clearTimeout
   },
-  setEventListener: addEvent
+  addEvent
 } = window.ucjsUtil;
 
 // for debug
@@ -77,10 +77,10 @@ var mTabBarClickEvent = {
     this.handled = false;
 
     var tc = gBrowser.tabContainer;
-    addEvent([tc, 'mousedown', this, true]);
-    addEvent([tc, 'mouseup', this, true]);
-    addEvent([tc, 'click', this, true]);
-    addEvent([tc, 'dblclick', this, true]);
+    addEvent(tc, 'mousedown', this, true);
+    addEvent(tc, 'mouseup', this, true);
+    addEvent(tc, 'click', this, true);
+    addEvent(tc, 'dblclick', this, true);
   },
 
   handleEvent: function(aEvent) {
@@ -262,12 +262,12 @@ var mTabBarClickEvent = {
 function makeCustomFunctions() {
   // cycle-select tabs with the wheel scroll on a tab or tabbar
   // @note Disables the default scrolling at overflowed.
-  addEvent([gBrowser.tabContainer, 'wheel', function(event) {
+  addEvent(gBrowser.tabContainer, 'wheel', function(event) {
     gBrowser.tabContainer.
     advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
     event.stopPropagation();
     event.preventDefault();
-  }, true]);
+  }, true);
 }
 
 

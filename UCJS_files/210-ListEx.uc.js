@@ -19,7 +19,7 @@
  */
 const {
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   asyncScanPlacesDB
 } = window.ucjsUtil;
 
@@ -94,14 +94,14 @@ const mMenu = (function() {
         accesskey: aAccesskey
       }), refItem);
 
-      addEvent([
+      addEvent(
         menu.appendChild($E('menupopup')),
         'popupshowing',
         function(aEvent) {
           buildMenu(aEvent, aHandler.build);
         },
         false
-      ]);
+      );
     }
 
     addSeparator(kID.startSeparator);
@@ -110,8 +110,8 @@ const mMenu = (function() {
     addMenu(kID.closedMenu, 'Closed Tab/Window', 'C', mClosedList);
     addSeparator(kID.endSeparator);
 
-    addEvent([context, 'popupshowing', showContextMenu, false]);
-    addEvent([context, 'popuphiding', hideContextMenu, false]);
+    addEvent(context, 'popupshowing', showContextMenu, false);
+    addEvent(context, 'popuphiding', hideContextMenu, false);
   }
 
   function buildMenu(aEvent, aBuilder) {

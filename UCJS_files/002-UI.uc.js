@@ -26,7 +26,7 @@ const {
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
   getNodesByXPath: $X,
-  setEventListener: addEvent,
+  addEvent,
   setChromeStyleSheet: setCSS,
   scanPlacesDB
 } = window.ucjsUtil;
@@ -409,11 +409,11 @@ const mMenuitem = {
 function manageContextMenuSeparators() {
   [mContentArea, mURLBar].forEach((container) => {
     let contextMenu = container.contextMenu;
-    addEvent([contextMenu, 'popupshowing', (event) => {
+    addEvent(contextMenu, 'popupshowing', (event) => {
       if (event.target === contextMenu) {
         setImmediate(manage, $X('xul:menuseparator', contextMenu));
       }
-    }, false]);
+    }, false);
   });
 
   function manage(aSeparators) {

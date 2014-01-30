@@ -22,8 +22,8 @@ const {
     setTimeout,
     clearTimeout
   },
-  setEventListener: addEvent,
-  getFirstNodeByXPath: $X1
+  getFirstNodeByXPath: $X1,
+  addEvent
 } = window.ucjsUtil;
 
 // for debug
@@ -60,7 +60,7 @@ function IMEAware_init() {
 
   // observe a focused element in the chrome and content area
   // @note use the capture mode for event delegation
-  addEvent([window.document.documentElement, 'focus', (aEvent) => {
+  addEvent(window.document.documentElement, 'focus', (aEvent) => {
     let node = aEvent.originalTarget;
     // pick up a writable plain-text field
     if (
@@ -71,13 +71,13 @@ function IMEAware_init() {
     ) {
       mTextboxStyler.init(node);
     }
-  }, true]);
+  }, true);
 
   // clean-up when a browser window closes
-  addEvent([window, 'unload', (aEvent) => {
+  addEvent(window, 'unload', (aEvent) => {
     mTextboxStyler.uninit();
     mTextboxStyler = null;
-  }, false]);
+  }, false);
 }
 
 /**

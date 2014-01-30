@@ -21,7 +21,7 @@
 const {
   createNode: $E,
   getNodeById: $ID,
-  setEventListener: addEvent
+  addEvent
 } = window.ucjsUtil;
 
 // for debug
@@ -106,7 +106,7 @@ function createMenu(aScripts) {
       accesskey: kMenuUI.selectAccesskey,
       tooltiptext: kMenuUI.selectTip
     }));
-    addEvent([menuitem, 'command', panel.open, false]);
+    addEvent(menuitem, 'command', panel.open, false);
   } else {
     $E(menu, {
       tooltiptext: kMenuUI.disabledTip,
@@ -163,7 +163,7 @@ function ScriptListPanel(aScripts) {
       style: 'width:auto;',
       rows: 20
     }));
-    addEvent([treeView, 'select', onSelectListItem, false]);
+    addEvent(treeView, 'select', onSelectListItem, false);
 
     var treeCols = treeView.appendChild($E('treecols'));
     treeCols.appendChild($E('treecol', {
@@ -238,7 +238,7 @@ function ScriptListPanel(aScripts) {
     appendChild($E('button', {
       label: kPanelUI.closeButton
     }));
-    addEvent([closeButton, 'command', close, false]);
+    addEvent(closeButton, 'command', close, false);
 
     // Resizer
     var resizerBox = panel.appendChild($E('hbox'));

@@ -20,7 +20,7 @@
  */
 const {
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   getSelectionAtCursor
 } = window.ucjsUtil;
 
@@ -227,7 +227,7 @@ function initMenu() {
 
   setSeparators(contextMenu, contextMenu.firstChild);
 
-  addEvent([contextMenu, 'popupshowing', showContextMenu, false]);
+  addEvent(contextMenu, 'popupshowing', showContextMenu, false);
 }
 
 function showContextMenu(aEvent) {

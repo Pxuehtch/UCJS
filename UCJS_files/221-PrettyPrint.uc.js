@@ -21,7 +21,7 @@
 const {
   createNode: $E,
   getNodeById: $ID,
-  setEventListener: addEvent
+  addEvent
 } = window.ucjsUtil;
 
 // for debug
@@ -69,14 +69,14 @@ const MenuHandler = (function() {
 
   function init() {
     let context = contentAreaContextMenu;
-    addEvent([context, 'popupshowing', showContextMenu, false]);
+    addEvent(context, 'popupshowing', showContextMenu, false);
 
     let prettifySourcePageItem = $E('menuitem', {
       id: kUI.prettifySourcePage.id,
       label: kUI.prettifySourcePage.label,
       accesskey: kUI.prettifySourcePage.accesskey
     });
-    addEvent([prettifySourcePageItem, 'command', doCommand, false]);
+    addEvent(prettifySourcePageItem, 'command', doCommand, false);
 
     context.insertBefore(prettifySourcePageItem, getViewSourceItem());
   }

@@ -409,7 +409,7 @@ function makeMainMenu(aAppList) {
 
   let popup = $E('menupopup');
 
-  addEvent([popup, 'popupshowing', (aEvent) => {
+  addEvent(popup, 'popupshowing', (aEvent) => {
     aEvent.stopPropagation();
 
     let target = aEvent.target;
@@ -418,9 +418,9 @@ function makeMainMenu(aAppList) {
     }
 
     doBrowse(target);
-  }, false]);
+  }, false);
 
-  addEvent([popup, 'command', (aEvent) => {
+  addEvent(popup, 'command', (aEvent) => {
     aEvent.stopPropagation();
 
     let target = aEvent.target;
@@ -434,7 +434,7 @@ function makeMainMenu(aAppList) {
     }
 
     doAction(aAppList[appIndex], target.getAttribute(kID.actionKey));
-  }, false]);
+  }, false);
 
   makeAppMenu(popup, aAppList);
   makeActionItems(popup, aAppList);
@@ -1117,8 +1117,8 @@ function getContextMenu() {
   return window.ucjsUI.ContentArea.contextMenu;
 }
 
-function addEvent(aData) {
-  window.ucjsUtil.setEventListener(aData);
+function addEvent(aTarget, aType, aListener, aCapture) {
+  window.ucjsUtil.addEvent(aTarget, aType, aListener, aCapture);
 }
 
 function createNode(aTag, aAttribute, aAttributeHandler) {

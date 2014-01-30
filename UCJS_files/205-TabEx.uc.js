@@ -27,8 +27,8 @@ const {
     setInterval,
     clearInterval
   },
-  Prefs: Prefs,
-  setEventListener: addEvent,
+  Prefs,
+  addEvent,
   openTab,
   removeTab,
   scanPlacesDB
@@ -702,8 +702,8 @@ var mSessionStore = {
       Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
 
-    addEvent([window, 'SSWindowStateBusy', this, false]);
-    addEvent([window, 'SSWindowStateReady', this, false]);
+    addEvent(window, 'SSWindowStateBusy', this, false);
+    addEvent(window, 'SSWindowStateReady', this, false);
 
     /**
      * WORKAROUND: In Fx19 an error sometimes occurs in startup
@@ -821,10 +821,10 @@ var mTabEvent = {
   init: function() {
     var tc = gBrowser.tabContainer;
 
-    addEvent([tc, 'UcjsTabExTabOpen', this, false]);
-    addEvent([tc, 'TabSelect', this, false]);
-    addEvent([tc, 'TabClose', this, false]);
-    addEvent([tc, 'SSTabRestored', this, false]);
+    addEvent(tc, 'UcjsTabExTabOpen', this, false);
+    addEvent(tc, 'TabSelect', this, false);
+    addEvent(tc, 'TabClose', this, false);
+    addEvent(tc, 'SSTabRestored', this, false);
   },
 
   handleEvent: function(aEvent) {
@@ -1528,12 +1528,12 @@ function modifySystemSetting() {
  */
 function customizeTabTooltip() {
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
-  addEvent([
+  addEvent(
     window.document.getElementById('tabbrowser-tab-tooltip'),
     'popupshowing',
     onPopup,
     false
-  ]);
+  );
 
   function onPopup(aEvent) {
     aEvent.stopPropagation();

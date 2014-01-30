@@ -24,7 +24,7 @@ const {
   },
   createNode: $E,
   getNodeById: $ID,
-  setEventListener: addEvent,
+  addEvent,
   scanPlacesDB
 } = window.ucjsUtil;
 
@@ -87,7 +87,7 @@ function URLbarTooltip_init() {
     backdrag: true
   }));
 
-  addEvent([getURLbar(), 'mousemove', showPanel, false]);
+  addEvent(getURLbar(), 'mousemove', showPanel, false);
 }
 
 function showPanel(aEvent) {
