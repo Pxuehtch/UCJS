@@ -34,9 +34,9 @@ const {
   checkApp,
   runApp,
   makeURIURL,
-  getContextMenu,
   addEvent,
   getNodesByXPath: $X,
+  contentAreaContextMenu,
   // for debug
   log
 } = Util;
@@ -443,10 +443,9 @@ function makeMainMenu(aAppList) {
 
   // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
   // separators.
-  let context = getContextMenu();
-  addSeparator(context, kID.startSeparator);
-  context.appendChild(menu);
-  addSeparator(context, kID.endSeparator);
+  addSeparator(contentAreaContextMenu, kID.startSeparator);
+  contentAreaContextMenu.appendChild(menu);
+  addSeparator(contentAreaContextMenu, kID.endSeparator);
 }
 
 function makeAppMenu(aPopup, aAppList) {
@@ -1114,25 +1113,6 @@ function warn(aTitle, aMsg) {
   Services.prompt.alert(null, null, msg);
 }
 
-
-//********** Import
-
-function getContextMenu() {
-  return window.ucjsUI.ContentArea.contextMenu;
-}
-
-function addEvent(aTarget, aType, aListener, aCapture) {
-  window.ucjsUtil.addEvent(aTarget, aType, aListener, aCapture);
-}
-
-function createNode(aTag, aAttribute, aAttributeHandler) {
-  return window.ucjsUtil.createNode(aTag, aAttribute, aAttributeHandler);
-}
-
-function getNodesByXPath(aXPath, aNode, aOption) {
-  return window.ucjsUtil.getNodesByXPath(aXPath, aNode, aOption);
-}
-
 function log(aMsg) {
   return window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
 }
@@ -1144,10 +1124,12 @@ return {
   checkApp: checkApp,
   runApp: runApp,
   makeURIURL: makeURIURL,
-  getContextMenu: getContextMenu,
-  addEvent: addEvent,
-  createNode: createNode,
-  getNodesByXPath: getNodesByXPath,
+
+  addEvent: window.ucjsUtil.addEvent,
+  createNode: window.ucjsUtil.createNode,
+  getNodesByXPath: window.ucjsUtil.getNodesByXPath,
+  contentAreaContextMenu: window.ucjsUI.ContentArea.contextMenu,
+
   log: log
 };
 
