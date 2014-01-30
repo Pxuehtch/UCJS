@@ -154,6 +154,19 @@ const kPref = {
 };
 
 /**
+ * Makes a unique value with the current time
+ * @return {integer}
+ */
+var getTime = (function() {
+  var time = 0;
+
+  return function() {
+    var now = Date.now();
+    return time = (time === now ? ++now : now);
+  };
+})();
+
+/**
  * Tab data manager
  */
 var mTab = (function () {
@@ -1391,22 +1404,6 @@ function selectTab(aTab) {
   }
   return null;
 }
-
-
-//********** Utilities
-
-/**
- * Makes a unique value with the current time
- * @return {integer}
- */
-var getTime = (function() {
-  var time = 0;
-
-  return function() {
-    var now = Date.now();
-    return time = (time === now ? ++now : now);
-  };
-})();
 
 function htmlEscape(aString) {
   return aString.
