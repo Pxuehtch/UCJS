@@ -2,12 +2,13 @@
 // @name Util.uc.js
 // @description Common utilities
 // @include main
-// @include chrome://global/content/console.xul
+// @include chrome://browser/content/devtools/webconsole.xul
 // ==/UserScript==
 
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // @include chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @include chrome://browser/content/history/history-panel.xul
+// @include chrome://global/content/console.xul
 
 // @usage Access to functions through the global scope;
 // |window.ucjsUtil.XXX|
