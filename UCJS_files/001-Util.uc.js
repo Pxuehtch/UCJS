@@ -27,10 +27,6 @@ const ucjsUtil = (function(window, undefined) {
  */
 const XPCOM = (function() {
   const kServices = {
-    'BrowserGlue': {
-      CID: '@mozilla.org/browser/browserglue;1',
-      IID: 'nsIBrowserGlue'
-    },
     'StyleSheetService': {
       CID: '@mozilla.org/content/style-sheet-service;1',
       IID: 'nsIStyleSheetService'
@@ -1257,57 +1253,12 @@ function logMessage(aTarget, aMessage) {
   let formatMessage = kMessageFormat.
     replace('%target%', aTarget).
     replace('%message%', aMessage);
-  let formatDate = getFormatDate();
 
-  // for the error console
-  XPCOM.$S('console').logStringMessage(
-    [formatDate, formatMessage].join('\n'));
-
-  // for the web console
-  let win = XPCOM.$S('BrowserGlue').getMostRecentBrowserWindow();
-  if (win) {
-    win.content.console.log(formatMessage);
-  }
+  // output to the browser console
+  // @note no outputs to the web console
+  XPCOM.$S('console').logStringMessage(formatMessage);
 
   return formatMessage;
-}
-
-function getFormatDate(aOption) {
-  const kStandardFormat = '%04Y/%02M/%02D %02h:%02m:%02s.%03ms';
-
-  let {
-    format,
-    time
-  } = aOption || {};
-
-  format = format || kStandardFormat;
-
-  let date = time ? new Date(time) : new Date();
-  let map = {
-    'Y': date.getFullYear(),
-    'M': date.getMonth() + 1,
-    'D': date.getDate(),
-    'h': date.getHours(),
-    'm': date.getMinutes(),
-    's': date.getSeconds(),
-    'ms': date.getMilliseconds()
-  };
-
-  return format.replace(/%(0)?(\d+)?(ms|[YMDhms])/g,
-    (match, pad, width, type) => {
-      let value = String(map[type]);
-
-      width = width && parseInt(width);
-
-      if (0 < width && value.length !== width) {
-        if (value.length < width) {
-          value = Array(width).join(!!pad ? '0' : ' ') + value;
-        }
-        return value.substr(-width);
-      }
-      return value;
-    }
-  );
 }
 
 function log(aMessage) {

@@ -651,47 +651,14 @@ function Util() {
   }
 
   function log(aMessage) {
-    const kLogFormat = '%date%\n[%loaderName%]\n%message%';
+    const kLogFormat = '[%loaderName%]\n%message%';
 
     let str = kLogFormat.
       replace('%loaderName%', kSystem.loaderName).
-      replace('%date%', getFormatDate()).
       replace('%message%', aMessage);
 
     $S('@mozilla.org/consoleservice;1', 'nsIConsoleService').
     logStringMessage(str);
-  }
-
-  function getFormatDate() {
-    const kDateFormat = '%04Y/%02M/%02D %02h:%02m:%02s.%03ms';
-
-    let date = new Date();
-    let map = {
-      'Y': date.getFullYear(),
-      'M': date.getMonth() + 1,
-      'D': date.getDate(),
-      'h': date.getHours(),
-      'm': date.getMinutes(),
-      's': date.getSeconds(),
-      'ms': date.getMilliseconds()
-    };
-
-    return kDateFormat.replace(/%(0)?(\d+)?(ms|[YMDhms])/g,
-      (match, pad, width, type) => {
-        let value = String(map[type]);
-
-        width = width && parseInt(width);
-
-        if (0 < width && value.length !== width) {
-          if (value.length < width) {
-            value = Array(width).join(!!pad ? '0' : ' ') + value;
-          }
-
-          return value.substr(-width);
-        }
-        return value;
-      }
-    );
   }
 
   /**
