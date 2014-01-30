@@ -534,20 +534,6 @@ function getFocusedDocument() {
   return win.contentDocument || win.document;
 }
 
-function getNodesByAttribute(aAttribute, aContext) {
-  let {name, value, tag} = aAttribute;
-  if (!name) {
-    throw Error('attribute name is required');
-  }
-
-  let xpath = 'descendant::' + (tag || '*') +
-    (value ?
-    '[contains(concat(" ",@' + name + '," ")," ' + value + ' ")]' :
-    '[@' + name + ']');
-
-  return getNodesByXPath(xpath, aContext);
-}
-
 function getFirstNodeBySelector(aSelector, aContext) {
   let node = aContext || getFocusedDocument();
 
@@ -1336,7 +1322,6 @@ return {
   createNode: createNode,
   getNodeById: getNodeById,
   getNodeByAnonid: getNodeByAnonid,
-  getNodesByAttribute: getNodesByAttribute,
   getFirstNodeBySelector: getFirstNodeBySelector,
   getNodesBySelector: getNodesBySelector,
   getFirstNodeByXPath: getFirstNodeByXPath,
