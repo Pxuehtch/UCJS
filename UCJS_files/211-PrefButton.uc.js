@@ -50,7 +50,7 @@ const kID = {
 };
 
 /**
- * Preset button items
+ * List of buttons
  *
  * @param tabMode {boolean} [optional]
  *   true: updates the button state whenever a tab is selected
@@ -69,7 +69,7 @@ const kID = {
  * @param command {function}
  * @param disabled {boolean} [optional]
  */
-const Items = [
+const kItemList = [
   {
     // switch CSS for each tab
     tabMode: true,
@@ -252,7 +252,7 @@ function PrefButton_init() {
 function updateState(aOption) {
   let {tabMode} = aOption || {};
 
-  Items.forEach((item, i) => {
+  kItemList.forEach((item, i) => {
     if (item.disabled || (tabMode && !item.tabMode)) {
       return;
     }
@@ -281,7 +281,7 @@ function doCommand(aEvent) {
   let button = aEvent.target;
 
   if (button.id && button.id.startsWith(kID.ITEM)) {
-    Items[+button.id.replace(kID.ITEM, '')].command();
+    kItemList[+button.id.replace(kID.ITEM, '')].command();
   }
 }
 
@@ -292,7 +292,7 @@ function makeButtons() {
   hbox.id = kID.CONTAINER;
   addEvent(hbox, 'click', doCommand, false);
 
-  Items.forEach((item, i) => {
+  kItemList.forEach((item, i) => {
     if (item.disabled) {
       return;
     }
