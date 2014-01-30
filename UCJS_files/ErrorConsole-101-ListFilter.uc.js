@@ -71,14 +71,6 @@ function makeUI() {
   toolbar.appendChild(container);
 }
 
-function uninit(aEvent) {
-  let {hidden} = kStyle;
-
-  for (let key in kSelector) {
-    toggleCSS(kSelector[key] + hidden, false);
-  }
-}
-
 function onCommand(aEvent) {
   let {label, checked} = aEvent.target;
   let {hidden} = kStyle;
@@ -104,7 +96,6 @@ function toggleCSS(aCSS, aDoRegister) {
  */
 function ListFilter_init() {
   makeUI();
-  addEvent(window, 'unload', uninit, false);
 }
 
 ListFilter_init();
