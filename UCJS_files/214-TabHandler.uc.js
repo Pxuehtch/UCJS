@@ -255,13 +255,12 @@ var mTabBarClickEvent = {
   }
 };
 
-
 /**
- * Miscellaneous customization
+ * cycle-selects tabs with the mouse wheel scroll on a tab/tabbar
+ *
+ * @note disables the default scrolling at overflowed
  */
-function makeCustomFunctions() {
-  // cycle-select tabs with the wheel scroll on a tab or tabbar
-  // @note Disables the default scrolling at overflowed.
+function switchTabsOnMouseWheel() {
   addEvent(gBrowser.tabContainer, 'wheel', function(event) {
     gBrowser.tabContainer.
     advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
@@ -270,12 +269,12 @@ function makeCustomFunctions() {
   }, true);
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function TabHandler_init() {
   mTabBarClickEvent.init();
-  makeCustomFunctions();
+  switchTabsOnMouseWheel();
 }
 
 TabHandler_init();
