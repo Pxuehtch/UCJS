@@ -1317,8 +1317,6 @@ return {
 
   addEvent: addEvent,
   getSelectionAtCursor: getSelectionAtCursor,
-  getFocusedWindow: getFocusedWindow,
-  getFocusedDocument: getFocusedDocument,
   createNode: createNode,
   getNodeById: getNodeById,
   getNodeByAnonid: getNodeByAnonid,
