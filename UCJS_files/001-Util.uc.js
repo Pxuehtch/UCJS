@@ -548,25 +548,32 @@ function getNodesBySelector(aSelector, aContext) {
 }
 
 function getFirstNodeByXPath(aXPath, aContext) {
-  let result = evaluateXPath(
-    aXPath,
-    aContext,
-    XPathResult.FIRST_ORDERED_NODE_TYPE
-  );
+  let type = XPathResult.FIRST_ORDERED_NODE_TYPE;
+
+  let result = evaluateXPath(aXPath, aContext, type);
 
   return result ? result.singleNodeValue : null;
 }
 
-function getNodesByXPath(aXPath, aContext) {
-  let result = evaluateXPath(
-    aXPath,
-    aContext,
-    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE
-  );
+function getNodesByXPath(aXPath, aContext, aOption) {
+  let {
+    ordered,
+    toArray
+  } = aOption || {};
 
-  let nodes = new Array(result ? result.snapshotLength : 0);
+  let type = ordered ?
+    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE :
+    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE;
 
-  for (let i = 0, len = nodes.length; i < len; i++) {
+  let result = evaluateXPath(aXPath, aContext, type);
+
+  if (!toArray) {
+    return result;
+  }
+
+  let nodes = Array(result ? result.snapshotLength : 0);
+
+  for (let i = 0, l = nodes.length; i < l; i++) {
     nodes[i] = result.snapshotItem(i);
   }
 
@@ -604,11 +611,10 @@ function evaluateXPath(aXPath, aContext, aType) {
     resolver = (prefix) => lookupNamespaceURI(prefix);
   }
 
-  let result = null;
   try {
-    result = doc.evaluate(aXPath, base, resolver, aType, null);
+    return doc.evaluate(aXPath, base, resolver, aType, null);
   } catch (ex) {}
-  return result;
+  return null;
 }
 
 function lookupNamespaceURI(aPrefix) {

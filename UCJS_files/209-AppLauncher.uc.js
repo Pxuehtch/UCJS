@@ -579,13 +579,17 @@ function doBrowse(aPopup) {
   });
 
   // show the menu items with available actions
-  $X(availableItem(getAvailableActions()), aPopup).
+  $X(availableItem(getAvailableActions()), aPopup, {
+    toArray: true
+  }).
   forEach((node) => {
     node.hidden = false;
   });
 
   // hide the useless menu separators
-  $X(uselessSeparator, aPopup).
+  $X(uselessSeparator, aPopup, {
+    toArray: true
+  }).
   forEach((node) => {
     node.hidden = true;
   });
@@ -1125,8 +1129,8 @@ function createNode(aTag, aAttribute, aAttributeHandler) {
   return window.ucjsUtil.createNode(aTag, aAttribute, aAttributeHandler);
 }
 
-function getNodesByXPath(aXPath, aNode) {
-  return window.ucjsUtil.getNodesByXPath(aXPath, aNode);
+function getNodesByXPath(aXPath, aNode, aOption) {
+  return window.ucjsUtil.getNodesByXPath(aXPath, aNode, aOption);
 }
 
 function log(aMsg) {

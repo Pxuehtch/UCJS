@@ -411,7 +411,13 @@ function manageContextMenuSeparators() {
     let contextMenu = container.contextMenu;
     addEvent(contextMenu, 'popupshowing', (event) => {
       if (event.target === contextMenu) {
-        setImmediate(manage, $X('xul:menuseparator', contextMenu));
+        setImmediate(
+          manage,
+          $X('xul:menuseparator', contextMenu, {
+            ordered: true,
+            toArray: true
+          })
+        );
       }
     }, false);
   });
@@ -419,7 +425,7 @@ function manageContextMenuSeparators() {
   function manage(aSeparators) {
     let last = null;
 
-    Array.forEach(aSeparators, (separator) => {
+    aSeparators.forEach((separator) => {
       if (separator.hidden) {
         separator.hidden = false;
       }

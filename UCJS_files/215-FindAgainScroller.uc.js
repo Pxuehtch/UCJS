@@ -278,7 +278,7 @@ function ScrollObserver() {
 
     // WORKAROUND: skip a big document because of performance problems
     // TODO: handle it
-    if (doc.getElementsByTagName('*').length > 1000) {
+    if (doc.getElementsByTagName('*').length > 10000) {
       return;
     }
 
@@ -287,22 +287,24 @@ function ScrollObserver() {
     // one
     // TODO: grab all kind of scrollable elements
     let xpath = [
-      '//textarea',
-      '//pre',
-      '//ul',
-      '//ol',
-      '//div[not(descendant::div)]',
-      '//p[not(descendant::p)]'
+      './/textarea',
+      './/pre',
+      './/ul',
+      './/ol',
+      './/div[not(descendant::div)]',
+      './/p[not(descendant::p)]'
     ].join('|');
 
-    $X(xpath, root).reduce((scrollables, node) => {
-      let scrollable = testScrollable(scrollables, node);
+    let nodes = $X(xpath, root);
+    let scrollables = [];
+
+    for (let i = 0, l = nodes.snapshotLength; i < l; i++) {
+      let scrollable = testScrollable(scrollables, nodes.snapshotItem(i));
       if (scrollable) {
         scrollables.push(scrollable);
         mScrollable.addItem(scrollable);
       }
-      return scrollables;
-    }, []);
+    }
   }
 
   function testScrollable(aRegisteredNodes, aBaseNode) {
