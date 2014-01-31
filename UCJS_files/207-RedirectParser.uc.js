@@ -595,7 +595,7 @@ function makeActionCommand(aValue) {
       return '';
   }
 
-  return command.replace('%URL%', aURL);
+  return command.replace('%URL%', URL);
 }
 
 
