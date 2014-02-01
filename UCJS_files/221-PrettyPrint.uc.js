@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name        PrettyPrint.uc.js
-// @description Prettify a source code text (JS/CSS) in Scratchpad
+// @description Prettify a source code text (JS/CSS) in the Scratchpad
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
 // @usage a 'prettify source page' menuitem in the context menu of JS/CSS code
 // page
+
+// @note a syntax error may occur due to line wrapping forced when you run
+// copy-and-paste the prettified output. see |WrapLines()|
 
 
 (function(window, undefined) {
@@ -37,8 +40,9 @@ const {
 
 /**
  * Text type constants
- * this is used to set a beautifier method and set the syntax highlight mode
- * for the Scratchpad editor
+ *
+ * @note this is used to set a beautifier method and set the syntax highlight
+ * mode for the Scratchpad editor
  *
  * @note the values must be selected from the editor mode constants of
  * |source-editor.jsm|
@@ -63,12 +67,11 @@ const MenuHandler = (function() {
     }
   };
 
-  function getViewSourceItem() {
-    return $ID('context-viewsource');
-  }
+  let getViewSourceItem = () => $ID('context-viewsource');
 
   function init() {
     let context = contentAreaContextMenu;
+
     addEvent(context, 'popupshowing', showContextMenu, false);
 
     let prettifySourcePageItem = $E('menuitem', {
@@ -76,13 +79,15 @@ const MenuHandler = (function() {
       label: kUI.prettifySourcePage.label,
       accesskey: kUI.prettifySourcePage.accesskey
     });
-    addEvent(prettifySourcePageItem, 'command', doCommand, false);
+
+    addEvent(prettifySourcePageItem, 'command', onCommand, false);
 
     context.insertBefore(prettifySourcePageItem, getViewSourceItem());
   }
 
   function showContextMenu(aEvent) {
     let contextMenu = aEvent.target;
+
     if (contextMenu !== contentAreaContextMenu) {
       return;
     }
@@ -91,17 +96,19 @@ const MenuHandler = (function() {
       !getViewSourceItem().hidden &&
       scanTextType(gBrowser.contentDocument.contentType) &&
       getSourceText(gBrowser.contentDocument);
+
     showItem(kUI.prettifySourcePage.id, shouldShow);
   }
 
   function showItem(aID, aShouldShow) {
     let item = $ID(aID);
+
     if (item && item.hidden !== !aShouldShow) {
       item.hidden = !aShouldShow;
     }
   }
 
-  function doCommand(aEvent) {
+  function onCommand(aEvent) {
     let menuitem = aEvent.target;
 
     if (menuitem.id === kUI.prettifySourcePage.id) {
@@ -111,6 +118,7 @@ const MenuHandler = (function() {
         text: getSourceText(contentDocument),
         type: scanTextType(contentDocument.contentType)
       };
+
       Scratchpad.prettify(state);
     }
   }
@@ -144,6 +152,7 @@ const Scratchpad = (function() {
       warn('invalid text');
       return;
     }
+
     if (!type) {
       warn('unsupported text type');
       return;
@@ -156,6 +165,7 @@ const Scratchpad = (function() {
     };
 
     let win = open(state);
+
     if (!win) {
       warn('Scratchpad cannot open');
       return;
@@ -174,11 +184,12 @@ const Scratchpad = (function() {
    */
   function open(aState) {
     let scratchpadWindow = window.Scratchpad.openScratchpad();
+
     if (!scratchpadWindow) {
       return null;
     }
 
-    let onLoad = function() {
+    let onLoad = () => {
       scratchpadWindow.removeEventListener('load', onLoad, false);
 
       scratchpadWindow.Scratchpad.addObserver({
@@ -276,15 +287,18 @@ const Beautifier = (function() {
     let options = {};
 
     aOptions = aOptions || {};
+
     for (let [key, setting] in Iterator(kOptionList)) {
       let value = aOptions[key];
 
       if (value === undefined) {
         value = setting.defaultValue;
-      } else {
+      }
+      else {
         switch (setting.type) {
           case 'number':
             value = parseInt(aValue, 10);
+
             if (isNaN(value)) {
               value = setting.defaultValue;
             }
@@ -319,6 +333,7 @@ const Beautifier = (function() {
    */
   function execute(aText, aTextType, aOptions) {
     let beautify;
+
     switch (aTextType) {
       case kTextType.javascript:
         beautify = JSBeautify;
@@ -337,9 +352,11 @@ const Beautifier = (function() {
     if (aOptions.wrapLineLength > 0) {
       result = wrapLines(result, aTextType, aOptions.wrapLineLength);
     }
+
     if (aOptions.extraLine) {
       result = addExtraLine(result);
     }
+
     if (aOptions.lastSemicolon) {
       result = complementLastSemicolon(result);
     }
@@ -363,10 +380,10 @@ const Beautifier = (function() {
     return aText.replace(/[^;}\s](?=\n\s*\})/g, '$&;');
   }
 
-  // @note syntax error may occur due to line wrapping forced when you run
-  // copy-and-paste output
+  // @note the long line is wrapped forcibly
   function wrapLines(aText, aTextType, aWrapLineLength) {
     let charsForWrap;
+
     switch (aTextType) {
       case kTextType.javascript:
         charsForWrap = /[,:)&|=<>]/;
@@ -377,23 +394,28 @@ const Beautifier = (function() {
     }
 
     let longLines = RegExp('^.{' + (aWrapLineLength + 1) + ',}$', 'gm');
-    return aText.replace(longLines, function(text) {
+
+    return aText.replace(longLines, (text) => {
       let lines = [];
       let last = aWrapLineLength - 1;
       let shouldWrap = false;
+
       while (text.length > aWrapLineLength) {
         if (charsForWrap.test(text[last]) &&
             !/[\\]/.test(text[last - 1])) {
           shouldWrap = true;
-        } else if (--last <= 0) {
+        }
+        else if (--last <= 0) {
           // force to wrap in max length
-          shouldWrap = true;
           last = aWrapLineLength - 1;
+          shouldWrap = true;
         }
 
         if (shouldWrap) {
           let indent = (/^\s+/.exec(text) || [''])[0];
+
           lines.push(text.substring(0, last + 1));
+
           text = indent + text.substring(last + 1).trim();
           last = aWrapLineLength - 1;
           shouldWrap = false;
@@ -413,6 +435,7 @@ const Beautifier = (function() {
       indent_size: aOptions.indentSize,
       indent_char: aOptions.indentChar
     };
+
     return BuiltinBeautifier.js_beautify(aText, options);
   }
 
@@ -442,10 +465,11 @@ const Beautifier = (function() {
 
   /**
    * JS Beautifier beautify-css.js [Apr 28, 2013]
-   * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify-css.js
    *
    * TODO: version [Nov 22, 2013] seems to be incompatible with this user
-   * script. So stop updating until I find what wrong.
+   * script, so, stop updating until I find what wrong
+   *
+   * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify-css.js
    *
    * The MIT License (MIT)
    *
@@ -480,9 +504,6 @@ const Beautifier = (function() {
     execute: execute
   };
 })();
-
-
-//********** Utilities
 
 /**
  * Get a source text of a document
@@ -523,9 +544,9 @@ function warn(aMessage) {
   window.Services.prompt.alert(null, 'PrettyPrint.uc.js', aMessage);
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function PrettyPrint_init() {
   MenuHandler.init();
 }

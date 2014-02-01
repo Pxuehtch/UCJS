@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        TooltipEx.uc.js
-// @description A tooltip of elements which have the descriptions or URL.
+// @description A tooltip of elements which have the descriptions or URL
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage Opens a tooltip panel with 'Alt+Ctrl+MouseMove'.
+// @usage opens a tooltip panel with 'Alt + Ctrl + MouseMove'
 
 
 (function(window, undefined) {
@@ -28,6 +28,7 @@ function $E(aTagOrNode, aAttribute) {
 
 function unescURLForUI(aURL, aBaseURL) {
   const util = window.ucjsUtil;
+
   return util.unescapeURLForUI(util.resolveURL(aURL, aBaseURL));
 }
 
@@ -38,12 +39,14 @@ function log(aMsg) {
 
 /**
  * Max width of tooltip panel
+ *
  * @value {integer} [em] number of characters > 0
  */
 const kMaxPanelWidth = 40;
 
 /**
  * CSS of tooltip panel
+ *
  * @key BASE {CSS} base appearance of the tooltip panel
  * @key TIP_ITEM {CSS} styles for each tip item
  * @key TIP_ACCENT {CSS} accent in a tip item
@@ -69,6 +72,7 @@ const kTipForm = {
 
 /**
  * Attributes that is scanned for a tip item
+ *
  * @key titles {string[]}
  * @key URLs {string[]}
  */
@@ -89,7 +93,7 @@ const kID = {
 /**
  * Tooltip handler
  */
-var TooltipHandler = {
+const TooltipHandler = {
   /**
    * Tooltip <panel>
    */
@@ -117,7 +121,8 @@ var TooltipHandler = {
       // cleanup when the document with a opened tooltip is unloaded
       this._mTarget.ownerDocument.defaultView.
       addEventListener('unload', this, false);
-    } else {
+    }
+    else {
       // enable the default tooltip
       this.restoreTitles();
 
@@ -135,6 +140,7 @@ var TooltipHandler = {
       if (node.nodeType === Node.ELEMENT_NODE) {
         if (node.title) {
           this._mTitleStore.set(node, node.title);
+
           node.title = '';
         }
       }
@@ -147,6 +153,7 @@ var TooltipHandler = {
         node.title = title;
       }
     }
+
     this._mTitleStore.clear();
 
     this._mTitleStore = null;
@@ -183,7 +190,7 @@ var TooltipHandler = {
   },
 
   create: function() {
-    var panel = $E('panel', {
+    let panel = $E('panel', {
       id: kID.PANEL,
       style: kPanelStyle.BASE + 'white-space:pre;',
       backdrag: true
@@ -191,12 +198,12 @@ var TooltipHandler = {
     panel.style.maxWidth = kMaxPanelWidth + 'em';
 
     // context menu
-    var copymenu = $E('menuitem', {
+    let copymenu = $E('menuitem', {
       label: 'Copy'
     });
     addEvent(copymenu, 'command', this, false);
 
-    var popup = $E('menupopup', {
+    let popup = $E('menupopup', {
       onpopuphiding: 'event.stopPropagation();'
     });
     popup.appendChild(copymenu);
@@ -211,7 +218,7 @@ var TooltipHandler = {
   },
 
   show: function(aEvent) {
-    var target = aEvent.target;
+    let target = aEvent.target;
 
     // close a existing tooltip of the different target and open a new tooltip
     if (this.mPanel.state === 'open' &&
@@ -238,7 +245,7 @@ var TooltipHandler = {
   },
 
   build: function(aNode) {
-    var tips = [];
+    let tips = [];
 
     for (let node = aNode; node; node = node.parentNode) {
       if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -254,16 +261,18 @@ var TooltipHandler = {
 
     this.mTarget = aNode;
 
-    var box = this.mBox;
+    let box = this.mBox;
+
     tips.forEach(function(tip) {
       box.appendChild(this.buildTipItem(tip));
-    }, this);
+    }.bind(this));
 
     return true;
   },
 
   clean: function() {
-    var box = this.mBox;
+    let box = this.mBox;
+
     while (box.firstChild) {
       box.removeChild(box.firstChild);
     }
@@ -273,23 +282,20 @@ var TooltipHandler = {
 
   getNodeTip: function(aNode) {
     // helper functions
-    var make = this.makeTipData;
-    var $attr = function(name) {
-      return kTipForm.attribute.replace('%name%', name);
-    };
-    var $tag = function(name) {
-      return kTipForm.tag.replace('%tag%', name);
-    };
+    let make = this.makeTipData;
+    let $attr = (name) => kTipForm.attribute.replace('%name%', name);
+    let $tag = (name) => kTipForm.tag.replace('%tag%', name);
 
-    var data = [];
-    var attributes = {};
+    let data = [];
+    let attributes = {};
 
-    Array.forEach(aNode.attributes, function(attribute) {
+    Array.forEach(aNode.attributes, (attribute) => {
       attributes[attribute.localName] = attribute.value;
     });
 
-    kScanAttribute.titles.forEach(function(name) {
+    kScanAttribute.titles.forEach((name) => {
       let value = attributes[name];
+
       if (value === null || value === undefined) {
         return;
       }
@@ -297,18 +303,22 @@ var TooltipHandler = {
       data.push(make($attr(name), value));
     });
 
-    kScanAttribute.URLs.forEach(function(name) {
+    kScanAttribute.URLs.forEach((name) => {
       let value = attributes[name];
+
       if (value === null || value === undefined) {
         return;
       }
 
       if (value) {
         let [scheme, rest] = splitURL(value, aNode.baseURI);
+
         // URL except 'javascript:' and 'data:' is displayed without cropped
         let cropped = /^javascript:|^data:/.test(scheme);
+
         data.push(make($attr(name) + scheme, rest, !cropped));
-      } else {
+      }
+      else {
         data.push(make($attr(name), ''));
       }
     });
@@ -332,13 +342,14 @@ var TooltipHandler = {
   makeTipData: function(aHead, aRest, aUncrop) {
     function process(sourceText) {
       // make new lines of the maxLen characters
-      var maxLen = kMaxPanelWidth;
-      var text = sourceText, cropped = false;
-      var lines = [], last = 0;
+      let maxLen = kMaxPanelWidth;
+      let text = sourceText, cropped = false;
+      let lines = [], last = 0;
 
       for (let i = 0, l = text.length, count = 0; i < l; i++) {
         // count character width
         count += /[ -~]/.test(text[i]) ? 1 : 2;
+
         if (count > maxLen) {
           lines.push(text.substring(last, i).trim());
           last = i;
@@ -350,9 +361,10 @@ var TooltipHandler = {
         lines.push(text.substring(last).trim());
 
         // number of lines in the visible portion of the cropped text
-        let visibleLines = 2;
-        cropped = !aUncrop && lines.length > visibleLines;
-        text = (cropped ? lines.slice(0, visibleLines) : lines).join('\n');
+        const kVisibleLines = 2;
+
+        cropped = !aUncrop && lines.length > kVisibleLines;
+        text = (cropped ? lines.slice(0, kVisibleLines) : lines).join('\n');
       }
 
       return [text, cropped];
@@ -367,8 +379,8 @@ var TooltipHandler = {
       };
     }
 
-    var rawText = (aHead + aRest).trim().replace(/\s+/g, ' ');
-    var [cookedText, cropped] = process(rawText);
+    let rawText = (aHead + aRest).trim().replace(/\s+/g, ' ');
+    let [cookedText, cropped] = process(rawText);
 
     return {
       text: rawText,
@@ -409,9 +421,9 @@ var TooltipHandler = {
   },
 
   copyTipInfo: function() {
-    var info = [];
+    let info = [];
 
-    Array.forEach(this.mBox.childNodes, function(node) {
+    Array.forEach(this.mBox.childNodes, (node) => {
       info.push(node[kID.TIP_TEXT]);
     });
 
@@ -419,11 +431,8 @@ var TooltipHandler = {
   }
 };
 
-
-//********** Utilities
-
 function isHtmlDocument(aDocument) {
-  var mime = aDocument.contentType;
+  let mime = aDocument.contentType;
 
   return (
     mime === 'text/html' ||
@@ -471,9 +480,9 @@ function $T(aText) {
   return window.document.createTextNode(aText);
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function TooltipEx_init() {
   TooltipHandler.init();
 }

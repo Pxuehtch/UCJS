@@ -7,7 +7,8 @@
 // @require Util.uc.js
 // @require [optional] TabEx.uc.js
 // @note some default functions are modified. see @modified
-// @usage access to items through global property; |ucjsUI.XXX|
+// @usage access to items through the global property;
+// |window.ucjsUI.XXX|
 
 
 const ucjsUI = (function(window, undefined) {
@@ -92,7 +93,8 @@ const mFindBar = {
   toggleFindbar: function() {
     if (gFindBar.hidden) {
       gFindBar.onFindCommand();
-    } else {
+    }
+    else {
       gFindBar.close();
     }
   },
@@ -102,7 +104,8 @@ const mFindBar = {
 
     if (aHighlight) {
       this.highlightButton.setAttribute('checked', 'true');
-    } else {
+    }
+    else {
       this.highlightButton.removeAttribute('checked');
     }
   },
@@ -154,16 +157,16 @@ const mStatusField = (function() {
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
   const kLinkFormat = '%url% [%time%]';
 
-  function getTextBox() {
-    return XULBrowserWindow.statusTextField;
-  }
+  let getTextBox = () => XULBrowserWindow.statusTextField;
 
   /**
    * Show a message text
    */
   let messageStatus = '';
+
   function showMessage(aText) {
     let text = aText || '';
+
     if (text === messageStatus) {
       return;
     }
@@ -172,8 +175,10 @@ const mStatusField = (function() {
     let textField = getTextBox();
 
     messageStatus = text;
+
     // overwrite the displayed status
     textField.label = text;
+
     // restore the hidden status
     if (!text) {
       XULBrowserWindow.statusText = '';
@@ -184,7 +189,8 @@ const mStatusField = (function() {
       if (!textField.hasAttribute(MESSAGE)) {
         textField.setAttribute(MESSAGE, true);
       }
-    } else {
+    }
+    else {
       if (textField.hasAttribute(MESSAGE)) {
         textField.removeAttribute(MESSAGE);
       }
@@ -237,26 +243,32 @@ const mStatusField = (function() {
 
       const {LINKSTATE} = kStatusAttribute;
       let textField = getTextBox();
+
       if (linkState) {
         if (textField.getAttribute(LINKSTATE) !== linkState) {
           textField.setAttribute(LINKSTATE, linkState);
         }
-      } else {
+      }
+      else {
         if (textField.hasAttribute(LINKSTATE)) {
           textField.removeAttribute(LINKSTATE);
         }
       }
 
-      // disable the delayed showing
+      // disable the delayed showing while over link
       this.hideOverLinkImmediately = true;
+
       // @note use |call| for the updated |URL|
       $setOverLink.call(this, URL, anchorElt);
+
+      // restore the delayed showing
       this.hideOverLinkImmediately = false;
     };
 
     // @modified chrome://browser/content/browser.js::
     // XULBrowserWindow::updateStatusField
     const $updateStatusField = XULBrowserWindow.updateStatusField;
+
     XULBrowserWindow.updateStatusField =
     function ucjsUI_StatusField_updateStatusField() {
       // suppress the display except a message
@@ -271,6 +283,7 @@ const mStatusField = (function() {
      * Register the appearance
      */
     registerCSS();
+
     function registerCSS() {
       const css = '\
         .statuspanel-label{\
@@ -296,6 +309,7 @@ const mStatusField = (function() {
           visibility:collapse!important;\
         }\
       ';
+
       setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
     }
 
@@ -322,19 +336,23 @@ const mStatusField = (function() {
         "ORDER BY h.visit_date DESC",
         "LIMIT 1"
       ].join(' ');
+
       resultRows = scanPlacesDB({
         expression: SQLExp,
         params: {'url': originalURL},
         columns: ['visit_date']
       });
+
       if (resultRows) {
         // we ordered one row
         let row = resultRows[0];
         // convert microseconds into milliseconds
         let time = row.visit_date / 1000;
+
         time = (new Date(time)).toLocaleFormat(kTimeFormat);
 
         aURL = kLinkFormat.replace('%url%', aURL).replace('%time%', time);
+
         linkState = 'visited';
       }
 
@@ -346,11 +364,13 @@ const mStatusField = (function() {
         "WHERE p.url = :url",
         "LIMIT 1"
       ].join(' ');
+
       resultRows = scanPlacesDB({
         expression: SQLExp,
         params: {'url': originalURL},
         columns: ['id']
       });
+
       if (resultRows) {
         linkState = 'bookmarked';
       }
@@ -396,7 +416,8 @@ const mMenuitem = {
       // attribute of a menuitem.
       if (window.ucjsTabEx.tabState.read(aTab)) {
         aMenuitem.classList.remove(kATTR_UNREADTAB);
-      } else {
+      }
+      else {
         aMenuitem.classList.add(kATTR_UNREADTAB);
       }
     }
@@ -409,6 +430,7 @@ const mMenuitem = {
 function manageContextMenuSeparators() {
   [mContentArea, mURLBar].forEach((container) => {
     let contextMenu = container.contextMenu;
+
     addEvent(contextMenu, 'popupshowing', (event) => {
       if (event.target === contextMenu) {
         setImmediate(
@@ -432,7 +454,8 @@ function manageContextMenuSeparators() {
 
       if (!shouldShow(separator, 'previousSibling')) {
         separator.hidden = true;
-      } else {
+      }
+      else {
         last = separator;
       }
     });
@@ -443,10 +466,11 @@ function manageContextMenuSeparators() {
   }
 
   function shouldShow(aSeparator, aSibling) {
-    // @see chrome://browser/content/utilityOverlay.js::
-    // isElementVisible()
+    // @see chrome://browser/content/utilityOverlay.js::isElementVisible()
     const isElementVisible = window.isElementVisible;
+
     let node = aSeparator;
+
     do {
       node = node[aSibling];
     } while (node && !isElementVisible(node));

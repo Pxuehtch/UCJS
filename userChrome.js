@@ -21,6 +21,7 @@
  */
 const kPref = {
   // Script subfolders under your chrome folder
+  //
   // @note required to register at least one subfolder
   // @note adding '/' at the end, scripts are scanned in the descendant
   // directories
@@ -28,11 +29,13 @@ const kPref = {
 
   // File extensions to select which of java-script or xul-overlay a script
   // runs as
+  //
   // @note tests exact match from the first dot(.) of a file name
   jscriptExts: ['.uc.js'],
   overlayExts: ['.uc.xul', '.xul'],
 
   // URL list of chrome XUL files which is blocked to load scripts
+  //
   // @note wildcard '*' is available
   blockXULs: [
     'chrome://global/content/commonDialog.xul',
@@ -60,6 +63,7 @@ const kSystem = {
   // Check the cache of a script whenever the script runs on sub-windows
   // set true for debug, and a script that is modified will be applied on the
   // new opened sub-windows without restart
+  //
   // @note this loader checks the cache when the startup browser window opens,
   // and usually the cached script runs on sub-windows thereafter
   checkCacheAtRun: false
@@ -100,6 +104,7 @@ function ucjsScriptLoader_init() {
 
 /**
  * ScriptLoader handler
+ *
  * @return {hash}
  *   @member init {function}
  *   @member uninit {function}
@@ -211,6 +216,7 @@ function ScriptLoader() {
 
 /**
  * ScriptList handler
+ *
  * @return {hash}
  *   @member init {function}
  *   @member uninit {function}
@@ -297,7 +303,8 @@ function ScriptList() {
             return directory.exists() &&
                    directory.isDirectory() &&
                    !directory.isHidden();
-          } catch (ex) {}
+          }
+          catch (ex) {}
         }
         return false;
       });
@@ -423,6 +430,7 @@ function ScriptList() {
 
 /**
  * UserScript constructor
+ *
  * @return {hash}
  *   @member uninit {function}
  *   @member getURL {function}
@@ -520,9 +528,7 @@ function UserScript_testTarget(aMetaData, aURL) {
 
   let browserURL = getBrowserURL();
 
-  let test = function(str) {
-    return testURL(str.replace(/^main$/i, browserURL), aURL);
-  }
+  let test = (str) => testURL(str.replace(/^main$/i, browserURL), aURL);
 
   let exclude = aMetaData.exclude;
 
@@ -558,6 +564,7 @@ function UserScript_getMetaList(aMetaData) {
 
 /**
  * Common utility function
+ *
  * @return {hash}
  */
 function Util() {
@@ -573,7 +580,9 @@ function Util() {
     try {
       localFile.initWithPath(aFile.path);
       return localFile.lastModifiedTime;
-    } catch (ex) {}
+    }
+    catch (ex) {}
+
     return '';
   }
 
@@ -582,6 +591,7 @@ function Util() {
       'nsIFileInputStream');
     let convIS = $I('@mozilla.org/intl/converter-input-stream;1',
       'nsIConverterInputStream');
+
     let data = {}, size;
 
     try {
@@ -589,7 +599,8 @@ function Util() {
       size = fileIS.available();
       convIS.init(fileIS, 'UTF-8', size, convIS.DEFAULT_REPLACEMENT_CHARACTER);
       convIS.readString(size, data);
-    } finally {
+    }
+    finally {
       convIS.close();
       fileIS.close();
     }
@@ -682,6 +693,7 @@ function Util() {
 
 /**
  * Logger to the error console
+ *
  * @param aEnabled {boolean} whether output or not
  * @return {hash}
  */

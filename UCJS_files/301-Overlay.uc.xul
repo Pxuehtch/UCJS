@@ -6,7 +6,7 @@
 <!--
 // ==UserScript==
 // @name        Overlay.uc.xul
-// @description Overlay on the main browser window.
+// @description Overlay on the main browser window
 // @include     main
 // ==/UserScript==
 
@@ -46,7 +46,7 @@
 <!-- key -->
 <keyset id="mainKeyset">
   <!--
-   @note |window.moveTo(0,1)| for the themes of my Firefox and OS.
+   @note |window.moveTo(0,1)| for the themes of my Firefox and OS
    -->
   <key id="ucjs_key_Resize1"
     key="1" modifiers="alt"
@@ -61,7 +61,7 @@
     oncommand="window.moveTo(0,1);window.outerHeight=screen.availHeight-1;window.outerWidth=screen.availWidth;"/>
 
   <!--
-   @note Workaround for the themes of my Firefox and OS.
+   @note workaround for the themes of my Firefox and OS
    @see Misc.uc.js::setMainWindowStyle
    -->
   <key id="ucjs_key_ResetMargin"

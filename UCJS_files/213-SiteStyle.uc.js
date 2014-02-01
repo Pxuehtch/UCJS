@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        SiteStyle.uc.js
-// @description Customizes the site styles.
+// @description Customizes the style of web sites
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note Creates a preference menu in 'tools' of the menu bar.
+// @note creates a preference menu in 'tools' of the menu bar
 
 
 (function(window, undefined) {
@@ -52,6 +52,7 @@ const kUI = {
 
 /**
  * List of noisy URL of the search results
+ *
  * @param {string} Tests with 'https?://(www.)?' + value
  * @param {regexp}
  * @note cf. http://d.hatena.ne.jp/edvakf/20090723/1248365807
@@ -145,7 +146,7 @@ const kNoiseList = [
   'takewii.com',
   'tehvu.ir',
   'unblockweb.us',
-  // comparison
+  // shopping
   '3mori.com',
   'e-shops.jp',
   'r.tabelog.com',
@@ -156,14 +157,16 @@ const kNoiseList = [
 ];
 
 /**
- * Preset list of the site
+ * List of sites
+ *
  * @key name {string}
  *   this is displayed in the preference menu
  * @key include {regexp|string}|{regexp[]|string[]}
  *   describe the URL (or an array of URLs) that commands should run
  *   {string}: an exact match
  *
- * define one or more commands
+ * define one or more commands;
+ *
  * @key quickScript {function} [optional]
  *   run the script as soon as a location changes
  *   @param aDocument {Document}
@@ -187,35 +190,40 @@ const kSiteList = [
     include: /^https?:\/\/www\.google\.[a-z.]+\/.*q=/,
     script: function(aDocument) {
       // sanitize links
-      Array.forEach($S('li.g a', aDocument), function(link) {
+      Array.forEach($S('li.g a', aDocument), (link) => {
         link.removeAttribute('onmousedown');
 
-        var url =
+        let url =
           /google\./.test(link.hostname) &&
           /^\/url$/.test(link.pathname) &&
           /[&?](?:q|url)=([^&]+)/.exec(link.search);
+
         if (url) {
           link.href = decodeURIComponent(url[1]);
         }
       });
 
-      var lastHost = null;
-      Array.forEach($S('li.g', aDocument), function(item) {
-        var link = $S1('.r>a, .ts a', item);
+      let lastHost = null;
+
+      Array.forEach($S('li.g', aDocument), (item) => {
+        let link = $S1('.r>a, .ts a', item);
+
         if (!link) {
           return;
         }
 
-        // weaken noisy item.
+        // weaken noisy item
         if (NoisyURLHandler.test(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
 
         // emphasize the same host item
-        var host = link.hostname;
+        let host = link.hostname;
+
         if (host === lastHost) {
           item.classList.add('ucjs_sitestyle_samehost');
-        } else {
+        }
+        else {
           lastHost = host;
         }
       });
@@ -225,10 +233,11 @@ const kSiteList = [
         let params = aDocument.location.hash || aDocument.location.search;
         let [, mode] = /[?&#]tb[ms]=([^&]+)/.exec(params) || [];
 
-        return function(aModeList) {
+        return (aModeList) => {
           if (aModeList) {
             return mode && RegExp('^(' + aModeList + ')$').test(mode);
           }
+
           // the main result page or not
           return !mode;
         };
@@ -326,21 +335,23 @@ const kSiteList = [
     include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
     script: function(aDocument) {
       // sanitize links
-      Array.forEach($S('#contents a'), function(link) {
+      Array.forEach($S('#contents a'), (link) => {
         link.removeAttribute('onmousedown');
 
-        var url =
+        let url =
           /yahoo\./.test(link.hostname) &&
           /^\/\*\-/.test(link.pathname) &&
           /\/\*\-([^?]+)/.exec(link.pathname);
+
         if (url) {
           link.href = decodeURIComponent(url[1]);
         }
       });
 
       // process items
-      Array.forEach($S('.w'), function(item) {
-        var link = $S1('.hd>h3>a', item);
+      Array.forEach($S('.w'), (item) => {
+        let link = $S1('.hd>h3>a', item);
+
         if (!link) {
           return;
         }
@@ -423,7 +434,7 @@ const kSiteList = [
         let intervalTime = 500;
         let waitCount = 20;
 
-        let timerID = setInterval(function() {
+        let timerID = setInterval(() => {
           if (--waitCount < 0) {
             clear();
             return;
@@ -457,11 +468,13 @@ const kSiteList = [
 
         function getStartTime(aURL) {
           let time = /[?&#]t=(\d+h)?(\d+m)?(\d+s?)?/.exec(aURL);
+
           if (!time) {
             return 0;
           }
 
           let [, h, m, s] = time;
+
           h = (h && parseInt(h, 10) * 3600) || 0;
           m = (m && parseInt(m, 10) * 60) || 0;
           s = (s && parseInt(s, 10)) || 0;
@@ -475,6 +488,7 @@ const kSiteList = [
 
 /**
  * Page observer handler
+ *
  * @return {hash}
  *   @member init {function}
  *
@@ -488,7 +502,7 @@ const kSiteList = [
  * WORKAROUND: observes |about:document-onload-blocker| and delays execution
  * of a command
  */
-var PageObserver = (function() {
+const PageObserver = (function() {
   const {
     LOCATION_CHANGE_SAME_DOCUMENT,
     STATE_STOP, STATE_IS_WINDOW, STATE_IS_REQUEST
@@ -498,27 +512,31 @@ var PageObserver = (function() {
 
   const mProgressListener = {
     init: function() {
-      addEvent(gBrowser.tabContainer, 'TabClose', function(aEvent) {
-        var browser = aEvent.target.linkedBrowser;
+      addEvent(gBrowser.tabContainer, 'TabClose', (aEvent) => {
+        let browser = aEvent.target.linkedBrowser;
+
         mBrowserState.delete(browser);
       }, false);
 
       gBrowser.addTabsProgressListener(mProgressListener);
-      addEvent(window, 'unload', function() {
+
+      addEvent(window, 'unload', () => {
         gBrowser.removeTabsProgressListener(mProgressListener);
       }, false);
     },
 
-    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation,
-      aFlags) {
-      var URL = aLocation.spec;
+    onLocationChange: function(
+      aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
+      let URL = aLocation.spec;
+
       if (!/^https?/.test(URL)) {
         return;
       }
 
       mBrowserState.delete(aBrowser);
 
-      var site = matchSiteList(URL);
+      let site = matchSiteList(URL);
+
       if (!site) {
         return;
       }
@@ -526,6 +544,7 @@ var PageObserver = (function() {
       // 1. apply the stylesheet
       if (site.style) {
         let css = site.style(aBrowser.contentDocument);
+
         PageCSS.set(aBrowser.contentDocument, css);
       }
 
@@ -547,14 +566,16 @@ var PageObserver = (function() {
       }
     },
 
-    onStateChange: function(aBrowser, aWebProgress, aRequest, aFlags,
-      aStatus) {
-      var URL = aBrowser.currentURI.spec;
+    onStateChange: function(
+      aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
+      let URL = aBrowser.currentURI.spec;
+
       if (!/^https?/.test(URL)) {
         return;
       }
 
-      var state = mBrowserState.get(aBrowser, null);
+      let state = mBrowserState.get(aBrowser, null);
+
       if (!state || state.URL !== URL) {
         return;
       }
@@ -567,13 +588,14 @@ var PageObserver = (function() {
             (state.isSameDocument &&
              aFlags & STATE_IS_REQUEST &&
              aRequest.name === 'about:document-onload-blocker')) {
-          setTimeout(function(aDocument) {
+          setTimeout((aDocument) => {
             try {
               // error will occur if the document is not alive
               if (aDocument.readyState) {
                 state.site.script(aDocument);
               }
-            } catch (ex) {}
+            }
+            catch (ex) {}
           }, 500, aBrowser.contentDocument);
 
           mBrowserState.delete(aBrowser);
@@ -596,15 +618,16 @@ var PageObserver = (function() {
     try {
       uri = uriFixup.createFixupURI(aURL, uriFixup.FIXUP_FLAG_NONE);
       uri = uriFixup.createExposableURI(uri);
-    } catch (ex) {}
+    }
+    catch (ex) {}
 
     return uri ? uri.spec : aURL;
   }
 
   function matchSiteList(aURL) {
-    var site = null;
+    let site = null;
 
-    kSiteList.some(function(item) {
+    kSiteList.some((item) => {
       if (!item.disabled && testURL(item, aURL)) {
         site = item;
         return true;
@@ -616,16 +639,17 @@ var PageObserver = (function() {
   }
 
   function testURL(aSite, aTargetURL) {
-    var {include} = aSite;
+    let {include} = aSite;
 
     if (!Array.isArray(include)) {
       include = [include];
     }
 
-    return include.some(function(url) {
-      return (typeof url === 'string') ?
-        url === aTargetURL : url.test(aTargetURL);
-    });
+    return include.some((url) =>
+      (typeof url === 'string') ?
+      url === aTargetURL :
+      url.test(aTargetURL)
+    );
   }
 
   function init() {
@@ -639,24 +663,28 @@ var PageObserver = (function() {
 
 /**
  * Preference menu handler
+ *
  * @return {hash}
  *   @member init {function}
  */
-var PrefMenu = (function() {
+const PrefMenu = (function() {
   function init() {
-    var menu = $ID('menu_ToolsPopup').
+    let menu = $ID('menu_ToolsPopup').
+
     appendChild($E('menu', {
       id: kID.PREFMENU,
       label: kUI.PREFMENU.label,
       accesskey: kUI.PREFMENU.accesskey
     }));
+
     addEvent(menu, 'command', doCommand, false);
 
     if (kSiteList.length) {
       let popup = $E('menupopup', {
         onpopupshowing: 'event.stopPropagation();'
       });
-      kSiteList.forEach(function({name, disabled}, i) {
+
+      kSiteList.forEach(({name, disabled}, i) => {
         popup.appendChild($E('menuitem', {
           value: i,
           label: name + (disabled ? ' [disabled]' : ''),
@@ -665,8 +693,10 @@ var PrefMenu = (function() {
           closemenu: 'none'
         }));
       });
+
       menu.appendChild(popup);
-    } else {
+    }
+    else {
       $E(menu, {
         tooltiptext: kUI.PREFMENU.disabledTip,
         disabled: true
@@ -676,7 +706,9 @@ var PrefMenu = (function() {
 
   function doCommand(aEvent) {
     aEvent.stopPropagation();
-    var item = aEvent.target;
+
+    let item = aEvent.target;
+
     if (!item.value) {
       return;
     }
@@ -691,21 +723,21 @@ var PrefMenu = (function() {
 
 /**
  * Noisy URL handler
+ *
  * @return {hash}
  *   @member test {function}
  */
-var NoisyURLHandler = (function() {
+const NoisyURLHandler = (function() {
   function test(aURL) {
     if (!/^https?:/.test(aURL)) {
       return false;
     }
 
-    return kNoiseList.some(function(item) {
-      if (typeof item === 'string') {
-        return aURL.replace(/^https?:\/\/(?:www\.)?/, '').startsWith(item);
-      }
-      return item.test(aURL);
-    });
+    return kNoiseList.some((item) =>
+      (typeof item === 'string') ?
+      aURL.replace(/^https?:\/\/(?:www\.)?/, '').startsWith(item) :
+      item.test(aURL)
+    );
   }
 
   return {
@@ -715,10 +747,11 @@ var NoisyURLHandler = (function() {
 
 /**
  * Page CSS handler
+ *
  * @return {hash}
  *   @member set {function}
  */
-var PageCSS = (function() {
+const PageCSS = (function() {
   function set(aDocument, aCSS) {
     if (/^(?:complete|interactive)$/.test(aDocument.readyState)) {
       setCSS(aDocument, aCSS);
@@ -752,9 +785,9 @@ var PageCSS = (function() {
   };
 })();
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function SiteStyle_init() {
   PageObserver.init();
   PrefMenu.init();

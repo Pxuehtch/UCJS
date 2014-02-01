@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        RedirectParser.uc.js
-// @description Parses a link URL by the inner URLs.
+// @description Parses a link URL by the inner URLs
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage Access to a menu in the main context menu
+// @usage access to a menu in the main context menu
 
 
 (function(window, undefined) {
@@ -44,6 +44,7 @@ const {
 
 /**
  * Whether the access key of a menu item is expressed with underline
+ *
  * @note valid values are string 'true' or 'false', and missing key or empty
  * value equals 'false'
  * @see http://mxr.mozilla.org/mozilla-release/source/toolkit/locales/en-US/chrome/global/intl.properties#64
@@ -154,9 +155,6 @@ const kUI = {
   }
 };
 
-
-//********** Functions
-
 function RedirectParser_init() {
   initMenu()
 }
@@ -171,6 +169,7 @@ function initMenu() {
     label: ui.label,
     accesskey: ui.accesskey
   });
+
   menu.appendChild($E('menupopup'));
   context.insertBefore(menu, refItem);
 
@@ -195,6 +194,7 @@ function showContextMenu(aEvent) {
 function hideContextMenu(aEvent) {
   if (aEvent.target === contentAreaContextMenu) {
     let menu = $ID(kUI.menu.id);
+
     while (menu.itemCount) {
       menu.removeItemAt(0);
     }
@@ -236,7 +236,7 @@ function makeMenuItems(aParseList) {
     }));
   }
 
-  aParseList.URLs.forEach(function(URL, i) {
+  aParseList.URLs.forEach((URL, i) => {
     // @note a separator is not necessary before the first item
     if (i > 0 && aParseList.checkNewURLStart(i)) {
       popup.appendChild($E('menuseparator'));
@@ -256,7 +256,8 @@ function makeMenuItems(aParseList) {
 
       if (URL) {
         tips.push(description);
-      } else {
+      }
+      else {
         ui = kUI.item.preset;
         // show a text in label and tooltip instead of URL
         label = tooltiptext =
@@ -269,7 +270,8 @@ function makeMenuItems(aParseList) {
     if (URL) {
       if (testGeneralScheme(URL)) {
         action = 'open';
-      } else {
+      }
+      else {
         ui = kUI.item.unknown;
         tips.push(ui.text);
         styles.push(ui.style);
@@ -287,7 +289,9 @@ function makeMenuItems(aParseList) {
     if (!label) {
       label = unescURLforUI(URL);
     }
+
     accesskey = getCharFor(i);
+
     if (kUnderlinedAccesskey) {
       label = accesskey + ': ' + label;
     }
@@ -296,6 +300,7 @@ function makeMenuItems(aParseList) {
     if (!tooltiptext) {
       tooltiptext = URL;
     }
+
     if (tips.length) {
       tooltiptext = tips.concat(tooltiptext).join('\n');
     }
@@ -315,6 +320,7 @@ function makeMenuItems(aParseList) {
 function testGeneralScheme(aURL) {
   if (aURL) {
     let re = RegExp('^(?:' + kPref.generalSchemes + '):\/\/.+$', 'i');
+
     return re.test(aURL);
   }
   return false;
@@ -329,12 +335,13 @@ function getCharFor(aIndex) {
 function getParseListByPreset(aSourceURL) {
   let parseList;
 
-  kPreset.some(function(preset) {
+  kPreset.some((preset) => {
     if (preset.disabled) {
       return false;
     }
 
     let testerRE, sourceURL, sourceURLType;
+
     if (preset.link && aSourceURL.link) {
       testerRE = preset.link;
       sourceURL = aSourceURL.link;
@@ -355,8 +362,9 @@ function getParseListByPreset(aSourceURL) {
 
       parseList.add(sourceURL);
 
-      preset.items.forEach(function({replacement}) {
+      preset.items.forEach(({replacement}) => {
         let matchURL = sourceURL.replace(testerRE, replacement);
+
         parseList.add(unescURLChars(matchURL));
       });
 
@@ -375,10 +383,12 @@ function getParseListByScan(aSourceURL) {
   let parseList = createParseList();
 
   let URLs = splitIntoSchemes(aSourceURL.link);
+
   while (URLs.length) {
     parseList.markAsNewURL();
 
     let baseURL = unescURLChars(URLs.shift());
+
     if (URLs.length) {
       parseList.add(baseURL + URLs.join(''));
     }
@@ -386,6 +396,7 @@ function getParseListByScan(aSourceURL) {
     parseList.add(baseURL);
 
     let trimmedURL = removeFragment(baseURL);
+
     if (trimmedURL) {
       parseList.add(trimmedURL);
     }
@@ -405,12 +416,14 @@ function splitIntoSchemes(aURL) {
   const delimiter = /((?:\:|%(?:25)?3A)(?:\/|%(?:25)?2F){2})/i;
 
   let splits = aURL.split(delimiter);
+
   if (splits.length === 3) {
     return [aURL];
   }
 
   let URLs = [];
   let slices, scheme = splits.shift() + splits.shift();
+
   while (splits.length > 1) {
     // 'abc.com/...http' -> ['abc.com/...', 'http']
     slices = sliceScheme(splits.shift());
@@ -419,18 +432,22 @@ function splitIntoSchemes(aURL) {
     // 'http' + '://'
     scheme = slices[1] + splits.shift();
   }
+
   URLs.push(scheme + splits.shift());
 
-  return URLs.reduce(function(a, b) {
+  return URLs.reduce((a, b) => {
     let segments = b.split(delimiter);
+
     if (!segments[0] || !segments[2]) {
       // an incomplete URL ('://...' or 'http://') is combined with a previous
       // string as a part of it
       a[a.length - 1] += b;
-    } else {
+    }
+    else {
       // 'http://...' is a complete URL string
       a[a.length] = b;
     }
+
     return a;
   }, []);
 }
@@ -452,22 +469,27 @@ function sliceScheme(aString) {
   // be care for changing the value of a loop index for using it outside of
   // loop
   let index = aString.length - 1;
+
   while (true) {
     if (aString[index] !== '%') {
       if (!schemeCharRE.test(aString[index])) {
         index += 1;
         break;
       }
-    } else {
+    }
+    else {
       let code, codeLength;
+
       // '%' may be escaped to '%25'
       if (aString.substr(index, 3) === '%25') {
         code = aString.substr(index + 3, 2);
         codeLength = 5;
-      } else {
+      }
+      else {
         code = aString.substr(index + 1, 2);
         codeLength = 3;
       }
+
       if (!escapeCodeRE.test(code)) {
         index += codeLength;
         break;
@@ -478,12 +500,14 @@ function sliceScheme(aString) {
     if (index === 0) {
       break;
     }
+
     // decrement the loop index here, at the bottom of loop
     index--;
   }
 
   if (index < aString.length) {
     let scheme = aString.slice(index).replace(leadingMarksRE, '');
+
     if (scheme) {
       return [aString.slice(0, aString.lastIndexOf(scheme)), scheme];
     }
@@ -493,6 +517,7 @@ function sliceScheme(aString) {
 
 function removeFragment(aURL) {
   let trimmedURL = aURL.replace(/[?&#].*$/, '');
+
   if (trimmedURL !== aURL) {
     return trimmedURL;
   }
@@ -520,6 +545,7 @@ function createParseList(aPreset, aSourceURLType) {
     }
 
     // invalid: no inner URL by scanning
+    // @note the first item is always marked
     if (!mPreset && mNewURLIndexes.length <= 1) {
       return false;
     }
@@ -547,14 +573,12 @@ function createParseList(aPreset, aSourceURLType) {
   };
 }
 
-
-//********** Utilities
-
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
     case 'styles':
       aValue.join(';').split(/;+/).forEach((style) => {
         let [propName, propValue] = style.split(':').map((str) => str.trim());
+
         if (propName && propValue) {
           aNode.style.setProperty(propName, propValue, '');
         }
@@ -562,6 +586,7 @@ function handleAttribute(aNode, aName, aValue) {
       break;
     case 'action': {
       let command = makeActionCommand(aValue);
+
       if (command) {
         aNode.setAttribute('oncommand', command);
         // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
@@ -577,6 +602,7 @@ function handleAttribute(aNode, aName, aValue) {
 
 function makeActionCommand(aValue) {
   let [action, URL] = aValue;
+
   if (!URL) {
     return '';
   }
@@ -598,9 +624,9 @@ function makeActionCommand(aValue) {
   return command.replace('%URL%', URL);
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 RedirectParser_init();
 
 

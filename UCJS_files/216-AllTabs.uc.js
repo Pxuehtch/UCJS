@@ -86,6 +86,7 @@ const kID = {
 
 /**
  * Wrapper of tabs
+ *
  * @see chrome://browser/content/tabbrowser.xml
  */
 const mTabs = {
@@ -108,6 +109,7 @@ const mTabs = {
 
 /**
  * Wrapper of TabView
+ *
  * @see chrome://browser/content/browser.js::TabView
  * @see chrome://browser/content/tabview.js
  */
@@ -158,9 +160,11 @@ const mTabGroups = {
       group.tabs.forEach((tab) => {
         tab = null;
       });
+
       group.tabs.length = 0;
       group.topTab = null;
     });
+
     this.groups.length = 0;
   },
 
@@ -169,10 +173,6 @@ const mTabGroups = {
   }
 };
 
-
-/**
- * Main function
- */
 function AllTabs_init() {
   mTabView.init();
   initCSS();
@@ -201,6 +201,7 @@ function moveAllTabsMenuToTabViewButton() {
 
   // attach alltabs-contextmenu to tabview-button
   let tabview = $ID(kID.TABVIEW_BUTTON);
+
   tabview.appendChild($ID(kID.ALLTABS_POPUP));
   tabview.contextMenu = kID.ALLTABS_POPUP;
 }
@@ -211,6 +212,7 @@ function customizeAllTabsPopupFunction() {
   // @modified chrome://browser/content/tabbrowser.xml::
   // _setMenuitemAttributes
   const $_setMenuitemAttributes = alltabsPopup._setMenuitemAttributes;
+
   alltabsPopup._setMenuitemAttributes =
   function ucjsAllTabs_setMenuitemAttributes(aMenuitem, aTab) {
     $_setMenuitemAttributes.apply(this, arguments);
@@ -226,9 +228,11 @@ function customizeTabViewButtonTooltip() {
       id: kID.TABVIEW_TOOLTIP
     })
   );
+
   addEvent(tooltip, 'popupshowing', onPopupShowing, false);
 
   let tabview = $ID(kID.TABVIEW_BUTTON);
+
   tabview.removeAttribute('tooltiptext');
   tabview.setAttribute('tooltip', kID.TABVIEW_TOOLTIP);
 }
@@ -243,7 +247,9 @@ function customizeTabTooltip() {
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
   addEvent($ID(kID.TAB_TOOLTIP), 'popupshowing', (event) => {
     event.stopPropagation();
+
     let tab = window.document.tooltipNode;
+
     if (tab.localName !== 'tab' || tab.mOverCloseButton) {
       return;
     }
@@ -256,14 +262,17 @@ function customizeTabTooltip() {
       // |createTooltip| would set the title of the tab by default
       title: tooltip.label
     });
+
     tooltip.setAttribute('label', label);
   }, false);
 }
 
 function initAllTabsMenu() {
   let alltabsPopup = $ID(kID.ALLTABS_POPUP);
+
   addEvent(alltabsPopup, 'popupshowing', onPopupShowing, true);
   addEvent(alltabsPopup, 'popuphidden', onPopupHidden, true);
+
   // WORKAROUND: see |onCommand()|
   addEvent(alltabsPopup, 'click', onCommand, false);
 
@@ -274,6 +283,7 @@ function initAllTabsMenu() {
     }),
     $ID(kID.ALLTABS_POPUP_SEPARATOR)
   );
+
   addEvent(groupsMenu, 'click', onCommand, false);
 
   groupsMenu.appendChild(
@@ -322,6 +332,7 @@ function makeTabMenuItem(aTab, aOption) {
 
 function onCommand(aEvent) {
   aEvent.stopPropagation();
+
   if (aEvent.button !== 0) {
     return;
   }
@@ -361,6 +372,7 @@ function onCommand(aEvent) {
 
 function onPopupShowing(aEvent) {
   aEvent.stopPropagation();
+
   let popup = aEvent.target;
 
   // popup of the tabview-button tooltip
@@ -384,6 +396,7 @@ function onPopupShowing(aEvent) {
 
     // about pinned tabs
     let pinnedCount = mTabs.pinnedCount;
+
     if (pinnedCount) {
       let pinnedTabsTag = $E('menuitem', {
         id: kID.PINNEDTABS_TAG_MENUITEM,
@@ -393,6 +406,7 @@ function onPopupShowing(aEvent) {
         }),
         disabled: true
       });
+
       popup.insertBefore(pinnedTabsTag, refItem);
 
       gBrowser.visibleTabs.forEach((tab) => {
@@ -404,6 +418,7 @@ function onPopupShowing(aEvent) {
 
     // about tabs of the active group
     let visibleCount = mTabs.visibleCount;
+
     if (visibleCount) {
       let groupTag = $E('menuitem', {
         id: kID.GROUP_TAG_MENUITEM,
@@ -414,6 +429,7 @@ function onPopupShowing(aEvent) {
         }),
         disabled: true
       });
+
       popup.insertBefore(groupTag, refItem);
 
       // WORKAROUND: we can find menuitems with the proper overflowed tabs
@@ -432,6 +448,7 @@ function onPopupShowing(aEvent) {
     }
 
     let activeGroupItem = mTabView.activeGroupItem;
+
     Array.forEach(mTabView.groupItems, (groupItem) => {
       mTabGroups.add(groupItem);
 
@@ -454,6 +471,7 @@ function onPopupShowing(aEvent) {
       getAt(popup.parentNode.getAttribute(kID.ATTR_GROUPINDEX));
 
     let topTab = group.topTab;
+
     group.tabs.forEach((tab) => {
       popup.appendChild(
         makeTabMenuItem(tab, {
@@ -466,6 +484,7 @@ function onPopupShowing(aEvent) {
 
 function onPopupHidden(aEvent) {
   aEvent.stopPropagation();
+
   let popup = aEvent.target;
 
   // popup of the alltabs menu
@@ -473,6 +492,7 @@ function onPopupHidden(aEvent) {
     $ID(kID.GROUPS_MENU).disabled = false;
 
     let groupsPopup = $ID(kID.GROUPS_MENUPOPUP);
+
     while (groupsPopup.hasChildNodes()) {
       groupsPopup.removeChild(groupsPopup.firstChild);
     }
@@ -480,6 +500,7 @@ function onPopupHidden(aEvent) {
     if ($ID(kID.PINNEDTABS_TAG_MENUITEM)) {
       popup.removeChild($ID(kID.PINNEDTABS_TAG_MENUITEM));
     }
+
     if ($ID(kID.GROUP_TAG_MENUITEM)) {
       popup.removeChild($ID(kID.GROUP_TAG_MENUITEM));
     }
@@ -505,6 +526,7 @@ function createTabMenuItem(aTab, aPopup, aRefItem) {
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'user') {
     let [name, value] = aValue;
+
     aNode.setAttribute(name, value);
     return true;
   }
@@ -517,6 +539,7 @@ function hideElement(aElement) {
 
 /**
  * String formatter
+ *
  * @param aFormat {string}
  * @param aAttribute {string}
  * @return {string}
@@ -530,15 +553,19 @@ function hideElement(aElement) {
 function format(aFormat, aAttribute) {
   for (let [name, value] in Iterator(aAttribute)) {
     let plural = aFormat.match(RegExp('%' + name + '\\{(.+?)\\}'));
+
     if (plural) {
       let num = parseInt(value, 10) || 0;
       let index = (num > 1) ? 2 : num;
       let words = plural[1].split(';');
+
       aFormat = aFormat.replace(plural[0],
         (index < words.length) ? words[index] : words[0]);
     }
+
     aFormat = aFormat.replace('%' + name, value);
   }
+
   return aFormat;
 }
 

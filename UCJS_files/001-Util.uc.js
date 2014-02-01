@@ -10,7 +10,7 @@
 // @include chrome://browser/content/history/history-panel.xul
 // @include chrome://global/content/console.xul
 
-// @usage Access to functions through the global scope;
+// @usage access to functions through the global scope;
 // |window.ucjsUtil.XXX|
 
 // @note note the definitions only in the main window (e.g. gBrowser) when
@@ -65,10 +65,12 @@ const XPCOM = (function() {
 
     if (!(kServices[aName] instanceof window.Ci.nsISupports)) {
       let service = create(kServices[aName], aCIDParams, 'getService');
+
       // lazy definition
       delete kServices[aName];
       kServices[aName] = service
     }
+
     return kServices[aName];
   }
 
@@ -107,20 +109,26 @@ const XPCOM = (function() {
 
     try {
       let res = window.Cc[CID][aMethod]();
+
       IID.forEach((id) => {
         res.QueryInterface(window.Ci[id]);
       });
+
       return res;
-    } catch (ex) {}
+    }
+    catch (ex) {}
+
     return null;
   }
 
   function fixupCID(aCID, aCIDParams) {
     if (aCIDParams) {
       let params = [];
+
       for (let [name, value] in Iterator(aCIDParams)) {
         params.push(name + '=' + value);
       }
+
       aCID += '?' + params.join('&');
     }
     return aCID;
@@ -158,8 +166,10 @@ const Timer = (function() {
             // delete the property that is not used anymore
             delete timers[id];
           }
+
           aCallback.apply(null, aParams);
-        } catch (ex) {}
+        }
+        catch (ex) {}
       }
     }, aDelay || 0, aType);
 
@@ -168,8 +178,10 @@ const Timer = (function() {
 
   function unsetTimer(aID) {
     let timer = timers[aID];
+
     // delete the property that is not used anymore
     delete timers[aID];
+
     if (timer) {
       timer.cancel();
     }
@@ -181,11 +193,14 @@ const Timer = (function() {
     let ids = [id for ([id] of immediates)];
     for (let id of ids) {
       let immediate = immediates.get(id);
+
       if (immediate) {
         immediates.delete(id);
+
         try {
           immediate();
-        } catch (ex) {}
+        }
+        catch (ex) {}
       }
     }
   };
@@ -247,7 +262,9 @@ const Prefs = (function() {
         case prefs.PREF_STRING:
           return prefs.getComplexValue(aKey, window.Ci.nsISupportsString).data;
       }
-    } catch (ex) {}
+    }
+    catch (ex) {}
+
     return aDefaultValue || null;
   }
 
@@ -294,9 +311,9 @@ const Prefs = (function() {
   };
 })();
 
-
-//********** DOM functions
-
+/**
+ * Functions for DOM handling
+ */
 function addEvent(aTarget, aType, aListener, aCapture) {
   if (!aTarget || !aType || !aListener) {
     return;
@@ -334,6 +351,7 @@ function getSelectionAtCursor(aOption) {
   } = aOption || {};
 
   let node, rangeParent, rangeOffset;
+
   if (event) {
     // event mode
     node = event.target;
@@ -349,6 +367,7 @@ function getSelectionAtCursor(aOption) {
   }
 
   let selection = getSelectionController(node);
+
   if (!selection) {
     return null;
   }
@@ -358,6 +377,7 @@ function getSelectionAtCursor(aOption) {
   // scan ranges with the range offset
   for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
     range = selection.getRangeAt(i);
+
     if (range.isPointInRange(rangeParent, rangeOffset)) {
       text = getSelectedTextInRange(range);
       break;
@@ -368,9 +388,11 @@ function getSelectionAtCursor(aOption) {
   if (event && !text) {
     let {clientX: x, clientY: y} = event;
     let rect;
+
     for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
       range = selection.getRangeAt(i);
       rect = range.getBoundingClientRect();
+
       if (rect.left <= x && x <= rect.right &&
           rect.top <= y && y <= rect.bottom) {
         text = getSelectedTextInRange(range);
@@ -396,11 +418,15 @@ function getSelectionController(aNode) {
     try {
       return aNode.QueryInterface(window.Ci.nsIDOMNSEditableElement).
         editor.selection;
-    } catch (ex) {}
+    }
+    catch (ex) {}
+
     return null;
   }
+
   // 2. get a window selection
   let win = aNode.ownerDocument.defaultView || getFocusedWindow();
+
   return win.getSelection();
 }
 
@@ -432,9 +458,11 @@ function trimText(aText, aMaxLength) {
 
   if (aText.length > aMaxLength) {
     let match = RegExp('^(?:\\s*.){0,' + aMaxLength + '}').exec(aText);
+
     if (!match) {
       return '';
     }
+
     aText = match[0];
   }
 
@@ -594,11 +622,14 @@ function evaluateXPath(aXPath, aContext, aType) {
   let defaultNS = null;
   try {
     defaultNS = base.lookupNamespaceURI(null);
-  } catch (ex) {}
+  }
+  catch (ex) {}
 
   if (defaultNS) {
     let tmpPrefix = '__NS__';
+
     aXPath = fixNamespacePrefixForXPath(aXPath, tmpPrefix);
+
     resolver = (prefix) =>
       (prefix === tmpPrefix) ?
       defaultNS :
@@ -610,7 +641,9 @@ function evaluateXPath(aXPath, aContext, aType) {
 
   try {
     return doc.evaluate(aXPath, base, resolver, aType, null);
-  } catch (ex) {}
+  }
+  catch (ex) {}
+
   return null;
 }
 
@@ -659,9 +692,9 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
   return aXPath.replace(kTokenPattern, replacer);
 }
 
-
-//********** Page/Tab/Window function
-
+/**
+ * Functions for Tab / Window
+ */
 function checkSecurity(aURL, aOption) {
   let {
     trustURL,
@@ -728,6 +761,7 @@ function resolveURL(aURL, aBaseURL) {
 
 function openNewWindow(aURL, aOption) {
   let URL = resolveURL(aURL);
+
   if (!URL) {
     return;
   }
@@ -757,6 +791,7 @@ function openHomePages(aOption) {
 
   // @see chrome://browser/content/browser.js::gHomeButton
   let homePages = window.gHomeButton.getHomePage().split('|');
+
   if (onlyFirstPage) {
     homePages = homePages[0];
   }
@@ -827,6 +862,7 @@ function openURL(aURL, aOption) {
 
 function openTab(aURL, aOption) {
   let URL = resolveURL(aURL);
+
   if (!URL) {
     return;
   }
@@ -863,6 +899,7 @@ function openTab(aURL, aOption) {
 
 function loadPage(aURL, aOption) {
   let URL = resolveURL(aURL);
+
   if (!URL) {
     return;
   }
@@ -892,9 +929,11 @@ function loadPage(aURL, aOption) {
   if (allowThirdPartyFixup) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
   }
+
   if (fromExternal) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
   }
+
   if (isUTF8) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
   }
@@ -946,15 +985,16 @@ function removeAllTabsBut(aTab) {
 
   for (let i = tabs.length - 1, tab; i >= 0; i--) {
     tab = tabs[i];
+
     if (tab !== aTab && !tab.pinned) {
       removeTab(tab, {safeBlock: true});
     }
   }
 }
 
-
-//********** Miscellaneous function
-
+/**
+ * Miscellaneous functions
+ */
 function getWindowList(aType) {
   if (aType !== null) {
     aType = aType || 'navigator:browser';
@@ -968,6 +1008,7 @@ function focusWindow(aWindow) {
 
   while (wins.hasMoreElements()) {
     win = wins.getNext();
+
     if (win === aWindow) {
       win.focus();
       return;
@@ -981,6 +1022,7 @@ function focusWindowAtIndex(aIdx) {
 
   while (wins.hasMoreElements()) {
     win = wins.getNext();
+
     if (idx++ === aIdx) {
       win.focus();
       return;
@@ -1002,6 +1044,7 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
   } = aOption || {};
 
   let css = normalizeCSS(aCSS);
+
   if (!css) {
     return;
   }
@@ -1010,13 +1053,15 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
   try {
     URI = XPCOM.$S('io').
       newURI('data:text/css,' + encodeURIComponent(css), null, null);
-  } catch (ex) {
+  }
+  catch (ex) {
     return;
   }
 
   const styleSheetService = XPCOM.$S('StyleSheetService');
 
   let type;
+
   switch (aType) {
     case 'AGENT_SHEET':
     case 'USER_SHEET':
@@ -1039,6 +1084,7 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
 
 function registerChromeStyleSheet(aCSS) {
   let css = normalizeCSS(aCSS);
+
   if (!css) {
     return;
   }
@@ -1068,26 +1114,31 @@ function registerContentStyleSheet(aCSS, aOption) {
   } = aOption || {};
 
   let css = normalizeCSS(aCSS);
+
   if (!css) {
     return;
   }
 
   let doc = document || getFocusedDocument();
+
   if (!doc.head) {
     return;
   }
 
   if (id) {
     let old = doc.getElementById(id);
+
     if (old) {
       if (old.textContent === css) {
         return;
       }
+
       old.parentNode.removeChild(old);
     }
   }
 
   let style = doc.createElement('style');
+
   style.type = 'text/css';
   if (id) {
     style.id = id;
@@ -1137,22 +1188,27 @@ function scanPlacesDB(aParam) {
     createStatement(expression);
 
   let rows = [];
+
   try {
     for (let key in statement.params) {
       if (!(key in params)) {
         throw Error('parameter is not defined: ' + key);
       }
+
       statement.params[key] = params[key];
     }
 
     while (statement.executeStep()) {
       let res = {};
+
       columns.forEach((name) => {
         res[name] = statement.row[name];
       });
+
       rows.push(res);
     }
-  } finally {
+  }
+  finally {
     statement.finalize();
   }
 
@@ -1205,6 +1261,7 @@ function asyncScanPlacesDB(aParam) {
       if (!(key in params)) {
         throw Error('parameter is not defined: ' + key);
       }
+
       statement.params[key] = params[key];
     }
 
@@ -1213,11 +1270,14 @@ function asyncScanPlacesDB(aParam) {
 
       handleResult: function(aResultSet) {
         let row;
+
         while ((row = aResultSet.getNextRow())) {
           let res = {};
+
           columns.forEach((name) => {
             res[name] = row.getResultByName(name);
           });
+
           this.rows.push(res);
         }
       },
@@ -1237,14 +1297,15 @@ function asyncScanPlacesDB(aParam) {
         }
       }
     });
-  } finally {
+  }
+  finally {
     statement.finalize();
   }
 }
 
-
-//********** Log function
-
+/**
+ * Log function
+ */
 function logMessage(aTarget, aMessage) {
   if (Array.isArray(aMessage)) {
     aMessage = aMessage.join('\n');
@@ -1266,9 +1327,9 @@ function log(aMessage) {
   return logMessage('Util.uc.js', aMessage);
 }
 
-
-//********** Export
-
+/**
+ * Export
+ */
 return {
   Timer: Timer,
   Prefs: Prefs,

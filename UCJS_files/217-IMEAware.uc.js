@@ -5,6 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
+
 // @see https://github.com/Griever/userChromeJS/blob/master/IME-Colors.uc.js
 
 
@@ -33,6 +34,7 @@ function log(aMsg) {
 
 /**
  * CSS styles of a textbox by IME state
+ *
  * @note the keys are linked with the return value of |getIMEState()|
  */
 const kStyleSet = {
@@ -52,9 +54,6 @@ const kStyleSet = {
   }
 };
 
-/**
- * Initialization
- */
 function IMEAware_init() {
   let mTextboxStyler = TextboxStyler();
 
@@ -62,6 +61,7 @@ function IMEAware_init() {
   // @note use the capture mode for event delegation
   addEvent(window.document.documentElement, 'focus', (aEvent) => {
     let node = aEvent.originalTarget;
+
     // pick up a writable plain-text field
     if (
       (node instanceof HTMLTextAreaElement ||
@@ -126,12 +126,14 @@ function TextboxStyler() {
 
     // observe key event of IME keys
     mTextbox.addEventListener('keyup', handleEvent, false);
+
     // 'keyup' does not occur when IME is turned off during the conversion
     mTextbox.addEventListener('compositionend', handleEvent, false);
 
     // observe events for clean-up
     // 'blur' will raise also before a page unloads
     mTextbox.addEventListener('blur', handleEvent, false);
+
     // watch 'pagehide' of a content window for when 'blur' unfired (e.g.
     // a page navigation with shortcut key)
     if (!inChromeWindow()) {
@@ -144,8 +146,8 @@ function TextboxStyler() {
     if (checkValidity()) {
       mTextbox.removeEventListener('keyup', handleEvent, false);
       mTextbox.removeEventListener('compositionend', handleEvent, false);
-
       mTextbox.removeEventListener('blur', handleEvent, false);
+
       if (!inChromeWindow()) {
         mTextbox.ownerDocument.defaultView.
         removeEventListener('pagehide', handleEvent, false);
@@ -167,9 +169,11 @@ function TextboxStyler() {
     }
 
     let ime = getIMEState();
+
     if (mIMEState === ime) {
       return;
     }
+
     mIMEState = ime;
 
     setStyle();
@@ -195,7 +199,8 @@ function TextboxStyler() {
   function restoreStyle() {
     if (mDefaultStyle !== null) {
       mTextbox.setAttribute('style', mDefaultStyle);
-    } else {
+    }
+    else {
       mTextbox.removeAttribute('style');
     }
   }
@@ -216,18 +221,22 @@ function TextboxStyler() {
 
     try {
       return !!(mTextbox && Cu.getWeakReference(mTextbox).get());
-    } catch (ex) {}
+    }
+    catch (ex) {}
+
     return false;
   }
 
   /**
    * gets the current state of IME
+   *
    * @return {string} key in |kStyleSet|
    */
   function getIMEState() {
     const {Ci} = window;
 
     let win = mTextbox.ownerDocument.defaultView;
+
     if (win) {
       let imeMode = win.getComputedStyle(mTextbox, null).imeMode;
       let utils = win.

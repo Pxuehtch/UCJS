@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        MouseGesture.uc.js
-// @description Mouse gesture functions.
+// @description Mouse gesture functions
 // @include     main
 // ==/UserScript==
 
@@ -10,15 +10,15 @@
 
 /**
  * @usage
- * *Normal mode: gestures or wheel rotations holding down the right mouse
- *  button.
- * *Drag&Drop mode: gestures dragging a selected text or a link or an image.
- * *'Shift' key and 'Ctrl' key are supported.
+ * -Normal mode: gestures or wheel rotations holding down the right mouse
+ *  button
+ * -Drag&Drop mode: gestures dragging a selected text or a link or an image
+ * -'Shift' key and 'Ctrl' key are supported
  *
  * @note
- * *The gestures is only available within the inner frame of the content area,
+ * -The gestures is only available within the inner frame of the content area,
  *  and the default width of the frame is 16px. see |inGestureArea()|
- * *The max number of signs(directions and wheel rotations) per gesture is 10.
+ * -The max number of signs(directions and wheel rotations) per gesture is 10.
  *  see |GestureManager()|
  */
 
@@ -55,7 +55,7 @@ const {
 } = window.ucjsUI;
 
 /**
- * Gesture signs for kGestureSet
+ * Gesture signs for |kGestureSet|
  */
 const kGestureSign = {
   // Modifier keys
@@ -73,6 +73,7 @@ const kGestureSign = {
 
 /**
  * Gestures setting
+ *
  * @key gestures {string[]} combination of |kGestureSign|
  * @key name {string}
  * @key command {function}
@@ -83,7 +84,9 @@ const kGestureSign = {
  * @key disabled {boolean} [optional]
  */
 const kGestureSet = [
-  //********** Navigations
+  /**
+   * Navigations
+   */
   {
     gestures: ['L'],
     name: '戻る',
@@ -150,8 +153,9 @@ const kGestureSet = [
     }
   },
 
-
-  //********** Tabs
+  /**
+   * Tabs
+   */
   {
     gestures: ['DL'],
     name: 'タブを複製',
@@ -224,8 +228,9 @@ const kGestureSet = [
     }
   },
 
-
-  //********** UI
+  /**
+   * UI
+   */
   {
     gestures: ['RD'],
     name: '履歴を開閉',
@@ -257,8 +262,9 @@ const kGestureSet = [
     }
   },
 
-
-  //********** D&D mode
+  /**
+   * For D&D mode
+   */
   {
     gestures: ['TEXT#L'],
     name: 'Weblio',
@@ -284,7 +290,8 @@ const kGestureSet = [
     gestures: ['S&TEXT#R'],
     name: 'Google検索 site:',
     command: function({dragData}) {
-      var data = dragData + ' site:' + gBrowser.currentURI.spec;
+      let data = dragData + ' site:' + gBrowser.currentURI.spec;
+
       window.ucjsWebService.open({name: 'GoogleSearch', data: data});
     }
   },
@@ -361,25 +368,23 @@ const kGestureSet = [
   }
 ];
 
-
-//********** Handlers
-// TODO: cancel the gesture when enters into a window (always on top) that is
-// overwrapped on the gesture area
-
 /**
- * Main handler
+ * Handlers
+ *
+ * TODO: cancel the gesture when enters into a window (always on top) that is
+ * overwrapped on the gesture area
  */
 function MouseGesture() {
   const kState = {READY: 0, GESTURE: 1, DRAG: 2};
-  var mState = kState.READY;
 
-  var mMouse = MouseManager();
-  var mGesture = GestureManager();
+  let mState = kState.READY;
+  let mMouse = MouseManager();
+  let mGesture = GestureManager();
 
   registerEvents();
 
   function registerEvents() {
-    var pc = gBrowser.mPanelContainer;
+    let pc = gBrowser.mPanelContainer;
 
     addEvent(pc, 'mousedown', onMouseDown, false);
     addEvent(pc, 'mousemove', onMouseMove, false);
@@ -404,20 +409,23 @@ function MouseGesture() {
     addEvent(window, 'mouseup', onGlobalMouseUp, false);
   }
 
-
-  //********** Events
-
+  /**
+   * Events
+   */
   function onMouseDown(aEvent) {
-    var canStart = mMouse.update(aEvent);
+    let canStart = mMouse.update(aEvent);
+
     if (canStart) {
       if (mState === kState.READY) {
         if (inGestureArea(aEvent)) {
           startGesture(aEvent);
         }
-      } else {
+      }
+      else {
         cancelGesture();
       }
-    } else {
+    }
+    else {
       if (mState !== kState.READY) {
         cancelGesture();
       }
@@ -430,14 +438,16 @@ function MouseGesture() {
     if (mState === kState.GESTURE) {
       if (inGestureArea(aEvent)) {
         progress(aEvent);
-      } else {
+      }
+      else {
         cancelGesture();
       }
     }
   }
 
   function onMouseUp(aEvent) {
-    var canStop = mMouse.update(aEvent);
+    let canStop = mMouse.update(aEvent);
+
     if (canStop) {
       if (mState === kState.GESTURE) {
         stopGesture(aEvent);
@@ -515,12 +525,14 @@ function MouseGesture() {
   }
 
   function onDragOver(aEvent) {
-    if (mState !== kState.DRAG)
+    if (mState !== kState.DRAG) {
       return;
+    }
 
     // cancel the gesture drag and the default drag works
-    // @note The default drag is also cancelled by pressing ESC.
-    var forceCancel = aEvent.shiftKey && aEvent.altKey;
+    // @note The default drag is also cancelled by pressing ESC key
+    let forceCancel = aEvent.shiftKey && aEvent.altKey;
+
     if (forceCancel) {
       cancelGesture();
       return;
@@ -531,13 +543,14 @@ function MouseGesture() {
         suppressDefault(aEvent);
         progress(aEvent);
       }
-    } else {
+    }
+    else {
       cancelGesture();
     }
   }
 
-  // TODO: Prevent the drop event when a right mouse button is pressed down
-  // while dragging. At present the drop event fires.
+  // TODO: prevent the drop event when a right mouse button is pressed down
+  // while dragging. At present the drop event fires
   function onDrop(aEvent) {
     if (mState !== kState.DRAG) {
       return;
@@ -545,7 +558,8 @@ function MouseGesture() {
 
     if (inEditable(aEvent)) {
       cancelGesture();
-    } else {
+    }
+    else {
       suppressDefault(aEvent);
       stopGesture(aEvent);
     }
@@ -556,9 +570,9 @@ function MouseGesture() {
     aEvent.stopPropagation();
   }
 
-
-  //********** Helpers
-
+  /**
+   * Helpers
+   */
   function startGesture(aEvent) {
     mState = kState.GESTURE;
     start(aEvent);
@@ -599,12 +613,12 @@ function MouseGesture() {
  * @return {hash}
  *   @member update {function}
  *
- * TODO: Prevent contextmenu popups when a right mouse button is clicked while
- * dragging.
+ * TODO: prevent contextmenu popups when a right mouse button is clicked while
+ * dragging
  */
 function MouseManager() {
-  var mRightDown, mElseDown;
-  var mSuppressMenu, mSuppressClick;
+  let mRightDown, mElseDown;
+  let mSuppressMenu, mSuppressClick;
 
   clear();
 
@@ -619,33 +633,37 @@ function MouseManager() {
    * Updates the state
    * @param aEvent {MouseEvent}
    * @return {boolean|undefined}
-   *   'mousedown' {boolean} is ready that a normal mode gesture can start
-   *   'mouseup' {boolean} is ready that a normal mode gesture can stop
-   *   otherwise {undefined}
+   *   'mousedown' {boolean} ready or not that a normal mode gesture can start
+   *   'mouseup' {boolean} ready or not that a normal mode gesture can stop
+   *   otherwise {undefined} unused usually
    */
   function update(aEvent) {
     const {type, button} = aEvent;
-    var rv;
+
+    let allowAction;
 
     switch (type) {
       case 'mousedown':
         if (button === 2) {
           // allow the gesture starts
-          rv = !mElseDown;
+          allowAction = !mElseDown;
 
           // ready the contextmenu
           enableContextMenu(true);
           mSuppressMenu = false;
 
           mRightDown = true;
+
           if (mElseDown) {
             mSuppressMenu = true;
           }
-        } else {
+        }
+        else {
           // ready the default click event
           mSuppressClick = false;
 
           mElseDown = true;
+
           if (mRightDown) {
             mSuppressMenu = true;
             mSuppressClick = true;
@@ -655,10 +673,11 @@ function MouseManager() {
       case 'mouseup':
         if (button === 2) {
           // allow the gesture stops
-          rv = !mElseDown;
+          allowAction = !mElseDown;
 
           mRightDown = false;
-        } else {
+        }
+        else {
           mElseDown = false;
         }
         break;
@@ -675,6 +694,7 @@ function MouseManager() {
         break;
       case 'contextmenu':
         enableContextMenu(!mSuppressMenu);
+
         if (mSuppressMenu) {
           mSuppressMenu = false;
         }
@@ -685,7 +705,8 @@ function MouseManager() {
           if (aEvent.altKey) {
             clear();
           }
-        } else {
+        }
+        else {
           // @see chrome://browser/content/browser.js::contentAreaClick()
           if (mSuppressClick) {
             aEvent.preventDefault();
@@ -695,7 +716,7 @@ function MouseManager() {
         break;
     }
 
-    return rv;
+    return allowAction;
   }
 
   function enableContextMenu(aEnable) {
@@ -709,27 +730,28 @@ function MouseManager() {
 
 /**
  * Builds the mouse gestures and performs its command
+ *
  * @return {hash}
  *   @member clear {function}
  *   @member init {function}
  *   @member update {function}
  *   @member evaluate {function}
  *
- * TODO: Show clearly to the user that a quickshot has fired.
+ * TODO: show some clear sign to the user that a quickshot has fired
  */
 function GestureManager() {
   /**
    * Max length of the chain of a gesture
    * @value {integer}
-   * @note The chain consists of directions and wheel rotations.
+   * @note the chain consists of directions and wheel rotations
    */
   const kMaxChainLength = 10;
 
-  var mTracer = GestureTracer();
-  var mKey, mChain;
-  var mDragType, mDragData;
-  var mMatchItem, mQuickShot;
-  var mError;
+  let mTracer = GestureTracer();
+  let mKey, mChain;
+  let mDragType, mDragData;
+  let mMatchItem, mQuickShot;
+  let mError;
 
   clear();
 
@@ -756,6 +778,7 @@ function GestureManager() {
 
     if (aEvent.type === 'dragstart') {
       let info = getDragInfo(aEvent);
+
       if (!info.type || !info.data) {
         return false;
       }
@@ -767,35 +790,43 @@ function GestureManager() {
   }
 
   function getDragInfo(aEvent) {
-    var node = aEvent.target;
-    var type = '', data = '';
+    let node = aEvent.target;
+    let type = '', data = '';
 
     // 1.selected text
     if (!type) {
       let text = getSelectionAtCursor({event: aEvent});
+
       if (text) {
         type = kGestureSign.text;
         data = text;
       }
     }
+
     // 2.link
     if (!type) {
       let link = getLinkURL(node);
+
       if (link) {
         type = kGestureSign.link;
         data = link;
       }
     }
+
     // 3.image
     if (!type) {
       let image = getImageURL(node);
+
       if (image) {
         type = kGestureSign.image;
         data = image;
       }
     }
 
-    return {type: type, data: data};
+    return {
+      type: type,
+      data: data
+    };
   }
 
   function update(aEvent) {
@@ -821,16 +852,19 @@ function GestureManager() {
   function updateChain(aEvent) {
     const {type, deltaY} = aEvent;
 
-    var sign = '';
+    let sign = '';
 
     if (type === 'mousemove' || type === 'dragover') {
       let {x, y} = mTracer.update(aEvent);
+
       if (x !== 0) {
         sign = (x < 0) ? 'left' : 'right';
-      } else if (y !== 0) {
+      }
+      else if (y !== 0) {
         sign = (y < 0) ? 'up' : 'down';
       }
-    } else if (type === 'wheel') {
+    }
+    else if (type === 'wheel') {
       sign = (deltaY < 0) ? 'wheelUp' : 'wheelDown';
     }
 
@@ -838,8 +872,10 @@ function GestureManager() {
       // add a new link of chain when the last gesture is not this one
       let gesture = kGestureSign[sign];
       let length = mChain.length;
+
       if (!length || mChain[length - 1] !== gesture) {
         mChain.push(gesture);
+
         if (length + 1 > kMaxChainLength) {
           mError = 'Too long';
         }
@@ -858,32 +894,37 @@ function GestureManager() {
       DOM_VK_SHIFT, DOM_VK_CONTROL
     } = aEvent;
 
-    function has(aKey) mKey.indexOf(aKey) > -1;
+    let key = '';
+    let pressed = false;
 
-    var key = '';
-    var pressed = false;
+    let has = (aKey) => mKey.indexOf(aKey) > -1;
 
     if (type === 'keydown') {
       if (keyCode === DOM_VK_SHIFT && !has(shift)) {
         key = shift;
         pressed = true;
-      } else if (keyCode === DOM_VK_CONTROL && !has(ctrl)) {
+      }
+      else if (keyCode === DOM_VK_CONTROL && !has(ctrl)) {
         key = ctrl;
         pressed = true;
       }
-    } else if (type === 'keyup') {
+    }
+    else if (type === 'keyup') {
       if (keyCode === DOM_VK_SHIFT && has(shift)) {
         key = shift;
         pressed = false;
-      } else if (keyCode === DOM_VK_CONTROL && has(ctrl)) {
+      }
+      else if (keyCode === DOM_VK_CONTROL && has(ctrl)) {
         key = ctrl;
         pressed = false;
       }
-    } else if (type === 'dragover') {
+    }
+    else if (type === 'dragover') {
       if (shiftKey !== has(shift)) {
         key = shift;
         pressed = shiftKey;
-      } else if (ctrlKey !== has(ctrl)) {
+      }
+      else if (ctrlKey !== has(ctrl)) {
         key = ctrl;
         pressed = ctrlKey;
       }
@@ -892,7 +933,8 @@ function GestureManager() {
     if (key) {
       if (pressed) {
         mKey.push(key);
-      } else {
+      }
+      else {
         mKey.splice(mKey.indexOf(key), 1);
       }
       return true;
@@ -901,18 +943,20 @@ function GestureManager() {
   }
 
   function matchGestureSet() {
-    var matchItem = null;
-    var quickShot = false;
+    let matchItem = null;
+    let quickShot = false;
 
-    var currentGesture = mChain.length && buildGesture();
+    let currentGesture = mChain.length && buildGesture();
+
     if (currentGesture) {
-      kGestureSet.some(function(item) {
+      kGestureSet.some((item) => {
         if (item.disabled) {
           return false;
         }
 
-        return item.gestures.some(function(gesture) {
-          var isQuickShot = gesture.indexOf(kGestureSign.quickShot) > -1;
+        return item.gestures.some((gesture) => {
+          let isQuickShot = gesture.indexOf(kGestureSign.quickShot) > -1;
+
           if (isQuickShot) {
             gesture = gesture.replace(kGestureSign.quickShot, '');
           }
@@ -944,7 +988,8 @@ function GestureManager() {
           gesture: buildGesture(),
           dragData: mDragData
         });
-      } catch (ex) {
+      }
+      catch (ex) {
         mError = 'Command error';
         log(showStatusText() + '\n' + ex);
       }
@@ -952,7 +997,7 @@ function GestureManager() {
   }
 
   function buildGesture() {
-    var gesture = mKey.join('') + mDragType + mChain.join('');
+    let gesture = mKey.join('') + mDragType + mChain.join('');
 
     if (mQuickShot) {
       gesture = kGestureSign.quickShot + gesture;
@@ -962,16 +1007,17 @@ function GestureManager() {
   }
 
   function showStatusText() {
-    var str = toString();
+    let text = toString();
 
     if (mError) {
-      // HACK: Display the status after its values have been cleared.
-      setTimeout(function(value) updateStatusText(value), 0, str);
-    } else {
-      updateStatusText(str);
+      // HACK: display the status after its values have been cleared
+      setTimeout((aText) => updateStatusText(aText), 0, text);
+    }
+    else {
+      updateStatusText(text);
     }
 
-    return str;
+    return text;
   }
 
   function clearStatusText() {
@@ -984,16 +1030,17 @@ function GestureManager() {
   function toString() {
     const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
 
-    var str = kFormat[0].replace('%GESTURE%', buildGesture());
+    let value = kFormat[0].replace('%GESTURE%', buildGesture());
 
     if (mMatchItem) {
-      str += kFormat[1].replace('%NAME%', mMatchItem.name);
-    }
-    if (mError) {
-      str += kFormat[2].replace('%ERROR%', mError);
+      value += kFormat[1].replace('%NAME%', mMatchItem.name);
     }
 
-    return str;
+    if (mError) {
+      value += kFormat[2].replace('%ERROR%', mError);
+    }
+
+    return value;
   }
 
   return {
@@ -1006,6 +1053,7 @@ function GestureManager() {
 
 /**
  * Traces the coordinates of a mouse pointer
+ *
  * @return {hash}
  *   @member clear {function}
  *   @member init {function}
@@ -1013,10 +1061,10 @@ function GestureManager() {
  */
 function GestureTracer() {
   // The minimum distance of movement for the gesture is detected
-  // @value {integer} pixels > 0
+  // @value {integer} [pixels > 0]
   const kTolerance = 10;
 
-  var mLastX, mLastY;
+  let mLastX, mLastY;
 
   clear();
 
@@ -1031,15 +1079,16 @@ function GestureTracer() {
   }
 
   function update(aEvent) {
-    var [x, y] = [aEvent.screenX, aEvent.screenY];
-    var [dx, dy] = [Math.abs(x - mLastX), Math.abs(y - mLastY)];
+    let [x, y] = [aEvent.screenX, aEvent.screenY];
+    let [dx, dy] = [Math.abs(x - mLastX), Math.abs(y - mLastY)];
 
-    var toward = {x: 0, y: 0};
+    let toward = {x: 0, y: 0};
 
     if (kTolerance < dx || kTolerance < dy) {
       if (dy < dx) {
         toward.x = (x < mLastX) ? -1 : 1;
-      } else {
+      }
+      else {
         toward.y = (y < mLastY) ? -1 : 1;
       }
 
@@ -1057,20 +1106,18 @@ function GestureTracer() {
   };
 }
 
-
-//********** Utilities
-
 function inGestureArea(aEvent) {
   // The margin of cancelling a gesture
-  // @value {integer} pixels > 0
-  // @note Including the width of a scrollbar.
-  const kMargin = 16; // the scrollbar width of my Fx
+  // @value {integer} [pixels > 0]
+  // @note including the width of a scrollbar
+  // @note 16 pixels is the scrollbar width of my Fx
+  const kMargin = 16;
 
   // get the coordinates of the event relative to the content area
   // @note |aEvent.clientX/Y| returns the coordinate within the window or
-  // frame, so that we can not retrieve the client coordinates over frames.
-  var {screenX: x, screenY: y} = aEvent;
-  var {screenX: left, screenY: top, width, height} =
+  // frame, so that we can not retrieve the client coordinates over frames
+  let {screenX: x, screenY: y} = aEvent;
+  let {screenX: left, screenY: top, width, height} =
     gBrowser.selectedBrowser.boxObject;
 
   // convert the screen coordinates of a cursor to the client ones
@@ -1082,7 +1129,7 @@ function inGestureArea(aEvent) {
 }
 
 function inEditable(aEvent) {
-  var node = aEvent.target;
+  let node = aEvent.target;
 
   return (
     node instanceof HTMLTextAreaElement ||
@@ -1094,7 +1141,8 @@ function inEditable(aEvent) {
 }
 
 function getLinkURL(aNode) {
-  var node = aNode;
+  let node = aNode;
+
   for (/* */; node; node = node.parentNode) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node instanceof HTMLAnchorElement ||
@@ -1111,8 +1159,10 @@ function getLinkURL(aNode) {
       try {
         // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
         return window.makeURLAbsolute(node.baseURI, node.href.baseVal);
-      } catch (ex) {}
-    } else {
+      }
+      catch (ex) {}
+    }
+    else {
       return node.href;
     }
   }
@@ -1124,26 +1174,30 @@ function getImageURL(aNode) {
     try {
       // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
       return window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
-    } catch (ex) {}
-  } else if (aNode instanceof HTMLImageElement) {
+    }
+    catch (ex) {}
+  }
+  else if (aNode instanceof HTMLImageElement) {
     return aNode.src;
   }
   return null;
 }
 
 function doCmd(aCommand) {
-  var command = $ID(aCommand);
+  let command = $ID(aCommand);
+
   if (command) {
     command.doCommand();
-  } else {
+  }
+  else {
     // @see chrome://global/content/globalOverlay.js::goDoCommand
     window.goDoCommand(aCommand);
   }
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function MouseGesture_init() {
   MouseGesture();
 }

@@ -1,17 +1,17 @@
 // ==UserScript==
 // @name        Misc.uc.js
-// @description Miscellaneous customizations.
+// @description Miscellaneous customizations
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @note Some about:config preferences are changed. see @pref.
-// @note Some default functions are modified. see @modified.
-// @note Some properties are exposed to the global scope.
+// @note some about:config preferences are changed. see @pref
+// @note some default functions are modified. see @modified
+// @note some properties are exposed to the global scope;
 // |window.ucjsMisc.XXX|
 
 
-var ucjsMisc = {};
+const ucjsMisc = {};
 
 (function(window, undefined) {
 
@@ -46,16 +46,18 @@ function log(aMsg) {
 
 /**
  * Sets style of Firefox window
- * @note This setting is for the themes of my Firefox and OS.
  *
- * TODO: |chromemargin| is reset after returning from the print-preview.
- * WORKAROUND: key command 'Alt+0', see Overlay.uc.xul::ucjs_key_ResetMargin
+ * @note the setting for the themes of my Firefox and OS
  *
- * TODO: A window layout sometimes breaks after returning from the fullscreen.
+ * TODO: |chromemargin| is reset after returning from the print-preview
+ * WORKAROUND: key command 'Alt+0'; see Overlay.uc.xul::ucjs_key_ResetMargin
+ *
+ * TODO: the window layout sometimes breaks after returning from the fullscreen
  */
 (function setMainWindowStyle() {
 
-  var mainWindow = $ID('main-window');
+  let mainWindow = $ID('main-window');
+
   mainWindow.setAttribute('chromemargin', '0,0,0,0');
   mainWindow.style.border = '1px solid #000099';
 
@@ -90,14 +92,14 @@ function log(aMsg) {
     }.bind(this), kTooltipShowDelay);
   };
 
-  // @modified chrome://browser/content/urlbarBindings.xml::
-  // _hideURLTooltip
+  // @modified chrome://browser/content/urlbarBindings.xml::_hideURLTooltip
   $ID('urlbar')._hideURLTooltip =
   function ucjsMisc_uncropTooltip_hideURLTooltip() {
     if (tooltipTimer) {
       clearTimeout(tooltipTimer);
       tooltipTimer = null;
     }
+
     tooltip.hidePopup();
     tooltip.label = '';
   };
@@ -166,22 +168,21 @@ function log(aMsg) {
  */
 (function() {
 
-  var tabPressed = false;
+  let tabPressed = false;
 
-  addEvent(gBrowser.mPanelContainer, 'keypress',
-  function (event) {
+  addEvent(gBrowser.mPanelContainer, 'keypress', (event) => {
     if (event.keyCode === event.DOM_VK_TAB) {
       if (tabPressed) {
         event.preventDefault();
         event.stopPropagation();
         return;
       }
+
       tabPressed = true;
     }
   }, true);
 
-  addEvent(gBrowser.mPanelContainer, 'keyup',
-  function (event) {
+  addEvent(gBrowser.mPanelContainer, 'keyup', (event) => {
     if (event.keyCode === event.DOM_VK_TAB) {
       tabPressed = false;
     }
@@ -191,6 +192,7 @@ function log(aMsg) {
 
 /**
  * TAB-key focusing handler
+ *
  * @require UI.uc.js
  */
 (function() {
@@ -202,14 +204,15 @@ function log(aMsg) {
   // 7: Give focus to focusable text fields, form elements, and links[default]
   const kPrefTabFocus = 'accessibility.tabfocus';
 
-  var defaultTabFocus = getPref(kPrefTabFocus);
-  addEvent(window, 'unload', function() {
+  let defaultTabFocus = getPref(kPrefTabFocus);
+
+  addEvent(window, 'unload', () => {
     setPref(kPrefTabFocus, defaultTabFocus);
   }, false);
 
-  var command = '\
-    (function(){\
-      var state = ucjsUtil.Prefs.get("%kPrefTabFocus%") !== 1 ? 1 : 7;\
+  let command = '\
+    (function() {\
+      let state = ucjsUtil.Prefs.get("%kPrefTabFocus%") !== 1 ? 1 : 7;\
       ucjsUtil.Prefs.set("%kPrefTabFocus%", state);\
       ucjsUI.StatusField.message("TAB focus: " + (state === 1 ?\
       "text fields only." : "text fields, form elements, and links."));\
@@ -252,7 +255,7 @@ function log(aMsg) {
     }
 
     /**
-     * Gets rid of target="_blank" links
+     * get rid of target="_blank" links
      */
     if (/^(?:_blank|_new|blank|new)$/i.test(link.target)) {
       link.target = '_top';
@@ -284,6 +287,7 @@ function log(aMsg) {
           break;
         }
       }
+
       aNode = aNode.parentNode;
     }
     return aNode;
@@ -296,15 +300,13 @@ function log(aMsg) {
  */
 (function() {
 
-  var menu, popup;
-
-  menu = $E('menu', {
+  let menu = $E('menu', {
     id: 'ucjs_tabcontext_openNewTab',
     label: '新しいタブ',
     accesskey: 'N'
   });
 
-  popup = menu.appendChild($E('menupopup', {
+  let popup = menu.appendChild($E('menupopup', {
     onpopupshowing: 'event.stopPropagation();'
   }));
 
@@ -315,7 +317,7 @@ function log(aMsg) {
   }));
 
   [['about:home', 'H'], ['about:newtab', 'N'], ['about:blank', 'B']].
-  forEach(function([url, accesskey]) {
+  forEach(([url, accesskey]) => {
     popup.appendChild($E('menuitem', {
       label: url,
       oncommand: 'openUILinkIn("' + url + '", "tab");',
@@ -330,7 +332,8 @@ function log(aMsg) {
 
 /**
  * Show a status text in the URL bar
- * @note The default status panel is used when the fullscreen mode
+ *
+ * @note the default status panel is used when the fullscreen mode
  *
  * TODO: fix the position gap of status panel (often in page loading)
  */
@@ -341,6 +344,7 @@ function log(aMsg) {
   };
 
   observeURLBar();
+
   function observeURLBar() {
     addEvent(gURLBar, 'focus', hideStatus, false);
     addEvent(gURLBar, 'blur', showStatus, false);
@@ -353,6 +357,7 @@ function log(aMsg) {
       }
 
       let statusPanel = getStatusPanel();
+
       if (statusPanel.hasAttribute(kState.hidden)) {
         statusPanel.removeAttribute(kState.hidden);
       }
@@ -360,6 +365,7 @@ function log(aMsg) {
 
     function hideStatus(aEvent) {
       let statusPanel = getStatusPanel();
+
       if (!statusPanel.hasAttribute(kState.hidden)) {
         statusPanel.setAttribute(kState.hidden, true);
       }
@@ -374,11 +380,12 @@ function log(aMsg) {
   // @modified chrome://browser/content/browser.js::
   // XULBrowserWindow::updateStatusField
   const $updateStatusField = window.XULBrowserWindow.updateStatusField;
+
   window.XULBrowserWindow.updateStatusField =
   function ucjsMisc_showStatusToURLBar_updateStatusField() {
     $updateStatusField.apply(this, arguments);
 
-    // TODO: Should I change the timing of updating the panel rect in order to
+    // TODO: should I change the timing of updating the panel rect in order to
     // just fit the position?
     updateStatusPanelRect();
   };
@@ -390,13 +397,15 @@ function log(aMsg) {
     if (!window.fullScreen) {
       // <input.urlbar-input>
       let urlbarInputRect = $ANONID('input', gURLBar).getBoundingClientRect();
-      rectKeys.forEach(function(key) {
+
+      rectKeys.forEach((key) => {
         if (statusPanelStyle[key] !== urlbarInputRect[key] + 'px') {
           statusPanelStyle[key] = urlbarInputRect[key] + 'px';
         }
       });
-    } else {
-      rectKeys.forEach(function(key) {
+    }
+    else {
+      rectKeys.forEach((key) => {
         if (statusPanelStyle[key]) {
           statusPanelStyle.removeProperty(key);
         }
@@ -441,13 +450,14 @@ function log(aMsg) {
 })();
 
 /**
- * Clear scrollbars
- * @note This setting is for the themes of my Firefox and OS.
+ * The clear viewed scrollbars
+ *
+ * @note the setting for the themes of my Firefox and OS
  */
 (function() {
 
   // @note Firefox allows to style scrollbars only to the styles applied with
-  // agent-style-sheets.
+  // agent-style-sheets
   // @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
   setGlobalAgentCSS('\
     scrollbar {\
@@ -476,14 +486,14 @@ function log(aMsg) {
 
 /**
  * Restart Firefox
+ *
  * @note a function |restartFx| is exposed to the global scope
  *
- * WORKAROUND:
- * In Fx19 'sessionstore.js' sometimes isn't updated at restart if the session
- * store crash recovery is disabled. So updates the session store forcibly.
+ * WORKAROUND: In Fx19 'sessionstore.js' sometimes isn't updated at restart if
+ * the session store crash recovery is disabled. so, updates the session store
+ * forcibly
  *
- * TODO:
- * use safe handling instead of pinning a tab to update the session.
+ * TODO: use safe handling instead of pinning a tab to update the session
  */
 (function() {
 
@@ -498,6 +508,7 @@ function log(aMsg) {
 
     const kStateUpdateTopic = 'sessionstore-state-write-complete';
     let stateUpdateObserving = true;
+
     window.Services.obs.addObserver(onStateUpdated, kStateUpdateTopic, false);
 
     const kWaitTime = 5000;
@@ -505,6 +516,7 @@ function log(aMsg) {
 
     // to pin a tab will update the session store
     let pinnedTab = gBrowser.addTab('about:blank');
+
     gBrowser.pinTab(pinnedTab);
 
     function cleanup() {
@@ -540,6 +552,7 @@ function log(aMsg) {
         '[OK] You can force to restart, but the previous session may be restored.\n' +
         '[Cancel] To do nothing.'
       );
+
       if (result) {
         doRestart(aOption);
       }
@@ -555,6 +568,7 @@ function log(aMsg) {
     }
 
     const {Services, Ci} = window;
+
     if (purgeCaches) {
       Services.appinfo.invalidateCachesOnRestart();
     }

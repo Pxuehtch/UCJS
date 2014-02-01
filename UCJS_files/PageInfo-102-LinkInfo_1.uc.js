@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name LinkInfo.uc.js
-// @description Add the information of links to the pageinfo window.
+// @description Adds the information of links to the Page Info window
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
 
 // @require LinkInfo.uc.xul
-// @note Some functions are exported. (ucjsLinkInfo.XXX)
+// @note some functions are exported;
+// |window.ucjsLinkInfo.XXX|
 
 
-var ucjsLinkInfo = (function(window, undefined) {
+const ucjsLinkInfo = (function(window, undefined) {
 
 
 "use strict";
@@ -37,20 +38,15 @@ const kNote = {
   image: '[IMG]'
 };
 
-
-//********** Handlers
-
-var mLinkView = null;
-var mLinkInfoBuilt = false;
+let mLinkView = null;
+let mLinkInfoBuilt = false;
 
 function init() {
   if (!mLinkView) {
     let tree = window.document.getElementById(kID.linkTree);
-    let copyColumnIndex =
-      tree.columns.getNamedColumn(kID.addressColumn).index;
+    let copyColumnIndex = tree.columns.getNamedColumn(kID.addressColumn).index;
 
-    // @see chrome://browser/content/pageinfo/pageInfo.js::
-    // pageInfoTreeView()
+    // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
     mLinkView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
     tree.view = mLinkView;
   }
@@ -63,13 +59,13 @@ function build() {
     mLinkInfoBuilt = true;
 
     try {
-      // @see chrome://browser/content/pageinfo/pageInfo.js::
-      // goThroughFrames()
+      // @see chrome://browser/content/pageinfo/pageInfo.js::goThroughFrames()
       window.goThroughFrames(window.gDocument, window.gWindow);
-    } catch (ex) {
-      // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]:
+    }
+    catch (ex) {
+      // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]
       // gWindow.frames.length is undefined after closing the target page
-      // which have frames.
+      // which have frames
       return;
     }
 
@@ -78,9 +74,8 @@ function build() {
 }
 
 function LI_processFrames() {
-  // @see chrome://browser/content/pageinfo/pageInfo.js::
-  // gFrameList
-  var {gFrameList} = window;
+  // @see chrome://browser/content/pageinfo/pageInfo.js::gFrameList
+  let {gFrameList} = window;
 
   if (gFrameList.length) {
     let doc = gFrameList[0];
@@ -108,6 +103,7 @@ function grabLink(aNode) {
   if (aNode instanceof HTMLAnchorElement && aNode.href) {
     let imgs = aNode.getElementsByTagName('img');
     let note = (imgs && imgs.length) ? kNote.image : '';
+
     addLink([
       note + getText(aNode),
       aNode.href,
@@ -125,6 +121,7 @@ function grabLink(aNode) {
   }
   else if (aNode instanceof HTMLLinkElement && aNode.href) {
     let target = aNode.rel || aNode.rev || '';
+
     addLink([
       getText(aNode, target),
       aNode.href,
@@ -136,17 +133,22 @@ function grabLink(aNode) {
             aNode instanceof HTMLButtonElement) && aNode.type) {
     let name, address, target;
     let type = aNode.type.toLowerCase();
+
     if (type === 'submit' || type === 'image') {
       name = '';
+
       if (type === 'image') {
         name += kNote.image;
       }
+
       name += getText(aNode, aNode.alt || aNode.value || kType.submit);
+
       if (aNode.form) {
         address = aNode.form.action;
         target = aNode.form.target;
       }
     }
+
     if (name) {
       addLink([
         name,
@@ -176,14 +178,17 @@ function grabLink(aNode) {
     let address;
     let href = aNode.getAttributeNS(XLinkNS, 'href');
     let charset = aNode.ownerDocument.characterSet;
+
     // @see resource://gre/modules/Services.jsm
     let io = window.Services.io;
     try {
       address = io.newURI(href, charset,
         io.newURI(aNode.baseURI, charset, null)).spec;
-    } catch (ex) {
+    }
+    catch (ex) {
       address = kNote.error;
     }
+
     addLink([
       getText(aNode),
       address,
@@ -200,6 +205,7 @@ function grabLink(aNode) {
 function getText(aNode, aDefault) {
   let text = window.getValueText(aNode) || aNode.title || aDefault ||
     kNote.error;
+
   return text.substr(0, 50);
 }
 
@@ -215,31 +221,36 @@ function openLink(aEvent) {
     return;
   }
 
-  var tree = aEvent.target;
+  let tree = aEvent.target;
+
   if (!('treeBoxObject' in tree)) {
     tree = tree.parentNode;
   }
 
-  var row = {};
+  let row = {};
+
   tree.treeBoxObject.getCellAt(aEvent.clientX, aEvent.clientY, row, {}, {});
+
   if (row.value == -1) {
     return;
   }
 
-  var column = tree.columns.getNamedColumn(kID.addressColumn);
-  var URL = tree.treeBoxObject.view.getCellText(row.value, column);
+  let column = tree.columns.getNamedColumn(kID.addressColumn);
+  let URL = tree.treeBoxObject.view.getCellText(row.value, column);
 
-  var opener = window.opener;
+  let opener = window.opener;
+
   if (opener && 'gBrowser' in opener) {
     opener.gBrowser.addTab(URL);
-  } else {
+  }
+  else {
     window.open(URL, '_blank', 'chrome');
   }
 }
 
-
-//********** Exports
-
+/**
+ * Exports
+ */
 return {
   init: init,
   openLink: openLink

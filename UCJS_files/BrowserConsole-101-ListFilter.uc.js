@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        ListFilter.uc.js
-// @description Filters messages by category in the web console
+// @description Filters messages by category in the Browser Console window
 // @include     chrome://browser/content/devtools/webconsole.xul
 // ==/UserScript==
 
@@ -177,8 +177,8 @@ function onCommand(aEvent) {
  * Observer of new message added
  *
  * !!! WARNING !!!
- * DO care of logging for debug in this observer. the output of message to the
- * console is created recursively
+ * take care of logging for debug in this observer. the output of message to
+ * the console is created recursively
  * !!! WARNING !!!
  */
 function onMessageAdded(aSubject, aTopic, aData) {

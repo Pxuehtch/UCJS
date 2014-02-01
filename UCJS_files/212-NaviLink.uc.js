@@ -1,17 +1,17 @@
 // ==UserScript==
 // @name NaviLink.uc.js
-// @description Detects the links for navigation.
+// @description Detects the links for navigation
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
 // @usage creates items in the URLbar context menu
-// @note some functions are exposed to the global scope
+// @note some functions are exposed to the global scope;
 // |window.ucjsNaviLink.XXX|
 
-// TODO: The URLbar is initialized when the toolbar customization panel opens.
-// Observe it and fix our broken functions.
-// WORKAROUND: Restart Firefox after customizing.
+// TODO: the URLbar is initialized when the toolbar customization panel opens,
+// so, observe it and fix our broken functions
+// WORKAROUND: restart Firefox after customizing
 
 
 const ucjsNaviLink = (function(window, undefined) {
@@ -25,7 +25,7 @@ const ucjsNaviLink = (function(window, undefined) {
  */
 const {
   getNodeById: $ID,
-  getNodesBySelector: $SA,
+  getNodesBySelector: $S,
   getFirstNodeByXPath: $X1,
   addEvent,
   openURL,
@@ -58,6 +58,7 @@ const kPref = {
 
 /**
  * User presets
+ *
  * @key name {string}
  *   a display name in the UI item
  * @key URL {RegExp}
@@ -208,6 +209,7 @@ const kPageInfoType = [
 
 /**
  * Types of the prev/next navigation
+ *
  * @note The values is displayed.
  */
 const kSiblingScanType = {
@@ -219,6 +221,7 @@ const kSiblingScanType = {
 
 /**
  * Strings format
+ *
  * @note The values is displayed through |F()|.
  */
 const kFormat = {
@@ -256,9 +259,11 @@ const kID = (function() {
   ];
 
   let hash = {};
-  names.forEach(function(name) {
+
+  names.forEach((name) => {
     hash[name] = prefix + name;
   });
+
   return hash;
 })();
 
@@ -279,9 +284,11 @@ const MenuUI = (function() {
 
   function onClick(aEvent) {
     aEvent.stopPropagation();
+
     let item = aEvent.target;
 
     let data = item[kID.data];
+
     if (!data) {
       return;
     }
@@ -295,9 +302,11 @@ const MenuUI = (function() {
 
   function onCommand(aEvent) {
     aEvent.stopPropagation();
+
     let item = aEvent.target;
 
     let data = item[kID.data];
+
     if (!data) {
       return;
     }
@@ -309,6 +318,7 @@ const MenuUI = (function() {
       }
 
       let [inTab, inBG] = [aEvent.button === 1,  aEvent.ctrlKey];
+
       openURL(data.open, {
         inTab: inTab,
         inBackground: inBG,
@@ -324,6 +334,7 @@ const MenuUI = (function() {
     aEvent.stopPropagation();
 
     let contextMenu = aEvent.target;
+
     if (contextMenu !== URLBarContextMenu) {
       return;
     }
@@ -343,7 +354,7 @@ const MenuUI = (function() {
       kPref.showPageInfo && $E('menuseparator', {id: kID.pageInfoSeparator}),
       kPref.showPageInfo && buildPageInfo()
     ].
-    forEach(function(item) {
+    forEach((item) => {
       if (item) {
         contextMenu.insertBefore(item, eSep);
       }
@@ -354,12 +365,14 @@ const MenuUI = (function() {
     aEvent.stopPropagation();
 
     let contextMenu = aEvent.target;
+
     if (contextMenu !== URLBarContextMenu) {
       return;
     }
 
     // remove existing items
     let [sSep, eSep] = getSeparators();
+
     for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
       contextMenu.removeChild(item);
     }
@@ -372,15 +385,21 @@ const MenuUI = (function() {
       aReferenceNode = null;
     }
 
-    [kID.startSeparator, kID.endSeparator].
-    forEach(function(id) {
+    [
+      kID.startSeparator,
+      kID.endSeparator
+    ].
+    forEach((id) => {
       aContextMenu.insertBefore(
         $E('menuseparator', {id: id}), aReferenceNode);
     });
   }
 
   function getSeparators() {
-    return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
+    return [
+      $ID(kID.startSeparator),
+      $ID(kID.endSeparator)
+    ];
   }
 
   function buildUpperNavi() {
@@ -389,7 +408,7 @@ const MenuUI = (function() {
     let popup = $E('menupopup');
 
     if (URLList) {
-      URLList.forEach(function(URL) {
+      URLList.forEach((URL) => {
         popup.appendChild($E('menuitem', {
           crop: 'start',
           label: URL,
@@ -403,6 +422,7 @@ const MenuUI = (function() {
       label: kFormat.upper,
       disabled: URLList === null || null
     });
+
     menu.appendChild(popup);
 
     return menu;
@@ -410,6 +430,7 @@ const MenuUI = (function() {
 
   function buildSiblingNavi(aDirection) {
     let result = SiblingNavi.getResult(aDirection);
+
     if (!result) {
       return null;
     }
@@ -432,12 +453,14 @@ const MenuUI = (function() {
         'open': data.URL,
         'submit': data.form
       });
-    } else {
+    }
+    else {
       let popup = $E('menupopup');
 
-      list.forEach(function(data) {
+      list.forEach((data) => {
         let text = formatText(data, {siblingScanType: scanType});
         let URL = data.URL;
+
         popup.appendChild($E('menuitem', {
           label: text,
           tooltiptext: formatTooltip(text, URL),
@@ -461,7 +484,9 @@ const MenuUI = (function() {
 
   function buildNaviLink() {
     let naviList, subNaviList;
+
     naviList = NaviLink.getNaviList();
+
     if (kPref.showSubNaviLinks) {
       subNaviList = NaviLink.getSubNaviList();
     }
@@ -472,7 +497,7 @@ const MenuUI = (function() {
 
     let popup = $E('menupopup');
 
-    [naviList, subNaviList].forEach(function(result) {
+    [naviList, subNaviList].forEach((result) => {
       if (!result) {
         return;
       }
@@ -481,21 +506,26 @@ const MenuUI = (function() {
         popup.appendChild($E('menuseparator'));
       }
 
-      result.forEach(function({type, list, trimmed}) {
+      result.forEach(({type, list, trimmed}) => {
         let child;
         let tooltiptext;
 
         if (list.length === 1) {
           let data = list[0];
           let URL = data.URL;
+
           child = $E('menuitem', {
             'open': URL
           });
+
           tooltiptext = URL;
-        } else {
+        }
+        else {
           let childPopup = $E('menupopup');
-          list.forEach(function(data) {
+
+          list.forEach((data) => {
             let [text, URL] = [formatText(data), data.URL];
+
             childPopup.appendChild($E('menuitem', {
               crop: 'center',
               label: text,
@@ -516,9 +546,11 @@ const MenuUI = (function() {
           title: getLabelForType(kNaviLinkType, type),
           count: (list.length > 1) ? list.length : null
         });
+
         if (tooltiptext) {
           tooltiptext = formatTooltip(label, tooltiptext);
         }
+
         popup.appendChild($E(child, {
           label: label,
           tooltiptext: tooltiptext || null
@@ -530,6 +562,7 @@ const MenuUI = (function() {
       id: kID.naviLink,
       label: kFormat.naviLink
     });
+
     menu.appendChild(popup);
 
     return menu;
@@ -537,28 +570,32 @@ const MenuUI = (function() {
 
   function buildPageInfo() {
     let result = NaviLink.getInfoList();
+
     if (!result) {
       return null;
     }
 
     let popup = $E('menupopup');
 
-    result.forEach(function({type, list, trimmed}) {
+    result.forEach(({type, list, trimmed}) => {
       let childPopup = $E('menupopup');
 
       if (type === 'meta') {
         // only shows <meta> information with no command
-        list.forEach(function(data) {
+        list.forEach((data) => {
           let text = formatText(data, {meta: true});
+
           childPopup.appendChild($E('menuitem', {
             closemenu: 'none',
             label: text,
             tooltiptext: text
           }));
         });
-      } else {
-        list.forEach(function(data) {
+      }
+      else {
+        list.forEach((data) => {
           let [text, URL] = [formatText(data), data.URL];
+
           childPopup.appendChild($E('menuitem', {
             crop: 'center',
             label: text,
@@ -569,7 +606,9 @@ const MenuUI = (function() {
       }
 
       let child = $E('menu');
+
       child.appendChild(childPopup);
+
       popup.appendChild($E(child, {
         label: F(kFormat.type, {
           title: getLabelForType(kPageInfoType, type),
@@ -583,6 +622,7 @@ const MenuUI = (function() {
       id: kID.pageInfo,
       label: kFormat.pageInfo
     });
+
     menu.appendChild(popup);
 
     return menu;
@@ -632,6 +672,7 @@ const MenuUI = (function() {
 
   /**
    * Attributes formatter
+   *
    * @param aAttributes {array} see |NaviLink|
    *   [['name', 'value'], ..., ['rel', ['value', 'value', ...]]]
    * @return {string}
@@ -647,7 +688,7 @@ const MenuUI = (function() {
 
     let attributes = [];
 
-    aAttributes.forEach(function([name, value]) {
+    aAttributes.forEach(([name, value]) => {
       if (Array.isArray(value)) {
         value = value.join(kValuesDelimiter);
       }
@@ -677,7 +718,9 @@ const MenuUI = (function() {
 
     for (let i = 0, l = aTypeList.length; i < l; i++) {
       let {type, label} = aTypeList[i];
+
       type = type.toLowerCase();
+
       if (type === aType) {
         return label || capitalize(type);
       }
@@ -708,12 +751,14 @@ const PresetNavi = (function() {
     let item;
 
     let URL = getURI().spec;
+
     for (let i = 0; i < kPresetNavi.length; i++) {
       if (kPresetNavi[i].URL.test(URL)) {
         item = kPresetNavi[i];
         break;
       }
     }
+
     if (!item) {
       return null;
     }
@@ -742,7 +787,10 @@ const PresetNavi = (function() {
       replace('%name%', item.name).
       replace('%dir%', aDirection).
       replace('%xpath%', item[aDirection]));
-    return {error: true};
+
+    return {
+      error: true
+    };
   }
 
   return {
@@ -752,6 +800,7 @@ const PresetNavi = (function() {
 
 /**
  * Handler of the official navigation links according to the <rel> attribute
+ *
  * @note [additional] Makes a list of the page information.
  */
 const NaviLink = (function() {
@@ -770,16 +819,18 @@ const NaviLink = (function() {
 
   /**
    * Handler of the types of link navigations
+   *
    * @see |kNaviLinkType|
    */
   const NaviLinkTypeFixup = (function() {
     let naviLinkType = {};
     let naviLinkTypeConversion = {};
 
-    kNaviLinkType.forEach(function({type, synonym}) {
+    kNaviLinkType.forEach(({type, synonym}) => {
       naviLinkType[type] = true;
+
       if (synonym) {
-        synonym.toLowerCase().split('|').forEach(function(item) {
+        synonym.toLowerCase().split('|').forEach((item) => {
           naviLinkTypeConversion[item] = type;
         });
       }
@@ -823,6 +874,7 @@ const NaviLink = (function() {
 
   /**
    * Retrieves the first data of the list for the type
+   *
    * @param aType {string} |kNaviLinkType.type| or |kPageInfoType.type|
    * @return {hash|null} see |addItem()|
    * {
@@ -863,16 +915,19 @@ const NaviLink = (function() {
    */
   function getNaviList() {
     init();
+
     return mNaviList;
   }
 
   function getSubNaviList() {
     init();
+
     return mSubNaviList;
   }
 
   function getInfoList() {
     init();
+
     return mInfoList;
   }
 
@@ -884,8 +939,9 @@ const NaviLink = (function() {
     scanMeta(infoList);
     scanScript(infoList);
 
-    Array.forEach($SA('[rel][href], [rev][href]'), function(node) {
+    Array.forEach($S('[rel][href], [rev][href]'), (node) => {
       let rel = node.rel || node.rev;
+
       if (!rel ||
           !node.href ||
           !/^(?:https?|mailto):/.test(node.href)) {
@@ -916,6 +972,7 @@ const NaviLink = (function() {
 
   function formatList({list, orderList}) {
     let types = Object.keys(list);
+
     if (!types.length) {
       return null;
     }
@@ -924,11 +981,11 @@ const NaviLink = (function() {
 
     let result = [];
 
-    types.forEach(function(type) {
+    types.forEach((type) => {
       let resultList = [];
       let trimmed = false;
 
-      list[type].some(function(data) {
+      list[type].some((data) => {
         if (testUniqueData(resultList, data)) {
           resultList.push(data);
 
@@ -952,7 +1009,7 @@ const NaviLink = (function() {
   }
 
   function testUniqueData(aArray, aData) {
-    return aArray.every(function(data) {
+    return aArray.every((data) => {
       for (let key in data) {
         // <attributes> is {array}, the others are {string}
         if (key === 'attributes') {
@@ -972,15 +1029,14 @@ const NaviLink = (function() {
     let rels = aRelAttribute.toLowerCase().split(/\s+/);
 
     let relsList = {};
-    rels.forEach(function(aValue) {
+
+    rels.forEach((aValue) => {
       relsList[aValue] = true;
     });
 
     function exceptFor(aSourceValue) {
       if (rels.length > 1) {
-        return rels.filter(function(aValue) {
-          return aValue !== aSourceValue;
-        });
+        return rels.filter((aValue) => aValue !== aSourceValue);
       }
       return [];
     }
@@ -996,10 +1052,11 @@ const NaviLink = (function() {
     let metas = Array.slice(doc.getElementsByTagName('meta'));
 
     // be sure to add <content-type> so that the meta list is not empty
-    let empty = !metas.some(function(meta) {
-      return meta.httpEquiv &&
-             meta.httpEquiv.toLowerCase() === 'content-type';
-    });
+    let empty = !metas.some((meta) =>
+      meta.httpEquiv &&
+      meta.httpEquiv.toLowerCase() === 'content-type'
+    );
+
     if (empty) {
       metas.unshift({
         httpEquiv: 'Content-Type',
@@ -1007,7 +1064,7 @@ const NaviLink = (function() {
       });
     }
 
-    metas.forEach(function(node) {
+    metas.forEach((node) => {
       addItem(aList, 'meta', node);
     });
   }
@@ -1015,8 +1072,7 @@ const NaviLink = (function() {
   function scanScript(aList) {
     let doc = getDocument();
 
-    Array.forEach(doc.getElementsByTagName('script'),
-    function(node) {
+    Array.forEach(doc.getElementsByTagName('script'), (node) => {
       addItem(aList, 'script', node);
     });
   }
@@ -1032,6 +1088,7 @@ const NaviLink = (function() {
       // isValidFeed
       let feedType = window.isValidFeed(
         aNode, getDocument().nodePrincipal, rels.feed);
+
       if (feedType) {
         type = 'feed';
         attributes.push(['type', kFeedType[feedType] || 'RSS']);
@@ -1043,6 +1100,7 @@ const NaviLink = (function() {
     }
     else if (rels.icon) {
       type = 'favicon';
+
       if (aNode.type) {
         attributes.push(['type', aNode.type]);
       }
@@ -1063,6 +1121,7 @@ const NaviLink = (function() {
       if (aNode.media) {
         attributes.push(['media', aNode.media]);
       }
+
       if (aNode.hreflang) {
         attributes.push(['hreflang', aNode.hreflang]);
       }
@@ -1073,6 +1132,7 @@ const NaviLink = (function() {
 
     for (let type in rels) {
       type = NaviLinkTypeFixup.registered(type);
+
       if (type) {
         attributes.push(['rel', exceptFor(type)]);
         addItem(aList, type, aNode, attributes);
@@ -1088,6 +1148,7 @@ const NaviLink = (function() {
 
     for (let type in rels) {
       type = NaviLinkTypeFixup.unregistered(type);
+
       if (type) {
         addItem(aList, type, aNode, [['rel', exceptFor(type)]]);
       }
@@ -1099,7 +1160,8 @@ const NaviLink = (function() {
 
     if (aType === 'meta') {
       data = getMetaData(aNode);
-    } else {
+    }
+    else {
       data = getNodeData(aNode, aAttributes);
     }
 
@@ -1107,12 +1169,14 @@ const NaviLink = (function() {
       if (!(aType in aList)) {
         aList[aType] = [];
       }
+
       aList[aType].push(data);
     }
   }
 
   function getMetaData(aNode) {
     let content = trim(aNode.content);
+
     if (!content) {
       return null;
     }
@@ -1135,6 +1199,7 @@ const NaviLink = (function() {
 
   function getNodeData(aNode, aAttributes) {
     let URL = trim(aNode.href) || trim(aNode.src);
+
     if (!URL) {
       return null;
     }
@@ -1167,22 +1232,13 @@ const NaviLink = (function() {
       if (aOrderList.length <= 1) {
         return;
       }
-      order = aOrderList.map(function(aItem) {
-        return aItem.type.toLowerCase();
-      });
+
+      order = aOrderList.map((aItem) => aItem.type.toLowerCase());
     }
 
-    let comparator;
-
-    if (order) {
-      comparator = function(a, b) {
-        return order.indexOf(a) - order.indexOf(b);
-      };
-    } else {
-      comparator = function(a, b) {
-        return a.localeCompare(b);
-      };
-    }
+    let comparator = order ?
+      (a, b) => order.indexOf(a) - order.indexOf(b) :
+      (a, b) => a.localeCompare(b);
 
     aTypes.sort(comparator);
   }
@@ -1208,16 +1264,19 @@ const SiblingNavi = (function() {
 
   /**
    * Retrieves the URL string for the direction
+   *
    * @param aDirection {string} 'prev' or 'next'
    * @return {string}
    */
   function getURLFor(aDirection) {
     let result = getResult(aDirection);
+
     return (result && result.list[0].URL) || '';
   }
 
   /**
    * Gets the information for the previous or next page
+   *
    * @param aDirection {string} 'prev' or 'next'
    * @return {hash|null}
    * {
@@ -1243,8 +1302,9 @@ const SiblingNavi = (function() {
       ['searching', guessBySearching],
       ['numbering', guessByNumbering]
     ].
-    some(function([type, getter]) {
+    some(([type, getter]) => {
       let res = getter(aDirection);
+
       if (res) {
         data = res;
         scanType = type;
@@ -1287,6 +1347,7 @@ const SiblingNavi = (function() {
 
     for (link in getSearchLinks()) {
       href = link.href;
+
       if (entries.contains(href) ||
           !href ||
           !/^https?:/.test(href) ||
@@ -1347,9 +1408,9 @@ const SiblingNavi = (function() {
       }
 
       // sort items in a *descending* of the score
-      entries.sort(function(a, b) b.score - a.score);
+      entries.sort((a, b) => b.score - a.score);
 
-      let list = entries.map(function({text, URL, score}) {
+      let list = entries.map(({text, URL, score}) => {
         return {
           // <data> for a sibling by searching
           title: text,
@@ -1381,10 +1442,12 @@ const SiblingNavi = (function() {
       for (let i = 0; i < limit; i++) {
         yield links[i];
       }
+
       for (let i = count - limit; i < count; i++) {
         yield links[i];
       }
-    } else {
+    }
+    else {
       for (let i = 0; i < count; i++) {
         yield links[i];
       }
@@ -1432,6 +1495,7 @@ const SiblingNavi = (function() {
   function guessByNumbering(aDirection) {
     /**
      * Patterns like the page numbers in URL
+     *
      * @const kNumQuery {RegExp}
      *   Query with a numeric value; [?&]page=123 or [?&]123
      * @const kNumEndPath {RegExp}
@@ -1443,6 +1507,7 @@ const SiblingNavi = (function() {
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
 
     let URI = getURI('NO_REF');
+
     if (!URI.hasPath()) {
       return null;
     }
@@ -1450,20 +1515,24 @@ const SiblingNavi = (function() {
     let direction = (aDirection === 'next') ? 1 : -1;
     let list = [];
 
-    [kNumQuery, kNumEndPath].forEach(function(pattern) {
+    [kNumQuery, kNumEndPath].forEach((pattern) => {
       let URL = URI.spec;
       let matches;
+
       while ((matches = pattern.exec(URL))) {
         let [match, leading , oldNum, trailing] = matches;
 
         let newNum = parseInt(oldNum, 10) + direction;
+
         if (newNum > 0) {
           newNum = String(newNum);
+
           while (newNum.length < oldNum.length) {
             newNum = '0' + newNum;
           }
 
           let newVal = leading + newNum + (trailing || '');
+
           list.push({
             // <data> for a sibling by numbering
             here: match,
@@ -1574,7 +1643,8 @@ const NaviLinkTester = (function() {
         if (aText) {
           let adjust = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
           point += (kWeight.lessText * adjust);
-        } else {
+        }
+        else {
           // exact match
           point += kWeight.lessText;
         }
@@ -1623,13 +1693,12 @@ const NaviLinkTester = (function() {
     }
 
     function getOverlapPartsRate(aSrc, aDst) {
-      let [sParts, dParts] = [aSrc, aDst].map(function(item) {
-        return item.split(/[\W_]+/);
-      });
+      let [sParts, dParts] = [aSrc, aDst].map((item) => item.split(/[\W_]+/));
 
-      let overlaps = sParts.filter(function(part) {
+      let overlaps = sParts.filter((part) => {
         if (part) {
           let i = dParts.indexOf(part);
+
           if (i > -1) {
             dParts[i] = '';
             return true;
@@ -1678,6 +1747,7 @@ const NaviLinkTester = (function() {
 
   function normalizeWeight(aWeights) {
     let total = 0;
+
     for (let key in aWeights) {
       total += aWeights[key];
     }
@@ -1701,6 +1771,7 @@ const NaviLinkTester = (function() {
 const UpperNavi = (function() {
   /**
    * Gets the list of the upper page URLs from parent to top in order
+   *
    * @return {string[]}
    */
   function getList() {
@@ -1708,6 +1779,7 @@ const UpperNavi = (function() {
 
     let URI = getURI('NO_QUERY');
     let URL;
+
     while ((URL = getParent(URI))) {
       list.push(URL);
       URI = createURI(URL);
@@ -1725,6 +1797,7 @@ const UpperNavi = (function() {
       segments.pop();
 
       let URL = aURI.prePath + segments.join('/') + '/';
+
       return (URL !== 'file:///') ? URL : '';
     }
     return getUpperHost(aURI);
@@ -1733,6 +1806,7 @@ const UpperNavi = (function() {
   function getTop(aURI) {
     if (aURI.scheme === 'file') {
       let match = /^(file:\/\/\/[a-z]:\/).+/i.exec(aURI.spec);
+
       return match ? match[1] : '';
     }
     return aURI.hasPath() ? aURI.prePath + '/' : getUpperHost(aURI);
@@ -1740,13 +1814,16 @@ const UpperNavi = (function() {
 
   function getUpperHost(aURI) {
     let host = aURI.host;
+
     if (!host) {
       return '';
     }
 
     if (aURI.baseDomain !== host) {
       let levels = host.split('.');
+
       levels.shift();
+
       return aURI.scheme + '://' + levels.join('.') + '/';
     }
     return '';
@@ -1762,9 +1839,6 @@ const UpperNavi = (function() {
     }
   };
 })();
-
-
-//********** Utilities
 
 /**
  * Gets the document object of the current content
@@ -1845,7 +1919,8 @@ function makeURI(aURL) {
   try {
     // @see resource://gre/modules/Services.jsm
     return Services.io.newURI(aURL, null, null);
-  } catch (ex) {}
+  }
+  catch (ex) {}
 
   return null;
 }
@@ -1858,7 +1933,8 @@ function getHost(aURI) {
   try {
     // @note returns an empty string for the host of 'file:///C:/...'
     return aURI.host;
-  } catch (ex) {}
+  }
+  catch (ex) {}
 
   return aURI.spec.
     match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
@@ -1872,7 +1948,8 @@ function getBaseDomain(aURI) {
   try {
     // @see resource://gre/modules/Services.jsm
     return window.Services.eTLD.getBaseDomain(aURI);
-  } catch (ex) {}
+  }
+  catch (ex) {}
 
   return getHost(aURI);
 }
@@ -1892,6 +1969,7 @@ function handleAttribute(aNode, aName, aValue) {
 
 /**
  * String formatter
+ *
  * @param aFormat {string|string[]} see |kFormat|
  * @param aReplacement {hash}
  * @return {string}
@@ -1899,6 +1977,7 @@ function handleAttribute(aNode, aName, aValue) {
 function F(aFormat, aReplacement) {
   // filter items that its value is |null| or |undefined|
   let replacement = {};
+
   for (let [name, value] in Iterator(aReplacement)) {
     if (value !== null && value !== undefined) {
       replacement['%' + name + '%'] = value;
@@ -1912,8 +1991,9 @@ function F(aFormat, aReplacement) {
   // retreive a format that has all aliases of the name of replacements
   let format;
   let names = Object.keys(replacement);
+
   for (let i = 0, l = aFormat.length; i < l; i++) {
-    if (names.every(function(name) aFormat[i].contains(name))) {
+    if (names.every((name) => aFormat[i].contains(name))) {
       format = aFormat[i];
       break;
     }
@@ -1926,12 +2006,14 @@ function F(aFormat, aReplacement) {
   for (let [name, value] in Iterator(replacement)) {
     format = format.replace(name, value);
   }
+
   return format;
 }
 
 function getLeaf(aURL) {
   if (aURL) {
     let lastSlash = aURL.replace(/[?#].*$/, '').lastIndexOf('/');
+
     return aURL.slice(lastSlash + 1) || aURL;
   }
   return '';
@@ -1945,17 +2027,18 @@ function trim(aText) {
 }
 
 
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function NaviLink_init() {
   MenuUI.init();
 }
 
 NaviLink_init();
 
-
-//********** Expose
-
+/**
+ * Expose
+ */
 return {
   getNext: SiblingNavi.getNext,
   getPrev: SiblingNavi.getPrev,

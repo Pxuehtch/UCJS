@@ -33,12 +33,14 @@ function log(aMsg) {
 const kPref = {
   // skip a found result that a user can not see (e.g. a text in a folded
   // dropdown menu)
+  //
   // @note if a document has only invisible results, they will be selected
   // @note this is a workaround for Fx default behavior
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
   skipInvisible: true,
 
   // center a found text horizontally
+  //
   // @note the result is scrolled *vertically* centered by Fx default behavior,
   // but not *horizontally*
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=171237
@@ -46,16 +48,19 @@ const kPref = {
   horizontalCentered: true,
 
   // scroll smoothly to a found text
+  //
   // @note |SmoothScroll| has the detail setting
   smoothScroll: true,
 
   // blink a found text
+  //
   // @note |FoundBlink| has the detail setting
   foundBlink: true
 };
 
 /**
  * Wrapper functions of |gFindBar|
+ *
  * @see chrome://global/content/bindings/findbar.xml
  */
 const TextFinder = {
@@ -65,13 +70,16 @@ const TextFinder = {
 
   get selectionController() {
     let editable = gFindBar._foundEditable;
+
     if (editable) {
       try {
         return editable.
           QueryInterface(window.Ci.nsIDOMNSEditableElement).
           editor.
           selectionController;
-      } catch (ex) {}
+      }
+      catch (ex) {}
+
       return null;
     }
 
@@ -84,6 +92,7 @@ const TextFinder = {
 
 /**
  * Handler of the interval of times
+ *
  * @note used to observe consecutive calls of the find-again command
  * @see |attachFindAgainCommand|
  */
@@ -91,17 +100,17 @@ const TimeKeeper = {
   countInterval: function() {
     let currentTime = window.performance.now();
     let interval = currentTime - (this.lastTime || 0);
+
     this.lastTime = currentTime;
+
     return interval;
   }
 };
 
-/**
- * Main function
- */
 function FindAgainScroller_init() {
   // @modified chrome://browser/content/tabbrowser.xml::getFindBar
   const $getFindBar = gBrowser.getFindBar;
+
   gBrowser.getFindBar =
   function ucjsFindAgainScroller_getFindBar(aTab) {
     let initialized = gBrowser.isFindBarInitialized(aTab);
@@ -127,12 +136,14 @@ function attachFindAgainCommand() {
   // @modified chrome://global/content/bindings/findbar.xml::
   // onFindAgainCommand
   const $onFindAgainCommand = gFindBar.onFindAgainCommand;
+
   gFindBar.onFindAgainCommand =
   function ucjsFindAgainScroller_onFindAgainCommand(aFindPrevious) {
     // terminate the active processing
     if (mSmoothScroll) {
       mSmoothScroll.cancel();
     }
+
     if (mFoundBlink) {
       mFoundBlink.cancel();
     }
@@ -143,6 +154,7 @@ function attachFindAgainCommand() {
     // are reset in a short time
     // TODO: adjust the interval time
     const kMaxIntervalToSkip = 500; // [millisecond]
+
     if (TimeKeeper.countInterval() < kMaxIntervalToSkip) {
       $onFindAgainCommand.apply(this, arguments);
       return;
@@ -158,16 +170,20 @@ function attachFindAgainCommand() {
     if (TextFinder.isResultFound) {
       if (mHCentered) {
         let scrollState = mScrollObserver.check();
+
         if (scrollState) {
           mHCentered.align(scrollState);
         }
       }
+
       if (mSmoothScroll) {
         let scrollState = mScrollObserver.check();
+
         if (scrollState) {
           mSmoothScroll.start(scrollState);
         }
       }
+
       if (mFoundBlink) {
         mFoundBlink.start();
       }
@@ -179,6 +195,7 @@ function attachFindAgainCommand() {
 
 /**
  * Observer of the scrollable elements
+ *
  * @return {hash}
  *   attach: {function}
  *   detach: {function}
@@ -216,15 +233,18 @@ function ScrollObserver() {
       if (mScrollState) {
         let {node, goal} = mScrollState;
         let now = getScroll(node);
+
         if (now.x !== goal.x || now.y !== goal.y) {
           mScrollState.goal = now;
         }
+
         return;
       }
 
       // first updating
       for (let [node, scroll] of mItems) {
         let now = getScroll(node);
+
         if (now.x !== scroll.x || now.y !== scroll.y) {
           // @note |mScrollState| is used as the parameters of
           // |SmoothScroll::start|, |HorizontalCentered::align|
@@ -233,6 +253,7 @@ function ScrollObserver() {
             start: scroll,
             goal: now
           };
+
           return;
         }
       }
@@ -265,6 +286,7 @@ function ScrollObserver() {
     let doc = aWindow.contentDocument || aWindow.document;
     // |body| returns <body> or <frameset> element
     let root = doc.body || doc.documentElement;
+
     if (!root) {
       return;
     }
@@ -300,6 +322,7 @@ function ScrollObserver() {
 
     for (let i = 0, l = nodes.snapshotLength; i < l; i++) {
       let scrollable = testScrollable(scrollables, nodes.snapshotItem(i));
+
       if (scrollable) {
         scrollables.push(scrollable);
         mScrollable.addItem(scrollable);
@@ -320,10 +343,12 @@ function ScrollObserver() {
         if (isRegistered(node)) {
           return null;
         }
+
         if (isScrollable(node)) {
           return node;
         }
       }
+
       node = node.parentNode;
     }
     return null;
@@ -335,7 +360,8 @@ function ScrollObserver() {
     if (aNode instanceof Window) {
       x = aNode.scrollX;
       y = aNode.scrollY;
-    } else {
+    }
+    else {
       x = aNode.scrollLeft;
       y = aNode.scrollTop;
     }
@@ -343,7 +369,7 @@ function ScrollObserver() {
     return {
       x: x,
       y: y
-     };
+    };
   }
 
   /**
@@ -358,6 +384,7 @@ function ScrollObserver() {
 
 /**
  * Handler for skipping a found result that a user can not see
+ *
  * @return {hash}
  *   test: {function}
  *
@@ -400,11 +427,13 @@ function SkipInvisible() {
     // 2.an invisible result is found but it has been tested ever
     mTestCount = 0;
     mFirstInvisible = null;
+
     return false;
   }
 
   function getInvisibleResult() {
     let selectionController = TextFinder.selectionController;
+
     // no result is found or error something
     if (!selectionController) {
       return null;
@@ -436,6 +465,7 @@ function SkipInvisible() {
         }
 
         style = getComputedStyle(aNode, '');
+
         if (
           style.visibility !== 'visible' ||
           style.display === 'none' ||
@@ -451,6 +481,7 @@ function SkipInvisible() {
           return false;
         }
       }
+
       aNode = aNode.parentNode;
     }
     return true;
@@ -472,6 +503,7 @@ function SkipInvisible() {
 function HorizontalCentered() {
   function align({node}) {
     let selection = getSelection();
+
     if (selection) {
       scrollSelection(selection, node);
     }
@@ -494,14 +526,17 @@ function HorizontalCentered() {
 
     if (aView instanceof Window) {
       viewWidth = aView.innerWidth;
-    } else {
+    }
+    else {
       let {left: viewLeft} = aView.getBoundingClientRect();
+
       left -= viewLeft;
       right -= viewLeft;
       viewWidth = aView.clientWidth;
     }
 
     center = (viewWidth - width) / 2;
+
     if (right < center) {
       doHScrollBy(aView, right - center);
     }
@@ -513,7 +548,8 @@ function HorizontalCentered() {
   function doHScrollBy(aView, aX) {
     if (aView instanceof Window) {
       aView.scrollBy(aX, 0);
-    } else {
+    }
+    else {
       aView.scrollLeft += aX;
     }
   }
@@ -535,12 +571,17 @@ function HorizontalCentered() {
 function SmoothScroll() {
   const kOption = {
     // pitch of a scroll [integer]
+    //
     // far: the goal is away from the current viewport over its width/height
     // near: the goal comes within the w/h of the viewport
+    //
     // @note 8 pitches mean approaching to the goal by each remaining distance
     // divided by 8
     // @note the bigger value, the slower moving
-    pitch: {far: 2, near: 6}
+    pitch: {
+      far: 2,
+      near: 6
+    }
   };
 
   const mState = {
@@ -652,6 +693,7 @@ function SmoothScroll() {
     if (aValue > 0) {
       return Math.ceil(aValue);
     }
+
     if (aValue < 0) {
       return Math.floor(aValue);
     }
@@ -660,10 +702,12 @@ function SmoothScroll() {
 
   function getScroll() {
     let x, y;
+
     if (mState.view) {
       x = mState.view.scrollX;
       y = mState.view.scrollY;
-    } else {
+    }
+    else {
       x = mState.node.scrollLeft;
       y = mState.node.scrollTop;
     }
@@ -677,7 +721,8 @@ function SmoothScroll() {
   function doScrollTo(aPosition) {
     if (mState.view) {
       mState.view.scrollTo(aPosition.x, aPosition.y);
-    } else {
+    }
+    else {
       mState.node.scrollLeft = aPosition.x;
       mState.node.scrollTop  = aPosition.y;
     }
@@ -686,7 +731,8 @@ function SmoothScroll() {
   function doScrollBy(aPosition) {
     if (mState.view) {
       mState.view.scrollBy(aPosition.x, aPosition.y);
-    } else {
+    }
+    else {
       mState.node.scrollLeft += aPosition.x;
       mState.node.scrollTop  += aPosition.y;
     }
@@ -755,6 +801,7 @@ function SmoothScroll() {
 
 /**
  * Blinking a found text between on and off a selection
+ *
  * @return {hash}
  *   start: {function}
  *   cancel: {function}
@@ -777,9 +824,12 @@ function SmoothScroll() {
 function FoundBlink() {
   const kOption = {
     // duration of time for blinks [millisecond]
+    //
     // @note a blinking will be canceled when the duration is expired
     duration: 2000,
+
     // number of times to blink [even number]
+    //
     // @note 6 steps mean on->off->on->off->on->off->on
     steps: 12
   };
@@ -787,6 +837,7 @@ function FoundBlink() {
   const mState = {
     init:  function() {
       let selectionController = TextFinder.selectionController;
+
       if (!selectionController) {
         return false;
       }
@@ -794,9 +845,11 @@ function FoundBlink() {
       this.selectionController = selectionController;
 
       let {duration, steps} = kOption;
+
       this.frameAnimator = FrameAnimator(onEnterFrame, {
         interval: parseInt(duration / steps, 10)
       });
+
       this.param = {
         duration: duration,
         blinks: 0,
@@ -891,7 +944,8 @@ function FoundBlink() {
     try {
       mState.selectionController.setDisplaySelection(type);
       mState.selectionController.repaintSelection(SELECTION_NORMAL);
-    } catch (ex) {}
+    }
+    catch (ex) {}
   }
 
   /**
@@ -905,6 +959,7 @@ function FoundBlink() {
 
 /**
  * Handler of the frame animation
+ *
  * @return {hash}
  *   request: {function}
  *   cancel: {function}
@@ -926,6 +981,7 @@ function FrameAnimator(aCallback, aOption) {
     mCallback = aCallback;
 
     let now = window.performance.now();
+
     mTime = {
       start: now,
       last: now,
@@ -951,6 +1007,7 @@ function FrameAnimator(aCallback, aOption) {
       if (!mCallback(mTime)) {
         return;
       }
+
       mTime.last = aTimeStamp;
     }
 

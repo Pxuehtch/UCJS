@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        ListEx.uc.js
-// @description Makes lists of tabs, windows and history.
+// @description Makes lists of tabs, windows and history
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage Access to items in the main context menu.
+// @usage access to items in the main context menu
 
 
 (function(window, undefined) {
@@ -47,6 +47,7 @@ const {
 const kPref = {
   /**
    * Numbers of the listed items
+   *
    * @value {integer} [>0]
    *
    * !!! WARNING !!!
@@ -68,11 +69,9 @@ const kID = {
   endSeparator: 'ucjs_listex_endsep'
 };
 
-
-//********** Components
-
 /**
  * Menu settings
+ *
  * @member init {function}
  */
 const mMenu = (function() {
@@ -97,7 +96,7 @@ const mMenu = (function() {
       addEvent(
         menu.appendChild($E('menupopup')),
         'popupshowing',
-        function(aEvent) {
+        (aEvent) => {
           buildMenu(aEvent, aHandler.build);
         },
         false
@@ -118,6 +117,7 @@ const mMenu = (function() {
     aEvent.stopPropagation();
 
     let popup = aEvent.target;
+
     if (popup.hasChildNodes()) {
       return;
     }
@@ -144,7 +144,8 @@ const mMenu = (function() {
       kID.historyMenu,
       kID.openedMenu,
       kID.closedMenu
-    ].forEach(function(aId) {
+    ].
+    forEach((aId) => {
       gContextMenu.showItem(aId, !hidden);
     });
   }
@@ -158,7 +159,8 @@ const mMenu = (function() {
       kID.historyMenu,
       kID.openedMenu,
       kID.closedMenu
-    ].forEach(function(aId) {
+    ].
+    forEach((aId) => {
       let menu = $ID(aId);
       while (menu.itemCount) {
         menu.removeItemAt(0);
@@ -174,6 +176,7 @@ const mMenu = (function() {
 
 /**
  * List of the tab/recent history
+ *
  * @member build {function}
  */
 const mHistoryList = (function() {
@@ -190,7 +193,7 @@ const mHistoryList = (function() {
     makeMenuSeparator(aPopup);
 
     let recentHistorySep = makeMenuSeparator(aPopup);
-    asyncBuildRecentHistory(recentHistorySep, function(aHasBuilt) {
+    asyncBuildRecentHistory(recentHistorySep, (aHasBuilt) => {
       if (!aHasBuilt) {
         makeDisabledMenuItem(recentHistorySep, 'Recent: No history.');
       }
@@ -205,6 +208,7 @@ const mHistoryList = (function() {
 
   function buildTabHistory(aPopup) {
     let sessionHistory = gBrowser.sessionHistory;
+
     if (sessionHistory.count < 1) {
       return false;
     }
@@ -214,6 +218,7 @@ const mHistoryList = (function() {
 
     for (let i = end - 1; i >= start; i--) {
       let entry = sessionHistory.getEntryAtIndex(i, false);
+
       if (!entry) {
         continue;
       }
@@ -223,13 +228,16 @@ const mHistoryList = (function() {
       URL = entry.URI.spec;
       title = entry.title || URL;
       className = ['menuitem-iconic'];
+
       if (i === currentIndex) {
         direction = 'unified-nav-current';
-      } else {
+      }
+      else {
         direction = 'unified-nav-' + (i < currentIndex ? 'back' : 'forward');
         // @see chrome://browser/content/browser.js::gotoHistoryIndex
         action = 'gotoHistoryIndex(event);';
       }
+
       className.push(direction);
 
       // @note |label|,|icon| will be async-set by |getTimeAndFavicon|
@@ -240,7 +248,7 @@ const mHistoryList = (function() {
         action: action || null
       }));
 
-      getTimeAndFavicon(URL, function(aTime, aIcon) {
+      getTimeAndFavicon(URL, (aTime, aIcon) => {
         $E(menuitem, {
           label: formatLabel({
             time: aTime,
@@ -255,12 +263,14 @@ const mHistoryList = (function() {
   }
 
   function asyncBuildRecentHistory(aRefNode, aCallback) {
-    getRecentHistory(function(aRecentHistory) {
+    getRecentHistory((aRecentHistory) => {
       if (!aRecentHistory) {
         aCallback(false);
         return;
       }
+
       buildRecentHistory(aRefNode, aRecentHistory)
+
       aCallback(true);
     });
   }
@@ -269,15 +279,17 @@ const mHistoryList = (function() {
     let popup = aRefNode.parentNode;
     let currentURL = gBrowser.currentURI.spec;
 
-    aRecentHistory.forEach(function(entry) {
+    aRecentHistory.forEach((entry) => {
       let URL, title, className, action;
 
       URL = entry.url;
       title = entry.title || URL;
       className = ['menuitem-iconic'];
+
       if (currentURL === URL) {
         className.push('unified-nav-current');
-      } else {
+      }
+      else {
         // @see resource://app/modules/PlacesUIUtils.jsm
         // @see chrome://browser/content/utilityOverlay.js::openUILink
         action = 'PlacesUIUtils.markPageAsTyped("%URL%");' +
@@ -355,11 +367,13 @@ const mHistoryList = (function() {
     let {time, title} = aValue;
 
     let form = time ? kTitleFormat[0] : kTitleFormat[1];
+
     if (time) {
       // convert microseconds into milliseconds
       time = (new Date(time / 1000)).toLocaleFormat(kTimeFormat);
       form = form.replace('%time%', time);
     }
+
     return form.replace('%title%', title);
   }
 
@@ -384,13 +398,15 @@ const mOpenedList = (function() {
   }
 
   function buildOpenedTabs(aPopup) {
-    Array.forEach(gBrowser.tabs, function(tab, i) {
+    Array.forEach(gBrowser.tabs, (tab, i) => {
       let className, action;
 
       className = ['menuitem-iconic'];
+
       if (tab.selected) {
         className.push('unified-nav-current');
-      } else {
+      }
+      else {
         // @see chrome://browser/content/tabbrowser.xml::selectTabAtIndex
         action = 'gBrowser.selectTabAtIndex(' + i + ');';
       }
@@ -421,18 +437,21 @@ const mOpenedList = (function() {
       if (isBrowserWindow(win)) {
         let b = win.gBrowser;
 
-        let tabs = [getPluralForm('[#1 #2]', b.mTabs.length,
-          ['Tab', 'Tabs'])];
+        let tabs = [getPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])];
+
         let [start, end] = getListRange(b.mTabContainer.selectedIndex,
           b.mTabs.length);
+
         for (let j = start; j < end; j++) {
           tabs.push((j + 1) + '. ' + b.mTabs[j].label);
         }
+
         tip = tabs.join('\n');
 
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
         icon = b.getIcon(b.selectedTab);
-      } else {
+      }
+      else {
         title = win.document.title;
         tip = win.location.href;
         icon = 'moz-icon://.exe?size=16';
@@ -442,7 +461,8 @@ const mOpenedList = (function() {
 
       if (win === window) {
         className.push('unified-nav-current');
-      } else {
+      }
+      else {
         action = focusWindowAtIndex(winIndex);
       }
 
@@ -497,19 +517,24 @@ const mClosedList = (function() {
 
   function buildClosedTabs(aPopup) {
     let sessionStore = getSessionStore();
+
     if (sessionStore.getClosedTabCount(window) === 0) {
       return false;
     }
 
     let closedTabs = JSON.parse(sessionStore.getClosedTabData(window));
+
     for (let i = 0; i < closedTabs.length; i++) {
       let closedTab = closedTabs[i];
 
       let entries = closedTab.state.entries;
       let history = [];
+
       history.push(getPluralForm('[#1 History #2]', entries.length,
         ['entry', 'entries']));
+
       let [start, end] = getListRange(closedTab.state.index, entries.length);
+
       for (let j = end - 1; j >= start; j--) {
         history.push((j + 1) + '. ' +
           getTitle(entries[j].title || entries[j].url));
@@ -530,6 +555,7 @@ const mClosedList = (function() {
 
   function buildClosedWindows(aPopup) {
     let sessionStore = getSessionStore();
+
     if (sessionStore.getClosedWindowCount() === 0) {
       return false;
     }
@@ -540,10 +566,14 @@ const mClosedList = (function() {
 
       let tabs = closedWindow.tabs;
       let tabList = [];
+
       tabList.push(getPluralForm('[#1 #2]', tabs.length, ['Tab', 'Tabs']));
+
       let [start, end] = getListRange(closedWindow.selected - 1, tabs.length);
+
       for (let j = start; j < end; j++) {
         let tab = tabs[j].index && tabs[j].entries[tabs[j].index - 1];
+
         tabList.push((j + 1) + '. ' +
           getTitle(tab && (tab.title || tab.url)));
       }
@@ -551,7 +581,8 @@ const mClosedList = (function() {
       let icon;
       try {
         icon = tabs[closedWindow.selected - 1].attributes.image;
-      } catch (ex) {}
+      }
+      catch (ex) {}
 
       aPopup.appendChild($E('menuitem', {
         label: getTitle(closedWindow.title),
@@ -579,9 +610,6 @@ const mClosedList = (function() {
 
 })();
 
-
-//********** Utilities
-
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
     case 'icon':
@@ -600,6 +628,7 @@ function handleAttribute(aNode, aName, aValue) {
 
 function makeDisabledMenuItem(aPopup, aLabel) {
   let refItem = null;
+
   if (aPopup.localName !== 'menupopup') {
     refItem = aPopup;
     aPopup = aPopup.parentNode;
@@ -623,6 +652,7 @@ function getPluralForm(aFormat, aCount, aLabels) {
 
 function getListRange(aIndex, aCount) {
   let maxNum = kPref.maxListItems;
+
   if (maxNum <= 0) {
     return [0, aCount];
   }
@@ -630,6 +660,7 @@ function getListRange(aIndex, aCount) {
   let half = Math.floor(maxNum / 2);
   let start = Math.max(aIndex - half, 0),
       end = Math.min((start > 0) ? aIndex + half + 1 : maxNum, aCount);
+
   if (end === aCount) {
     start = Math.max(aCount - maxNum, 0);
   }
@@ -645,9 +676,11 @@ function getTitle(aText) {
   if (aText && aText.length > kMaxTextLen) {
     if (/^(?:https?|ftp|file):/i.test(aText)) {
       let half = Math.floor(kMaxTextLen / 2);
+
       aText = aText.substr(0, half) + PlacesUIUtils.ellipsis +
         aText.substr(-half);
-    } else {
+    }
+    else {
       aText = aText.substr(0, kMaxTextLen) + PlacesUIUtils.ellipsis;
     }
   }
@@ -681,9 +714,9 @@ function focusWindowAtIndex(aIndex) {
   return 'ucjsUtil.focusWindowAtIndex(' + aIndex + ');';
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function ListEx_init() {
   mMenu.init();
 }

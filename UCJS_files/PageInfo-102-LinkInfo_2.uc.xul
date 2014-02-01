@@ -19,9 +19,11 @@
 <!--
 // ==UserScript==
 // @name LinkInfo.uc.xul
-// @description Link information xul
+// @description Builds the UI of link information in the Page Info window
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
+
+// @require LinkInfo.uc.js
  -->
 
 <radiogroup id="viewGroup">

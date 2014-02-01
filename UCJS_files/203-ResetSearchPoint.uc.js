@@ -7,9 +7,9 @@
 // @require Util.uc.js
 
 /**
- * @usage Next find again will start from the point with "double-click".
- * @note In the same frame/textbox, the point is reset with "single-click" by
- * default behavior.
+ * @usage the next find again will start from the point with "double-click"
+ * @note in the same frame/textbox, the point is reset with "single-click" by
+ * default behavior
  */
 
 
@@ -31,9 +31,6 @@ function log(aMsg) {
   return window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
 }
 
-/**
- * Main function
- */
 function ResetSearchPoint_init() {
   addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, false);
 }
@@ -45,13 +42,14 @@ function handleEvent(aEvent) {
     return;
   }
 
-  var clickManager = getClickManager(aEvent.target),
+  let clickManager = getClickManager(aEvent.target),
       fastFind = getFastFind();
+
   if (!clickManager || !fastFind) {
     return;
   }
 
-  var {clickedWindow, clickedElement} = clickManager,
+  let {clickedWindow, clickedElement} = clickManager,
       {currentWindow, foundEditable} = fastFind;
 
   if (currentWindow !== clickedWindow ||
@@ -59,9 +57,11 @@ function handleEvent(aEvent) {
     if (foundEditable) {
       clearSelection(foundEditable);
     }
+
     if (clickedElement) {
       setSelection(clickedElement, clickedWindow);
     }
+
     if (currentWindow !== clickedWindow ||
         foundEditable) {
       setFastFindFor(clickedWindow);
@@ -70,8 +70,8 @@ function handleEvent(aEvent) {
 }
 
 function clearSelection(aEditable) {
-  var editor = aEditable.editor;
-  var selection = editor && editor.selection;
+  let editor = aEditable.editor;
+  let selection = editor && editor.selection;
 
   if (selection && selection.rangeCount) {
     selection.removeAllRanges();
@@ -81,12 +81,13 @@ function clearSelection(aEditable) {
 function setSelection(aElement, aWindow) {
   getFastFind().collapseSelection();
 
-  var selection = aWindow.getSelection();
-  var range = null;
+  let selection = aWindow.getSelection();
+  let range = null;
 
   if (selection.rangeCount) {
     range = selection.getRangeAt(0);
-  } else {
+  }
+  else {
     range = aWindow.document.createRange();
     selection.addRange(range);
   }
@@ -99,7 +100,7 @@ function setSelection(aElement, aWindow) {
 function setFastFindFor(aWindow) {
   const {Ci} = window;
 
-  var docShell =
+  let docShell =
     aWindow.
     QueryInterface(Ci.nsIInterfaceRequestor).
     getInterface(Ci.nsIWebNavigation).
@@ -110,32 +111,33 @@ function setFastFindFor(aWindow) {
 
 /**
  * Filters the useful state from a clicked element
+ *
  * @param {Element}
  * @return {hash|null}
  */
 function getClickManager(aElement) {
+  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
+  let isTextDocument = (aDocument) =>
+    aDocument && window.mimeTypeIsTextBased(aDocument.contentType);
+
+  let isContentWindow = (aWindow) =>
+    aWindow && aWindow.top === window.content;
+
   if (!aElement ||
       !isTextDocument(aElement.ownerDocument) ||
       !isContentWindow(aElement.ownerDocument.defaultView)) {
     return null;
   }
 
-  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
-  function isTextDocument(doc)
-    doc && window.mimeTypeIsTextBased(doc.contentType);
-
-  function isContentWindow(win)
-    win && win.top === window.content;
-
-  var isEditable =
+  let isEditable =
     aElement instanceof window.Ci.nsIDOMNSEditableElement &&
     aElement.type !== 'submit' &&
     aElement.type !== 'image';
 
-  var isImage = aElement instanceof HTMLImageElement;
+  let isImage = aElement instanceof HTMLImageElement;
 
-  var isLinked = (function() {
-    var node = aElement;
+  let isLinked = (function() {
+    let node = aElement;
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
         if (node instanceof HTMLAnchorElement ||
@@ -166,9 +168,9 @@ function getFastFind() {
   return gFindBar.browser.fastFind;
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 ResetSearchPoint_init();
 
 

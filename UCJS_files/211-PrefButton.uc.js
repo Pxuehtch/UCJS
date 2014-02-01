@@ -8,8 +8,8 @@
 // @usage access to items on the navigation toolbar
 // @note some about:config preferences are changed. see @pref
 
-// @note the styles are adjusted to the themes of my Fx and OS. see
-// |setStyleSheet()|
+// @note the styles are adjusted to the themes of my Fx and OS
+// see |setStyleSheet()|
 
 
 (function(window, undefined) {
@@ -114,6 +114,7 @@ const kItemList = [
 
     get checked() {
       let {key, value} = this.pref;
+
       return getPref(key, value.linkOrImage) !== value.never;
     },
 
@@ -144,11 +145,13 @@ const kItemList = [
 
     get checked() {
       let {key, value} = this.pref;
+
       return getPref(key, value.normal) !== value.none;
     },
 
     command: function() {
       let {key, value} = this.pref;
+
       setPref(key, this.checked ? value.none : value.normal);
 
       // immediately apply the new mode in the animate-able image document
@@ -221,6 +224,7 @@ const kItemList = [
 const BrowserProgressListener = {
   onStateChange: function(aWebProgress, aRequest, aFlags, aStatus) {
     const {STATE_STOP, STATE_IS_WINDOW} = window.Ci.nsIWebProgressListener;
+
     if (aFlags & STATE_STOP) {
       if (aFlags & STATE_IS_WINDOW &&
           aWebProgress.DOMWindow === gBrowser.contentWindow) {
@@ -289,6 +293,7 @@ function makeButtons() {
   let toolbar = $ID(kID.NAVIGATION_TOOLBAR);
 
   let hbox = $E('hbox');
+
   hbox.id = kID.CONTAINER;
   addEvent(hbox, 'click', doCommand, false);
 
@@ -308,7 +313,8 @@ function makeButtons() {
 
     if (item.image) {
       button.setAttribute('image', item.image);
-    } else {
+    }
+    else {
       button.setAttribute('label', item.label);
     }
 

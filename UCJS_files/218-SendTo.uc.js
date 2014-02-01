@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name SendTo.uc.js
-// @description Opens (page, link, image, selected text) with the web service.
+// @description Opens (page, link, image, selected text) with the web service
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
 // @require [optional][for preset] WebService.uc.js
-// @usage Access to items in the main context menu.
+// @usage access to items in the main context menu
 
 
 (function(window, undefined) {
@@ -53,6 +53,7 @@ const kID = {
 const kString = {
   /**
    * for the label text of a menuitem
+   *
    * @note Keep in sync with |kPreset[item].types|.
    */
   types: {
@@ -64,6 +65,7 @@ const kString = {
 
   /**
    * the tooltip text of a menuitem
+   *
    * %DATA% : the passed data
    * %URL% : the opened URL
    */
@@ -72,6 +74,7 @@ const kString = {
 
 /**
  * Preset list
+ *
  * @value {hash[]}
  *   @key label {string} a display name for menuitem
  *     %TYPE% is replaced into |kString.types|
@@ -103,10 +106,12 @@ const kPreset = [
     label: '%TYPE%の はてなブックマーク (-)',
 
     URL: function(aData) {
-      var entryURL = 'http://b.hatena.ne.jp/entry/';
+      let entryURL = 'http://b.hatena.ne.jp/entry/';
+
       if (/^https:/.test(aData)) {
         entryURL += 's/';
       }
+
       return entryURL + '%SCHEMELESS%';
     },
 
@@ -116,6 +121,7 @@ const kPreset = [
       function updateLabel(text) {
         if (menuitem) {
           let label = menuitem.getAttribute('label');
+
           $E(menuitem, {
             label: label.replace('(-)', '(' + text + ')')
           });
@@ -171,30 +177,33 @@ const kPreset = [
 
 /**
  * Handler of fixing up a alias with the data
+ *
  * @return {hash}
  *   @member create {function}
  *
- * [Aliases]
+ * [aliases]
  * %RAW% : data itself
  * %ENC% : with URI encoded
  * %SCHEMELESS%, %sl% : without the URL scheme
  * %PARAMLESS%, %pl% : without the URL parameter
  *
- * The aliases can be combined by '|'
+ * @note aliases can be combined by '|'
  * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
- * encoded. (the multiple aliases is applied in the order of settings)
+ * encoded (the multiple aliases is applied in the order of settings)
  */
-var AliasFixup = (function() {
+const AliasFixup = (function() {
   const kAliasSplitter = '|';
   const kAliasPattern = RegExp('%([a-z_' + kAliasSplitter + ']+)%', 'ig');
 
   function create(aText, aData) {
-    return aText.replace(kAliasPattern, function(match, alias) {
-      let rv = aData;
-      alias.split(kAliasSplitter).forEach(function(modifier) {
-        rv = fixupModifier(rv, modifier);
+    return aText.replace(kAliasPattern, (match, alias) => {
+      let data = aData;
+
+      alias.split(kAliasSplitter).forEach((modifier) => {
+        data = fixupModifier(data, modifier);
       });
-      return rv;
+
+      return data;
     });
   }
 
@@ -224,7 +233,7 @@ function SendTo_init() {
 }
 
 function initMenu() {
-  var contextMenu = contentAreaContextMenu;
+  let contextMenu = contentAreaContextMenu;
 
   setSeparators(contextMenu, contextMenu.firstChild);
 
@@ -232,35 +241,37 @@ function initMenu() {
 }
 
 function showContextMenu(aEvent) {
-  var contextMenu = aEvent.target;
+  let contextMenu = aEvent.target;
+
   if (contextMenu !== contentAreaContextMenu) {
     return;
   }
 
-  var [sSep, eSep] = getSeparators();
+  let [sSep, eSep] = getSeparators();
 
   // remove existing items
   for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
     contextMenu.removeChild(item);
   }
 
-  getAvailableItems().forEach(function(item) {
+  getAvailableItems().forEach((item) => {
     contextMenu.insertBefore(item, eSep);
   });
 }
 
 function getAvailableItems() {
-  var items = [];
+  let items = [];
 
   // @see chrome://browser/content/nsContextMenu.js
-  var {onLink, onImage, onTextInput, linkURL, mediaURL} =
+  let {onLink, onImage, onTextInput, linkURL, mediaURL} =
     window.gContextMenu;
-  var pageURL = gBrowser.currentURI.spec;
-  var selection = getSelectionAtCursor();
-  var onPlainTextLink = selection && !onLink && linkURL;
+  let pageURL = gBrowser.currentURI.spec;
+  let selection = getSelectionAtCursor();
+  let onPlainTextLink = selection && !onLink && linkURL;
 
-  kPreset.forEach(function(service) {
-    var {disabled, types, extensions} = service;
+  kPreset.forEach((service) => {
+    let {disabled, types, extensions} = service;
+
     if (disabled) {
       return;
     }
@@ -294,16 +305,19 @@ function getAvailableItems() {
 }
 
 function makeItem(aType, aData, aService) {
-  let URL = AliasFixup.create(
+  let URL = 
     (typeof aService.URL === 'function') ?
-      aService.URL(aData) : aService.URL,
-    aData
-  );
+    aService.URL(aData) :
+    aService.URL;
+
+  URL = AliasFixup.create(URL, aData);
 
   let label = aService.label.
     replace('%TYPE%', kString.types[aType]);
+
   let tooltip = kString.tooltip.
-    replace('%URL%', URL).replace('%DATA%', aData);
+    replace('%URL%', URL).
+    replace('%DATA%', aData);
 
   let item = $E('menuitem', {
     label: label,
@@ -323,33 +337,40 @@ function testExtension(aExtensions, aURL) {
     return false;
   }
 
-  var targets = [];
-  var pattern = /[\w\-]+\.([a-z]{2,5})(?=[?#]|$)/ig, match;
+  let targets = [];
+  let pattern = /[\w\-]+\.([a-z]{2,5})(?=[?#]|$)/ig, match;
+
   while ((match = pattern.exec(aURL))) {
     targets.unshift(match[1]);
   }
 
   // Case: http://www.example.com/path/file1.ext?key=file2.ext
   // Examines file2.ext, and then file1.ext
-  return targets.some(function(item) aExtensions.indexOf(item) > -1);
+  return targets.some((item) => aExtensions.indexOf(item) > -1);
 }
 
 // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
-// separators.
+// separators
 function setSeparators(aContextMenu, aReferenceNode) {
   if (aReferenceNode === undefined) {
     aReferenceNode = null;
   }
 
-  [kID.startSeparator, kID.endSeparator].
-  forEach(function(id) {
+  [
+    kID.startSeparator,
+    kID.endSeparator
+  ].
+  forEach((id) => {
     aContextMenu.insertBefore(
       $E('menuseparator', {id: id}), aReferenceNode);
   });
 }
 
 function getSeparators() {
-  return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
+  return [
+    $ID(kID.startSeparator),
+    $ID(kID.endSeparator)
+  ];
 }
 
 function handleAttribute(aNode, aName, aValue) {

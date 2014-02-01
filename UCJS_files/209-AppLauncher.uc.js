@@ -18,7 +18,7 @@
 /**
  * Main function
  * @param Util {hash} utility functions
- * @param window {hash} the global |Window| object
+ * @param window {ChromeWindow} the global window object
  * @param undefined {undefined} the |undefined| constant
  */
 (function(Util, window, undefined) {
@@ -336,8 +336,10 @@ const FileExtUtil = {
 
   matchExt: function(aURL, aType) {
     let URL = aURL && makeURIURL(aURL);
+
     if (URL) {
       let ext = URL.fileExtension;
+
       if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
         return ext;
       }
@@ -345,9 +347,6 @@ const FileExtUtil = {
     return null;
   }
 };
-
-
-//********** Functions
 
 function AppLauncher_init() {
   let appList = initAppList();
@@ -387,6 +386,7 @@ function initAppList() {
 
   // sort items in type actions order and then alphabetical order
   let order = kTypeAction.map(({type}) => type);
+
   apps.sort((a, b) =>
     order.indexOf(a.type) - order.indexOf(b.type) ||
     a.name.localeCompare(b.name)
@@ -413,6 +413,7 @@ function makeMainMenu(aAppList) {
     aEvent.stopPropagation();
 
     let target = aEvent.target;
+
     if (target.parentElement.id !== kID.mainMenu) {
       return;
     }
@@ -424,6 +425,7 @@ function makeMainMenu(aAppList) {
     aEvent.stopPropagation();
 
     let target = aEvent.target;
+
     if (!target.hasAttribute(kID.appIndexKey)) {
       return;
     }
@@ -479,6 +481,7 @@ function makeActionItems(aPopup, aAppList) {
     }
 
     let actions;
+
     kTypeAction.some((item) => {
       if (item.type === type) {
         actions = item.actions;
@@ -539,15 +542,18 @@ function makeMenuItemLabel({app, action, inAppMenu}) {
 
   if (inAppMenu) {
     let type = kString.type[app.type];
+
     if (app.type === 'file') {
       type = type.replace('%1', app.extensions.join(','));
     }
+
     label = kString.appMenuItem.
       replace('%type%', type).
       replace('%name%', app.name);
   }
   else {
     label = kString.action[FileExtUtil.getBaseAction(action)];
+
     if (app) {
       label = label.replace('%1', app.name);
     }
@@ -560,6 +566,7 @@ function doBrowse(aPopup) {
   // XPath for a <menuitem> with avalable actions
   let availableItem = (actions) => {
     let key = '@' + kID.actionKey + '="';
+
     return 'xul:menuitem[' + key + actions.join('" or ' + key) + '"]';
   };
 
@@ -572,6 +579,7 @@ function doBrowse(aPopup) {
   // hide all menu items and show the others
   Array.forEach(aPopup.childNodes, (node) => {
     let hidden = node.localName === 'menuitem';
+
     if (node.hidden !== hidden) {
       node.hidden = hidden;
     }
@@ -601,16 +609,19 @@ function getAvailableActions() {
   let actions = [];
 
   let onMedia = false;
+
   if (gContextMenu.onImage ||
       gContextMenu.onCanvas ||
       isImageDocument(gContextMenu.target.ownerDocument)) {
     onMedia = true;
 
     actions.push('viewImage');
+
     if (/^(?:https?|ftp):/.test(gContextMenu.imageURL)) {
       actions.push('downloadImage');
     }
-  } else if (gContextMenu.onVideo || gContextMenu.onAudio) {
+  }
+  else if (gContextMenu.onVideo || gContextMenu.onAudio) {
     onMedia = true;
 
     actions.push('openMedia');
@@ -621,38 +632,47 @@ function getAvailableActions() {
     let URL = gContextMenu.linkURL;
 
     let ext = FileExtUtil.matchExt(URL, 'file');
+
     if (ext) {
       actions.push(FileExtUtil.makeFileAction('openFile', ext));
     }
 
     if (FileExtUtil.matchExt(URL, 'text')) {
       actions.push('viewLinkSource');
-    } else if (FileExtUtil.matchExt(URL, 'image')) {
+    }
+    else if (FileExtUtil.matchExt(URL, 'image')) {
       actions.push('viewLinkImage');
-    } else if (FileExtUtil.matchExt(URL, 'media')) {
+    }
+    else if (FileExtUtil.matchExt(URL, 'media')) {
       actions.push('openLinkMedia');
     }
 
     if (/^https?:/.test(URL)) {
       actions.push('openLink');
       actions.push('downloadLink');
-    } else if (/^ftp:/.test(URL)) {
+    }
+    else if (/^ftp:/.test(URL)) {
       actions.push('openFTP');
-    } else if (/^mailto:/.test(URL)) {
+    }
+    else if (/^mailto:/.test(URL)) {
       actions.push('sendMail');
-    } else if (/^s?news:/.test(URL)) {
+    }
+    else if (/^s?news:/.test(URL)) {
       actions.push('readNews');
     }
-  } else if (!onMedia && !gContextMenu.onTextInput) {
+  }
+  else if (!onMedia && !gContextMenu.onTextInput) {
     let inText = isTextDocument(gContextMenu.target.ownerDocument);
 
     actions.push('openPage');
+
     if (inText) {
       actions.push('viewPageSource');
     }
 
     if (gContextMenu.inFrame) {
       actions.push('openFrame');
+
       if (inText) {
         actions.push('viewFrameSource');
       }
@@ -721,11 +741,14 @@ function doAction(aApp, aAction) {
       break;
     case 'viewImage':
       save = true;
+
       if (gContextMenu.onImage) {
         targetURL = gContextMenu.imageURL;
-      } else if (gContextMenu.onCanvas) {
+      }
+      else if (gContextMenu.onCanvas) {
         targetURL = gContextMenu.target.toDataURL();
-      } else {
+      }
+      else {
         targetURL = sourceDocument.location.href;
       }
       break;
@@ -745,17 +768,16 @@ function doAction(aApp, aAction) {
   }
 
   let saveInfo = null;
+
   if (save) {
     saveInfo = {
       sourceDocument: sourceDocument,
       targetDocument: targetDocument
     };
   }
+
   runApp(aApp, targetURL, saveInfo);
 }
-
-
-//********** Utilities
 
 function isImageDocument(aDocument) {
   return aDocument instanceof ImageDocument;
@@ -785,9 +807,9 @@ function handleAttribute(aNode, aName, aValue) {
   return false;
 }
 
-
-//********** Entry Point
-
+/**
+ * Entry Point
+ */
 AppLauncher_init();
 
 
@@ -820,30 +842,27 @@ const kSpecialFolderAliases = [
 ];
 
 
-//********** XPCOM handler
-
-// @see resource://gre/modules/Services.jsm
+/**
+ * XPCOM handler
+ *
+ * @see resource://gre/modules/Services.jsm
+ */
 const {Cc, Ci, Services} = window;
 
-function $I(aCID, aIID) {
-  return Cc[aCID].createInstance(Ci[aIID]);
-}
+/**
+ * Instance creater
+ */
+let $I = (aCID, aIID) => Cc[aCID].createInstance(Ci[aIID]);
 
-function LocalFile() {
-  return $I('@mozilla.org/file/local;1', 'nsIFile');
-}
+let LocalFile = () =>
+  $I('@mozilla.org/file/local;1', 'nsIFile');
 
-function Process() {
-  return $I('@mozilla.org/process/util;1', 'nsIProcess');
-}
+let Process = () =>
+  $I('@mozilla.org/process/util;1', 'nsIProcess');
 
-function WebBrowserPersist() {
-  return $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1',
-    'nsIWebBrowserPersist');
-}
-
-
-//********** Functions
+let WebBrowserPersist = () =>
+  $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1',
+     'nsIWebBrowserPersist');
 
 function checkApp(aApp) {
   let path = aApp.path.replace(/[/]/g, '\\');
@@ -858,6 +877,7 @@ function checkApp(aApp) {
   });
 
   let appFile = getAppFile(path);
+
   if (appFile) {
     // @note overwrites the property value
     aApp.path = appFile.path;
@@ -869,26 +889,31 @@ function checkApp(aApp) {
 function getAppFile(aFilePath) {
   try {
     let file = makeFile(aFilePath);
+
     if (file &&
         file.exists() &&
         file.isFile() &&
         file.isExecutable()) {
       return file;
     }
-  } catch (ex) {}
+  }
+  catch (ex) {}
+
   return null;
 }
 
 function runApp(aApp, aTargetURL, aSaveInfo) {
   if (aSaveInfo) {
     saveAndExecute(aApp, aTargetURL, aSaveInfo);
-  } else {
+  }
+  else {
     execute(aApp, aTargetURL);
   }
 }
 
 function execute(aApp, aTargetURL) {
   let appFile = getAppFile(aApp.path);
+
   if (!appFile) {
     warn('Not executed', ['The application is not available now', aApp.path]);
     return;
@@ -896,7 +921,9 @@ function execute(aApp, aTargetURL) {
 
   let args = getAppArgs(aApp.args, aTargetURL);
   let process = Process();
+
   process.init(appFile);
+
   // @note use 'wide string' version for Unicode arguments
   process.runwAsync(args, args.length);
 }
@@ -910,7 +937,8 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     sourceURI = makeURI(aTargetURL);
     saveFilePath = getSaveFilePath(sourceURI, targetDocument);
     saveFile = makeFile(saveFilePath);
-  } catch (ex) {
+  }
+  catch (ex) {
     warn('Not downloaded', [ex.message, aTargetURL]);
     return;
   }
@@ -928,11 +956,15 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
         if (/^(?:https?|ftp):/.test(aRequest.name)) {
           let httpChannel, requestSucceeded, responseStatus;
+
           try {
             httpChannel = aRequest.QueryInterface(Ci.nsIHttpChannel);
             requestSucceeded = httpChannel.requestSucceeded;
             responseStatus = httpChannel.responseStatus;
-          } catch (ex) {
+          }
+          catch (ex) {
+            // nothing to do
+            //
             // @throws NS_ERROR_NOT_AVAILABLE;
             // |requestSucceeded| throws when an invalid URL is requested
           }
@@ -967,6 +999,7 @@ function getSaveFilePath(aURI, aDocument) {
   const kFileNameForm = 'ucjsAL%NUM%_%FILENAME%';
 
   let fileName = makeFileName(aURI, aDocument);
+
   if (!fileName) {
     throw Error('Unexpected URL for download');
   }
@@ -978,9 +1011,11 @@ function getSaveFilePath(aURI, aDocument) {
   fileName = window.validateFileName(fileName);
 
   let dir = getSpecialDirectory('TmpD');
+
   dir.append(fileName.replace('%NUM%', ''));
 
   let uniqueNum = 0;
+
   while (dir.exists()) {
     dir.leafName = fileName.replace('%NUM%', ++uniqueNum);
   }
@@ -1000,6 +1035,7 @@ function makeFileName(aURI, aDocument) {
     replace(/^_|_$/g, '');
 
   let fileName, extension;
+
   if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
     // @see chrome://global/content/contentAreaUtils.js::
     // getDefaultFileName()
@@ -1008,6 +1044,7 @@ function makeFileName(aURI, aDocument) {
     // @see chrome://global/content/contentAreaUtils.js::
     // getDefaultExtension()
     let contentType = aDocument ? aDocument.contentType : null;
+
     extension = window.getDefaultExtension('', aURI, contentType);
 
     if (extension && fileName.endsWith('.' + extension)) {
@@ -1015,6 +1052,7 @@ function makeFileName(aURI, aDocument) {
       // getFileBaseName()
       fileName = window.getFileBaseName(fileName);
     }
+
     if (!extension && aDocument && /^https?$/.test(aURI.scheme)) {
       extension = 'htm';
     }
@@ -1033,10 +1071,12 @@ function makeFileName(aURI, aDocument) {
 
   if (fileName.length > kMaxFileNameLen) {
     let half = Math.floor(kMaxFileNameLen / 2);
+
     fileName =
       [fileName.substr(0, half), fileName.substr(-half)].
       map(trim).join(kEllipsis);
-  } else {
+  }
+  else {
     fileName = trim(fileName);
   }
 
@@ -1071,19 +1111,24 @@ function getSpecialDirectory(aAlias) {
 
 function makeURI(aURL, aDocument) {
   let characterSet = aDocument ? aDocument.characterSet : null;
+
   return Services.io.newURI(aURL, characterSet, null);
 }
 
 function makeURIURL(aURL) {
   try {
     return makeURI(aURL).QueryInterface(Ci.nsIURL);
-  } catch (ex) {}
+  }
+  catch (ex) {}
+
   return null;
 }
 
 function makeFile(aFilePath) {
   let file = LocalFile();
+
   file.initWithPath(aFilePath);
+
   return file;
 }
 
@@ -1093,7 +1138,9 @@ function getPrivacyContextFor(aDocument) {
       QueryInterface(Ci.nsIInterfaceRequestor).
       getInterface(Ci.nsIWebNavigation).
       QueryInterface(Ci.nsILoadContext);
-  } catch (ex) {}
+  }
+  catch (ex) {}
+
   return null;
 }
 
@@ -1117,9 +1164,9 @@ function log(aMsg) {
   return window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
 }
 
-
-//********** Export
-
+/**
+ * Export
+ */
 return {
   checkApp: checkApp,
   runApp: runApp,

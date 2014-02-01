@@ -5,13 +5,13 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note Some about:config preferences are changed. see @pref
-// @note A default function is modified. see @modified
-// @note Some properties are exposed to the global scope.
+// @note some about:config preferences are changed. see @pref
+// @note a default function is modified. see @modified
+// @note some properties are exposed to the global scope;
 // |window.ucjsTabEx.XXX|
 
 
-var ucjsTabEx = (function(window, undefined) {
+const ucjsTabEx = (function(window, undefined) {
 
 
 "use strict";
@@ -70,16 +70,14 @@ const kPosType = {
   // @note SELECTPOS: if no next tab, no match
   NEXT_ADJACENT: 5,
 
-  //***** OPENPOS only
-
+  //********** OPENPOS only
   // after the far end tab of the sequential followings that are descendants of
   // the base tab from its next adjacent, or at the next adjacent
   // @note The family relation is kept even if the base tab changes its
   // location.
   NEXT_INCREMENT_DESCENDANT: 6,
 
-  //***** SELECTPOS only
-
+  //********** SELECTPOS only
   // the previous adjacent tab that is an ancestor of the closed tab
   // @note may be no match
   PREV_ADJACENT_ANCESTOR: 7,
@@ -103,6 +101,7 @@ const kPosType = {
  */
 const kPref = {
   // where a new tab is opened to
+  //
   // @value {kPosType}
   // @note The count of positioning starts from the first *un*pinned tab.
   // @note |OPENPOS_LINKED| works when the tab is opened by a link in the
@@ -115,6 +114,7 @@ const kPref = {
   OPENPOS_UNDOCLOSE: kPosType.DEFAULT,
 
   // which tab is selected after the *selected* tab is closed
+  //
   // @value {kPosType[]}
   // @note The default selection works if no matches (may be the same as
   // |PREV_ADJACENT|)
@@ -131,22 +131,28 @@ const kPref = {
   ],
 
   // delayed-stops the loading of a tab that is opened in background
+  //
   // @value {boolean}
   //   false: the same as the default 'tabs on demand' behavior
   //   true: stops the loading of the tab after |SUSPEND_DELAY| passes
   SUSPEND_LOADING: true,
+
   // the delay time until the loading is suspended
+  //
   // @value {integer} millisecond
   //   0: try to stop loading immediately
   // @note It may take time because our process works after the Fx default one
   // for a background tab.
   SUSPEND_DELAY: 0,
+
   // auto-reloads the suspended tab that is next adjacent of a selected tab
+  //
   // @value {boolean}
   SUSPEND_NEXTTAB_RELOAD: false,
 
   // the delay time until it considers that "a user has read it" after the tab
   // is selected and loaded completely
+  //
   // @value {integer} millisecond
   // @note The marking is canceled when the other tab is selected in a short
   // time. (e.g. while flipping tabs with a shortcut key or mouse wheeling)
@@ -155,13 +161,14 @@ const kPref = {
 
 /**
  * Makes a unique value with the current time
+ *
  * @return {integer}
  */
-var getTime = (function() {
-  var time = 0;
+const getTime = (function() {
+  let time = 0;
 
   return function() {
-    var now = Date.now();
+    let now = Date.now();
     return time = (time === now ? ++now : now);
   };
 })();
@@ -169,9 +176,10 @@ var getTime = (function() {
 /**
  * Tab data manager
  */
-var mTab = (function () {
+const mTab = (function () {
   /**
    * Gets/Sets or Removes the tab data
+   *
    * @param aTab {Element}
    * @param aKey {string} a reserved key that corresponds to a data
    * @param aValue {} [optional] a value to set
@@ -181,20 +189,15 @@ var mTab = (function () {
    *   set: a value that is set, null if removed.
    */
   function data(aTab, aKey, aValue) {
-    function getInt(value) {
-      return parseInt(value, 10);
-    }
+    let getInt = (value) => parseInt(value, 10);
 
-    var name, getter, setter;
+    let name, getter, setter;
+
     switch (aKey) {
       case 'query': // {hash}
         name = kID.OPENQUERY;
-        getter = function(value) {
-          return JSON.parse(htmlUnescape(value));
-        };
-        setter = function(value) {
-          return htmlEscape(JSON.stringify(value));
-        };
+        getter = (value) =>  JSON.parse(htmlUnescape(value));
+        setter = (value) => htmlEscape(JSON.stringify(value));
         break;
       case 'open': // {integer}
         name = kID.OPENTIME;
@@ -210,12 +213,8 @@ var mTab = (function () {
         break;
       case 'ancestors': // {integer[]}
         name = kID.ANCESTORS;
-        getter = function(value) {
-          return value.split(' ').map(getInt);
-        };
-        setter = function(value) {
-          return value.join(' ');
-        };
+        getter = (value) => value.split(' ').map(getInt);
+        setter = (value) => value.join(' ');
         break;
       default:
         throw Error('unknown aKey of tab data');
@@ -234,28 +233,30 @@ var mTab = (function () {
       if (aTab.hasAttribute(name)) {
         aTab.removeAttribute(name);
       }
-    } else {
+    }
+    else {
       let value = setter ? setter(aValue) : aValue;
       aTab.setAttribute(name, value);
     }
+
     return aValue;
   }
 
   /**
    * Retrieves the data of a closed tab from the session store
+   *
    * @param aClosedTabData {hash} a parsed JSON of a closed tab
    * @param aKey {string} a reserved key that corresponds to a data
    * @return {}
    *
    * @note |aKey| is the same as the keys of |data|. Only the keys that is
-   * called in the code is supported.
+   * called in the code is supported
    */
   function SSdata(aClosedTabData, aKey) {
-    function getInt(value) {
-      return parseInt(value, 10);
-    }
+    let getInt = (value) => parseInt(value, 10);
 
-    var name, getter;
+    let name, getter;
+
     switch (aKey) {
       case 'open': // {integer}
         name = kID.OPENTIME;
@@ -275,7 +276,7 @@ var mTab = (function () {
   /**
    * Gets/Sets the state of a tab
    */
-  var state = {
+  const state = {
     // whether a user read a tab
     read: function(aTab, aValue) {
       return manageFlagAttribute(aTab, kID.READ, aValue);
@@ -295,7 +296,7 @@ var mTab = (function () {
   /**
    * Tests the state of a tab
    */
-  var stateTest = {
+  const stateTest = {
     // whether a user read a tab
     // @return {boolean}
     read: function(aTab) {
@@ -312,22 +313,26 @@ var mTab = (function () {
 
   /**
    * Gets/Sets or Removes the key attribute of a tab
+   *
    * @param aTab {Element}
    * @param aKey {string}
    * @param aValue {boolean} [optional]
    * @return {boolean}
    */
   function manageFlagAttribute(aTab, aKey, aValue) {
-    var has = aTab.hasAttribute(aKey);
+    let has = aTab.hasAttribute(aKey);
+
     if (aValue === undefined) {
       return has;
     }
 
     if (has && aValue === false) {
       aTab.removeAttribute(aKey);
-    } else if (!has && aValue === true) {
+    }
+    else if (!has && aValue === true) {
       aTab.setAttribute(aKey, true);
     }
+
     return aValue;
   }
 
@@ -342,10 +347,11 @@ var mTab = (function () {
 /**
  * Tab opening handler
  */
-var mTabOpener = {
+const mTabOpener = {
   init: function() {
     // @modified chrome://browser/content/tabbrowser.xml::addTab
-    var $addTab = gBrowser.addTab;
+    const $addTab = gBrowser.addTab;
+
     gBrowser.addTab = function ucjsTabEx_addTab(
       aURI, // {string}
       aReferrerURI, // {nsIURI}
@@ -354,7 +360,7 @@ var mTabOpener = {
       aOwner,
       aAllowThirdPartyFixup
     ) {
-      var newTab = $addTab.apply(this, arguments);
+      let newTab = $addTab.apply(this, arguments);
 
       // when a tab is duplicated or undo-closed, its data will be restored
       if (mSessionStore.isRestoring) {
@@ -364,7 +370,8 @@ var mTabOpener = {
 
       const {Ci} = window;
 
-      var aRelatedToCurrent, aFromExternal, aIsUTF8;
+      let aRelatedToCurrent, aFromExternal, aIsUTF8;
+
       if (arguments.length === 2 &&
           typeof arguments[1] === 'object' &&
           !(arguments[1] instanceof Ci.nsIURI)) {
@@ -377,40 +384,47 @@ var mTabOpener = {
         aIsUTF8               = params.isUTF8;
       }
 
-      var query;
+      let query;
+
       if (!aURI || aURI === 'about:blank') {
         query = {
           URL: 'about:blank',
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
-      } else {
+      }
+      else {
         // into URL string
         aReferrerURI = aReferrerURI && aReferrerURI.spec;
 
         let fromVisit;
+
         if (!aReferrerURI) {
           if (aRelatedToCurrent) {
             let currentURL = gBrowser.currentURI.spec;
             fromVisit = /^https?:/.test(currentURL) && currentURL;
-          } else {
+          }
+          else {
             fromVisit = /^https?:/.test(aURI) &&
               mReferrer.getFromVisit(aURI);
           }
         }
 
         let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
+
         if (aAllowThirdPartyFixup) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
         }
+
         if (aFromExternal) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
         }
+
         if (aIsUTF8) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
         }
 
-        // TODO: POST data handling. |aPostData| is a |nsIInputStream| object
-        // that JSON does not support.
+        // TODO: handle the POST data. |aPostData| is a |nsIInputStream| object
+        // that JSON does not support
         query = {
           URL: aURI,
           flags: flags,
@@ -420,9 +434,11 @@ var mTabOpener = {
           fromVisit: fromVisit || undefined
         };
       }
+
       mTab.data(newTab, 'query', query);
 
-      var event = document.createEvent('Events');
+      let event = document.createEvent('Events');
+
       event.initEvent('UcjsTabExTabOpen', true, false);
       newTab.dispatchEvent(event);
 
@@ -432,7 +448,7 @@ var mTabOpener = {
 
   set: function(aTab, aType) {
     switch (aType) {
-      case 'StartupTab':
+      case 'StartupTab': {
         let browser = gBrowser.getBrowserForTab(aTab);
         // |userTypedValue| holds the URL of a document till it successfully
         // loads.
@@ -443,6 +459,7 @@ var mTabOpener = {
         };
         mTab.data(aTab, 'query', query);
         break;
+      }
       case 'NewTab':
         if (mReferrer.isRelatedToCurrent(aTab)) {
           // inherit the ancestors so that the opener tab becomes the parent
@@ -452,13 +469,14 @@ var mTabOpener = {
           mTab.data(aTab, 'ancestors', [open].concat(ancs));
         }
         break;
-      case 'DuplicatedTab':
+      case 'DuplicatedTab': {
         // this duplicated tab has the same data of its original tab
         // renew the ancestors so that the original tab becomes the parent
         let open = mTab.data(aTab, 'open');
         let ancs = mTab.data(aTab, 'ancestors') || [];
         mTab.data(aTab, 'ancestors', [open].concat(ancs));
         break;
+      }
     }
 
     mTab.data(aTab, 'open', getTime());
@@ -468,9 +486,10 @@ var mTabOpener = {
 /**
  * Tab referrer handler
  */
-var mReferrer = {
+const mReferrer = {
   getURL: function(aTab) {
-    var query = mTab.data(aTab, 'query');
+    let query = mTab.data(aTab, 'query');
+
     if (!query) {
       return null;
     }
@@ -487,7 +506,8 @@ var mReferrer = {
   },
 
   isRelatedToCurrent: function(aTab) {
-    var query = mTab.data(aTab, 'query');
+    let query = mTab.data(aTab, 'query');
+
     if (!query) {
       return null;
     }
@@ -530,7 +550,7 @@ var mReferrer = {
 /**
  * Tab selecting handler
  */
-var mTabSelector = {
+const mTabSelector = {
   prevSelectedTime: 0,
   currentSelectedTime: 0,
 
@@ -573,7 +593,7 @@ var mTabSelector = {
   },
 
   update: function(aTab, aOption) {
-    var {reset, read} = aOption || {};
+    let {reset, read} = aOption || {};
 
     if (reset) {
       mTab.data(aTab, 'select', null);
@@ -582,8 +602,10 @@ var mTabSelector = {
       return;
     }
 
-    var time = getTime();
+    let time = getTime();
+
     mTab.data(aTab, 'select', time);
+
     if (read || !mTab.state.read(aTab)) {
       mTab.data(aTab, 'read', time);
       mTab.state.read(aTab, true);
@@ -597,12 +619,12 @@ var mTabSelector = {
 /**
  * Handler of suspending the loading of a tab
  */
-var mTabSuspender = {
+const mTabSuspender = {
   timers: {},
 
   set: function(aTab, aDelay) {
     // wait until the default process for a background tab is done
-    var timer = setTimeout(function(tab) {
+    let timer = setTimeout(function(tab) {
       this.stop(tab);
     }.bind(this), aDelay, aTab);
 
@@ -611,10 +633,12 @@ var mTabSuspender = {
   },
 
   clear: function(aTab) {
-    var id = aTab && mTab.data(aTab, 'open');
-    var timer = id && this.timers[id];
+    let id = aTab && mTab.data(aTab, 'open');
+    let timer = id && this.timers[id];
+
     if (timer) {
       clearTimeout(timer);
+
       // delete the property that is not used anymore
       delete this.timers[id];
     }
@@ -629,9 +653,9 @@ var mTabSuspender = {
       return;
     }
 
-    var [browser, loadingURL] = this.getBrowserForTab(aTab);
-    var isBusy = aTab.hasAttribute('busy');
-    var isBlank = browser.currentURI.spec === 'about:blank';
+    let [browser, loadingURL] = this.getBrowserForTab(aTab);
+    let isBusy = aTab.hasAttribute('busy');
+    let isBlank = browser.currentURI.spec === 'about:blank';
 
     // 1.a document in loading
     // 2.a blank page when the default 'tabs on demand' works
@@ -641,8 +665,9 @@ var mTabSuspender = {
       if (isBusy) {
         browser.stop();
       }
+
       if (isBlank) {
-        fetchPageTitle(loadingURL, function(aTitle) {
+        fetchPageTitle(loadingURL, (aTitle) => {
           aTab.label = aTitle;
         });
       }
@@ -660,30 +685,32 @@ var mTabSuspender = {
 
     mTab.state.suspended(aTab, false);
 
-    var [browser, loadingURL, query] = this.getBrowserForTab(aTab);
+    let [browser, loadingURL, query] = this.getBrowserForTab(aTab);
     if (loadingURL) {
       if (query) {
-        // TODO: POST data handling.
+        // TODO: handle the POST data
         browser.loadURIWithFlags(
           query.URL,
           query.flags,
           makeURI(query.referrerURL),
           query.charset,
-          null
+          null // POST data
         );
-      } else {
+      }
+      else {
         browser.loadURI(loadingURL);
       }
     }
   },
 
   getBrowserForTab: function(aTab) {
-    var browser = gBrowser.getBrowserForTab(aTab);
-    var loadingURL;
-    var query;
+    let browser = gBrowser.getBrowserForTab(aTab);
+    let loadingURL;
+    let query;
 
-    // TODO: Use a certain detection
-    var isNewTab = !browser.canGoBack;
+    // TODO: use a proper method of detection whether a tab newly opens or not
+    let isNewTab = !browser.canGoBack;
+
     if (isNewTab) {
       query = mTab.data(aTab, 'query');
     }
@@ -693,7 +720,8 @@ var mTabSuspender = {
     // loads
     if (query && query.URL !== 'about:blank') {
       loadingURL = query.URL;
-    } else {
+    }
+    else {
       loadingURL = browser.userTypedValue;
     }
 
@@ -704,7 +732,7 @@ var mTabSuspender = {
 /**
  * Session store handler
  */
-var mSessionStore = {
+const mSessionStore = {
   // whether a tab is in restoring (duplicated/undo-closed tab)
   isRestoring: false,
 
@@ -719,16 +747,12 @@ var mSessionStore = {
     addEvent(window, 'SSWindowStateReady', this, false);
 
     /**
-     * WORKAROUND: In Fx19 an error sometimes occurs in startup
-     * Error: NS_ERROR_XPC_JS_THREW_JS_OBJECT: 'TypeError: aFile is undefined'
-     * when calling method: [nsISessionStore::persistTabAttribute]
-     *
-     * We should wait until |persistTabAttribute| is ready for use
+     * We should wait until |persistTabAttribute| is ready for use;
      * 1.boot startup: observes |DOMContentLoaded| which fires on the document
      * for the first selected tab at startup. see |mStartup::init|
      * 2.resume startup: observes the first |SSWindowStateReady|
      *
-     * TODO: use a certain observer
+     * TODO: consider the proper method of these observations
      */
     this.isResumeStartup =
       Cc['@mozilla.org/browser/sessionstartup;1'].
@@ -751,6 +775,7 @@ var mSessionStore = {
         if (this.isResumeStartup) {
           // delete the property that is not used anymore
           delete this.isResumeStartup;
+
           this.persistTabAttribute();
         }
         break;
@@ -785,18 +810,23 @@ var mSessionStore = {
 
 /**
  * Startup tabs handler
+ *
  * 1.The boot startup opens the startup tabs (e.g. homepages). Some pinned tabs
  * may be restored too.
  * 2.The resume startup restores tabs.
  */
-var mStartup = {
+const mStartup = {
   init: function() {
-    // execute |setupTabs| just after all tabs open
-    // TODO: Use a certain observer.
-    // The first |DOMContentLoaded| fires on the document for a selected tab.
-    // It seems enough after all tabs open.
-    // XXX: All tabs may be opened before this user script runs. But I am not
-    // sure.
+    /**
+     * execute |setupTabs| just after all tabs open
+     *
+     * the first |DOMContentLoaded| fires for the first selected tab at
+     * startup. that time seems enough after all tabs open
+     *
+     * XXX: I am not sure that all tabs may be opened before this user script
+     * runs
+     * TODO: use a proper method of observation
+     */
     window.addEventListener('DOMContentLoaded', this, false);
   },
 
@@ -810,7 +840,7 @@ var mStartup = {
   },
 
   setupTabs: function() {
-    Array.forEach(gBrowser.tabs, function(tab) {
+    Array.forEach(gBrowser.tabs, (tab) => {
       // a boot startup tab (e.g. homepage)
       if (!mTab.data(tab, 'open')) {
         mTabOpener.set(tab, 'StartupTab');
@@ -819,7 +849,8 @@ var mStartup = {
       if (tab.selected) {
         // update |select|, and set |read| if first selected
         mTabSelector.update(tab);
-      } else {
+      }
+      else {
         // immediately stop the loading of a background tab
         mTabSuspender.stop(tab);
       }
@@ -830,9 +861,9 @@ var mStartup = {
 /**
  * Tab event handler
  */
-var mTabEvent = {
+const mTabEvent = {
   init: function() {
-    var tc = gBrowser.tabContainer;
+    let tc = gBrowser.tabContainer;
 
     addEvent(tc, 'UcjsTabExTabOpen', this, false);
     addEvent(tc, 'TabSelect', this, false);
@@ -841,7 +872,7 @@ var mTabEvent = {
   },
 
   handleEvent: function(aEvent) {
-    var tab = aEvent.originalTarget;
+    let tab = aEvent.originalTarget;
 
     switch (aEvent.type) {
       case 'UcjsTabExTabOpen':
@@ -866,8 +897,10 @@ var mTabEvent = {
       mTabSuspender.set(aTab, kPref.SUSPEND_DELAY);
     }
 
-    var openPos = mReferrer.isRelatedToCurrent(aTab) ?
-      kPref.OPENPOS_LINKED : kPref.OPENPOS_UNLINKED;
+    let openPos =
+      mReferrer.isRelatedToCurrent(aTab) ?
+      kPref.OPENPOS_LINKED :
+      kPref.OPENPOS_UNLINKED;
 
     moveTabTo(aTab, openPos);
   },
@@ -884,8 +917,10 @@ var mTabEvent = {
     if (kPref.SUSPEND_LOADING) {
       mTabSuspender.reload(aTab);
     }
+
     if (kPref.SUSPEND_NEXTTAB_RELOAD) {
       let nextTab = getAdjacentTab(aTab, +1);
+
       if (nextTab) {
         mTabSuspender.reload(nextTab);
       }
@@ -898,8 +933,10 @@ var mTabEvent = {
     }
 
     if (aTab.selected) {
-      let selectPos = aTab.pinned ?
-        kPref.SELECTPOS_PINNEDTABCLOSE : kPref.SELECTPOS_TABCLOSE;
+      let selectPos =
+        aTab.pinned ?
+        kPref.SELECTPOS_PINNEDTABCLOSE :
+        kPref.SELECTPOS_TABCLOSE;
 
       selectTabAt(aTab, selectPos);
     }
@@ -914,9 +951,10 @@ var mTabEvent = {
 
     mTab.state.restoring(aTab, false);
 
-    var openPos, baseTab;
+    let openPos, baseTab;
 
-    var originalTab = getOriginalTabOfDuplicated(aTab);
+    let originalTab = getOriginalTabOfDuplicated(aTab);
+
     if (originalTab) {
       // @note A duplicated tab has the same data as its original tab and we
       // update some data to be as a new opened tab.
@@ -927,14 +965,16 @@ var mTabEvent = {
       if (aTab.selected) {
         // force to update |read|
         mTabSelector.update(aTab, {read: true});
-      } else {
+      }
+      else {
         // remove |select| and |read|
         mTabSelector.update(aTab, {reset: true});
       }
 
       openPos = kPref.OPENPOS_DUPLICATE;
       baseTab = originalTab;
-    } else {
+    }
+    else {
       // @note A undoclosed tab has the restored data.
       // @note |window.undoCloseTab| opens a tab and forcibly selects it.
 
@@ -942,6 +982,7 @@ var mTabEvent = {
       mTabSelector.update(aTab);
 
       openPos = kPref.OPENPOS_UNDOCLOSE;
+
       // sets the previous selected tab to the base tab for moving this tab.
       // the previous selected tab surely exists because it was selected then
       // this undoclosed tab has been opened and selected.
@@ -953,15 +994,17 @@ var mTabEvent = {
 };
 
 
-//********** Tab handling functions
-
+/**
+ * Tab handling functions
+ */
 function getOriginalTabOfDuplicated(aTab) {
-  var openTime = mTab.data(aTab, 'open');
+  let openTime = mTab.data(aTab, 'open');
 
-  var tabs = gBrowser.tabs;
+  let tabs = gBrowser.tabs;
 
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
     tab = tabs[i];
+
     if (tab !== aTab &&
         mTab.data(tab, 'open') === openTime) {
       return tab;
@@ -971,16 +1014,16 @@ function getOriginalTabOfDuplicated(aTab) {
 }
 
 function moveTabTo(aTab, aPosType, aBaseTab) {
-  var baseTab = aBaseTab || gBrowser.selectedTab;
+  let baseTab = aBaseTab || gBrowser.selectedTab;
 
   // excluding pinned tabs
-  var tabs = getTabs('active');
-  var tabsNum = tabs.length;
+  let tabs = getTabs('active');
+  let tabsNum = tabs.length;
 
   // returns -1 for a pinned or closing tab
-  var basePos = getTabPos(tabs, baseTab);
-  var tabPos = getTabPos(tabs, aTab);
-  var pos = -1;
+  let basePos = getTabPos(tabs, baseTab);
+  let tabPos = getTabPos(tabs, aTab);
+  let pos = -1;
 
   switch (aPosType) {
     case kPosType.DEFAULT:
@@ -992,7 +1035,8 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
       pos = tabsNum - 1;
       break;
     case kPosType.PREV_ADJACENT:
-      pos = (0 < basePos) ?
+      pos =
+        (0 < basePos) ?
         ((tabPos < basePos) ? basePos - 1 : basePos) :
         0;
       break;
@@ -1002,7 +1046,8 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
     case kPosType.NEXT_INCREMENT_DESCENDANT:
       pos = getTabPos(tabs, getFamilyTab(baseTab,
         'next farthest descendant'));
-      pos = (-1 < pos) ?
+      pos =
+        (-1 < pos) ?
         ((pos < tabsNum - 1) ? pos + 1 : tabsNum - 1) :
         basePos + 1;
       break;
@@ -1011,13 +1056,12 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
   }
 
   if (-1 < pos && pos !== tabPos) {
-    gBrowser.moveTabTo(aTab,
-      getTabPos(gBrowser.tabs, tabs[pos]));
+    gBrowser.moveTabTo(aTab, getTabPos(gBrowser.tabs, tabs[pos]));
   }
 }
 
 function selectTabAt(aBaseTab, aPosTypes) {
-  aPosTypes.some(function(posType) {
+  aPosTypes.some((posType) => {
     switch (posType) {
       case kPosType.DEFAULT:
         return true;
@@ -1046,6 +1090,7 @@ function selectTabAt(aBaseTab, aPosTypes) {
       default:
         throw Error('unknown kPosType for SELECTPOS');
     }
+
     // never reached, but avoid warning
     return true;
   });
@@ -1053,6 +1098,7 @@ function selectTabAt(aBaseTab, aPosTypes) {
 
 /**
  * Retrieves a family tab of the base tab in the active tabs
+ *
  * @param aBaseTab {Element}
  * @param aStatement {string} keywords divided by ' '
  * @return {Element}
@@ -1064,14 +1110,14 @@ function getFamilyTab(aBaseTab, aStatement) {
     'next farthest descendant'
   ];
 
-  var statement = StatementParser(aStatement, ' ', supportedStatements);
+  let statement = StatementParser(aStatement, ' ', supportedStatements);
 
-  var direction = statement.matchKey(['prev', 'next']),
+  let direction = statement.matchKey(['prev', 'next']),
       position = statement.matchKey(['adjacent', 'farthest']),
       extended = !!statement.matchKey(['extended']),
       family = statement.matchKey(['ancestor', 'descendant']);
 
-  var activeTabs, startPos, baseId, baseAncs, isRelated, relatedPos;
+  let activeTabs, startPos, baseId, baseAncs, isRelated, relatedPos;
 
   /**
    * Finds the tab that meets the statement
@@ -1110,9 +1156,11 @@ function getFamilyTab(aBaseTab, aStatement) {
       // 1.this tab is an ancestor of the base tab
       return baseAncs.indexOf(id) > -1;
     };
-  } else /* family === 'descendant' */ {
+  }
+  else /* family === 'descendant' */ {
     isRelated = function(tab) {
       let ancs = mTab.data(tab, 'ancestors');
+
       // this tab that has no ancestors does not related with the base tab
       if (!ancs) {
         return false;
@@ -1130,18 +1178,21 @@ function getFamilyTab(aBaseTab, aStatement) {
    * Ready to examine
    */
   relatedPos = -1;
+
   if (position === 'adjacent') {
     // get the adjacent one
     if (isRelated(activeTabs[startPos])) {
       relatedPos = startPos;
     }
-  } else /* position === 'farthest' */ {
+  }
+  else /* position === 'farthest' */ {
     // get the farthest one of a sequence of tabs
     // @note No implementation for the unsupported 'prev farthest'.
     for (let i = startPos, l = activeTabs.length; i < l; i++) {
       if (!isRelated(activeTabs[i])) {
         break;
       }
+
       relatedPos = i;
     }
   }
@@ -1157,11 +1208,12 @@ function selectOpenerTab(aBaseTab, aOption) {
 }
 
 function getOpenerTab(aBaseTab, aOption) {
-  var {undoClose} = aOption || {};
+  let {undoClose} = aOption || {};
 
-  var baseTab = aBaseTab || gBrowser.selectedTab;
+  let baseTab = aBaseTab || gBrowser.selectedTab;
 
-  var ancs = mTab.data(baseTab, 'ancestors');
+  let ancs = mTab.data(baseTab, 'ancestors');
+
   // no ancestor then no parent
   if (!ancs) {
     if (undoClose) {
@@ -1169,6 +1221,7 @@ function getOpenerTab(aBaseTab, aOption) {
       // @note A tab that has no opener tab is independent. So its referred URL
       // should be newly opened even if it exists in the current tabs.
       let referrerURL = mReferrer.getURL(baseTab);
+
       if (referrerURL) {
         // TODO: opens in foreground or background?
         return openTab(referrerURL);
@@ -1178,10 +1231,10 @@ function getOpenerTab(aBaseTab, aOption) {
   }
 
   // the parent exists
-  var parent = ancs[0];
+  let parent = ancs[0];
 
   // including the base tab
-  var tabs = getTabs('active, pinned', baseTab);
+  let tabs = getTabs('active, pinned', baseTab);
 
   // search in the current tabs
   for (let i = 0, l = tabs.length; i < l; i++) {
@@ -1193,6 +1246,7 @@ function getOpenerTab(aBaseTab, aOption) {
   // search in the closed tabs
   if (undoClose) {
     let undoList = mSessionStore.getClosedTabList();
+
     if (undoList) {
       for (let i = 0, l = undoList.length; i < l; i++) {
         if (mTab.SSdata(undoList[i], 'open') === parent) {
@@ -1213,22 +1267,26 @@ function selectPrevSelectedTab(aBaseTab, aOption) {
 }
 
 function getPrevSelectedTab(aBaseTab, aOption) {
-  var {traceBack, undoClose} = aOption || {};
+  let {traceBack, undoClose} = aOption || {};
 
-  var baseTab = aBaseTab || gBrowser.selectedTab;
+  let baseTab = aBaseTab || gBrowser.selectedTab;
+
   // including the base tab
-  var tabs = getTabs('active, pinned', baseTab);
+  let tabs = getTabs('active, pinned', baseTab);
 
-  var time, recentTime = 0;
-  var prevSelectedTime = mTabSelector.prevSelectedTime;
-  var pos = -1;
+  let time, recentTime = 0;
+  let prevSelectedTime = mTabSelector.prevSelectedTime;
+  let pos = -1;
 
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
     tab = tabs[i];
+
     if (tab === baseTab) {
       continue;
     }
+
     time = mTab.data(tab, 'select');
+
     if (time && time > recentTime) {
       recentTime = time;
       pos = i;
@@ -1246,6 +1304,7 @@ function getPrevSelectedTab(aBaseTab, aOption) {
   // reopen a previous selected tab
   if (undoClose) {
     let undoList = mSessionStore.getClosedTabList();
+
     if (undoList) {
       for (let i = 0, l = undoList.length; i < l; i++) {
         if (mTab.SSdata(undoList[i], 'select') === prevSelectedTime) {
@@ -1278,7 +1337,9 @@ function getOldestUnreadTab(aOption) {
     if (mTab.state.read(tab)) {
       continue;
     }
+
     time = mTab.data(tab, 'open');
+
     if (time && time < oldTime) {
       oldTime = time;
       pos = i;
@@ -1297,9 +1358,10 @@ function getAdjacentTab(aBaseTab, aDirection) {
   }
 
   // including the base tab
-  var tabs = getTabs('active, pinned', aBaseTab);
+  let tabs = getTabs('active, pinned', aBaseTab);
 
-  var basePos = getTabPos(tabs, aBaseTab);
+  let basePos = getTabPos(tabs, aBaseTab);
+
   // no tabs in the direction
   if ((aDirection === -1 && basePos === 0) ||
       (aDirection === +1 && basePos === tabs.length - 1)) {
@@ -1321,11 +1383,13 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
     throw Error('aDirection should be -1 or +1');
   }
 
-  var baseTab = aBaseTab || gBrowser.selectedTab;
-  // excluding pinned tabs
-  var tabs = getTabs('active');
+  let baseTab = aBaseTab || gBrowser.selectedTab;
 
-  var basePos = getTabPos(tabs, baseTab);
+  // excluding pinned tabs
+  let tabs = getTabs('active');
+
+  let basePos = getTabPos(tabs, baseTab);
+
   // 1.the base tab is not active
   // 2.no tabs in the direction
   if (basePos < 0 ||
@@ -1334,12 +1398,14 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
     return;
   }
 
-  var top, last;
+  let top, last;
+
   // closing from the last tab
   if (aDirection === -1) {
     top = 0;
     last = basePos - 1;
-  } else {
+  }
+  else {
     top = basePos + 1;
     last = tabs.length - 1;
   }
@@ -1351,11 +1417,12 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
 
 function closeReadTabs() {
   // excluding pinned tabs
-  var tabs = getTabs('active');
+  let tabs = getTabs('active');
 
   // closing from the last tab
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
+
     if (mTab.state.read(tab)) {
       removeTab(tab, {safeBlock: true});
     }
@@ -1364,6 +1431,7 @@ function closeReadTabs() {
 
 /**
  * Gets an array of tabs
+ *
  * @param aStatement {string} keywords divided by ',' to include
  *   'pinned': pinned tabs
  *   'active': tabs of the current active group (exclude pinned tabs)
@@ -1375,17 +1443,19 @@ function closeReadTabs() {
  * Make a smart handling.
  */
 function getTabs(aStatement, aForcedTab) {
-  var statement = StatementParser(aStatement, ',');
-  var pinned = !!statement.matchKey(['pinned']),
+  let statement = StatementParser(aStatement, ',');
+  let pinned = !!statement.matchKey(['pinned']),
       active = !!statement.matchKey(['active']);
 
-  return Array.filter(gBrowser.tabs, function(tab) {
+  return Array.filter(gBrowser.tabs, (tab) => {
     if (tab === aForcedTab) {
       return true;
     }
+
     if (tab.closing) {
       return false;
     }
+
     return (pinned && tab.pinned)  ||
            (active && !tab.pinned && !tab.hidden);
   });
@@ -1400,8 +1470,10 @@ function selectTab(aTab) {
     if (!aTab.selected) {
       gBrowser.selectedTab = aTab;
     }
+
     return aTab;
   }
+
   return null;
 }
 
@@ -1425,6 +1497,7 @@ function htmlUnescape(aString) {
 
 function fetchPageTitle(aURL, aCallback) {
   let uri = makeURI(aURL);
+
   if (!uri) {
     aCallback(aURL);
   }
@@ -1444,12 +1517,15 @@ function makeURI(aURL) {
   try {
     // @see chrome://global/content/contentAreaUtils.js::makeURI
     return window.makeURI(aURL);
-  } catch (ex) {}
+  }
+  catch (ex) {}
+
   return null;
 }
 
 /**
  * Creates a statement parser
+ *
  * @param aStatement {string}
  * @param aDelimiter {string}
  * @param aSupportedStatements {array} [optional]
@@ -1459,16 +1535,16 @@ function makeURI(aURL) {
  * @note used in getFamilyTab(), getTabs()
  */
 function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
-  var mKeys;
+  let mKeys;
 
   init();
 
   function init() {
-    var delimiterRE = (aDelimiter === ' ') ?
+    let delimiterRE = (aDelimiter === ' ') ?
       RegExp('\\s+', 'g') :
       RegExp('\\s*\\' + aDelimiter + '\\s*', 'g');
 
-    var statement = aStatement.trim().replace(delimiterRE, aDelimiter);
+    let statement = aStatement.trim().replace(delimiterRE, aDelimiter);
 
     if (aSupportedStatements &&
         aSupportedStatements.indexOf(statement) < 0) {
@@ -1492,9 +1568,6 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
   };
 }
 
-
-//********** Entry point
-
 /**
  * Patches for the system default
  */
@@ -1509,8 +1582,9 @@ function modifySystemSetting() {
     {key: 'browser.sessionstore.restore_pinned_tabs_on_demand', value: true}
   ];
 
-  prefs.forEach(function(pref) {
-    var value = get(pref.key);
+  prefs.forEach((pref) => {
+    let value = get(pref.key);
+
     if (value !== pref.value) {
       set(pref.key, pref.value);
     }
@@ -1534,7 +1608,9 @@ function customizeTabTooltip() {
 
   function onPopup(aEvent) {
     aEvent.stopPropagation();
+
     let tab = window.document.tooltipNode;
+
     if (tab.localName !== 'tab' || tab.mOverCloseButton) {
       return;
     }
@@ -1550,14 +1626,18 @@ function customizeTabTooltip() {
     // add the information of the parent tab to a tab which is newly opened
     if (!tab.linkedBrowser.canGoBack && mReferrer.exists(tab)) {
       // the document title is fetched by async history API
-      mReferrer.fetchTitle(tab, function(aTitle) {
+      mReferrer.fetchTitle(tab, (aTitle) => {
         let label = tooltip.label + '\n\nFrom: ' + aTitle;
+
         tooltip.setAttribute('label', label);
       });
     }
   }
 }
 
+/**
+ * Entry point
+ */
 function TabEx_init() {
   modifySystemSetting();
   customizeTabTooltip();
@@ -1570,9 +1650,9 @@ function TabEx_init() {
 
 TabEx_init();
 
-
-//********** Export
-
+/**
+ * Export
+ */
 return {
   tabState: mTab.stateTest,
   referrer: mReferrer,

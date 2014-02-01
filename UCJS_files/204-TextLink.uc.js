@@ -1,16 +1,16 @@
 // ==UserScript==
 // @name TextLink.uc.js
-// @description Detects the unlinked URL-like text.
+// @description Detects the unlinked URL-like text
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 
 /**
- * @usage When 'double-click' on a URL-like text, a new tab will open
- * in the detected URL.
- * @note If 'Shift' or 'Ctrl' has been pressed, the text is only selected
- * by the default behavior.
+ * @usage when 'double-click' on a URL-like text, a new tab will open
+ * in the detected URL
+ * @note if 'Shift' or 'Ctrl' has been pressed, the text is only selected
+ * by the default behavior
  */
 
 // @see https://github.com/piroor/textlink
@@ -38,13 +38,14 @@ function log(aMsg) {
 
 /**
  * URL string handler
+ *
  * @return {hash}
  *   @member guess {function}
  *   @member grab {function}
  *   @member map {function}
  *   @member fix {function}
  */
-var mURLUtil = (function() {
+const URLUtil = (function() {
   /**
    * URI characters
    */
@@ -54,10 +55,11 @@ var mURLUtil = (function() {
   };
 
   /**
-   * Converts alias %URIC% into a string for RegExp()
+   * Converts the alias %URIC% into a string for RegExp()
+   *
    * @note %URIC% has to be contained in []
    */
-  var resolve = (function() {
+  let resolve = (function() {
     const re = /%URIC%/g;
     const replacement = '\\w' + kURIC.mark;
 
@@ -67,39 +69,41 @@ var mURLUtil = (function() {
   /**
    * Converts zennkaku URI chars into hankaku ones
    */
-  var normalize = (function() {
-    const zenURIC = (kURIC.word + kURIC.mark).replace(/./g, han2zen);
-    const re = RegExp('[' + zenURIC + ']', 'g');
+  let normalize = (function() {
+    const zenkakuURIC = (kURIC.word + kURIC.mark).replace(/./g, han2zen);
+    const re = RegExp('[' + zenkakuURIC + ']', 'g');
 
-    return function(aStr) aStr.replace(re, zen2han);
+    return (aStr) => aStr.replace(re, zen2han);
   })();
 
   /**
    * Tests if a string has only URI chars
    */
-  var isURIC = (function() {
+  let isURIC = (function() {
     const exURIC = '[^%URIC%]';
     const re = RegExp(resolve(exURIC));
 
-    return function(aStr) !re.test(normalize(aStr));
+    return (aStr) => !re.test(normalize(aStr));
   })();
 
   /**
-   * Retrieves array of URL-like strings
-   * @note if no match is found returns null
+   * Retrieves an array of URL-like strings
+   *
+   * @note returns null if no match
    */
-  var match = (function() {
+  let match = (function() {
     const absolute =
       '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[%URIC%]*';
     const relative =
       '\\.\\.?\\/[%URIC%]+';
     const re = RegExp(resolve(absolute + '|' + relative), 'ig');
 
-    return function(aStr) normalize(aStr).match(re);
+    return (aStr) => normalize(aStr).match(re);
   })();
 
   /**
    * Tests if a selection text has only URI chars
+   *
    * @return {boolean}
    */
   function guess(aSelection) {
@@ -107,7 +111,8 @@ var mURLUtil = (function() {
   }
 
   /**
-   * Retrieves array of URL-like strings from a range text
+   * Retrieves an array of URL-like strings from a range text
+   *
    * @return {array|null}
    *   if no match is found returns null
    */
@@ -117,6 +122,7 @@ var mURLUtil = (function() {
 
   /**
    * Gets a range string which its zenkaku URIC is converted into hankaku
+   *
    * @return {string}
    */
   function map(aRange) {
@@ -124,7 +130,8 @@ var mURLUtil = (function() {
   }
 
   /**
-   * Makes good URL
+   * Makes a good URL
+   *
    * @return {string}
    */
   function fix(aStr) {
@@ -143,9 +150,6 @@ var mURLUtil = (function() {
   }
 })();
 
-
-//********** Functions
-
 function TextLink_init() {
   addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, false);
 }
@@ -156,13 +160,14 @@ function handleEvent(aEvent) {
     return;
   }
 
-  var doc = aEvent.originalTarget.ownerDocument;
+  let doc = aEvent.originalTarget.ownerDocument;
+
   if (!isTextDocument(doc)) {
     return;
   }
 
-  var selection = doc.defaultView.getSelection();
-  var URL = findURL(doc, selection);
+  let selection = doc.defaultView.getSelection();
+  let URL = findURL(doc, selection);
 
   if (URL) {
     selection.removeAllRanges();
@@ -174,37 +179,41 @@ function handleEvent(aEvent) {
 }
 
 function findURL(aDocument, aSelection) {
-  var URL = '';
+  let URL = '';
 
   if (!aSelection ||
       !aSelection.rangeCount ||
-      !mURLUtil.guess(aSelection)) {
+      !URLUtil.guess(aSelection)) {
     return URL;
   }
 
   // make a target range with a source selection
-  var range = aDocument.createRange();
+  let range = aDocument.createRange();
+
   range.selectNode(aDocument.documentElement);
+
   // update the target range and get the position of the source selection
   // in the target range
-  var position = initRange(range, aSelection.getRangeAt(0));
+  let position = initRange(range, aSelection.getRangeAt(0));
 
   // retrieve array of URL-like strings from the target range
-  var URLs = mURLUtil.grab(range);
+  let URLs = URLUtil.grab(range);
+
   if (!URLs) {
     return URL;
   }
 
   // scan the position of a URL in the target range
-  var map = mURLUtil.map(range);
-  var start, end = 0;
-  URLs.some(function(url) {
+  let map = URLUtil.map(range);
+  let start, end = 0;
+
+  URLs.some((url) => {
     start = map.indexOf(url, end);
     end = start + url.length;
 
     // if the URL contains the source selection, we got it
     if (position.start < end && start < position.end) {
-      URL = mURLUtil.fix(url);
+      URL = URLUtil.fix(url);
       return true;
     }
     return false;
@@ -216,13 +225,15 @@ function findURL(aDocument, aSelection) {
 function initRange(aRange, aSourceRange) {
   function expand(aXPath, aNode, aCount) {
     const kCharsBuffer = 256;
-    var node = aNode;
-    var border = node;
-    var count = aCount;
-    var text;
+
+    let node = aNode;
+    let border = node;
+    let count = aCount;
+    let text;
 
     while (count < kCharsBuffer) {
       node = $X1(aXPath, node);
+
       if (!node) {
         break;
       }
@@ -241,7 +252,7 @@ function initRange(aRange, aSourceRange) {
   }
 
   // expand range before the source selection
-  var result = expand(
+  let result = expand(
     'preceding::text()[1]',
     aSourceRange.startContainer,
     aSourceRange.startOffset
@@ -250,8 +261,8 @@ function initRange(aRange, aSourceRange) {
   aRange.setStartBefore(result.border);
 
   // store the source position
-  var startPos = result.count;
-  var endPos = startPos + aSourceRange.toString().length;
+  let startPos = result.count;
+  let endPos = startPos + aSourceRange.toString().length;
 
   // expand range after the source selection
   result = expand(
@@ -265,9 +276,6 @@ function initRange(aRange, aSourceRange) {
   return {start: startPos, end: endPos};
 }
 
-
-//********** Utilities
-
 /**
  * hankaku / zenkaku converter for ASCII printable characters
  * 94 characters:
@@ -278,22 +286,24 @@ function initRange(aRange, aSourceRange) {
  * @note cf. http://taken.s101.xrea.com/blog/article.php?id=510
  */
 function han2zen(aChar) {
-  var code = aChar.charCodeAt(0);
+  let code = aChar.charCodeAt(0);
   code += 0xFEE0; // 0021->FF01
+
   return String.fromCharCode(code);
 }
 
 function zen2han(aChar) {
-  var code = aChar.charCodeAt(0);
+  let code = aChar.charCodeAt(0);
   code &= 0x007F; // FF01->0001
   code += 0x0020;
+
   return String.fromCharCode(code);
 }
 
 function encodeToPlain(aRange) {
   const {Cc, Ci} = window;
 
-  var encoder =
+  let encoder =
     Cc['@mozilla.org/layout/documentEncoder;1?type=text/plain'].
     createInstance(Ci.nsIDocumentEncoder);
 
@@ -309,14 +319,14 @@ function encodeToPlain(aRange) {
   return encoder.encodeToString();
 }
 
-function isTextDocument(aDoc) {
+function isTextDocument(aDocument) {
   // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
-  return aDoc && window.mimeTypeIsTextBased(aDoc.contentType);
+  return aDocument && window.mimeTypeIsTextBased(aDocument.contentType);
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 TextLink_init();
 
 

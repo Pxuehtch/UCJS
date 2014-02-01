@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name PageRelated.uc.js
-// @description Makes related links about current page.
+// @description Makes related links about current page
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage Access to items in the URLbar context menu.
+// @usage access to items in the URLbar context menu
 
-// TODO: The URLbar is initialized when the toolbar customization panel opens.
-// Observe it and fix our broken functions.
-// WORKAROUND: Restart Firefox after customizing.
+// TODO: the URLbar is initialized when the toolbar customization panel opens,
+// so, observe it and fix our broken functions
+// WORKAROUND: restart Firefox after customizing
 
 
 (function(window, undefined) {
@@ -111,10 +111,12 @@ const kPreset = [
       {
         name: 'はてなブックマーク',
         URL: function(aPageInfo) {
-          var entryURL = 'http://b.hatena.ne.jp/entry/';
+          let entryURL = 'http://b.hatena.ne.jp/entry/';
+
           if (/^https:/.test(aPageInfo.URL)) {
             entryURL += 's/';
           }
+
           return entryURL + '%u|sl%';
         }
       },
@@ -149,14 +151,15 @@ const kPreset = [
 
 /**
  * Handler of fixing up a alias with the page information
+ *
  * @return {hash}
  *   @member create {function}
  *
- * [Aliases]
+ * [aliases]
  * %URL%, %u% : a page URL
  * %TITLE%, %t% : a page title
  *
- * The modifiers can be combined by '|'
+ * The modifiers can be combined by '|';
  * SCHEMELESS, sl : without the URL scheme
  * PARAMLESS, pl : without the URL parameter
  * ENCODE, en : with URI encoded
@@ -167,18 +170,20 @@ const kPreset = [
  * and then URI encoded (the multiple modifiers is applied in the order of
  * settings)
  */
-var AliasFixup = (function() {
+const AliasFixup = (function() {
   const kAliasSplitter = '|';
   const kAliasPattern = RegExp('%([a-z_' + kAliasSplitter + ']+)%', 'ig');
 
   function create(aText, aPageInfo) {
-    return aText.replace(kAliasPattern, function(match, alias) {
+    return aText.replace(kAliasPattern, (match, alias) => {
       let keys = alias.split(kAliasSplitter);
-      let rv = fixupTarget(keys.shift(), aPageInfo);
-      keys.forEach(function(modifier) {
-        rv = fixupModifier(rv, modifier);
+      let data = fixupTarget(keys.shift(), aPageInfo);
+
+      keys.forEach((modifier) => {
+        data = fixupModifier(data, modifier);
       });
-      return rv;
+
+      return data;
     });
   }
 
@@ -219,7 +224,7 @@ function PageRelated_init() {
 }
 
 function initMenu() {
-  var contextMenu = URLBarContextMenu;
+  let contextMenu = URLBarContextMenu;
 
   setSeparators(contextMenu);
 
@@ -227,12 +232,13 @@ function initMenu() {
 }
 
 function showContextMenu(aEvent) {
-  var contextMenu = aEvent.target;
+  let contextMenu = aEvent.target;
+
   if (contextMenu !== URLBarContextMenu) {
     return;
   }
 
-  var [sSep, eSep] = getSeparators();
+  let [sSep, eSep] = getSeparators();
 
   // remove existing menus
   for (let menu; (menu = sSep.nextSibling) !== eSep; /**/) {
@@ -244,15 +250,15 @@ function showContextMenu(aEvent) {
     return;
   }
 
-  getAvailableMenus().forEach(function(menu) {
+  getAvailableMenus().forEach((menu) => {
     contextMenu.insertBefore(menu, eSep);
   });
 }
 
 function getAvailableMenus() {
-  var menus = [];
+  let menus = [];
 
-  var pageInfo = {
+  let pageInfo = {
     title: gBrowser.contentTitle || gBrowser.selectedTab.label,
     URL: gBrowser.currentURI.spec
   };
@@ -267,7 +273,7 @@ function getAvailableMenus() {
     }));
   }
 
-  kPreset.forEach(function({category, items}) {
+  kPreset.forEach(({category, items}) => {
     let menu = $E('menu', {
       label: category
     });
@@ -280,10 +286,12 @@ function getAvailableMenus() {
         return;
       }
 
-      let URL = AliasFixup.create(
-        (typeof data.URL === 'function') ? data.URL(pageInfo) : data.URL,
-        pageInfo
-      );
+      let URL =
+        (typeof data.URL === 'function') ?
+        data.URL(pageInfo) :
+        data.URL;
+
+      URL = AliasFixup.create(URL, pageInfo);
 
       popup.appendChild($E('menuitem', {
         label: data.name,
@@ -316,15 +324,20 @@ function setSeparators(aContextMenu, aReferenceNode) {
     aReferenceNode = null;
   }
 
-  [kID.startSeparator, kID.endSeparator].
-  forEach(function(id) {
+  [
+    kID.startSeparator,
+    kID.endSeparator
+  ].forEach((id) => {
     aContextMenu.insertBefore(
       $E('menuseparator', {id: id}), aReferenceNode);
   });
 }
 
 function getSeparators() {
-  return [$ID(kID.startSeparator), $ID(kID.endSeparator)];
+  return [
+    $ID(kID.startSeparator),
+    $ID(kID.endSeparator)
+  ];
 }
 
 function handleAttribute(aNode, aName, aValue) {
@@ -338,10 +351,10 @@ function handleAttribute(aNode, aName, aValue) {
 }
 
 function commandForOpenURLs(aURLsArray) {
-  var URLs = JSON.stringify(aURLsArray);
-  var inBG = (aURLsArray.length > 1) ? 'true' : 'event.button===1';
+  let URLs = JSON.stringify(aURLsArray);
+  let inBG = (aURLsArray.length > 1) ? 'true' : 'event.button===1';
 
-  var command = 'ucjsUtil.openTabs(' +
+  let command = 'ucjsUtil.openTabs(' +
     '%URLs%,{inBackground:%inBG%,relatedToCurrent:true});';
 
   return command.replace('%URLs%', URLs).replace('%inBG%', inBG);

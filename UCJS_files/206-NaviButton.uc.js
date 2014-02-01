@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        NaviButton.uc.js
-// @description Customizes the navigation buttons with an enhanced tooltip.
+// @description Customizes the navigation buttons with an enhanced tooltip
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
 // @require [optional][for referrer] TabEx.uc.js
-// @note Some default functions are modified. see @modified
+// @note some default functions are modified. see @modified
 
 /**
  * @usage
@@ -221,6 +221,7 @@ const Tooltip = {
 
   delayShow: function(aEvent) {
     const kTooltipShowDelay = 500; // [ms]
+
     this.timer = setTimeout(this.show.bind(this), kTooltipShowDelay, aEvent);
   },
 
@@ -264,7 +265,7 @@ const Tooltip = {
 
       setLabel(title, {title: true, referrer: key === 'referrer'});
       setLabel(URL, {url: true});
-    }, this);
+    }.bind(this));
 
     function setLabel(aValue, aType) {
       if (!aValue) {
@@ -272,19 +273,24 @@ const Tooltip = {
       }
 
       let label = $E('label');
+
       label.setAttribute('value', aValue);
       label.setAttribute('crop', 'center');
 
       let style = '';
+
       if (aType.title) {
         style += kUI.style.title
       }
+
       if (aType.referrer) {
         style += kUI.style.referrer
       }
+
       if (aType.url) {
         style += kUI.style.url
       }
+
       if (style) {
         label.setAttribute('style', style);
       }
@@ -380,6 +386,7 @@ const History = {
 
         aCallback(this.data);
       }.bind(this));
+
       return;
     }
 
@@ -394,6 +401,7 @@ const History = {
     }
 
     let sh = this.getSessionHistory();
+
     if (!sh ||
         (backward && sh.index === 0) ||
         (!backward && sh.index === sh.count - 1)) {
@@ -417,7 +425,7 @@ const History = {
       [aData.border, border - step],
       [aData.stop, backward ? 0 : sh.count - 1]
     ].
-    forEach(function([entry, index]) {
+    forEach(([entry, index]) => {
       if (sh.index !== index) {
         let info = sh.getEntryAt(index);
         entry.title = info.title;
@@ -430,6 +438,7 @@ const History = {
 
   getSessionHistory: function() {
     let sh = gBrowser.sessionHistory;
+
     if (sh) {
       return {
         index: sh.index,
@@ -440,18 +449,25 @@ const History = {
     return null;
 
     function getEntryAt(aIndex) {
-      let info = {title: '', URL: '', host: ''};
+      let info = {
+        title: '',
+        URL: '',
+        host: ''
+      };
 
       let entry = sh.getEntryAtIndex(aIndex, false);
+
       if (entry) {
         if (entry.title) {
           info.title = entry.title;
         }
+
         if (entry.URI) {
           info.URL = entry.URI.spec;
           try {
             info.host = entry.URI.host;
-          } catch (ex) {
+          }
+          catch (ex) {
             info.host = entry.URI.scheme;
           }
         }
@@ -465,6 +481,7 @@ const History = {
     let {shiftKey, ctrlKey, button} = aEvent;
 
     let referrer = this.data.referrer.URL;
+
     if (referrer) {
       if (!gBrowser.canGoBack || (shiftKey && ctrlKey)) {
         selectOrOpen(referrer, {inBackground: button === 1});
@@ -490,22 +507,22 @@ const History = {
     if (button === 1) {
       gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
     }
+
     gBrowser.webNavigation.gotoIndex(index);
   }
 };
 
-
-//********** Utilities
-
 function selectOrOpen(aURL, aOption) {
   function getURL(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
+
     return browser.userTypedValue || browser.currentURI.spec;
   }
 
   let {inBackground} = aOption || {};
 
   let tabs = gBrowser.visibleTabs;
+
   for (let i = 0; i < tabs.length; i++) {
     if (getURL(tabs[i]) === aURL) {
       if (!inBackground) {
@@ -514,12 +531,13 @@ function selectOrOpen(aURL, aOption) {
       return;
     }
   }
+
   gBrowser.loadOneTab(aURL, {inBackground: inBackground});
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 function NaviButton_init() {
   let back = $ID(kID.BACK_BUTTON),
       forward = $ID(kID.FORWARD_BUTTON);

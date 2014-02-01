@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name TabHandler.uc.js
-// @description Custom handling on the tab bar.
+// @description Custom handling on the tab bar
 // @include main
 // ==/UserScript==
 
@@ -33,6 +33,7 @@ function log(aMsg) {
 /**
  * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
  * click
+ *
  * @value {integer} millisecond
  *
  * @note The default click is deactivated at 'mouseup' in time, otherwise
@@ -42,6 +43,7 @@ const kClickThresholdTimer = 200;
 
 /**
  * Disable the default click action on the tab bar
+ *
  * @value {boolean}
  *   true: disabled completely
  *   false: disabled when the custom click is recognized, otherwise enabled
@@ -60,7 +62,7 @@ const kDisableDefaultClick = true;
 /**
  * Handler of the click event on the tab bar
  */
-var mTabBarClickEvent = {
+const mTabBarClickEvent = {
   clearState: function() {
     this.state.target   = null;
     this.state.button   = 0;
@@ -76,7 +78,8 @@ var mTabBarClickEvent = {
     this.clearState();
     this.handled = false;
 
-    var tc = gBrowser.tabContainer;
+    let tc = gBrowser.tabContainer;
+
     addEvent(tc, 'mousedown', this, true);
     addEvent(tc, 'mouseup', this, true);
     addEvent(tc, 'click', this, true);
@@ -118,7 +121,8 @@ var mTabBarClickEvent = {
       this.mouseDownTimer = setTimeout(function() {
         this.idledMouseDown = false;
       }.bind(this), kClickThresholdTimer);
-    } else if (aVal === false) {
+    }
+    else if (aVal === false) {
       clearTimeout(this.mouseDownTimer);
       this.mouseDownTimer = null;
     }
@@ -135,7 +139,8 @@ var mTabBarClickEvent = {
         this.doAction();
         this.handled = false;
       }.bind(this), kClickThresholdTimer);
-    } else if (aVal === false) {
+    }
+    else if (aVal === false) {
       clearTimeout(this.mouseUpTimer);
       this.mouseUpTimer = null;
     }
@@ -178,7 +183,7 @@ var mTabBarClickEvent = {
   },
 
   checkTargetArea: function(aEvent) {
-    var {target, originalTarget} = aEvent;
+    let {target, originalTarget} = aEvent;
 
     // skip UI elements on the tab bar
     // TODO: The probable elements 'menu*|toolbar*' are examined. More other
@@ -202,16 +207,21 @@ var mTabBarClickEvent = {
   },
 
   doAction: function() {
-    var {target, button, ctrlKey, altKey, shiftKey, clicks, area} =
-      this.state;
+    let {
+      target,
+      button,
+      ctrlKey, altKey, shiftKey,
+      clicks,
+      area
+    } = this.state;
 
     // Left-Click / Left-Double-Click / Middle-Click
-    var LC  = button === 0 && clicks === 1,
+    let LC  = button === 0 && clicks === 1,
         LDC = button === 0 && clicks === 2,
         MC  = button === 1 && clicks === 1;
 
     // selected tab / background tab / not tabs area
-    var foreTab = area === 'foreTab',
+    let foreTab = area === 'foreTab',
         backTab = area === 'backTab',
         notTabs = area === 'notTabs';
 
@@ -232,10 +242,12 @@ var mTabBarClickEvent = {
         if (ctrlKey) {
           // select/reopen the opener tab
           window.ucjsTabEx.selectOpenerTab(target, {undoClose: true});
-        } else {
+        }
+        else {
           // select the previous selected tab
           // Shift: select/reopen the *exact* previous selected tab
           let option = shiftKey ? {undoClose: true} : {traceBack: true};
+
           window.ucjsTabEx.selectPrevSelectedTab(target, option);
         }
         break;
@@ -243,7 +255,8 @@ var mTabBarClickEvent = {
         // pin/unpin a tab
         if (!target.pinned) {
           gBrowser.pinTab(target);
-        } else {
+        }
+        else {
           gBrowser.unpinTab(target);
         }
         break;
@@ -261,9 +274,10 @@ var mTabBarClickEvent = {
  * @note disables the default scrolling at overflowed
  */
 function switchTabsOnMouseWheel() {
-  addEvent(gBrowser.tabContainer, 'wheel', function(event) {
+  addEvent(gBrowser.tabContainer, 'wheel', (event) => {
     gBrowser.tabContainer.
     advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
+
     event.stopPropagation();
     event.preventDefault();
   }, true);

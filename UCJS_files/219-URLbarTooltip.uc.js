@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage A tooltip panel will popup with 'Ctrl + Alt + MouseMove' on the URL
+// @usage a tooltip panel will popup with 'Ctrl + Alt + MouseMove' on the URL
 // bar
 
 
@@ -52,6 +52,7 @@ const kStyle = {
   ],
 
   // match the style with the border of <groupbox>
+  //
   // @see chrome://global/skin/groupbox.css
   separator: [
     'border-top:1px solid ThreeDShadow',
@@ -115,6 +116,7 @@ function buildContent() {
   }
 
   let box = $E('vbox');
+
   box.appendChild($E('label', {
     value: kUI.title,
     style: makeCSS(kStyle.header)
@@ -128,16 +130,19 @@ function makeGroup(aData, aGroupName) {
   let groupbox, grid, columns, rows, row;
 
   groupbox = $E('groupbox');
+
   groupbox.appendChild($E('caption', {label: aGroupName}));
 
   grid = groupbox.appendChild($E('grid'));
 
   columns = grid.appendChild($E('columns'));
+
   columns.appendChild($E('column'));
   columns.appendChild($E('column'));
 
   rows = grid.appendChild($E('rows'));
-  aData.forEach(function(item) {
+
+  aData.forEach((item) => {
     if (item === 'separator') {
       row = $E('separator', {
         style: makeCSS(kStyle.separator)
@@ -152,6 +157,7 @@ function makeGroup(aData, aGroupName) {
         value: item.name
       }));
     }
+
     rows.appendChild(row);
   });
 
@@ -174,6 +180,7 @@ function getRestrictData() {
 
   for (let key in kRestrictKeys) {
     let keyword = getPref(key);
+
     if (keyword) {
       data.push({
         keyword: keyword,
@@ -191,7 +198,7 @@ function getShortcutData() {
 
   // get search engine keywords
   // @see resource://gre/modules/Services.jsm
-  window.Services.search.getEngines().forEach(function(item) {
+  window.Services.search.getEngines().forEach((item) => {
     if (item.alias) {
       searchEnginesData.push({
         keyword: item.alias,
@@ -214,7 +221,7 @@ function getShortcutData() {
   });
 
   if (resultRows) {
-    resultRows.forEach(function(row) {
+    resultRows.forEach((row) => {
       bookmarksData.push({
         keyword: row.keyword,
         name: row.title || getPrePath(row.url)
@@ -222,20 +229,22 @@ function getShortcutData() {
     });
   }
 
-  return [searchEnginesData, bookmarksData].reduce(
-    function(previous, current) {
-      if (current.length) {
-        current.sort(function(a, b) {
-          return a.keyword.localeCompare(b.keyword);
-        });
-        if (previous.length) {
-          current.unshift('separator');
-        }
-        return previous.concat(current);
+  return [
+    searchEnginesData,
+    bookmarksData
+  ].
+  reduce((previous, current) => {
+    if (current.length) {
+      current.sort((a, b) => a.keyword.localeCompare(b.keyword));
+
+      if (previous.length) {
+        current.unshift('separator');
       }
-      return previous;
-    }, []
-  );
+
+      return previous.concat(current);
+    }
+    return previous;
+  }, []);
 }
 
 function makeCSS(aData) {
@@ -246,9 +255,11 @@ function getPrePath(aURL) {
   const kMaxLen = 40;
 
   let prePath = aURL.replace(/^(\w+:[/]*[^/]+).*$/, '$1');
+
   if (prePath.length > kMaxLen) {
     prePath = prePath.substr(0, kMaxLen) + '...';
   }
+
   return prePath;
 }
 

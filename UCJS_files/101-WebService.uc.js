@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name        WebService.uc.js
-// @description Web services handler.
+// @description Helper handler for using the web services
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage Access to functions through the global scope,
-// |window.ucjsWebService.XXX|.
+// @usage access to functions through the global scope;
+// |window.ucjsWebService.XXX|
 
 
-var ucjsWebService = (function(window, undefined) {
+const ucjsWebService = (function(window, undefined) {
 
 
 "use strict";
@@ -30,6 +30,7 @@ function log(aMsg) {
 
 /**
  * Preset list
+ *
  * @value {hash[]}
  *   type: {string}
  *     'get': requests data
@@ -82,42 +83,48 @@ const kPresets = [
     type: 'open',
     name: 'ExciteTranslationEnToJp',
     URL: 'http://www.excite.co.jp/world/english/',
-    form: {form: 'id("formTrans")', input: 'id("before")'}
+    form: {
+      form: 'id("formTrans")',
+      input: 'id("before")'
+    }
   }
 ];
 
 /**
  * Handler of fixing up a alias with the data
+ *
  * @return {hash}
  *   @member create {function}
  *
- * [Aliases]
+ * [aliases]
  * %RAW% : data itself
  * %ENC% : with URI encoded
  * %SCHEMELESS%, %sl% : without the URL scheme
  * %PARAMLESS%, %pl% : without the URL parameter
  *
- * The aliases can be combined by '|'
+ * @note aliases can be combined by '|'
  * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
- * encoded. (the multiple aliases is applied in the order of settings)
+ * encoded (the multiple aliases is applied in the order of settings)
  */
-var AliasFixup = (function() {
+const AliasFixup = (function() {
   const kAliasSplitter = '|';
   const kAliasPattern = RegExp('%([a-z_' + kAliasSplitter + ']+)%', 'ig');
 
   function create(aText, aData) {
-    let data = !Array.isArray(aData) ? [aData] : aData.concat();
+    let dataArray = !Array.isArray(aData) ? [aData] : aData.concat();
 
-    return aText.replace(kAliasPattern, function(match, alias) {
-      if (!data.length) {
+    return aText.replace(kAliasPattern, (match, alias) => {
+      if (!dataArray.length) {
         return match;
       }
 
-      let rv = String(data.shift());
-      alias.split(kAliasSplitter).forEach(function(modifier) {
-        rv = fixupModifier(rv, modifier);
+      let data = String(dataArray.shift());
+
+      alias.split(kAliasSplitter).forEach((modifier) => {
+        data = fixupModifier(data, modifier);
       });
-      return rv;
+
+      return data;
     });
   }
 
@@ -147,7 +154,7 @@ var AliasFixup = (function() {
  */
 const RequestHandler = (function() {
   // The minimum time for waiting a request
-  // @value {integer} milliseconds > 0
+  // @value {integer} [milliseconds > 0]
   const kMinCooldownTime = 2000;
 
   // the request time for each host
@@ -155,7 +162,8 @@ const RequestHandler = (function() {
     mRequestTimeList: {},
 
     update: function(aURL) {
-      // @note Supposing that |URL| of a item of kPreset is valid.
+      // @note no error checks due to supposing that |URL| of a item of
+      // |kPreset| is valid
       let host = (/^https?:\/\/([^\/]+)/.exec(aURL))[1];
 
       let lastRequestTime = this.mRequestTimeList[host] || 0;
@@ -171,14 +179,18 @@ const RequestHandler = (function() {
 
   function request(aURL, aFunc) {
     let xhr = new XMLHttpRequest();
+
     xhr.open('GET', aURL, true);
-    xhr.onreadystatechange = function() {
+
+    xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         try {
           aFunc(xhr.responseText, xhr.status);
-        } catch (ex) {
+        }
+        catch (ex) {
           // do nothing
-        } finally {
+        }
+        finally {
           xhr.onreadystatechange = null;
           xhr = null;
         }
@@ -187,7 +199,7 @@ const RequestHandler = (function() {
 
     let cooldownTime = RequestTime.update(aURL);
 
-    setTimeout(function() {
+    setTimeout(() => {
       xhr.send(null);
     }, cooldownTime);
   }
@@ -197,12 +209,9 @@ const RequestHandler = (function() {
   };
 })();
 
-
-//********** Functions
-
 /**
  * Opens a new tab with the service
- * @usage window.ucjsWebService.open(aParams);
+ *
  * @param aParams {hash}
  *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
@@ -211,19 +220,23 @@ const RequestHandler = (function() {
  *   tabOption: {hash} [optional] the option for a new tab
  *     @see |ucjsUtil::openTab|
  *     e.g. |tabOption: {inBackground: true}| opens tab in background
+ *
+ * @usage window.ucjsWebService.open(aParams);
  */
 function open(aParams) {
-  var result = getResult(aParams, 'open');
+  let result = getResult(aParams, 'open');
+
   if (!result) {
     return;
   }
 
   let tab = openTab(result.URL, result.tabOption);
 
-  // TODO: Observe the document loaded to manage a form.
-  // WORKAROUND: Uses an easy delay for a selected tab. URL is only opened for
-  // a background tab.
-  // XXX: I'm unwilling to handle an observer for this.
+  // TODO: observe the document loaded to manage a form
+  // WORKAROUND:
+  // 1.uses an easy delay for a selected tab
+  // 2.the URL is only opened for a background tab
+  // XXX: I'm unwilling to handle an observer for this
   if (tab.selected && result.form) {
     setTimeout(inputAndSubmit, 500, result.form, result.data);
   }
@@ -231,27 +244,31 @@ function open(aParams) {
 
 /**
  * Gets the response of request to the service
- * @usage window.ucjsWebService.get(aParams);
+ *
  * @param aParams {hash}
  *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
- *     @note Set the replaced values in the order in Array[] when a URL has
- *     multiple aliases.
+ *     @note set the replaced values in the order in Array[] when a URL has
+ *     multiple aliases
  *   callback: {function} a method to handle a response value
  *     @param response {string} a response text of request
+ *
+ * @usage window.ucjsWebService.get(aParams);
  */
 function get(aParams) {
-  var result = getResult(aParams, 'get');
+  let result = getResult(aParams, 'get');
+
   if (!result) {
     return;
   }
 
   RequestHandler.request(
     result.URL,
-    function(response, status) {
+    (response, status) => {
       if (result.parse) {
         response = result.parse(response, status);
       }
+
       result.callback(response);
     }
   );
@@ -262,9 +279,9 @@ function getResult(aParams, aType) {
     throw Error('aParams.name is empty');
   }
 
-  var result = null;
+  let result = null;
 
-  kPresets.some(function(preset) {
+  kPresets.some((preset) => {
     if (preset.type === aType && preset.name === aParams.name) {
       result = evaluate(aParams, preset);
       return true;
@@ -276,7 +293,7 @@ function getResult(aParams, aType) {
 }
 
 function evaluate(aParams, aPreset) {
-  var result = {};
+  let result = {};
 
   // copy the preset
   for (let key in aPreset) {
@@ -294,6 +311,7 @@ function evaluate(aParams, aPreset) {
   if (!result.URL) {
     throw Error('aPreset.URL is empty');
   }
+
   if (result.data) {
     result.URL = AliasFixup.create(result.URL, result.data);
   }
@@ -302,7 +320,7 @@ function evaluate(aParams, aPreset) {
 }
 
 function inputAndSubmit(aForm, aData) {
-  var form = $X1(aForm.form),
+  let form = $X1(aForm.form),
       input = $X1(aForm.input);
 
   if (form && input) {
@@ -357,9 +375,9 @@ function updateFormInput(aData, aOption) {
   }
 }
 
-
-//********** Exports
-
+/**
+ * Exports
+ */
 return {
   open: open,
   get: get,

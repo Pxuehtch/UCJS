@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name MoveTabToWindow.uc.js
-// @description Moves a tab to the other window.
+// @description Moves a tab to the other window
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage Access to items in a tab context menu.
+// @usage access to items in the tab context menu
 
 
 (function(window, undefined) {
@@ -29,9 +29,9 @@ function log(aMsg) {
 }
 
 /**
- * Settings for UI
+ * UI settings
  */
-const kBundle = {
+const kUI = {
   menu: {
     id: 'ucjs_moveTabToWindow_menu',
     label: '他のウィンドウへ移動',
@@ -53,46 +53,50 @@ const kBundle = {
   }
 };
 
-
-//********** Functions
-
 function MoveTabToWindow_init() {
   buildMenu();
 }
 
 function buildMenu() {
-  var tabContextMenu = getTabContextMenu();
+  let tabContextMenu = getTabContextMenu();
+
   addEvent(tabContextMenu, 'popupshowing', updateMenu, false);
 
-  var menu = $E('menu', {
-    id: kBundle.menu.id,
-    label: kBundle.menu.label,
-    accesskey: kBundle.menu.accesskey
+  let menu = $E('menu', {
+    id: kUI.menu.id,
+    label: kUI.menu.label,
+    accesskey: kUI.menu.accesskey
   });
 
-  var popup = $E('menupopup', {
+  let popup = $E('menupopup', {
     onpopupshowing: 'event.stopPropagation();'
   });
+
   popup.appendChild($E('menuitem', {
-    id: kBundle.newWindow.id,
-    label: kBundle.newWindow.label,
+    id: kUI.newWindow.id,
+    label: kUI.newWindow.label,
     oncommand: 'gBrowser.replaceTabWithWindow(TabContextMenu.contextTab);'
   }));
+
   addEvent(popup, 'command', onCommand, false);
+
   menu.appendChild(popup);
 
-  var defaultItem = $ID('context_openTabInWindow');
+  let defaultItem = $ID('context_openTabInWindow');
+
   defaultItem.style.display = 'none';
+
   tabContextMenu.insertBefore(menu, defaultItem);
 }
 
 function updateMenu(aEvent) {
   aEvent.stopPropagation();
+
   if (aEvent.target !== getTabContextMenu()) {
     return;
   }
 
-  let menu = $E($ID(kBundle.menu.id), {
+  let menu = $E($ID(kUI.menu.id), {
     disabled: true
   });
 
@@ -102,6 +106,7 @@ function updateMenu(aEvent) {
   }
 
   let contextTab = getContextTab();
+
   // disable on a pinned tab
   if (contextTab.pinned) {
     return;
@@ -109,6 +114,7 @@ function updateMenu(aEvent) {
 
   let tabsNum = gBrowser.tabs.length;
   let wins = getWindowsState(contextTab);
+
   // meaningless at one tab window and no other window
   if (tabsNum <= 1 && !wins.length) {
     return;
@@ -121,21 +127,21 @@ function updateMenu(aEvent) {
   // make a menuitem to move the tab to a new window
   // it is useless when the window has only one tab
   // @note this is used as the reference node to append menuitem elements
-  let refItem = $E($ID(kBundle.newWindow.id), {
+  let refItem = $E($ID(kUI.newWindow.id), {
     disabled: tabsNum <= 1
   });
 
-  var popup = menu.menupopup;
+  let popup = menu.menupopup;
 
   while (popup.firstChild && popup.firstChild !== refItem) {
     popup.removeChild(popup.firstChild);
   }
 
   if (wins.length) {
-    wins.forEach(function(win) {
-      var item = popup.insertBefore($E('menuitem', {
+    wins.forEach((win) => {
+      let item = popup.insertBefore($E('menuitem', {
         value: win.index,
-        label: kBundle.otherWindow.label.
+        label: kUI.otherWindow.label.
           replace('%title%', win.title).
           replace('%tabsNum%', win.tabsNum).
           replace('%s%', win.tabsNum > 1 ? 's' : '')
@@ -144,13 +150,13 @@ function updateMenu(aEvent) {
       if (win.isPrivate) {
         $E(item, {
           disabled: true,
-          tooltiptext: kBundle.isPrivate.tooltiptext
+          tooltiptext: kUI.isPrivate.tooltiptext
         });
       }
       else if (win.hasSameURL) {
         $E(item, {
-          style: kBundle.hasSameURL.style,
-          tooltiptext: kBundle.hasSameURL.tooltiptext
+          style: kUI.hasSameURL.style,
+          tooltiptext: kUI.hasSameURL.tooltiptext
         });
       }
     });
@@ -161,7 +167,9 @@ function updateMenu(aEvent) {
 
 function onCommand(aEvent) {
   aEvent.stopPropagation();
+
   let item = aEvent.target;
+
   if (!item.value) {
     return;
   }
@@ -174,14 +182,17 @@ function getWindowsState(aTab) {
     return;
   }
 
-  var wins = [];
+  let wins = [];
 
-  var tabURL = aTab.linkedBrowser.currentURI.spec;
-  var enumerator = getWindowEnumerator();
-  var i = -1;
+  let tabURL = aTab.linkedBrowser.currentURI.spec;
+  let enumerator = getWindowEnumerator();
+  let i = -1;
+
   while (enumerator.hasMoreElements()) {
     i++;
+
     let win = enumerator.getNext();
+
     // Skip window which is closed, current, not browser, and popup
     if (win.closed ||
         win === window ||
@@ -192,11 +203,12 @@ function getWindowsState(aTab) {
     }
 
     let tabbrowser = win.gBrowser;
+
     wins.push({
       index: i,
-      hasSameURL: tabbrowser.browsers.some(function(b) {
-        return b.currentURI.spec === tabURL;
-      }),
+      hasSameURL:
+        tabbrowser.browsers.
+        some((browser) => browser.currentURI.spec === tabURL),
       title: tabbrowser.selectedTab.label,
       tabsNum: tabbrowser.tabs.length,
       isPrivate: isWindowPrivate(win)
@@ -207,10 +219,12 @@ function getWindowsState(aTab) {
 }
 
 function getWindowAt(aIndex) {
-  var enumerator = getWindowEnumerator();
+  let enumerator = getWindowEnumerator();
   var index = 0;
+
   while (enumerator.hasMoreElements()) {
     let win = enumerator.getNext();
+
     if (index++ === aIndex) {
       return win;
     }
@@ -223,27 +237,29 @@ function moveTabToOtherWindow(aTab, aWindow) {
     return;
   }
 
-  var otherTabBrowser = aWindow.gBrowser;
+  let otherTabBrowser = aWindow.gBrowser;
 
   // @see chrome://browser/content/tabbrowser.xml::
   //   <binding id="tabbrowser-tabs">::<handler event="drop">
+
   // Create a new tab in the other window.
-  var newTab = otherTabBrowser.addTab('about:blank');
-  var newBrowser = otherTabBrowser.getBrowserForTab(newTab);
+  let newTab = otherTabBrowser.addTab('about:blank');
+  let newBrowser = otherTabBrowser.getBrowserForTab(newTab);
+
   // Stop the about:blank load
   newBrowser.stop();
+
   // Make sure it has a docshell
   newBrowser.docShell;
+
   // Swap the our tab with a new one, and then close it
   otherTabBrowser.swapBrowsersAndCloseOther(newTab, aTab);
+
   // Select the moved tab
   otherTabBrowser.selectedTab = newTab;
 
   aWindow.focus();
 }
-
-
-//********** Utilities
 
 function getTabContextMenu() {
   return gBrowser.tabContextMenu;
@@ -265,9 +281,9 @@ function isWindowPrivate(aWindow) {
   return window.PrivateBrowsingUtils.isWindowPrivate(aWindow);
 }
 
-
-//********** Entry point
-
+/**
+ * Entry point
+ */
 MoveTabToWindow_init();
 
 
