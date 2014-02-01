@@ -94,8 +94,8 @@ const MenuHandler = (function() {
 
     let shouldShow =
       !getViewSourceItem().hidden &&
-      scanTextType(gBrowser.contentDocument.contentType) &&
-      getSourceText(gBrowser.contentDocument);
+      getTextType(gBrowser.contentDocument.contentType) &&
+      getTextContainer(gBrowser.contentDocument);
 
     showItem(kUI.prettifySourcePage.id, shouldShow);
   }
@@ -116,7 +116,7 @@ const MenuHandler = (function() {
       let state = {
         filename: contentDocument.URL,
         text: getSourceText(contentDocument),
-        type: scanTextType(contentDocument.contentType)
+        type: getTextType(contentDocument.contentType)
       };
 
       Scratchpad.prettify(state);
@@ -506,20 +506,34 @@ const Beautifier = (function() {
 })();
 
 /**
- * Get a source text of a document
- * get if the document only contains a simple text
+ * Get a source text if the document contains a plain text only
  *
  * @param {HTMLDocument} aDocument
  * @return {string|null}
  */
 function getSourceText(aDocument) {
-  let body = aDocument.body;
+  let container = getTextContainer(aDocument);
 
-  if (body.childNodes.length === 1 &&
-      body.childNodes[0].localName === 'pre') {
-    return body.textContent;
-  }
-  return null;
+  return container ? container.textContent : null;
+}
+
+function getTextContainer(aDocument) {
+  let body = aDocument.body
+
+  let pre =
+    body &&
+    body.childNodes.length === 1 &&
+    body.firstChild instanceof HTMLPreElement &&
+    body.firstChild;
+
+  let text =
+    pre &&
+    pre.childNodes.length === 1 &&
+    pre.firstChild instanceof Text &&
+    pre.firstChild.length &&
+    pre.firstChild;
+
+  return pre || null;
 }
 
 /**
@@ -528,7 +542,7 @@ function getSourceText(aDocument) {
  * @param {string} aContentType
  * @return {kTextType|null}
  */
-function scanTextType(aContentType) {
+function getTextType(aContentType) {
   switch (aContentType) {
     case 'text/javascript':
     case 'application/javascript':
