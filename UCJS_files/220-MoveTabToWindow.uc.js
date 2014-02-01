@@ -53,12 +53,27 @@ const kUI = {
   }
 };
 
+/**
+ * Utility for the tab context menu
+ */
+const TabContext = {
+  get menu() {
+    // @see chrome://browser/content/tabbrowser.xml::tabContextMenu
+    return gBrowser.tabContextMenu;
+  },
+
+  get tab() {
+    // @see chrome://browser/content/browser.js::TabContextMenu
+    return window.TabContextMenu.contextTab;
+  }
+};
+
 function MoveTabToWindow_init() {
   buildMenu();
 }
 
 function buildMenu() {
-  let tabContextMenu = getTabContextMenu();
+  let tabContextMenu = TabContext.menu;
 
   addEvent(tabContextMenu, 'popupshowing', updateMenu, false);
 
@@ -92,7 +107,7 @@ function buildMenu() {
 function updateMenu(aEvent) {
   aEvent.stopPropagation();
 
-  if (aEvent.target !== getTabContextMenu()) {
+  if (aEvent.target !== TabContext.menu) {
     return;
   }
 
@@ -105,7 +120,7 @@ function updateMenu(aEvent) {
     return;
   }
 
-  let contextTab = getContextTab();
+  let contextTab = TabContext.tab;
 
   // disable on a pinned tab
   if (contextTab.pinned) {
@@ -174,7 +189,7 @@ function onCommand(aEvent) {
     return;
   }
 
-  moveTabToOtherWindow(getContextTab(), getWindowAt(+(item.value)));
+  moveTabToOtherWindow(TabContext.tab, getWindowAt(+(item.value)));
 }
 
 function getWindowsState(aTab) {
@@ -220,7 +235,7 @@ function getWindowsState(aTab) {
 
 function getWindowAt(aIndex) {
   let enumerator = getWindowEnumerator();
-  var index = 0;
+  let index = 0;
 
   while (enumerator.hasMoreElements()) {
     let win = enumerator.getNext();
@@ -259,15 +274,6 @@ function moveTabToOtherWindow(aTab, aWindow) {
   otherTabBrowser.selectedTab = newTab;
 
   aWindow.focus();
-}
-
-function getTabContextMenu() {
-  return gBrowser.tabContextMenu;
-}
-
-function getContextTab() {
-  // @see chrome://browser/content/browser.js::TabContextMenu
-  return window.TabContextMenu.contextTab;
 }
 
 function getWindowEnumerator() {
