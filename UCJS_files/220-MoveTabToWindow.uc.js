@@ -18,6 +18,9 @@
  * Imports
  */
 const {
+  XPCOM: {
+    getModule
+  },
   createNode: $E,
   getNodeById: $ID,
   addEvent
@@ -283,8 +286,10 @@ function getWindowEnumerator() {
 }
 
 function isWindowPrivate(aWindow) {
-  // @see resource://gre/modules/PrivateBrowsingUtils.jsm
-  return window.PrivateBrowsingUtils.isWindowPrivate(aWindow);
+  const {PrivateBrowsingUtils} =
+    getModule('resource://gre/modules/PrivateBrowsingUtils.jsm');
+
+  return PrivateBrowsingUtils.isWindowPrivate(aWindow);
 }
 
 /**

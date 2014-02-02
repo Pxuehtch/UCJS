@@ -13,7 +13,7 @@
 // @usage access to functions through the global scope;
 // |window.ucjsUtil.XXX|
 
-// @note note the definitions only in the main window (e.g. gBrowser) when
+// @note note the global property only in the main window (e.g. gBrowser) when
 // including in the other window
 
 
@@ -86,7 +86,6 @@ const XPCOM = (function() {
   }
 
   function getService(aName, aCIDParams) {
-    // @see resource://gre/modules/Services.jsm
     if (Services.hasOwnProperty(aName)) {
       return Services[aName];
     }
@@ -140,13 +139,13 @@ const XPCOM = (function() {
     }
 
     try {
-      let res = Cc[CID][aMethod]();
+      let result = Cc[CID][aMethod]();
 
       IID.forEach((id) => {
-        res.QueryInterface(Ci[id]);
+        result.QueryInterface(Ci[id]);
       });
 
-      return res;
+      return result;
     }
     catch (ex) {}
 
@@ -166,10 +165,19 @@ const XPCOM = (function() {
     return aCID;
   }
 
+  function getModule(aResourceURL) {
+    let scope = {};
+
+    Cu.import(aResourceURL, scope);
+
+    return scope;
+  }
+
   return {
     $S: getService,
     $I: getInstance,
-    $C: getConstructor
+    $C: getConstructor,
+    getModule: getModule
   };
 })();
 
@@ -278,9 +286,7 @@ const Timer = (function() {
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/preferences/service.js
  */
 const Prefs = (function() {
-  function getPrefs() {
-    return XPCOM.$S('prefs');
-  }
+  let getPrefs = () => XPCOM.$S('prefs');
 
   function get(aKey, aDefaultValue) {
     const prefs = getPrefs();
@@ -1209,8 +1215,9 @@ function scanPlacesDB(aParam) {
     columns
   } = aParam || {};
 
-  // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils} = window;
+  const {PlacesUtils} =
+    XPCOM.getModule('resource://gre/modules/PlacesUtils.jsm');
+
   let statement =
     PlacesUtils.history.
     QueryInterface(Ci.nsPIPlacesDatabase).
@@ -1229,13 +1236,13 @@ function scanPlacesDB(aParam) {
     }
 
     while (statement.executeStep()) {
-      let res = {};
+      let result = {};
 
       columns.forEach((name) => {
-        res[name] = statement.row[name];
+        result[name] = statement.row[name];
       });
 
-      rows.push(res);
+      rows.push(result);
     }
   }
   finally {
@@ -1278,8 +1285,9 @@ function asyncScanPlacesDB(aParam) {
     onCancel
   } = aParam || {};
 
-  // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils} = window;
+  const {PlacesUtils} =
+    XPCOM.getModule('resource://gre/modules/PlacesUtils.jsm');
+
   let statement =
     PlacesUtils.history.
     QueryInterface(Ci.nsPIPlacesDatabase).
@@ -1302,13 +1310,13 @@ function asyncScanPlacesDB(aParam) {
         let row;
 
         while ((row = aResultSet.getNextRow())) {
-          let res = {};
+          let result = {};
 
           columns.forEach((name) => {
-            res[name] = row.getResultByName(name);
+            result[name] = row.getResultByName(name);
           });
 
-          this.rows.push(res);
+          this.rows.push(result);
         }
       },
 
@@ -1361,6 +1369,7 @@ function log(aMessage) {
  * Export
  */
 return {
+  XPCOM: XPCOM,
   Timer: Timer,
   Prefs: Prefs,
 

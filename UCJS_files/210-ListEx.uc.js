@@ -18,6 +18,9 @@
  * Imports
  */
 const {
+  XPCOM: {
+    getModule
+  },
   getNodeById: $ID,
   addEvent,
   asyncScanPlacesDB
@@ -667,9 +670,10 @@ function getListRange(aIndex, aCount) {
 }
 
 function getTitle(aText) {
-  // @see resource://app/modules/PlacesUIUtils.jsm
-  const {PlacesUIUtils} = window;
   const kMaxTextLen = 40;
+
+  const {PlacesUIUtils} =
+    getModule('resource://app/modules/PlacesUIUtils.jsm');
 
   if (aText && aText.length > kMaxTextLen) {
     if (/^(?:https?|ftp|file):/i.test(aText)) {
@@ -694,16 +698,17 @@ function getTooltip(aTitle, aInfo) {
 }
 
 function getFavicon(aIconURL) {
-  // @see resource://gre/modules/PlacesUtils.jsm
-  const {favicons} = window.PlacesUtils;
+  const {PlacesUtils} = getModule('resource://gre/modules/PlacesUtils.jsm');
 
   if (aIconURL) {
     if (/^https?:/.test(aIconURL)) {
       aIconURL = 'moz-anno:favicon:' + aIconURL;
     }
+
     return aIconURL;
   }
-  return favicons.defaultFavicon.spec;
+
+  return PlacesUtils.favicons.defaultFavicon.spec;
 }
 
 // @return {string} string for <oncommand> attribute

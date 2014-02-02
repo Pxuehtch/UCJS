@@ -23,6 +23,9 @@ const ucjsMisc = {};
  * Imports
  */
 const {
+  XPCOM: {
+    getModule
+  },
   Prefs: {
     get: getPref,
     set: setPref
@@ -494,9 +497,11 @@ function log(aMsg) {
 (function() {
 
   function restartFx(aOption) {
-    // @see resource://gre/modules/PrivateBrowsingUtils.jsm
+    const {PrivateBrowsingUtils} =
+      getModule('resource://gre/modules/PrivateBrowsingUtils.jsm');
+
     // @see http://kb.mozillazine.org/Browser.sessionstore.resume_from_crash
-    if (window.PrivateBrowsingUtils.isWindowPrivate(window) ||
+    if (PrivateBrowsingUtils.isWindowPrivate(window) ||
         getPref('browser.sessionstore.resume_from_crash') !== false) {
       doRestart(aOption);
       return;

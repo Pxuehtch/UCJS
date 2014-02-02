@@ -22,6 +22,9 @@
  * Imports
  */
 const {
+  XPCOM: {
+    getModule
+  },
   createNode: $E,
   getNodeById: $ID,
   addEvent
@@ -429,6 +432,14 @@ const Beautifier = (function() {
 
   /**
    * JS beautifier
+   *
+   * Built-in JS beautifier
+   *
+   * @note this version doesn't support |wrap_line_length| option
+   * @see https://github.com/mozilla/releases-mozilla-release/blob/master/browser/devtools/shared/Jsbeautify.jsm
+   *
+   * @note based on JS Beautifier beautify.js
+   * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
   function JSBeautify(aText, aOptions) {
     let options = {
@@ -436,21 +447,11 @@ const Beautifier = (function() {
       indent_char: aOptions.indentChar
     };
 
-    return BuiltinBeautifier.js_beautify(aText, options);
-  }
+    const {js_beautify} =
+      getModule('resource://app/modules/devtools/Jsbeautify.jsm');
 
-  /**
-   * Built-in JS beautifier
-   *
-   * @see https://github.com/mozilla/releases-mozilla-release/blob/master/browser/devtools/shared/Jsbeautify.jsm
-   * @note this version doesn't support |wrap_line_length| option
-   *
-   * based on JS Beautifier beautify.js
-   * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
-   */
-  let BuiltinBeautifier = {};
-  window.XPCOMUtils.defineLazyModuleGetter(BuiltinBeautifier, 'js_beautify',
-    'resource://app/modules/devtools/Jsbeautify.jsm');
+    return js_beautify(aText, options);
+  }
 
   /**
    * CSS beautifier
@@ -460,6 +461,7 @@ const Beautifier = (function() {
       indent_size: aOptions.indentSize,
       indent_char: aOptions.indentChar
     };
+
     return css_beautify(aText, options);
   }
 
