@@ -25,6 +25,11 @@ const ucjsUtil = (function(window, undefined) {
 
 /**
  * XPCOM handler
+ *
+ * @note this handler should be defined at the top of this file |Util.uc.js|,
+ * because the access to XPCOM modules with the global property is ensured
+ * here. this access is often used by the following functions
+ * @see |ensureAccessToModules()|
  */
 const XPCOM = (function() {
   const kServices = {
@@ -53,17 +58,44 @@ const XPCOM = (function() {
     }//,
   };
 
+  XPCOM_init();
+
+  function XPCOM_init() {
+    ensureAccessToModules()
+  }
+
+  /**
+   * Ensures access to the XPCOM module with the global property
+   *
+   * @note applied to any window that is included this file |Util.uc.js|
+   */
+  function ensureAccessToModules() {
+    // access to |window.Cc|,|window.Ci|,|window.Cu|
+    [
+      ['Cc', 'classes'],
+      ['Ci', 'interfaces'],
+      ['Cu', 'utils']
+    ].forEach(([alias, key]) => {
+      if (!window[alias]) {
+        window[alias] = window.Components[key];
+      }
+    });
+
+    // access to |window.Services|
+    Cu.import('resource://gre/modules/Services.jsm');
+  }
+
   function getService(aName, aCIDParams) {
     // @see resource://gre/modules/Services.jsm
-    if (window.Services.hasOwnProperty(aName)) {
-      return window.Services[aName];
+    if (Services.hasOwnProperty(aName)) {
+      return Services[aName];
     }
 
     if (!kServices.hasOwnProperty(aName)) {
       throw Error('service is not defined: ' + aName);
     }
 
-    if (!(kServices[aName] instanceof window.Ci.nsISupports)) {
+    if (!(kServices[aName] instanceof Ci.nsISupports)) {
       let service = create(kServices[aName], aCIDParams, 'getService');
 
       // lazy definition
@@ -95,7 +127,7 @@ const XPCOM = (function() {
       throw Error('multiple IID is not allowed');
     }
 
-    return window.Components.Constructor(window.Cc[CID], window.Ci[IID]);
+    return window.Components.Constructor(Cc[CID], Ci[IID]);
   }
 
   function create(aItem, aCIDParams, aMethod) {
@@ -108,10 +140,10 @@ const XPCOM = (function() {
     }
 
     try {
-      let res = window.Cc[CID][aMethod]();
+      let res = Cc[CID][aMethod]();
 
       IID.forEach((id) => {
-        res.QueryInterface(window.Ci[id]);
+        res.QueryInterface(Ci[id]);
       });
 
       return res;
@@ -146,7 +178,7 @@ const XPCOM = (function() {
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
  */
 const Timer = (function() {
-  const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = window.Ci.nsITimer;
+  const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = Ci.nsITimer;
 
   // instance constructor
   const createTimer = XPCOM.$C('Timer');
@@ -260,7 +292,7 @@ const Prefs = (function() {
         case prefs.PREF_INT:
           return prefs.getIntPref(aKey);
         case prefs.PREF_STRING:
-          return prefs.getComplexValue(aKey, window.Ci.nsISupportsString).data;
+          return prefs.getComplexValue(aKey, Ci.nsISupportsString).data;
       }
     }
     catch (ex) {}
@@ -292,7 +324,7 @@ const Prefs = (function() {
         {
           let string = XPCOM.$I('SupportsString');
           string.data = aValue;
-          prefs.setComplexValue(aKey, window.Ci.nsISupportsString, string);
+          prefs.setComplexValue(aKey, Ci.nsISupportsString, string);
         }
         break;
     }
@@ -416,7 +448,7 @@ function getSelectionController(aNode) {
   if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
       aNode instanceof HTMLTextAreaElement) {
     try {
-      return aNode.QueryInterface(window.Ci.nsIDOMNSEditableElement).
+      return aNode.QueryInterface(Ci.nsIDOMNSEditableElement).
         editor.selection;
     }
     catch (ex) {}
@@ -705,7 +737,6 @@ function checkSecurity(aURL, aOption) {
     trustURL = /^data:image\/(?:gif|jpg|png);base64,/.test(aURL);
   }
 
-  const {Ci} = window;
   let flag = trustURL ?
     Ci.nsIScriptSecurityManager.STANDARD :
     Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL;
@@ -923,7 +954,6 @@ function loadPage(aURL, aOption) {
     });
   }
 
-  const {Ci} = window;
   let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
 
   if (allowThirdPartyFixup) {
@@ -1180,7 +1210,7 @@ function scanPlacesDB(aParam) {
   } = aParam || {};
 
   // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils, Ci} = window;
+  const {PlacesUtils} = window;
   let statement =
     PlacesUtils.history.
     QueryInterface(Ci.nsPIPlacesDatabase).
@@ -1249,7 +1279,7 @@ function asyncScanPlacesDB(aParam) {
   } = aParam || {};
 
   // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils, Ci} = window;
+  const {PlacesUtils} = window;
   let statement =
     PlacesUtils.history.
     QueryInterface(Ci.nsPIPlacesDatabase).

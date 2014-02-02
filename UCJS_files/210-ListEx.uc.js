@@ -290,7 +290,7 @@ const mHistoryList = (function() {
         className.push('unified-nav-current');
       }
       else {
-        // @see resource://app/modules/PlacesUIUtils.jsm
+        // @see resource://app/modules/PlacesUIUtils.jsm::markPageAsTyped
         // @see chrome://browser/content/utilityOverlay.js::openUILink
         action = 'PlacesUIUtils.markPageAsTyped("%URL%");' +
                  'openUILink("%URL%",event);';
@@ -327,11 +327,13 @@ const mHistoryList = (function() {
       columns: ['time', 'icon'],
       onSuccess: function(aRows) {
         let time, icon;
+
         if (aRows) {
           // we ordered only one row
           time = aRows[0].time;
           icon = aRows[0].icon;
         }
+
         aCallback(time, icon);
       }
     });
@@ -479,8 +481,6 @@ const mOpenedList = (function() {
   }
 
   function getWindowEnumerator() {
-    const {Cc, Ci} = window;
-
     return Cc['@mozilla.org/appshell/window-mediator;1'].
       getService(Ci.nsIWindowMediator).
       getEnumerator(null);
@@ -598,8 +598,6 @@ const mClosedList = (function() {
   }
 
   function getSessionStore() {
-    const {Cc, Ci} = window;
-
     return Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
   }

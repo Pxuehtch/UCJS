@@ -174,8 +174,6 @@ const kItemList = [
     },
 
     get plugin() {
-      const {Cc, Ci} = window;
-
       let plugins =
         Cc['@mozilla.org/plugin/host;1'].
         getService(Ci.nsIPluginHost).
@@ -223,7 +221,7 @@ const kItemList = [
  */
 const BrowserProgressListener = {
   onStateChange: function(aWebProgress, aRequest, aFlags, aStatus) {
-    const {STATE_STOP, STATE_IS_WINDOW} = window.Ci.nsIWebProgressListener;
+    const {STATE_STOP, STATE_IS_WINDOW} = Ci.nsIWebProgressListener;
 
     if (aFlags & STATE_STOP) {
       if (aFlags & STATE_IS_WINDOW &&

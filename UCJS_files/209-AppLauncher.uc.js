@@ -784,8 +784,7 @@ function isImageDocument(aDocument) {
 }
 
 function isTextDocument(aDocument) {
-  // @see chrome://browser/content/browser.js::
-  // mimeTypeIsTextBased
+  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
   return window.mimeTypeIsTextBased(aDocument.contentType);
 }
 
@@ -841,16 +840,8 @@ const kSpecialFolderAliases = [
   '%LocalAppData%'
 ];
 
-
 /**
- * XPCOM handler
- *
- * @see resource://gre/modules/Services.jsm
- */
-const {Cc, Ci, Services} = window;
-
-/**
- * Instance creater
+ * XPCOM instances
  */
 let $I = (aCID, aIID) => Cc[aCID].createInstance(Ci[aIID]);
 
@@ -915,7 +906,7 @@ function execute(aApp, aTargetURL) {
   let appFile = getAppFile(aApp.path);
 
   if (!appFile) {
-    warn('Not executed', ['The application is not available now', aApp.path]);
+    warn('not executed', ['the application is not available now', aApp.path]);
     return;
   }
 
@@ -939,7 +930,7 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     saveFile = makeFile(saveFilePath);
   }
   catch (ex) {
-    warn('Not downloaded', [ex.message, aTargetURL]);
+    warn('not downloaded', [ex.message, aTargetURL]);
     return;
   }
 
@@ -970,14 +961,14 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
           }
 
           if (!requestSucceeded) {
-            warn('Not downloaded',
+            warn('not downloaded',
               ['HTTP status ' + responseStatus, aRequest.name]);
             return;
           }
         }
 
         if (!saveFile || !saveFile.exists()) {
-          warn('Not downloaded', ['Something wrong', aRequest.name]);
+          warn('not downloaded', ['something wrong', aRequest.name]);
           return;
         }
 
@@ -1001,13 +992,12 @@ function getSaveFilePath(aURI, aDocument) {
   let fileName = makeFileName(aURI, aDocument);
 
   if (!fileName) {
-    throw Error('Unexpected URL for download');
+    throw Error('invalid URL for download');
   }
 
   fileName = kFileNameForm.replace('%FILENAME%', fileName);
 
-  // @see chrome://global/content/contentAreaUtils.js::
-  // validateFileName()
+  // @see chrome://global/content/contentAreaUtils.js::validateFileName()
   fileName = window.validateFileName(fileName);
 
   let dir = getSpecialDirectory('TmpD');
@@ -1037,19 +1027,16 @@ function makeFileName(aURI, aDocument) {
   let fileName, extension;
 
   if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
-    // @see chrome://global/content/contentAreaUtils.js::
-    // getDefaultFileName()
+    // @see chrome://global/content/contentAreaUtils.js::getDefaultFileName()
     fileName = window.getDefaultFileName('', aURI, aDocument);
 
-    // @see chrome://global/content/contentAreaUtils.js::
-    // getDefaultExtension()
+    // @see chrome://global/content/contentAreaUtils.js::getDefaultExtension()
     let contentType = aDocument ? aDocument.contentType : null;
 
     extension = window.getDefaultExtension('', aURI, contentType);
 
     if (extension && fileName.endsWith('.' + extension)) {
-      // @see chrome://global/content/contentAreaUtils.js::
-      // getFileBaseName()
+      // @see chrome://global/content/contentAreaUtils.js::getFileBaseName()
       fileName = window.getFileBaseName(fileName);
     }
 

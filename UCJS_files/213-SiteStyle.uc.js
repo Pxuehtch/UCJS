@@ -506,7 +506,7 @@ const PageObserver = (function() {
   const {
     LOCATION_CHANGE_SAME_DOCUMENT,
     STATE_STOP, STATE_IS_WINDOW, STATE_IS_REQUEST
-  } = window.Ci.nsIWebProgressListener;
+  } = Ci.nsIWebProgressListener;
 
   let mBrowserState = new WeakMap();
 
@@ -613,8 +613,8 @@ const PageObserver = (function() {
   function fixupURL(aURL) {
     let uri;
 
-    // @see resource://gre/modules/Services.jsm
-    const uriFixup = window.Services.uriFixup;
+    const uriFixup = Services.uriFixup;
+
     try {
       uri = uriFixup.createFixupURI(aURL, uriFixup.FIXUP_FLAG_NONE);
       uri = uriFixup.createExposableURI(uri);

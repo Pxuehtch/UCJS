@@ -1303,10 +1303,10 @@ const SiblingNavi = (function() {
       ['numbering', guessByNumbering]
     ].
     some(([type, getter]) => {
-      let res = getter(aDirection);
+      let result = getter(aDirection);
 
-      if (res) {
-        data = res;
+      if (result) {
+        data = result;
         scanType = type;
         return true;
       }
@@ -1912,12 +1912,11 @@ function createURI(aURI, aFlag) {
 }
 
 function makeURI(aURL) {
-  if (aURL instanceof window.Ci.nsIURI) {
+  if (aURL instanceof Ci.nsIURI) {
     return aURL;
   }
 
   try {
-    // @see resource://gre/modules/Services.jsm
     return Services.io.newURI(aURL, null, null);
   }
   catch (ex) {}
@@ -1946,8 +1945,7 @@ function getBaseDomain(aURI) {
   }
 
   try {
-    // @see resource://gre/modules/Services.jsm
-    return window.Services.eTLD.getBaseDomain(aURI);
+    return Services.eTLD.getBaseDomain(aURI);
   }
   catch (ex) {}
 

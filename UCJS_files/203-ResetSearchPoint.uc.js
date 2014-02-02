@@ -98,8 +98,6 @@ function setSelection(aElement, aWindow) {
 }
 
 function setFastFindFor(aWindow) {
-  const {Ci} = window;
-
   let docShell =
     aWindow.
     QueryInterface(Ci.nsIInterfaceRequestor).
@@ -130,7 +128,7 @@ function getClickManager(aElement) {
   }
 
   let isEditable =
-    aElement instanceof window.Ci.nsIDOMNSEditableElement &&
+    aElement instanceof Ci.nsIDOMNSEditableElement &&
     aElement.type !== 'submit' &&
     aElement.type !== 'image';
 

@@ -210,15 +210,13 @@ function TextboxStyler() {
   }
 
   /**
-   * checks whether a target textbox is alive
+   * checks whether a target textbox is alive or not
    * @return {boolean}
    *
    * TODO: this is a workaround for checking a dead object
    * consider a legitimate method instead
    */
   function checkValidity() {
-    const {Cu} = window;
-
     try {
       return !!(mTextbox && Cu.getWeakReference(mTextbox).get());
     }
@@ -233,8 +231,6 @@ function TextboxStyler() {
    * @return {string} key in |kStyleSet|
    */
   function getIMEState() {
-    const {Ci} = window;
-
     let win = mTextbox.ownerDocument.defaultView;
 
     if (win) {

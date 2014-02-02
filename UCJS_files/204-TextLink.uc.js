@@ -301,8 +301,6 @@ function zen2han(aChar) {
 }
 
 function encodeToPlain(aRange) {
-  const {Cc, Ci} = window;
-
   let encoder =
     Cc['@mozilla.org/layout/documentEncoder;1?type=text/plain'].
     createInstance(Ci.nsIDocumentEncoder);

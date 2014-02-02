@@ -101,7 +101,7 @@ function setStyleSheet() {
 function makeUI() {
   let clearButton = UI.clearButton;
 
-  // insert tab indexes of our button before the clear button
+  // insert tab indexes of our buttons before the clear button
   // TODO: the clear button has the last index in the console window on the
   // current version of Fx. so, if a new index has been appended after the
   // clear button in the future, we would need to re-index it
@@ -128,8 +128,6 @@ function makeUI() {
 }
 
 function setObserver() {
-  const {Services} = window.Cu.import('resource://gre/modules/Services.jsm');
-
   Services.obs.
   addObserver(onMessageAdded, 'web-console-message-created', false);
 
@@ -195,6 +193,7 @@ function onMessageAdded(aSubject, aTopic, aData) {
 
       if (node) {
         let filterKey = kID.filteredBy + category;
+
         node.classList.add(filterKey);
       }
     }

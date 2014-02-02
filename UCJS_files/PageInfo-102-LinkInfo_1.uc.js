@@ -179,8 +179,9 @@ function grabLink(aNode) {
     let href = aNode.getAttributeNS(XLinkNS, 'href');
     let charset = aNode.ownerDocument.characterSet;
 
-    // @see resource://gre/modules/Services.jsm
-    let io = window.Services.io;
+    Components.utils.import('resource://gre/modules/Services.jsm');
+    const io = Services.io;
+
     try {
       address = io.newURI(href, charset,
         io.newURI(aNode.baseURI, charset, null)).spec;

@@ -74,7 +74,7 @@ const TextFinder = {
     if (editable) {
       try {
         return editable.
-          QueryInterface(window.Ci.nsIDOMNSEditableElement).
+          QueryInterface(Ci.nsIDOMNSEditableElement).
           editor.
           selectionController;
       }
@@ -133,8 +133,7 @@ function attachFindAgainCommand() {
   let mSmoothScroll = kPref.smoothScroll && SmoothScroll();
   let mFoundBlink = kPref.foundBlink && FoundBlink();
 
-  // @modified chrome://global/content/bindings/findbar.xml::
-  // onFindAgainCommand
+  // @modified chrome://global/content/bindings/findbar.xml::onFindAgainCommand
   const $onFindAgainCommand = gFindBar.onFindAgainCommand;
 
   gFindBar.onFindAgainCommand =
@@ -441,7 +440,7 @@ function SkipInvisible() {
 
     // get the text node that contains the find range object
     let result = selectionController.
-      getSelection(window.Ci.nsISelectionController.SELECTION_NORMAL).
+      getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
       getRangeAt(0).
       commonAncestorContainer;
 
@@ -510,8 +509,6 @@ function HorizontalCentered() {
   }
 
   function getSelection() {
-    const {Ci} = window;
-
     let selectionController = TextFinder.selectionController;
 
     return selectionController &&
@@ -925,7 +922,7 @@ function FoundBlink() {
   }
 
   function getRange() {
-    const {SELECTION_NORMAL} = window.Ci.nsISelectionController;
+    const {SELECTION_NORMAL} = Ci.nsISelectionController;
 
     return mState.selectionController.
       getSelection(SELECTION_NORMAL).
@@ -937,7 +934,7 @@ function FoundBlink() {
       SELECTION_NORMAL,
       SELECTION_OFF,
       SELECTION_ON
-    } = window.Ci.nsISelectionController;
+    } = Ci.nsISelectionController;
 
     let type = aShow ? SELECTION_ON : SELECTION_OFF;
 

@@ -368,8 +368,6 @@ const mTabOpener = {
         return newTab;
       }
 
-      const {Ci} = window;
-
       let aRelatedToCurrent, aFromExternal, aIsUTF8;
 
       if (arguments.length === 2 &&
@@ -455,7 +453,7 @@ const mTabOpener = {
         let URL = browser.userTypedValue || browser.currentURI.spec;
         let query = {
           URL: URL,
-          flags: window.Ci.nsIWebNavigation.LOAD_FLAGS_NONE
+          flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
         mTab.data(aTab, 'query', query);
         break;
@@ -737,8 +735,6 @@ const mSessionStore = {
   isRestoring: false,
 
   init: function() {
-    const {Cc, Ci} = window;
-
     this.SessionStore =
       Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);

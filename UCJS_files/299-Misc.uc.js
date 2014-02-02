@@ -77,8 +77,7 @@ function log(aMsg) {
   const kTooltipShowDelay = 500; // [ms]
   let tooltipTimer = null;
 
-  // @modified chrome://browser/content/urlbarBindings.xml::
-  // _initURLTooltip
+  // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
   $ID('urlbar')._initURLTooltip =
   function ucjsMisc_uncropTooltip_initURLTooltip() {
     if (this.focused || !this._contentIsCropped || tooltipTimer) {
@@ -111,8 +110,7 @@ function log(aMsg) {
  */
 (function() {
 
-  // @modified chrome://browser/content/utilityOverlay.js::
-  // closeMenus
+  // @modified chrome://browser/content/utilityOverlay.js::closeMenus
   Function('window.closeMenus =' +
     window.closeMenus.toString().
     replace(/node\.tagName/g, 'node.localName')
@@ -144,8 +142,7 @@ function log(aMsg) {
     }\
   ');
 
-  // @modified chrome://browser/content/tabbrowser.xml::
-  // _positionPinnedTabs
+  // @modified chrome://browser/content/tabbrowser.xml::_positionPinnedTabs
   Function('gBrowser.tabContainer._positionPinnedTabs =' +
     gBrowser.tabContainer._positionPinnedTabs.toString().
     replace(
@@ -377,8 +374,7 @@ function log(aMsg) {
     return window.XULBrowserWindow.statusTextField;
   }
 
-  // @modified chrome://browser/content/browser.js::
-  // XULBrowserWindow::updateStatusField
+  // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
   const $updateStatusField = window.XULBrowserWindow.updateStatusField;
 
   window.XULBrowserWindow.updateStatusField =
@@ -509,7 +505,7 @@ function log(aMsg) {
     const kStateUpdateTopic = 'sessionstore-state-write-complete';
     let stateUpdateObserving = true;
 
-    window.Services.obs.addObserver(onStateUpdated, kStateUpdateTopic, false);
+    Services.obs.addObserver(onStateUpdated, kStateUpdateTopic, false);
 
     const kWaitTime = 5000;
     let waitTimer = setTimeout(onTimeExpired, kWaitTime);
@@ -521,7 +517,7 @@ function log(aMsg) {
 
     function cleanup() {
       if (stateUpdateObserving) {
-        window.Services.obs.removeObserver(onStateUpdated, kStateUpdateTopic);
+        Services.obs.removeObserver(onStateUpdated, kStateUpdateTopic);
         stateUpdateObserving = false;
       }
 
@@ -545,7 +541,7 @@ function log(aMsg) {
     function onTimeExpired() {
       cleanup();
 
-      let result = window.Services.prompt.confirm(
+      let result = Services.prompt.confirm(
         null,
         'Misc.uc.js::RestartFx',
         'Preprocessing for restart has been interrupted.\n' +
@@ -566,8 +562,6 @@ function log(aMsg) {
     if (!window.canQuitApplication('restart')) {
       return;
     }
-
-    const {Services, Ci} = window;
 
     if (purgeCaches) {
       Services.appinfo.invalidateCachesOnRestart();

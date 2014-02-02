@@ -255,7 +255,8 @@ function moveTabToOtherWindow(aTab, aWindow) {
   let otherTabBrowser = aWindow.gBrowser;
 
   // @see chrome://browser/content/tabbrowser.xml::
-  //   <binding id="tabbrowser-tabs">::<handler event="drop">
+  //   <binding id="tabbrowser-tabs">::
+  //   <handler event="drop">
 
   // Create a new tab in the other window.
   let newTab = otherTabBrowser.addTab('about:blank');
@@ -278,8 +279,7 @@ function moveTabToOtherWindow(aTab, aWindow) {
 
 function getWindowEnumerator() {
   // enumerator of all windows in order from front to back
-  // @see resource://gre/modules/Services.jsm
-  return window.Services.wm.getZOrderDOMWindowEnumerator(null, true);
+  return Services.wm.getZOrderDOMWindowEnumerator(null, true);
 }
 
 function isWindowPrivate(aWindow) {

@@ -461,8 +461,6 @@ function splitURL(aURL, aBaseURL) {
 }
 
 function copyToClipboard(aText) {
-  const {Cc, Ci} = window;
-
   Cc['@mozilla.org/widget/clipboardhelper;1'].
   getService(Ci.nsIClipboardHelper).
   copyString(aText);

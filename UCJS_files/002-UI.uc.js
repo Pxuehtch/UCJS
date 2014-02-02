@@ -219,8 +219,7 @@ const mStatusField = (function() {
     /**
      * Customize the default functions
      */
-    // @modified chrome://browser/content/browser.js::
-    // XULBrowserWindow::setOverLink
+    // @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
     const $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink =
     function ucjsUI_StatusField_setOverLink(url, anchorElt) {
@@ -265,8 +264,7 @@ const mStatusField = (function() {
       this.hideOverLinkImmediately = false;
     };
 
-    // @modified chrome://browser/content/browser.js::
-    // XULBrowserWindow::updateStatusField
+    // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
     const $updateStatusField = XULBrowserWindow.updateStatusField;
 
     XULBrowserWindow.updateStatusField =

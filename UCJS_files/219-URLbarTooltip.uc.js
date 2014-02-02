@@ -99,8 +99,7 @@ function showPanel(aEvent) {
     buildContent();
 
     // close the default tooltip
-    // @see chrome://browser/content/urlbarBindings.xml::
-    // _hideURLTooltip
+    // @see chrome://browser/content/urlbarBindings.xml::_hideURLTooltip
     getURLbar()._hideURLTooltip();
 
     getPanel().openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
@@ -197,8 +196,7 @@ function getShortcutData() {
       bookmarksData = [];
 
   // get search engine keywords
-  // @see resource://gre/modules/Services.jsm
-  window.Services.search.getEngines().forEach((item) => {
+  Services.search.getEngines().forEach((item) => {
     if (item.alias) {
       searchEnginesData.push({
         keyword: item.alias,

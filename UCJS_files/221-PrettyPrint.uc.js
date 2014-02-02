@@ -44,8 +44,8 @@ const {
  * @note this is used to set a beautifier method and set the syntax highlight
  * mode for the Scratchpad editor
  *
- * @note the values must be selected from the editor mode constants of
- * |source-editor.jsm|
+ * @note the values must be selected from the editor mode constants of the
+ * module |SourceEditor|
  * @see https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/source-editor.jsm#Editor_mode_constants
  */
 const kTextType = {
@@ -555,7 +555,7 @@ function getTextType(aContentType) {
 }
 
 function warn(aMessage) {
-  window.Services.prompt.alert(null, 'PrettyPrint.uc.js', aMessage);
+  Services.prompt.alert(null, 'PrettyPrint.uc.js', aMessage);
 }
 
 /**

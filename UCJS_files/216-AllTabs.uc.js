@@ -209,8 +209,7 @@ function moveAllTabsMenuToTabViewButton() {
 function customizeAllTabsPopupFunction() {
   let alltabsPopup = $ID(kID.ALLTABS_POPUP);
 
-  // @modified chrome://browser/content/tabbrowser.xml::
-  // _setMenuitemAttributes
+  // @modified chrome://browser/content/tabbrowser.xml::_setMenuitemAttributes
   const $_setMenuitemAttributes = alltabsPopup._setMenuitemAttributes;
 
   alltabsPopup._setMenuitemAttributes =
@@ -362,7 +361,8 @@ function onCommand(aEvent) {
   // *selected* tab. It is especially wrong that a selected tab which is
   // scrolled out stays invisible. so, ensures to make a selected tab visible
   // @see chrome://browser/content/tabbrowser.xml::
-  // <binding id="tabbrowser-alltabs-popup">::<handler event="command">
+  //   <binding id="tabbrowser-alltabs-popup">::
+  //   <handler event="command">
   else if (element.parentNode.id === kID.ALLTABS_POPUP &&
            element.tab && element.tab.selected) {
     gBrowser.tabContainer.mTabstrip.
