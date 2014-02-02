@@ -218,7 +218,7 @@ function TextboxStyler() {
    */
   function checkValidity() {
     try {
-      return !!(mTextbox && Cu.getWeakReference(mTextbox).get());
+      return !!(mTextbox && mTextbox.parentNode);
     }
     catch (ex) {}
 
