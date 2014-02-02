@@ -32,6 +32,9 @@ const ucjsUtil = (function(window, undefined) {
  * @see |ensureAccessToModules()|
  */
 const XPCOM = (function() {
+  /**
+   * ID List of extra services
+   */
   const kServices = {
     'StyleSheetService': {
       CID: '@mozilla.org/content/style-sheet-service;1',
@@ -43,6 +46,9 @@ const XPCOM = (function() {
     }//,
   };
 
+  /**
+   * ID List of extra instances
+   */
   const kInstances = {
     'DocumentEncoder': {
       CID: '@mozilla.org/layout/documentEncoder;1',
@@ -57,6 +63,13 @@ const XPCOM = (function() {
       IID: 'nsISupportsString'
     }//,
   };
+
+  /**
+   * References to extra services
+   *
+   * @note initialized in |getService()|
+   */
+  let mServices = {};
 
   XPCOM_init();
 
@@ -94,15 +107,11 @@ const XPCOM = (function() {
       throw Error('service is not defined: ' + aName);
     }
 
-    if (!(kServices[aName] instanceof Ci.nsISupports)) {
-      let service = create(kServices[aName], aCIDParams, 'getService');
-
-      // lazy definition
-      delete kServices[aName];
-      kServices[aName] = service
+    if (!mServices[aName]) {
+      mServices[aName] = create(kServices[aName], aCIDParams, 'getService');
     }
 
-    return kServices[aName];
+    return mServices[aName];
   }
 
   function getInstance(aName, aCIDParams) {
