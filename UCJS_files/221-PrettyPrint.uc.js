@@ -150,18 +150,30 @@ const Scratchpad = (function() {
    *   text {string}
    *   beautifierOptions {hash} [optional]
    *   @see |Beautifier.fixupOptions|
+   *
+   * TODO: a better check of parameters
    */
   function prettify(aState) {
     let {filename, type, text, beautifierOptions} = aState || {};
 
     if (!type) {
-      warn('unsupported text type');
+      prompt('Error: unsupported text type');
       return;
     }
 
     if (!text) {
-      warn('invalid text');
+      prompt('Error: no content');
       return;
+    }
+
+    if (text.length > 100000) {
+      let warning =
+        'It may take longer time for a large text.\n' +
+        'Do you want to continue?';
+
+      if (!prompt(warning, {doConfirm: true})) {
+        return;
+      }
     }
 
     let state = {
@@ -170,10 +182,8 @@ const Scratchpad = (function() {
       text: Beautifier.execute(type, text, beautifierOptions)
     };
 
-    let win = open(state);
-
-    if (!win) {
-      warn('Scratchpad cannot open');
+    if (!open(state)) {
+      prompt('Error: cannot open Scratchpad');
       return;
     }
   }
@@ -548,8 +558,16 @@ function getTextType(aDocument) {
   return null;
 }
 
-function warn(aMessage) {
-  Services.prompt.alert(null, 'PrettyPrint.uc.js', aMessage);
+function prompt(aMessage, aOption) {
+  let {
+    doConfirm
+  } = aOption || {};
+
+  const {confirm, alert} = Services.prompt;
+
+  let prompt = doConfirm ? confirm : alert;
+
+  return prompt(null, 'PrettyPrint.uc.js', aMessage);
 }
 
 /**
