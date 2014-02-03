@@ -43,6 +43,7 @@ const SortState = (function() {
 
 /**
  * Implements the click handler of a header
+ *
  * @see chrome://browser/content/pageinfo/pageInfo.js
  */
 window.pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
@@ -102,6 +103,7 @@ function sort(aData, aColumnIndex, aAscending) {
 
 /**
  * Disables the default sort functions
+ *
  * @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
  */
 window.gMetaView.onPageMediaSort =
@@ -112,6 +114,7 @@ window.gImageView.onPageMediaSort =
 
 /**
  * Clean up when the Page Info window is closed
+ *
  * @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
  */
 window.onUnloadRegistry.push(function() {

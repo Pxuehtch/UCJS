@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage a 'prettify source page' menuitem in the context menu of JS/CSS code
+// @usage creates a menuitem in the context menu of JS/CSS code
 // page
 
 // @note a syntax error may occur due to line wrapping forced when you run
@@ -139,7 +139,7 @@ const MenuHandler = (function() {
  */
 const Scratchpad = (function() {
   /**
-   * Show a prettified text in a Scratchpad
+   * Show a prettified text in the Scratchpad
    *
    * @param {hash} aState
    *   filename {string}
@@ -176,13 +176,13 @@ const Scratchpad = (function() {
   }
 
   /**
-   * Open a Scratchpad window and set a source text and the editor mode
+   * Open the Scratchpad window and set a source text and the editor mode
    *
    * @param {hash} aState
    *   filename {string}
    *   text {string}
    *   type {kTextType}
-   * @return {nsIDOMWindow}
+   * @return {DOMWindow}
    *   the new window object that holds Scratchpad
    */
   function open(aState) {
@@ -223,9 +223,6 @@ const Scratchpad = (function() {
 
 /**
  * Beautifier handler
- *
- * based on JS Beautify
- * @see https://github.com/einars/js-beautify
  */
 const Beautifier = (function() {
   /**
@@ -433,12 +430,11 @@ const Beautifier = (function() {
   /**
    * JS beautifier
    *
-   * Built-in JS beautifier
-   *
-   * @note this version doesn't support |wrap_line_length| option
+   * @note used the built-in JS beautifier
    * @see https://github.com/mozilla/releases-mozilla-release/blob/master/browser/devtools/shared/Jsbeautify.jsm
    *
-   * @note based on JS Beautifier beautify.js
+   * @note the built-in function is based on JS Beautifier beautify.js
+   * @note the newer version supports |wrap_line_length|
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
   function JSBeautify(aText, aOptions) {

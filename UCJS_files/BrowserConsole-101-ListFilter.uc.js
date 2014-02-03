@@ -40,7 +40,7 @@ function log(aMsg) {
  * @param category {string}
  *   @note set a unique string to distinguish from other items for internal
  *   using
- *   @note used as the label of a menu item
+ *   @note used as the label of a button
  * @param description {string}
  *   @note used as the tooltip of a button
  * @param condition {string}

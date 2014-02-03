@@ -47,7 +47,7 @@ function log(aMsg) {
  * Identifiers
  */
 const kID = {
-  // Firefox default
+  // default
   BACK_BUTTON: 'back-button',
   FORWARD_BUTTON: 'forward-button',
 

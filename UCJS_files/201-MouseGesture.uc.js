@@ -530,7 +530,7 @@ function MouseGesture() {
     }
 
     // cancel the gesture drag and the default drag works
-    // @note The default drag is also cancelled by pressing ESC key
+    // @note the default drag is also cancelled by pressing the ESC key
     let forceCancel = aEvent.shiftKey && aEvent.altKey;
 
     if (forceCancel) {
@@ -550,7 +550,7 @@ function MouseGesture() {
   }
 
   // TODO: prevent the drop event when a right mouse button is pressed down
-  // while dragging. At present the drop event fires
+  // while dragging. the drop event fires at present
   function onDrop(aEvent) {
     if (mState !== kState.DRAG) {
       return;

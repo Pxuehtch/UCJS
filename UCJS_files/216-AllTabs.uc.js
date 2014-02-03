@@ -66,14 +66,14 @@ const kFormat = {
  * Identifiers
  */
 const kID = {
-  // default ID
+  // default
   TABVIEW_BUTTON: 'tabview-button',
   ALLTABS_BUTTON: 'alltabs-button',
   ALLTABS_POPUP: 'alltabs-popup',
   ALLTABS_POPUP_SEPARATOR: 'alltabs-popup-separator',
   TAB_TOOLTIP: 'tabbrowser-tab-tooltip',
 
-  // custom ID
+  // custom
   TABVIEW_TOOLTIP: 'ucjs_alltabs_tabview_tooltip',
   GROUPS_MENU: 'ucjs_alltabs_groups_menu',
   GROUPS_MENUPOPUP: 'ucjs_alltabs_groups_menupopup',

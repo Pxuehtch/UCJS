@@ -215,7 +215,7 @@ function addLink(aValueArray) {
 }
 
 /**
- * Opens URL of a clicked row
+ * Opens URL of a row being double-clicked
  */
 function openLink(aEvent) {
   if (aEvent.originalTarget.localName != 'treechildren') {

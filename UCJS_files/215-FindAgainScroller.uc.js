@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note default functions are modified. see @modified
+// @note some default functions are modified. see @modified
 
 
 (function(window, undefined) {

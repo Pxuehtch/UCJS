@@ -62,54 +62,68 @@ const kID = {
 const kPosType = {
   // Firefox default
   DEFAULT: 1,
+
   // at the first
   FIRST_END: 2,
+
   // at the last
   LAST_END: 3,
+
   // at the previous adjacent
-  // @note SELECTPOS: if no previous tab, no match
+  // @note SELECTPOS: no match if no previous tab
   PREV_ADJACENT: 4,
+
   // at the next adjacent
-  // @note SELECTPOS: if no next tab, no match
+  // @note SELECTPOS: no match if no next tab
   NEXT_ADJACENT: 5,
 
-  //********** OPENPOS only
+  /**
+   * only for OPENPOS
+   */
+
   // after the far end tab of the sequential followings that are descendants of
   // the base tab from its next adjacent, or at the next adjacent
   // @note The family relation is kept even if the base tab changes its
-  // location.
+  // location
   NEXT_INCREMENT_DESCENDANT: 6,
 
-  //********** SELECTPOS only
+  /**
+   * only for SELECTPOS
+   */
+
   // the previous adjacent tab that is an ancestor of the closed tab
   // @note may be no match
   PREV_ADJACENT_ANCESTOR: 7,
+
   // the next adjacent tab that is a descendant of the closed tab or is a
   // sibling(has the same parent of the closed tab) or his descendant
   // @note may be no match
   NEXT_ADJACENT_EXTENDED_DESCENDANT: 8,
+
   // the parent tab of the closed tab
   // @note may be no match
   ANYWHERE_OPENER: 9,
+
   // tab that has been selected most recently before the closed tab
   // @note may be no match
   ANYWHERE_PREV_SELECTED: 10,
+
   // the oldest opened tab of unread tabs
   // @note may be no match
   ANYWHERE_OLDEST_UNREAD: 11
 };
 
 /**
- * User preference
+ * Preference
  */
 const kPref = {
   // where a new tab is opened to
   //
   // @value {kPosType}
-  // @note The count of positioning starts from the first *un*pinned tab.
+  // @note the count of positioning starts from the first *un*pinned tab
   // @note |OPENPOS_LINKED| works when the tab is opened by a link in the
   // content area or |addTab| with |relatedToCurrent| option, otherwise
-  // |OPENPOS_UNLINKED|.
+  // |OPENPOS_UNLINKED|
   OPENPOS_LINKED:    kPosType.NEXT_INCREMENT_DESCENDANT,
   OPENPOS_UNLINKED:  kPosType.LAST_END,
   OPENPOS_DUPLICATE: kPosType.NEXT_ADJACENT,
@@ -119,7 +133,7 @@ const kPref = {
   // which tab is selected after the *selected* tab is closed
   //
   // @value {kPosType[]}
-  // @note The default selection works if no matches (may be the same as
+  // @note the default selection works if no matches (may be the same as
   // |PREV_ADJACENT|)
   SELECTPOS_TABCLOSE: [
     kPosType.NEXT_ADJACENT_EXTENDED_DESCENDANT,
@@ -144,8 +158,8 @@ const kPref = {
   //
   // @value {integer} millisecond
   //   0: try to stop loading immediately
-  // @note It may take time because our process works after the Fx default one
-  // for a background tab.
+  // @note it may take time because our process works after the Fx default one
+  // for a background tab
   SUSPEND_DELAY: 0,
 
   // auto-reloads the suspended tab that is next adjacent of a selected tab
@@ -157,8 +171,8 @@ const kPref = {
   // is selected and loaded completely
   //
   // @value {integer} millisecond
-  // @note The marking is canceled when the other tab is selected in a short
-  // time. (e.g. while flipping tabs with a shortcut key or mouse wheeling)
+  // @note the marking is canceled when the other tab is selected in a short
+  // time (e.g. while flipping tabs with a shortcut key or mouse wheeling)
   SELECTED_DELAY: 1000
 };
 
@@ -172,6 +186,7 @@ const getTime = (function() {
 
   return function() {
     let now = Date.now();
+
     return time = (time === now ? ++now : now);
   };
 })();
@@ -252,8 +267,8 @@ const mTab = (function () {
    * @param aKey {string} a reserved key that corresponds to a data
    * @return {}
    *
-   * @note |aKey| is the same as the keys of |data|. Only the keys that is
-   * called in the code is supported
+   * @note |aKey| is the same as the keys of |data|. but only the keys used in
+   * this script file is supported
    */
   function SSdata(aClosedTabData, aKey) {
     let getInt = (value) => parseInt(value, 10);
@@ -301,12 +316,14 @@ const mTab = (function () {
    */
   const stateTest = {
     // whether a user read a tab
+    //
     // @return {boolean}
     read: function(aTab) {
       return manageFlagAttribute(aTab, kID.READ);
     },
 
     // whether the loading of a tab is suspended
+    //
     // @return {boolean}
     suspended: function(aTab) {
       return manageFlagAttribute(aTab, kID.SUSPENDED);
@@ -452,12 +469,13 @@ const mTabOpener = {
       case 'StartupTab': {
         let browser = gBrowser.getBrowserForTab(aTab);
         // |userTypedValue| holds the URL of a document till it successfully
-        // loads.
+        // loads
         let URL = browser.userTypedValue || browser.currentURI.spec;
         let query = {
           URL: URL,
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
+
         mTab.data(aTab, 'query', query);
         break;
       }
@@ -467,6 +485,7 @@ const mTabOpener = {
           let parent = gBrowser.selectedTab;
           let open = mTab.data(parent, 'open');
           let ancs = mTab.data(parent, 'ancestors') || [];
+
           mTab.data(aTab, 'ancestors', [open].concat(ancs));
         }
         break;
@@ -475,6 +494,7 @@ const mTabOpener = {
         // renew the ancestors so that the original tab becomes the parent
         let open = mTab.data(aTab, 'open');
         let ancs = mTab.data(aTab, 'ancestors') || [];
+
         mTab.data(aTab, 'ancestors', [open].concat(ancs));
         break;
       }
@@ -556,10 +576,10 @@ const mTabSelector = {
   currentSelectedTime: 0,
 
   set: function(aTab) {
-    // TODO: Clear the interval timer properly.
-    // At the present, the timer is cleared every |onTabSelect|. This is on
+    // TODO: clear the interval timer in the proper way
+    // at the present, the timer is cleared every |onTabSelect|. this is on
     // the premise that the other tab is *surely* selected after the tab is
-    // closed.
+    // closed
     this.clear();
 
     // repeatly observes a tab until its document completely loads while the
@@ -746,7 +766,7 @@ const mSessionStore = {
     addEvent(window, 'SSWindowStateReady', this, false);
 
     /**
-     * We should wait until |persistTabAttribute| is ready for use;
+     * we should wait until |persistTabAttribute| is ready for use;
      * 1.boot startup: observes |DOMContentLoaded| which fires on the document
      * for the first selected tab at startup. see |mStartup::init|
      * 2.resume startup: observes the first |SSWindowStateReady|
@@ -810,9 +830,9 @@ const mSessionStore = {
 /**
  * Startup tabs handler
  *
- * 1.The boot startup opens the startup tabs (e.g. homepages). Some pinned tabs
- * may be restored too.
- * 2.The resume startup restores tabs.
+ * 1.the boot startup opens the startup tabs (e.g. homepages). Some pinned tabs
+ * may be restored too
+ * 2.the resume startup restores tabs
  */
 const mStartup = {
   init: function() {
@@ -955,8 +975,8 @@ const mTabEvent = {
     let originalTab = getOriginalTabOfDuplicated(aTab);
 
     if (originalTab) {
-      // @note A duplicated tab has the same data as its original tab and we
-      // update some data to be as a new opened tab.
+      // @note a duplicated tab has the same data as its original tab and we
+      // update some data to be as a new opened tab
 
       // update |open| and |ancestors|
       mTabOpener.set(aTab, 'DuplicatedTab');
@@ -974,8 +994,8 @@ const mTabEvent = {
       baseTab = originalTab;
     }
     else {
-      // @note A undoclosed tab has the restored data.
-      // @note |window.undoCloseTab| opens a tab and forcibly selects it.
+      // @note an undoclosed tab has the restored data
+      // @note |window.undoCloseTab| opens a tab and forcibly selects it
 
       // update |select|, and set |read| if first selected
       mTabSelector.update(aTab);
@@ -984,7 +1004,7 @@ const mTabEvent = {
 
       // sets the previous selected tab to the base tab for moving this tab.
       // the previous selected tab surely exists because it was selected then
-      // this undoclosed tab has been opened and selected.
+      // this undoclosed tab has been opened and selected
       baseTab = getPrevSelectedTab();
     }
 
@@ -1131,8 +1151,8 @@ function getFamilyTab(aBaseTab, aStatement) {
   startPos = getTabPos(activeTabs, aBaseTab);
 
   // useless when no adjacent tab is in the direction
-  // @note startPos is always 0 when the base tab is pinned and the state has
-  // 'next'.
+  // @note |startPos| is always 0 when the base tab is pinned and the state has
+  // 'next'
   if ((direction === 'prev' && --startPos < 0) ||
       (direction === 'next' && ++startPos > activeTabs.length - 1)) {
     return null;
@@ -1217,8 +1237,8 @@ function getOpenerTab(aBaseTab, aOption) {
   if (!ancs) {
     if (undoClose) {
       // has referrer (e.g. opened from bookmark)
-      // @note A tab that has no opener tab is independent. So its referred URL
-      // should be newly opened even if it exists in the current tabs.
+      // @note a tab that has no opener tab is independent. so its referred URL
+      // should be newly opened even if it exists in the current tabs
       let referrerURL = mReferrer.getURL(baseTab);
 
       if (referrerURL) {
@@ -1250,7 +1270,7 @@ function getOpenerTab(aBaseTab, aOption) {
       for (let i = 0, l = undoList.length; i < l; i++) {
         if (mTab.SSdata(undoList[i], 'open') === parent) {
           // @see chrome://browser/content/browser.js::undoCloseTab
-          // @note |undoCloseTab| opens a tab and forcibly selects it.
+          // @note |undoCloseTab| opens a tab and forcibly selects it
           return window.undoCloseTab(i);
         }
       }
@@ -1308,7 +1328,7 @@ function getPrevSelectedTab(aBaseTab, aOption) {
       for (let i = 0, l = undoList.length; i < l; i++) {
         if (mTab.SSdata(undoList[i], 'select') === prevSelectedTime) {
           // @see chrome://browser/content/browser.js::undoCloseTab
-          // @note |undoCloseTab| opens a tab and forcibly selects it.
+          // @note |undoCloseTab| opens a tab and forcibly selects it
           return window.undoCloseTab(i);
         }
       }
@@ -1333,6 +1353,7 @@ function getOldestUnreadTab(aOption) {
 
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
     tab = tabs[i];
+
     if (mTab.state.read(tab)) {
       continue;
     }
@@ -1439,7 +1460,7 @@ function closeReadTabs() {
  * @return {Array}
  *
  * TODO: |aForcedTab| is used only for a closing tab on |TabClose| event.
- * Make a smart handling.
+ * Make a smart handling
  */
 function getTabs(aStatement, aForcedTab) {
   let statement = StatementParser(aStatement, ',');
@@ -1574,10 +1595,10 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 function modifySystemSetting() {
   const {get, set} = Prefs;
   const prefs = [
-    // @pref Disable the custom positioning and focusing of tabs.
+    // @pref disable the custom positioning and focusing of tab
     {key: 'browser.tabs.insertRelatedAfterCurrent', value: false},
     {key: 'browser.tabs.selectOwnerOnClose', value: false},
-    // @pref Disable loading of the background tabs in restoring startup.
+    // @pref disable loading of the background tabs in restoring startup
     {key: 'browser.sessionstore.restore_on_demand', value: true},
     {key: 'browser.sessionstore.restore_pinned_tabs_on_demand', value: true}
   ];
