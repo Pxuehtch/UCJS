@@ -157,8 +157,8 @@ const Scratchpad = (function() {
 
     let state = {
       filename: filename,
-      text: Beautifier.execute(type, text, beautifierOptions),
-      type: type
+      type: type,
+      text: Beautifier.execute(type, text, beautifierOptions)
     };
 
     let win = open(state);
@@ -291,17 +291,17 @@ const Beautifier = (function() {
       else {
         switch (setting.type) {
           case 'number':
-            value = parseInt(aValue, 10);
+            value = parseInt(value, 10);
 
             if (isNaN(value)) {
               value = setting.defaultValue;
             }
             break;
           case 'string':
-            value = aValue + '';
+            value = value + '';
             break;
           case 'boolean':
-            value = !!aValue;
+            value = !!value;
             break;
         }
       }
