@@ -59,6 +59,14 @@ const kTextType = {
 };
 
 /**
+ * Optional settings for beautifying
+ *
+ * @note the default values are used if absent
+ * @see |Beautifier.fixupOptions|
+ */
+const kBeautifierOptions = {};
+
+/**
  * Menu handler
  */
 const MenuHandler = (function() {
@@ -113,7 +121,8 @@ const MenuHandler = (function() {
       let state = {
         filename: contentDocument.URL,
         type: getTextType(contentDocument),
-        text: getSourceText(contentDocument)
+        text: getSourceText(contentDocument),
+        beautifierOptions: kBeautifierOptions
       };
 
       Scratchpad.prettify(state);
@@ -220,6 +229,45 @@ const Scratchpad = (function() {
  */
 const Beautifier = (function() {
   /**
+   * Option value setting
+   */
+  const kOptionList = {
+    indentSize: {
+      type: 'number',
+      defaultValue: 2,
+      validate: function(aValue) {
+        return (aValue <= 0) ? this.defaultValue : aValue;
+      }
+    },
+
+    indentChar: {
+      type: 'string',
+      defaultValue: ' ',
+      validate: function(aValue) {
+        return (aValue === '') ? this.defaultValue : aValue.charAt(0);
+      }
+    },
+
+    wrapLineLength: {
+      type: 'number',
+      defaultValue: 80,
+      validate: function(aValue) {
+        return (aValue < 0) ? 0 : aValue;
+      }
+    },
+
+    extraLine: {
+      type: 'boolean',
+      defaultValue: true
+    },
+
+    lastSemicolon: {
+      type: 'boolean',
+      defaultValue: true
+    }
+  };
+
+  /**
    * Fix up options
    *
    * @param aOptions {hash}
@@ -228,59 +276,13 @@ const Beautifier = (function() {
    *   wrapLineLength {number} [80]
    *   extraLine {boolean} [true]
    *   lastSemicolon {boolean} [true]
+   *   @see |kOptionList|
    * @return {hash}
-   *
-   * @note |JS Beautify beautify.js| new version supports |wrap_line_length|
    */
   function fixupOptions(aOptions) {
-    const kOptionList = {
-      indentSize: {
-        type: 'number',
-        defaultValue: 2,
-        validate: function(aValue) {
-          if (aValue <= 0) {
-            return this.defaultValue;
-          }
-          return aValue;
-        }
-      },
-
-      indentChar: {
-        type: 'string',
-        defaultValue: ' ',
-        validate: function(aValue) {
-          if (aValue === '') {
-            return this.defaultValue;
-          }
-          return aValue.charAt(0);
-        }
-      },
-
-      wrapLineLength: {
-        type: 'number',
-        defaultValue: 80,
-        validate: function(aValue) {
-          if (aValue < 0) {
-            return 0;
-          }
-          return aValue;
-        }
-      },
-
-      extraLine: {
-        type: 'boolean',
-        defaultValue: true
-      },
-
-      lastSemicolon: {
-        type: 'boolean',
-        defaultValue: true
-      }
-    };
+    aOptions = aOptions || {};
 
     let options = {};
-
-    aOptions = aOptions || {};
 
     for (let [key, setting] in Iterator(kOptionList)) {
       let value = aOptions[key];
