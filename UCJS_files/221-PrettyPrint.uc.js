@@ -95,10 +95,11 @@ const MenuHandler = (function() {
       return;
     }
 
+    let contentDocument = gBrowser.contentDocument;
     let shouldShow =
       !getViewSourceItem().hidden &&
-      getTextType(gBrowser.contentDocument.contentType) &&
-      getTextContainer(gBrowser.contentDocument);
+      getTextType(contentDocument) &&
+      getTextContainer(contentDocument);
 
     showItem(kUI.prettifySourcePage.id, shouldShow);
   }
@@ -119,7 +120,7 @@ const MenuHandler = (function() {
       let state = {
         filename: contentDocument.URL,
         text: getSourceText(contentDocument),
-        type: getTextType(contentDocument.contentType)
+        type: getTextType(contentDocument)
       };
 
       Scratchpad.prettify(state);
@@ -535,13 +536,13 @@ function getTextContainer(aDocument) {
 }
 
 /**
- * Get a text type
+ * Get a text type for the document
  *
- * @param {string} aContentType
+ * @param {HTMLDocument} aDocument
  * @return {kTextType|null}
  */
-function getTextType(aContentType) {
-  switch (aContentType) {
+function getTextType(aDocument) {
+  switch (aDocument.contentType) {
     case 'text/javascript':
     case 'application/javascript':
     case 'application/x-javascript':
