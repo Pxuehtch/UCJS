@@ -119,8 +119,8 @@ const MenuHandler = (function() {
       let contentDocument = gBrowser.contentDocument;
       let state = {
         filename: contentDocument.URL,
-        text: getSourceText(contentDocument),
-        type: getTextType(contentDocument)
+        type: getTextType(contentDocument),
+        text: getSourceText(contentDocument)
       };
 
       Scratchpad.prettify(state);
@@ -144,27 +144,27 @@ const Scratchpad = (function() {
    *
    * @param {hash} aState
    *   filename {string}
-   *   text {string}
    *   type {kTextType}
+   *   text {string}
    *   beautifierOptions {hash} [optional]
    *   @see |Beautifier.fixupOptions|
    */
   function prettify(aState) {
-    let {filename, text, type, beautifierOptions} = aState || {};
-
-    if (!text) {
-      warn('invalid text');
-      return;
-    }
+    let {filename, type, text, beautifierOptions} = aState || {};
 
     if (!type) {
       warn('unsupported text type');
       return;
     }
 
+    if (!text) {
+      warn('invalid text');
+      return;
+    }
+
     let state = {
       filename: filename,
-      text: Beautifier.execute(text, type, beautifierOptions),
+      text: Beautifier.execute(type, text, beautifierOptions),
       type: type
     };
 
@@ -181,8 +181,8 @@ const Scratchpad = (function() {
    *
    * @param {hash} aState
    *   filename {string}
-   *   text {string}
    *   type {kTextType}
+   *   text {string}
    * @return {DOMWindow}
    *   the new window object that holds Scratchpad
    */
@@ -326,13 +326,13 @@ const Beautifier = (function() {
   /**
    * Beautify a source text
    *
-   * @param aText {string}
    * @param aTextType {kTextType}
+   * @param aText {string}
    * @param aOptions {hash}
    *   @see |Beautifier.fixupOptions|
    * @return {string}
    */
-  function execute(aText, aTextType, aOptions) {
+  function execute(aTextType, aText, aOptions) {
     let beautify;
 
     switch (aTextType) {
