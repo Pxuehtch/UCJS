@@ -101,15 +101,8 @@ const MenuHandler = (function() {
       getTextType(contentDocument) &&
       getTextContainer(contentDocument);
 
-    showItem(kUI.prettifySourcePage.id, shouldShow);
-  }
-
-  function showItem(aID, aShouldShow) {
-    let item = $ID(aID);
-
-    if (item && item.hidden !== !aShouldShow) {
-      item.hidden = !aShouldShow;
-    }
+    // @see chrome://browser/content/nsContextMenu.js::showItem
+    gContextMenu.showItem(kUI.prettifySourcePage.id, shouldShow);
   }
 
   function onCommand(aEvent) {
