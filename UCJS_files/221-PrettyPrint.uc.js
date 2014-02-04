@@ -382,14 +382,14 @@ const Beautifier = (function() {
 
   // @note the long line is wrapped forcibly
   function wrapLines(aText, aTextType, aWrapLineLength) {
-    let charsForWrap;
+    let punctuation;
 
     switch (aTextType) {
       case kTextType.javascript:
-        charsForWrap = /[,:)&|=<>]/;
+        punctuation = /[,+-=<>&|?:]/;
         break;
       case kTextType.css:
-        charsForWrap = /[,:)]/;
+        punctuation = /[,>+~:]/;
         break;
     }
 
@@ -402,7 +402,7 @@ const Beautifier = (function() {
       let shouldWrap = false;
 
       while (text.length > aWrapLineLength) {
-        if (charsForWrap.test(text[index]) && text[index - 1] !== '\\') {
+        if (punctuation.test(text[index]) && text[index - 1] !== '\\') {
           shouldWrap = true;
         }
         else if (--index <= 0) {
