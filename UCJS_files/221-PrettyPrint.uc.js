@@ -120,7 +120,7 @@ const MenuHandler = (function() {
       let state = {
         filename: contentDocument.URL,
         type: getTextType(contentDocument),
-        text: getSourceText(contentDocument),
+        text: getTextContent(contentDocument),
         beautifierOptions: kBeautifierOptions
       };
 
@@ -501,12 +501,12 @@ const Beautifier = (function() {
 })();
 
 /**
- * Get a source text if the document contains a plain text only
+ * Get the text content in a plain text document
  *
  * @param {HTMLDocument} aDocument
  * @return {string|null}
  */
-function getSourceText(aDocument) {
+function getTextContent(aDocument) {
   let container = getTextContainer(aDocument);
 
   return container ? container.textContent : null;
