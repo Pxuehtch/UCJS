@@ -13,8 +13,8 @@
 // @usage access to functions through the global scope;
 // |window.ucjsUtil.XXX|
 
-// @note note the global property only in the main window (e.g. gBrowser) when
-// including in the other window
+// @note note the global property only in the main window (e.g. |gBrowser|)
+// when including in the other window
 
 
 const ucjsUtil = (function(window, undefined) {
@@ -80,10 +80,10 @@ const XPCOM = (function() {
   /**
    * Ensures access to the XPCOM module with the global property
    *
-   * @note applied to any window that is included this file |Util.uc.js|
+   * @note applied to any window that includes this file |Util.uc.js|
    */
   function ensureAccessToModules() {
-    // access to |window.Cc|,|window.Ci|,|window.Cu|
+    // access to the modules of |window.Components|
     [
       ['Cc', 'classes'],
       ['Ci', 'interfaces'],
@@ -192,6 +192,7 @@ const XPCOM = (function() {
 
 /**
  * Timer handler
+ *
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
  */
 const Timer = (function() {
@@ -292,6 +293,7 @@ const Timer = (function() {
 
 /**
  * Preferences handler
+ *
  * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/preferences/service.js
  */
 const Prefs = (function() {
@@ -378,16 +380,17 @@ function addEvent(aTarget, aType, aListener, aCapture) {
 
 /**
  * Gets a selected text under the cursor
+ *
  * @param aOption {hash}
  *   @key event {MouseEvent}
  *   @key charLen {integer}
  * @return {string}
  *
- * TODO: |event.rangeOffset| sometimes returns wrong value.
- * e.g. When a cursor is below the first row in <textarea>, it returns the same
- * value that is as if at the first row.
+ * TODO: |event.rangeOffset| sometimes returns a wrong value (e.g. it returns
+ * the same value as if at the first row when a cursor is on the lines below
+ * the first row in a <textarea>)
  * WORKAROUND: rescan ranges with the client coordinates instead of the range
- * offset.
+ * offset
  */
 function getSelectionAtCursor(aOption) {
   const kMaxCharLen = 150;
@@ -524,17 +527,19 @@ function trimText(aText, aMaxLength) {
 
 /**
  * Creates an element with the attributes
+ *
  * @param aTagOrNode {string|Element}
  *   {string}: set a <tagname>
  *   {Element}: set an <element> for setting the attributes
  * @param aAttribute {hash} [optional]
  *   set list of <attribute name>: <attribute value>
- *   an attribute will be ignored if the value is |null| or |undefined|
+ *   @note an attribute will be ignored if the value is |null| or |undefined|
  * @param aAttributeHandler {function} [optional]
  *   a function for a custom handling of attributes
  * @return {Element}
  *
  * @note use only for XUL element
+ *
  * TODO: handle the namespace of a tag/attribute
  */
 function createNode(aTagOrNode, aAttribute, aAttributeHandler) {
@@ -585,6 +590,7 @@ function getNodeByAnonid(aId, aContext) {
 
 /**
  * Gets the focused window
+ *
  * @return {Window}
  *   if in the main browser window, returns a content window (top or frame)
  */
@@ -990,6 +996,7 @@ function loadPage(aURL, aOption) {
 
 /**
  * Alternative |gBrowser.removeTab|
+ *
  * @see chrome://browser/content/tabbrowser.xml::removeTab
  */
 function removeTab(aTab, aOption) {
@@ -1012,6 +1019,7 @@ function removeTab(aTab, aOption) {
 
 /**
  * Alternative |gBrowser.removeAllTabsBut|
+ *
  * 1.does not warn against closing multiple tabs
  * 2.does not close blocked tabs
  *
@@ -1194,9 +1202,9 @@ function registerContentStyleSheet(aCSS, aOption) {
 }
 
 function normalizeCSS(aCSS) {
-  // @note You should put a 'half-width space' for the separator of;
-  // the descendant selector (e.g. h1 em{...})
-  // the shorthand properties (e.g. margin:1px 2px;)
+  // @note you should put a 'half-width space' for the separator of;
+  // 1.the descendant selector (e.g. h1 em{...})
+  // 2.the shorthand properties (e.g. margin:1px 2px;)
 
   return aCSS.trim().
     // put half-width spaces into one (maybe a necessary separator)
@@ -1209,6 +1217,7 @@ function normalizeCSS(aCSS) {
 
 /**
  * Query the Places database
+ *
  * @param aParam {hash}
  *   expression: {string} a SQL expression
  *   params: {hash} [optional] the binding parameters
@@ -1266,6 +1275,7 @@ function scanPlacesDB(aParam) {
 
 /**
  * Query the Places database asynchronously
+ *
  * @param aParam {hash}
  *   expression: {string} a SQL expression
  *   params: {hash} [optional] the binding parameters
@@ -1280,7 +1290,7 @@ function scanPlacesDB(aParam) {
  *   a object with a .cancel() method allowing to cancel the request
  *
  * TODO: use |createAsyncStatement|
- * I'm not sure why it doesn't work well.
+ * I'm not sure why it doesn't work well
  *
  * TODO: handlings on error and cancel
  */

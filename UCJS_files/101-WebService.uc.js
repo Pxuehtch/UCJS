@@ -102,7 +102,7 @@ const kPresets = [
  * %SCHEMELESS%, %sl% : without the URL scheme
  * %PARAMLESS%, %pl% : without the URL parameter
  *
- * @note aliases can be combined by '|'
+ * @note aliases can be combined by '|';
  * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
  * encoded (the multiple aliases is applied in the order of settings)
  */

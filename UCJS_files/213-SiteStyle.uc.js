@@ -496,9 +496,8 @@ const kSiteList = [
  * WORKAROUND: applies a script when the complete request URL equals the
  * document URL
  *
- * TODO: surely detect that a request in the same document is loaded
- *   e.g.
- *   - a next page from a link of the navigation bar of Google result
+ * TODO: surely detect that a request in the same document is loaded (e.g.
+ * a next page from a link of the navigation bar of Google result)
  * WORKAROUND: observes |about:document-onload-blocker| and delays execution
  * of a command
  */

@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name        PrettyPrint.uc.js
-// @description Prettify a source code text (JS/CSS) in the Scratchpad
+// @description Prettify a code text (JS/CSS) in the Scratchpad
 // @include     main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage creates a menuitem in the context menu of JS/CSS code
-// page
+// @usage creates a menuitem in the context menu of a plain text page of JS/CSS
 
 // @note a syntax error may occur due to line wrapping forced when you run
 // copy-and-paste the prettified output. see |WrapLines()|
@@ -44,8 +43,8 @@ const {
 /**
  * Text type constants
  *
- * @note this is used to set a beautifier method and set the syntax highlight
- * mode for the Scratchpad editor
+ * @note used to set a beautifier method and set the syntax highlight mode for
+ * the Scratchpad editor
  *
  * @note the values must be selected from the editor mode constants of the
  * module |SourceEditor|
@@ -62,7 +61,7 @@ const kTextType = {
  * Optional settings for beautifying
  *
  * @note the default values are used if absent
- * @see |Beautifier.fixupOptions|
+ * @see |Beautifier::kOptionList|
  */
 const kBeautifierOptions = {};
 
@@ -149,7 +148,7 @@ const Scratchpad = (function() {
    *   type {kTextType}
    *   text {string}
    *   beautifierOptions {hash} [optional]
-   *   @see |Beautifier.fixupOptions|
+   *   @see |Beautifier::kOptionList|
    *
    * TODO: a better check of parameters
    */
@@ -281,11 +280,6 @@ const Beautifier = (function() {
    * Fix up options
    *
    * @param aOptions {hash}
-   *   indentSize {number} [2]
-   *   indentChar {string} [' ']
-   *   wrapLineLength {number} [80]
-   *   extraLine {boolean} [true]
-   *   lastSemicolon {boolean} [true]
    *   @see |kOptionList|
    * @return {hash}
    */
@@ -329,12 +323,12 @@ const Beautifier = (function() {
   }
 
   /**
-   * Beautify a source text
+   * Beautify a code text
    *
    * @param aTextType {kTextType}
    * @param aText {string}
    * @param aOptions {hash}
-   *   @see |Beautifier.fixupOptions|
+   *   @see |kOptionList|
    * @return {string}
    */
   function execute(aTextType, aText, aOptions) {
@@ -436,11 +430,8 @@ const Beautifier = (function() {
   /**
    * JS beautifier
    *
-   * @note used the built-in JS beautifier
-   * @see https://github.com/mozilla/releases-mozilla-release/blob/master/browser/devtools/shared/Jsbeautify.jsm
-   *
-   * @note the built-in function is based on JS Beautifier beautify.js
-   * @note the newer version supports |wrap_line_length|
+   * @note calls the built-in function based on 'JS Beautifier'
+   * @note this built-in version does not support |wrap_line_length|
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
   function JSBeautify(aText, aOptions) {
@@ -468,10 +459,10 @@ const Beautifier = (function() {
   }
 
   /**
-   * JS Beautifier beautify-css.js [Apr 28, 2013]
+   * 'JS Beautifier' beautify-css.js [Apr 28, 2013]
    *
-   * TODO: version [Nov 22, 2013] seems to be incompatible with this user
-   * script, so, stop updating until I find what wrong
+   * TODO: the newer version [Nov 22, 2013] seems to be incompatible with this
+   * user script, so, stop updating until I find what wrong
    *
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify-css.js
    *
@@ -530,14 +521,14 @@ function getTextContainer(aDocument) {
     body.firstChild instanceof HTMLPreElement &&
     body.firstChild;
 
-  let text =
+  let textLength =
     pre &&
     pre.childNodes.length === 1 &&
     pre.firstChild instanceof Text &&
     pre.firstChild.length &&
     pre.firstChild;
 
-  return pre || null;
+  return pre : null;
 }
 
 /**

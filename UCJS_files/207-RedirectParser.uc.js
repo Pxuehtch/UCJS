@@ -410,8 +410,7 @@ function getParseListByScan(aSourceURL) {
 
 function splitIntoSchemes(aURL) {
   // splits a URL by '://'
-  // e.g.
-  // ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
+  // e.g. ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
   // [0][1][2] are surely not empty
   const delimiter = /((?:\:|%(?:25)?3A)(?:\/|%(?:25)?2F){2})/i;
 
