@@ -238,9 +238,12 @@ const Scratchpad = (function() {
  */
 const Beautifier = (function() {
   /**
-   * Option value setting
+   * Optional value setting
    */
   const kOptionList = {
+    /**
+     * Indentation size
+     */
     indentSize: {
       type: 'number',
       defaultValue: 2,
@@ -249,6 +252,9 @@ const Beautifier = (function() {
       }
     },
 
+    /**
+     * Indentation character [one character]
+     */
     indentChar: {
       type: 'string',
       defaultValue: ' ',
@@ -257,6 +263,13 @@ const Beautifier = (function() {
       }
     },
 
+    /**
+     * Maximum characters per line
+     *
+     * @note wraps lines at next opportunity after this length without breaking
+     * the code
+     * @see |wrapLines()|
+     */
     wrapLineLength: {
       type: 'number',
       defaultValue: 80,
@@ -265,11 +278,21 @@ const Beautifier = (function() {
       }
     },
 
+    /**
+     * Add an extra line after a block end
+     *
+     * @see |addExtraLine()|
+     */
     extraLine: {
       type: 'boolean',
       defaultValue: true
     },
 
+    /**
+     * Complement a semicolon after the last statement in a block
+     *
+     * @see |complementLastSemicolon()|
+     */
     lastSemicolon: {
       type: 'boolean',
       defaultValue: true
@@ -364,23 +387,45 @@ const Beautifier = (function() {
     return result;
   }
 
+  /**
+   * Remove original indents and empty lines, and fix the newline code
+   *
+   * @param aText {string}
+   * return {string}
+   */
   function normalizeText(aText) {
-    // remove original indents and empty lines and fix the newline code
     return aText.replace(/^\s+/gm, '').replace(/[\n\r]+/g, '\n');
   }
 
+  /**
+   * Add an extra line after '}' or '},' or '};' which is not the last one
+   * in a nesting block
+   *
+   * @param aText {string}
+   * return {string}
+   */
   function addExtraLine(aText) {
-    // add an extra line after '}'/'},'/'};' which is not the last one in
-    // nesting block
     return aText.replace(/(}[,;]?\n)(?!\s*})/g, '$1\n');
   }
 
+  /**
+   * Complement a semicolon after the last statement before '}' of a block end
+   *
+   * @param aText {string}
+   * return {string}
+   */
   function complementLastSemicolon(aText) {
-    // complement a semicolon after the last statement before '}'
     return aText.replace(/[^;}\s](?=\n\s*\})/g, '$&;');
   }
 
-  // @note the long line is wrapped forcibly
+  /**
+   * Wrap lines
+   *
+   * @param aText {string}
+   * @param aTextType {kTextType}
+   * @param aWrapLineLength {number}
+   * return {string}
+   */
   function wrapLines(aText, aTextType, aWrapLineLength) {
     let punctuation;
 
