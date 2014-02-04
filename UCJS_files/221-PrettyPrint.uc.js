@@ -512,6 +512,12 @@ function getSourceText(aDocument) {
   return container ? container.textContent : null;
 }
 
+/**
+ * Get a <PRE> element that contains the text content in a plain text document
+ *
+ * @param {HTMLDocument} aDocument
+ * @return {HTMLPreElement|null}
+ */
 function getTextContainer(aDocument) {
   let body = aDocument.body
 
@@ -525,10 +531,9 @@ function getTextContainer(aDocument) {
     pre &&
     pre.childNodes.length === 1 &&
     pre.firstChild instanceof Text &&
-    pre.firstChild.length &&
-    pre.firstChild;
+    pre.firstChild.length;
 
-  return pre : null;
+  return !!textLength ? pre : null;
 }
 
 /**
