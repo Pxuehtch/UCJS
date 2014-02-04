@@ -397,27 +397,28 @@ const Beautifier = (function() {
 
     return aText.replace(longLines, (text) => {
       let lines = [];
-      let last = aWrapLineLength - 1;
+      let index = aWrapLineLength - 1;
+      let indent = /^\s*/.exec(text)[0];
       let shouldWrap = false;
 
       while (text.length > aWrapLineLength) {
-        if (charsForWrap.test(text[last]) &&
-            !/[\\]/.test(text[last - 1])) {
+        if (charsForWrap.test(text[index]) && text[index - 1] !== '\\') {
           shouldWrap = true;
         }
-        else if (--last <= 0) {
+        else if (--index <= 0) {
           // force to wrap in max length
-          last = aWrapLineLength - 1;
+          index = aWrapLineLength - 1;
           shouldWrap = true;
         }
 
         if (shouldWrap) {
-          let indent = (/^\s+/.exec(text) || [''])[0];
+          // retrieve the wrapped line
+          lines.push(text.slice(0, index + 1));
 
-          lines.push(text.substring(0, last + 1));
+          // update text for the next line
+          text = indent + text.slice(index + 1).trim();
 
-          text = indent + text.substring(last + 1).trim();
-          last = aWrapLineLength - 1;
+          index = aWrapLineLength - 1;
           shouldWrap = false;
         }
       }
