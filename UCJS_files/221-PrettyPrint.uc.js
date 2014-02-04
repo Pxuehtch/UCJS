@@ -7,9 +7,6 @@
 // @require Util.uc.js, UI.uc.js
 // @usage creates a menuitem in the context menu of a plain text page of JS/CSS
 
-// @note a syntax error may occur due to line wrapping forced when you run
-// copy-and-paste the prettified output. see |WrapLines()|
-
 
 (function(window, undefined) {
 
@@ -279,6 +276,16 @@ const Beautifier = (function() {
     },
 
     /**
+     * Forcibly wrap lines over the |wrapLineLength| value
+     *
+     * @note a syntax error may occur when you run a prettified output
+     */
+    forceWrap: {
+      type: 'boolean',
+      defaultValue: true
+    },
+
+    /**
      * Add an extra line after a block end
      *
      * @see |addExtraLine()|
@@ -373,7 +380,7 @@ const Beautifier = (function() {
     let result = beautify(normalizeText(aText), aOptions);
 
     if (aOptions.wrapLineLength > 0) {
-      result = wrapLines(result, aTextType, aOptions.wrapLineLength);
+      result = wrapLines(result, aTextType, aOptions.wrapLineLength, aOptions);
     }
 
     if (aOptions.extraLine) {
@@ -424,9 +431,15 @@ const Beautifier = (function() {
    * @param aText {string}
    * @param aTextType {kTextType}
    * @param aWrapLineLength {number}
+   * @param aOptions {hash}
+   *   forceWrap {boolean}: the long line is wrapped forcibly
    * return {string}
    */
-  function wrapLines(aText, aTextType, aWrapLineLength) {
+  function wrapLines(aText, aTextType, aWrapLineLength, aOptions) {
+    let {
+      forceWrap
+    } = aOptions || {};
+
     let punctuation;
 
     switch (aTextType) {
@@ -451,9 +464,15 @@ const Beautifier = (function() {
           shouldWrap = true;
         }
         else if (--index <= 0) {
-          // force to wrap in max length
-          index = aWrapLineLength - 1;
-          shouldWrap = true;
+          if (forceWrap) {
+            // force to wrap in max length
+            index = aWrapLineLength - 1;
+            shouldWrap = true;
+          }
+          else {
+            // terminate without wrapping
+            break;
+          }
         }
 
         if (shouldWrap) {
@@ -467,6 +486,7 @@ const Beautifier = (function() {
           shouldWrap = false;
         }
       }
+
       lines.push(text);
 
       return lines.join('\n');
