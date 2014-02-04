@@ -461,6 +461,13 @@ const Beautifier = (function() {
 
       while (text.length > aWrapLineLength) {
         if (punctuation.test(text[index]) && text[index - 1] !== '\\') {
+          // join the following repetition after the tail
+          if (index === aWrapLineLength - 1) {
+            index +=
+              RegExp('^[' + text[index] + ']*').
+              exec(text.slice(index + 1))[0].length;
+          }
+
           shouldWrap = true;
         }
         else if (--index <= 0) {
@@ -487,6 +494,7 @@ const Beautifier = (function() {
         }
       }
 
+      // the rest of text
       lines.push(text);
 
       return lines.join('\n');
