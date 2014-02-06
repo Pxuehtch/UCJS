@@ -43,16 +43,16 @@ const {
  * @note used to set a beautifier method and set the syntax highlight mode for
  * the Scratchpad editor
  *
- * @note the values must be selected from the editor mode constants of the
- * module |SourceEditor|
  * @see https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/source-editor.jsm#Editor_mode_constants
  */
-const kTextType = {
-  // SourceEditor.MODES.JAVASCRIPT='js'
-  javascript: 'js',
-  // SourceEditor.MODES.CSS='css'
-  css: 'css'
-};
+const kTextType = (function() {
+  const {SourceEditor} =
+    getModule('resource://app/modules/devtools/sourceeditor/source-editor.jsm');
+  return {
+    javascript: SourceEditor.MODES.JAVASCRIPT,
+    css: SourceEditor.MODES.CSS
+  };
+})();
 
 /**
  * Optional settings for beautifying
