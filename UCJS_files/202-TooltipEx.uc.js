@@ -263,9 +263,9 @@ const TooltipHandler = {
 
     let box = this.mBox;
 
-    tips.forEach(function(tip) {
+    tips.forEach((tip) => {
       box.appendChild(this.buildTipItem(tip));
-    }.bind(this));
+    });
 
     return true;
   },

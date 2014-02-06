@@ -118,9 +118,9 @@ const mTabBarClickEvent = {
 
   set idledMouseDown(aVal) {
     if (aVal === true) {
-      this.mouseDownTimer = setTimeout(function() {
+      this.mouseDownTimer = setTimeout(() => {
         this.idledMouseDown = false;
-      }.bind(this), kClickThresholdTimer);
+      }, kClickThresholdTimer);
     }
     else if (aVal === false) {
       clearTimeout(this.mouseDownTimer);
@@ -134,11 +134,11 @@ const mTabBarClickEvent = {
 
   set idledMouseUp(aVal) {
     if (aVal === true) {
-      this.mouseUpTimer = setTimeout(function() {
+      this.mouseUpTimer = setTimeout(() => {
         this.idledMouseUp = false;
         this.doAction();
         this.handled = false;
-      }.bind(this), kClickThresholdTimer);
+      }, kClickThresholdTimer);
     }
     else if (aVal === false) {
       clearTimeout(this.mouseUpTimer);

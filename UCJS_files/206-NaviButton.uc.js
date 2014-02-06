@@ -246,10 +246,10 @@ const Tooltip = {
       referrer: referrer,
       disabled: disabled
     },
-    function(aData) {
+    (aData) => {
       this.build(aData);
       this.tooltip.openPopup(button, 'after_start', 0, 0, false, false);
-    }.bind(this));
+    });
   },
 
   build: function(aData) {
@@ -260,12 +260,12 @@ const Tooltip = {
     }
 
     ['neighbor', 'border', 'stop', 'referrer'].
-    forEach(function(key) {
+    forEach((key) => {
       let [title, URL] = this.formatData(aData, key);
 
       setLabel(title, {title: true, referrer: key === 'referrer'});
       setLabel(URL, {url: true});
-    }.bind(this));
+    });
 
     function setLabel(aValue, aType) {
       if (!aValue) {
@@ -352,10 +352,10 @@ const Tooltip = {
  */
 const History = {
   scan: function(aParam, aCallback) {
-    this.initData(aParam, function(aData) {
+    this.initData(aParam, (aData) => {
       this.updateData(aParam, aData);
       aCallback(aData);
-    }.bind(this));
+    });
   },
 
   initData: function(aParam, aCallback) {
@@ -380,12 +380,12 @@ const History = {
     };
 
     if (referrer) {
-      Referrer.fetchInfo(function(aInfo) {
+      Referrer.fetchInfo((aInfo) => {
         this.data.referrer.title = aInfo.title;
         this.data.referrer.URL = aInfo.URL;
 
         aCallback(this.data);
-      }.bind(this));
+      });
 
       return;
     }

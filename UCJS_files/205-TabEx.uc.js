@@ -584,9 +584,9 @@ const mTabSelector = {
 
     // repeatly observes a tab until its document completely loads while the
     // tab is selected
-    this.timer = setInterval(function(tab) {
+    this.timer = setInterval((tab) => {
       this.select(tab);
-    }.bind(this), kPref.SELECTED_DELAY, aTab);
+    }, kPref.SELECTED_DELAY, aTab);
   },
 
   clear: function() {
@@ -645,9 +645,9 @@ const mTabSuspender = {
 
   set: function(aTab, aDelay) {
     // wait until the default process for a background tab is done
-    let timer = setTimeout(function(tab) {
+    let timer = setTimeout((tab) => {
       this.stop(tab);
-    }.bind(this), aDelay, aTab);
+    }, aDelay, aTab);
 
     // the opened time of a tab is a unique value
     this.timers[mTab.data(aTab, 'open')] = timer;
@@ -815,9 +815,9 @@ const mSessionStore = {
       kID.OPENQUERY
     ];
 
-    savedAttributes.forEach(function(key) {
+    savedAttributes.forEach((key) => {
       this.SessionStore.persistTabAttribute(key);
-    }.bind(this));
+    });
   },
 
   getClosedTabList: function() {

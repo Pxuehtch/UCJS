@@ -88,11 +88,11 @@ function log(aMsg) {
       return;
     }
 
-    tooltipTimer = setTimeout(function() {
+    tooltipTimer = setTimeout(() => {
       tooltip.label = this.value;
       tooltip.maxWidth = this.boxObject.width;
       tooltip.openPopup(this, 'after_start', 0, 0, false, false);
-    }.bind(this), kTooltipShowDelay);
+    }, kTooltipShowDelay);
   };
 
   // @modified chrome://browser/content/urlbarBindings.xml::_hideURLTooltip
