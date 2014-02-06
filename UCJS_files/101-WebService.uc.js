@@ -37,7 +37,8 @@ function log(aMsg) {
  *     'open': opens tab
  *   name: {string} a preset name
  *   URL: {string} URL that opens
- *     pass the data by alias. see |AliasFixup|
+ *     pass the data by alias
+ *     @see |AliasFixup|
  *   form: {hash} [optional; only with type 'open']
  *     form: {XPath of <form>}
  *     input: {XPath of <input>}
@@ -215,8 +216,8 @@ const RequestHandler = (function() {
  * @param aParams {hash}
  *   name: {string} a preset name
  *   data: {string|number|[string|number]} [optional] the passed data
- *     @note Set the replaced values in the order in Array[] when a URL has
- *     multiple aliases.
+ *     @note set the replaced values in the order in Array[] when a URL has
+ *     multiple aliases
  *   tabOption: {hash} [optional] the option for a new tab
  *     @see |ucjsUtil::openTab|
  *     e.g. |tabOption: {inBackground: true}| opens tab in background

@@ -42,11 +42,12 @@ const {
 /**
  * String format for UI
  *
- * @usage see |format()|
+ * @usage
  * format('%str is %num', {str: 'foo', num: 3}); -> 'foo is 3'
  * the plural form of numbers is avalable;
  * '%key{None;A key;%key keys}' ->
  * key=0:'None', key=1:'A key', key=#(>=2):'# keys'
+ * @see |format()|
  */
 const kFormat = {
   GROUPS_MENU: 'Groups',
@@ -272,7 +273,7 @@ function initAllTabsMenu() {
   addEvent(alltabsPopup, 'popupshowing', onPopupShowing, true);
   addEvent(alltabsPopup, 'popuphidden', onPopupHidden, true);
 
-  // WORKAROUND: see |onCommand()|
+  // WORKAROUND: see |onCommand()| for detail
   addEvent(alltabsPopup, 'click', onCommand, false);
 
   let groupsMenu = alltabsPopup.insertBefore(

@@ -9,7 +9,7 @@
 // @note some about:config preferences are changed. see @pref
 
 // @note the styles are adjusted to the themes of my Fx and OS
-// see |setStyleSheet()|
+// @see |setStyleSheet()|
 
 
 (function(window, undefined) {

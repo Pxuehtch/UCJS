@@ -210,7 +210,7 @@ const kPageInfoType = [
 /**
  * Types of the prev/next navigation
  *
- * @note The values is displayed.
+ * @note the values is displayed
  */
 const kSiblingScanType = {
   preset:    'プリセット',
@@ -222,7 +222,7 @@ const kSiblingScanType = {
 /**
  * Strings format
  *
- * @note The values is displayed through |F()|.
+ * @note the values is displayed through |F()|
  */
 const kFormat = {
   // for the main categories
@@ -378,8 +378,8 @@ const MenuUI = (function() {
     }
   }
 
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
-  // separators.
+  // @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
+  // separators
   function setSeparators(aContextMenu, aReferenceNode) {
     if (aReferenceNode === undefined) {
       aReferenceNode = null;
@@ -673,7 +673,7 @@ const MenuUI = (function() {
   /**
    * Attributes formatter
    *
-   * @param aAttributes {array} see |NaviLink|
+   * @param aAttributes {array} see |NaviLink| for detail
    *   [['name', 'value'], ..., ['rel', ['value', 'value', ...]]]
    * @return {string}
    */
@@ -801,7 +801,7 @@ const PresetNavi = (function() {
 /**
  * Handler of the official navigation links according to the <rel> attribute
  *
- * @note [additional] Makes a list of the page information.
+ * @note [additional] makes a list of the page information
  */
 const NaviLink = (function() {
   const kFeedType = {
@@ -876,7 +876,7 @@ const NaviLink = (function() {
    * Retrieves the first data of the list for the type
    *
    * @param aType {string} |kNaviLinkType.type| or |kPageInfoType.type|
-   * @return {hash|null} see |addItem()|
+   * @return {hash|null} see |addItem()| for detail
    * {
    *   title:,
    *   attributes:,
@@ -908,7 +908,7 @@ const NaviLink = (function() {
    * @return {hash[]|null}
    * {
    *   type: |kNaviLinkType.type| or |kPageInfoType.type|
-   *   list: {<data>[]} see |getData()|
+   *   list: {<data>[]} see |getData()| for detail
    *   trimmed: {boolean} whether a list has been cut because of too much
    *     items
    * }
@@ -1281,7 +1281,7 @@ const SiblingNavi = (function() {
    * @return {hash|null}
    * {
    *   list: {<data>[]}
-   *   scanType: {string} see |kSiblingScanType|
+   *   scanType: {string} see |kSiblingScanType| for detail
    * }
    *
    * <data> has the proper members assigned to |kSiblingScanType|
@@ -1968,7 +1968,7 @@ function handleAttribute(aNode, aName, aValue) {
 /**
  * String formatter
  *
- * @param aFormat {string|string[]} see |kFormat|
+ * @param aFormat {string|string[]} see |kFormat| for detail
  * @param aReplacement {hash}
  * @return {string}
  */

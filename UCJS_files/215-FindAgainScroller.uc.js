@@ -468,8 +468,8 @@ function SkipInvisible() {
         if (
           style.visibility !== 'visible' ||
           style.display === 'none' ||
-          // TODO: Use a certain detection of the position hacks to hide the
-          // content.
+          // TODO: use a certain detection of the position hacks to hide the
+          // content
           (/absolute|fixed/.test(style.position) &&
            (parseInt(style.left, 10) < 0 ||
             parseInt(style.top, 10) < 0 ||
@@ -694,6 +694,7 @@ function SmoothScroll() {
     if (aValue < 0) {
       return Math.floor(aValue);
     }
+
     return 0;
   }
 

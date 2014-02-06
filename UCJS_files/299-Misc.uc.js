@@ -53,7 +53,8 @@ function log(aMsg) {
  * @note the setting for the themes of my Firefox and OS
  *
  * TODO: |chromemargin| is reset after returning from the print-preview
- * WORKAROUND: key command 'Alt+0'; see Overlay.uc.xul::ucjs_key_ResetMargin
+ * WORKAROUND: key command 'Alt+0'
+ * @see |Overlay.uc.xul::ucjs_key_ResetMargin|
  *
  * TODO: the window layout sometimes breaks after returning from the fullscreen
  */
@@ -199,9 +200,10 @@ function log(aMsg) {
 
   // Toggles TAB-key focusing behavior
 
-  // @pref see http://kb.mozillazine.org/Accessibility.tabfocus
+  // @pref
   // 1: Give focus to text fields only
   // 7: Give focus to focusable text fields, form elements, and links[default]
+  // @see http://kb.mozillazine.org/Accessibility.tabfocus
   const kPrefTabFocus = 'accessibility.tabfocus';
 
   let defaultTabFocus = getPref(kPrefTabFocus);
@@ -228,7 +230,7 @@ function log(aMsg) {
     oncommand: command
   }));
 
-  // Gives focus on the content area.
+  // gives focus on the content area
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_focusInContentArea',
     key: 'f',

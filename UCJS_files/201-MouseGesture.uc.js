@@ -17,9 +17,10 @@
  *
  * @note
  * -The gestures is only available within the inner frame of the content area,
- *  and the default width of the frame is 16px. see |inGestureArea()|
- * -The max number of signs(directions and wheel rotations) per gesture is 10.
- *  see |GestureManager()|
+ *  and the default width of the frame is 16px
+ *  @see |inGestureArea()|
+ * -The max number of signs(directions and wheel rotations) per gesture is 10
+ *  @see |GestureManager()|
  */
 
 

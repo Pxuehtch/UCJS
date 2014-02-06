@@ -38,7 +38,7 @@ function log(aMsg) {
 }
 
 /**
- * Context area
+ * Content area
  */
 const mContentArea = {
   get contextMenu() {
@@ -48,6 +48,7 @@ const mContentArea = {
 
 /**
  * Location bar
+ *
  * @see chrome://browser/content/urlbarBindings.xml
  */
 const mURLBar = {
@@ -62,6 +63,7 @@ const mURLBar = {
 
 /**
  * Find bar
+ *
  * @see chrome://global/content/bindings/findbar.xml
  */
 const mFindBar = {
@@ -219,6 +221,7 @@ const mStatusField = (function() {
     /**
      * Customize the default functions
      */
+
     // @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
     const $setOverLink = XULBrowserWindow.setOverLink;
     XULBrowserWindow.setOverLink =
@@ -403,6 +406,7 @@ const mStatusField = (function() {
 
 /**
  * Menuitems of a popup menu
+ *
  * @require TabEx.uc.js
  */
 const mMenuitem = {
@@ -410,8 +414,8 @@ const mMenuitem = {
     const kATTR_UNREADTAB = 'ucjs_ui_menuitem_unreadTab';
 
     if (window.ucjsTabEx) {
-      // @note We check the *read* state of a tab and then set the *unread*
-      // attribute of a menuitem.
+      // @note we check the *read* state of a tab and then set the *unread*
+      // attribute of a menuitem
       if (window.ucjsTabEx.tabState.read(aTab)) {
         aMenuitem.classList.remove(kATTR_UNREADTAB);
       }

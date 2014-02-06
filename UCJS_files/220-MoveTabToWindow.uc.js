@@ -261,20 +261,20 @@ function moveTabToOtherWindow(aTab, aWindow) {
   //   <binding id="tabbrowser-tabs">::
   //   <handler event="drop">
 
-  // Create a new tab in the other window.
+  // create a new tab in the other window
   let newTab = otherTabBrowser.addTab('about:blank');
   let newBrowser = otherTabBrowser.getBrowserForTab(newTab);
 
-  // Stop the about:blank load
+  // stop the about:blank load
   newBrowser.stop();
 
-  // Make sure it has a docshell
+  // make sure it has a docshell
   newBrowser.docShell;
 
-  // Swap the our tab with a new one, and then close it
+  // swap the our tab with a new one, and then close it
   otherTabBrowser.swapBrowsersAndCloseOther(newTab, aTab);
 
-  // Select the moved tab
+  // select the moved tab
   otherTabBrowser.selectedTab = newTab;
 
   aWindow.focus();

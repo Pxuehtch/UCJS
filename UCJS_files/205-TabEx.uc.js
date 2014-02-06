@@ -203,8 +203,8 @@ const mTab = (function () {
    * @param aValue {} [optional] a value to set
    *   null: *remove* a data
    * @return {}
-   *   get: a value that is requested if exists, null otherwise.
-   *   set: a value that is set, null if removed.
+   *   get: a value that is requested if exists, null otherwise
+   *   set: a value that is set, null if removed
    */
   function data(aTab, aKey, aValue) {
     let getInt = (value) => parseInt(value, 10);
@@ -768,7 +768,8 @@ const mSessionStore = {
     /**
      * we should wait until |persistTabAttribute| is ready for use;
      * 1.boot startup: observes |DOMContentLoaded| which fires on the document
-     * for the first selected tab at startup. see |mStartup::init|
+     * for the first selected tab at startup
+     * @see |mStartup::init|
      * 2.resume startup: observes the first |SSWindowStateReady|
      *
      * TODO: consider the proper method of these observations
@@ -1206,7 +1207,7 @@ function getFamilyTab(aBaseTab, aStatement) {
   }
   else /* position === 'farthest' */ {
     // get the farthest one of a sequence of tabs
-    // @note No implementation for the unsupported 'prev farthest'.
+    // @note no implementation for the unsupported 'prev farthest'
     for (let i = startPos, l = activeTabs.length; i < l; i++) {
       if (!isRelated(activeTabs[i])) {
         break;
@@ -1459,8 +1460,8 @@ function closeReadTabs() {
  *   forces to include this tab regardless of aStatement
  * @return {Array}
  *
- * TODO: |aForcedTab| is used only for a closing tab on |TabClose| event.
- * Make a smart handling
+ * TODO: |aForcedTab| is used only for a closing tab on |TabClose| event. make
+ * a smart handling
  */
 function getTabs(aStatement, aForcedTab) {
   let statement = StatementParser(aStatement, ',');
@@ -1636,9 +1637,9 @@ function customizeTabTooltip() {
       return;
     }
 
-    // WORKAROUND: The tooltip is delayed-shown after a tab under a cursor is
-    // removed (e.g. clicking the middle button of mouse on the tab). Then,
-    // the tooltip is useless.
+    // WORKAROUND: the tooltip is delayed-shown after a tab under a cursor is
+    // removed (e.g. clicking the middle button of mouse on the tab). so, this
+    // tooltip is useless
     if (!tab.linkedBrowser) {
       return;
     }

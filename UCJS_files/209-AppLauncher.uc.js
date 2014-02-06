@@ -279,7 +279,8 @@ const kString = {
 const kLinkExtension = {
   // for <openFile>
   // @note *SET NO VALUES* they will be automatically created with
-  // |kAppList.extensions|. see |FileExtUtil::updateFileExt()|
+  // |kAppList.extensions|
+  // @see |FileExtUtil::updateFileExt()|
   file:  [],
   // for <viewLinkSource>
   text:  ['css', 'js', 'txt', 'xml'],
@@ -443,8 +444,8 @@ function makeMainMenu(aAppList) {
 
   menu.appendChild(popup);
 
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
-  // separators.
+  // @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
+  // separators
   addSeparator(contentAreaContextMenu, kID.startSeparator);
   contentAreaContextMenu.appendChild(menu);
   addSeparator(contentAreaContextMenu, kID.endSeparator);

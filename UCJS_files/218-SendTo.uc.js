@@ -54,7 +54,7 @@ const kString = {
   /**
    * for the label text of a menuitem
    *
-   * @note Keep in sync with |kPreset[item].types|.
+   * @note keep in sync with |kPreset[item].types|
    */
   types: {
     'PAGE': 'ページ',
@@ -84,9 +84,10 @@ const kString = {
  *     'LINK': the link URL on a link
  *     'IMAGE': the image URL on an image
  *     'TEXT': the selected text on a selection
- *     @note Keep in sync with |kString.types|.
+ *     @note keep in sync with |kString.types|
  *   @key URL {string} a URL that opens
- *     pass the data by alias. see |AliasFixup|
+ *     pass the data by alias
+ *     @see |AliasFixup|
  *   @key URL {function} for the custom formattings
  *     @param aData {string} the raw data
  *   @key extensions {string[]} [optional]
@@ -349,7 +350,7 @@ function testExtension(aExtensions, aURL) {
   return targets.some((item) => aExtensions.indexOf(item) > -1);
 }
 
-// @note ucjsUI_manageContextMenuSeparators() manages the visibility of
+// @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
 // separators
 function setSeparators(aContextMenu, aReferenceNode) {
   if (aReferenceNode === undefined) {

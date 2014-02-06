@@ -153,8 +153,8 @@ function getClickManager(aElement) {
 
   return {
     clickedWindow: aElement.ownerDocument.defaultView,
-    // We handle <img> too, because clicking it is not reset the start point
-    // by default.
+    // we handle <img> too, because clicking it is not reset the start point
+    // by default
     clickedElement: (isEditable || isImage) && !isLinked ? aElement : null
   };
 }

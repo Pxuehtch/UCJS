@@ -213,8 +213,8 @@ function TextboxStyler() {
    * checks whether a target textbox is alive or not
    * @return {boolean}
    *
-   * TODO: this is a workaround for checking a dead object
-   * consider a legitimate method instead
+   * TODO: this is a workaround for checking a dead object. consider a
+   * legitimate method instead
    */
   function checkValidity() {
     try {
@@ -251,7 +251,7 @@ function TextboxStyler() {
     aEvent.stopPropagation();
 
     switch (aEvent.type) {
-      case 'keyup':
+      case 'keyup': {
         // TODO: use |aEvent.key| because |aEvent.keyCode| is deprecated
         // XXX: I want to avoid making row of key names if using |aEvent.key|
         // @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
@@ -263,6 +263,7 @@ function TextboxStyler() {
           StyleUpdater.set();
         }
         break;
+      }
       case 'compositionend':
         StyleUpdater.set();
         break;

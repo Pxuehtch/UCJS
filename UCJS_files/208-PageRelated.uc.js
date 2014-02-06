@@ -67,14 +67,15 @@ const kString = {
  *   @key name {string} a display name for menuitem
  *   @key URL
  *     {string} a URL string
- *       pass the page information by alias. see |AliasFixup|
+ *       pass the page information by alias
+ *       @see |AliasFixup|
  *     {function} for the custom formattings
  *       @param aPageInfo {hash}
  *         @key URL {string} a page URL
  *         @key title {string} a page title
  *       @return {string} a URL string
  *     @note a URL string can have aliases for the page information
- *       see |AliasFixup|
+ *     @see |AliasFixup|
  *
  * @note displayed in the declared order
  */
@@ -317,8 +318,8 @@ function getAvailableMenus() {
   return menus;
 }
 
-// @note ucjsUI_manageContextMenuSeparators() manages the visibility of
-// separators.
+// @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
+// separators
 function setSeparators(aContextMenu, aReferenceNode) {
   if (aReferenceNode === undefined) {
     aReferenceNode = null;

@@ -36,8 +36,8 @@ function log(aMsg) {
  *
  * @value {integer} millisecond
  *
- * @note The default click is deactivated at 'mouseup' in time, otherwise
- * activated.
+ * @note the default click is deactivated at 'mouseup' in time, otherwise
+ * activated
  */
 const kClickThresholdTimer = 200;
 
@@ -186,8 +186,8 @@ const mTabBarClickEvent = {
     let {target, originalTarget} = aEvent;
 
     // skip UI elements on the tab bar
-    // TODO: The probable elements 'menu*|toolbar*' are examined. More other
-    // items may be needed.
+    // TODO: the probable elements 'menu*|toolbar*' are examined. and more
+    // other items may be needed
     if (/^(?:menu|toolbar)/.test(originalTarget.localName)) {
       return null;
     }
@@ -228,8 +228,8 @@ const mTabBarClickEvent = {
     switch (true) {
       case (LDC && notTabs):
         // open home pages
-        // Shift: The current opened tabs are closed.
-        // Ctrl: Only the first of the multiple homepages is opened.
+        // Shift: the current opened tabs are closed
+        // Ctrl: only the first of the multiple homepages is opened
         window.ucjsUtil.
         openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
         break;

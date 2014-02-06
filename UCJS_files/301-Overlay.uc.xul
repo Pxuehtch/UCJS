@@ -62,7 +62,7 @@
 
   <!--
    @note workaround for the themes of my Firefox and OS
-   @see Misc.uc.js::setMainWindowStyle
+   @see |Misc.uc.js::setMainWindowStyle|
    -->
   <key id="ucjs_key_ResetMargin"
     key="0" modifiers="alt"
@@ -81,6 +81,7 @@
     oncommand="BrowserStop();"/>
 
   <!-- Error Console -->
+  <!-- TODO: remove this because the Error Console is deprecated -->
   <key id="ucjs_key_ErrorConsole"
     key="J" modifiers="control,alt,shift"
     oncommand="toJavaScriptConsole();"/>

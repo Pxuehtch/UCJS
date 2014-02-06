@@ -145,7 +145,7 @@ const Scratchpad = (function() {
    *   type {kTextType}
    *   text {string}
    *   beautifierOptions {hash} [optional]
-   *   @see |Beautifier::kOptionList|
+   *     @see |Beautifier::kOptionList|
    *
    * TODO: a better check of parameters
    */

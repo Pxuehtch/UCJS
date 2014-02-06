@@ -128,8 +128,8 @@ const mMenu = (function() {
     aBuilder(popup);
   }
 
-  // @note ucjsUI_manageContextMenuSeparators() manages the visibility of
-  // separators.
+  // @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
+  // separators
   function showContextMenu(aEvent) {
     if (aEvent.target !== contentAreaContextMenu) {
       return;
