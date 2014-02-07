@@ -42,15 +42,14 @@ const {
  *
  * @note used to set a beautifier method and set the syntax highlight mode for
  * the Scratchpad editor
- *
- * @see https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/source-editor.jsm#Editor_mode_constants
  */
 const kTextType = (function() {
-  const {SourceEditor} =
-    getModule('resource://app/modules/devtools/sourceeditor/source-editor.jsm');
+  // @see resource://app/modules/devtools/sourceeditor/editor.js
+  const Editor = getModule('devtools/sourceeditor/editor');
+
   return {
-    javascript: SourceEditor.MODES.JAVASCRIPT,
-    css: SourceEditor.MODES.CSS
+    js:  Editor.modes.js,
+    css: Editor.modes.css
   };
 })();
 
@@ -195,6 +194,7 @@ const Scratchpad = (function() {
    *   the new window object that holds Scratchpad
    */
   function open(aState) {
+    // @see chrome://browser/content/browser.js::Scratchpad
     let scratchpadWindow = window.Scratchpad.openScratchpad();
 
     if (!scratchpadWindow) {
@@ -211,8 +211,6 @@ const Scratchpad = (function() {
           aScratchpad.setFilename(aState.filename);
           aScratchpad.setText(aState.text);
           aScratchpad.editor.setMode(aState.type);
-          aScratchpad.editor.setCaretPosition(0);
-          scratchpadWindow.focus();
         }
       });
     };
@@ -365,7 +363,7 @@ const Beautifier = (function() {
     let beautify;
 
     switch (aTextType) {
-      case kTextType.javascript:
+      case kTextType.js:
         beautify = JSBeautify;
         break;
       case kTextType.css:
@@ -443,7 +441,7 @@ const Beautifier = (function() {
     let punctuation;
 
     switch (aTextType) {
-      case kTextType.javascript:
+      case kTextType.js:
         punctuation = /[,+-=<>&|?:]/;
         break;
       case kTextType.css:
@@ -621,7 +619,7 @@ function getTextType(aDocument) {
     case 'text/javascript':
     case 'application/javascript':
     case 'application/x-javascript':
-      return kTextType.javascript;
+      return kTextType.js;
     case 'text/css':
       return kTextType.css;
   }
