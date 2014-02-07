@@ -8,6 +8,11 @@
 
 // @see https://github.com/Griever/userChromeJS/blob/master/IME-Colors.uc.js
 
+// XXX: in Fx27, detecting the IME key down fails just after switching focus
+// WORKAROUND: press the key a few times, it works
+// TODO: the keyup event did not fire in that case. should I handle the keydown
+// event?
+
 
 (function(window, undefined) {
 
