@@ -193,11 +193,10 @@ function onCommand(aEvent) {
 }
 
 /**
- * Observer of new message added
+ * Observer of new messages added
  *
  * !!! WARNING !!!
- * take care of logging for debug in this observer. the output of message to
- * the console is created recursively
+ * use |logOnMessageAdded| to log in this observer
  * !!! WARNING !!!
  */
 function onMessageAdded(aEvent, aMessageNodes) {
@@ -208,6 +207,8 @@ function onMessageAdded(aEvent, aMessageNodes) {
   kItemList.forEach(({category, condition}) => {
     if (FilteredCategory[category]) {
       for (let node of aMessageNodes) {
+        /* logOnMessageAdded(node, 'message added'); */
+
         if ($X1('.' + condition, node)) {
           let filterKey = kID.filteredBy + category;
 
@@ -216,6 +217,18 @@ function onMessageAdded(aEvent, aMessageNodes) {
       }
     }
   });
+}
+
+function logOnMessageAdded(aMessageNode, aOutput) {
+  // TODO: ensure a unique id
+  const kLogMark = '(log in onMessageAdded)';
+
+  // prevent recursion with the browser console
+  if (aMessageNode.textContent.contains(kLogMark)) {
+    return;
+  }
+
+  log(aOutput + kLogMark);
 }
 
 /**
