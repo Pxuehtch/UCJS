@@ -175,11 +175,18 @@ const XPCOM = (function() {
   }
 
   function getModule(aResourceURL) {
-    let scope = {};
+    if (/^\w+:.+\.jsm?$/.test(aResourceURL)) {
+      let scope = {};
 
-    Cu.import(aResourceURL, scope);
+      Cu.import(aResourceURL, scope);
 
-    return scope;
+      return scope;
+    }
+
+    // devtools module loader
+    let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+
+    return loader.devtools.require(aResourceURL);
   }
 
   return {
