@@ -48,13 +48,13 @@ function log(aMsg) {
  *   @note used as the tooltip of a button
  * @param condition {string}
  *   XPath condition for filtering
- *   @note applied to an item of listview; |div.message|
+ *   @note applied to items of listview; |div.message|
  */
 const kItemList = [
   {
     category: 'Content',
     description: 'Log messages on the content window',
-    condition: '[.//a[starts-with(@href, "http")]]'
+    condition: '[.//a[starts-with(@href, "http") and not(contains(@class, "learn-more-link"))]]'
   }
 ];
 
