@@ -20,6 +20,9 @@
  * Imports
  */
 const {
+  XPCOM: {
+    getModule
+  },
   createNode: $E,
   getNodeById: $ID,
   getNodesByXPath: $X,
@@ -128,13 +131,31 @@ function makeUI() {
 }
 
 function setObserver() {
-  Services.obs.
-  addObserver(onMessageAdded, 'web-console-message-created', false);
+  function observeMessageAdded(aBrowserConsole) {
+    aBrowserConsole.ui.on('messages-added', onMessageAdded);
 
-  addEvent(window, 'unload', () => {
-    Services.obs.
-    removeObserver(onMessageAdded, 'web-console-message-created');
-  }, false);
+    addEvent(window, 'unload', () => {
+      aBrowserConsole.ui.off('messages-added', onMessageAdded);
+    }, false);
+  }
+
+  // @see resource://app/modules/devtools/webconsole/hudservice.js
+  let HUDService = getModule('devtools/webconsole/hudservice');
+
+  let browserConsole = HUDService.getBrowserConsole();
+
+  if (browserConsole) {
+    observeMessageAdded(browserConsole);
+    return;
+  }
+
+  Services.obs.addObserver(function observer() {
+    Services.obs.removeObserver(observer, 'web-console-created');
+
+    browserConsole = HUDService.getBrowserConsole();
+
+    observeMessageAdded(browserConsole);
+  }, 'web-console-created', false);
 }
 
 /**
@@ -179,22 +200,19 @@ function onCommand(aEvent) {
  * the console is created recursively
  * !!! WARNING !!!
  */
-function onMessageAdded(aSubject, aTopic, aData) {
-  let nodeID = aData;
-
-  if (!nodeID) {
+function onMessageAdded(aEvent, aMessageNodes) {
+  if (!aMessageNodes) {
     return;
   }
 
   kItemList.forEach(({category, condition}) => {
     if (FilteredCategory[category]) {
-      let xpath = 'id("' + nodeID + '")' + condition;
-      let node = $X1(xpath, UI.outputContainer);
+      for (let node of aMessageNodes) {
+        if ($X1('.' + condition, node)) {
+          let filterKey = kID.filteredBy + category;
 
-      if (node) {
-        let filterKey = kID.filteredBy + category;
-
-        node.classList.add(filterKey);
+          node.classList.add(filterKey);
+        }
       }
     }
   });
