@@ -43,7 +43,7 @@ function handleEvent(aEvent) {
   }
 
   let clickManager = getClickManager(aEvent.target),
-      fastFind = getFastFind();
+      fastFind = getFinder()._fastFind;
 
   if (!clickManager || !fastFind) {
     return;
@@ -79,7 +79,7 @@ function clearSelection(aEditable) {
 }
 
 function setSelection(aElement, aWindow) {
-  getFastFind().collapseSelection();
+  getFinder().removeSelection();
 
   let selection = aWindow.getSelection();
   let range = null;
@@ -104,7 +104,7 @@ function setFastFindFor(aWindow) {
     getInterface(Ci.nsIWebNavigation).
     QueryInterface(Ci.nsIDocShell);
 
-  getFastFind().setDocShell(docShell);
+  getFinder()._fastFind.setDocShell(docShell);
 }
 
 /**
@@ -160,10 +160,10 @@ function getClickManager(aElement) {
 }
 
 /**
- * Gets nsITypeAheadFind of the current browser
+ * Gets the finder of the current browser
  */
-function getFastFind() {
-  return gFindBar.browser.fastFind;
+function getFinder() {
+  return gBrowser.finder;
 }
 
 /**

@@ -59,21 +59,27 @@ const kPref = {
 };
 
 /**
- * Wrapper functions of |gFindBar|
+ * Helper of the finder
  *
- * @see chrome://global/content/bindings/findbar.xml
+ * @see resource://gre/modules/Finder.jsm
  */
 const TextFinder = {
+  get finder() {
+    return gBrowser.finder;
+  },
+
   get isResultFound() {
-    return gFindBar._foundEditable || gFindBar._currentWindow;
+    let {foundEditable, currentWindow} = this.finder._fastFind;
+
+    return foundEditable || currentWindow;
   },
 
   get selectionController() {
-    let editable = gFindBar._foundEditable;
+    let {foundEditable, currentWindow} = this.finder._fastFind;
 
-    if (editable) {
+    if (foundEditable) {
       try {
-        return editable.
+        return foundEditable.
           QueryInterface(Ci.nsIDOMNSEditableElement).
           editor.
           selectionController;
@@ -83,8 +89,8 @@ const TextFinder = {
       return null;
     }
 
-    if (gFindBar._currentWindow) {
-      return gFindBar._getSelectionController(gFindBar._currentWindow);
+    if (currentWindow) {
+      return this.finder._getSelectionController(currentWindow);
     }
     return null;
   }
