@@ -80,11 +80,11 @@ const UI = {
 };
 
 /**
- * List of the filtered categories
+ * List of the categories being filtered
  *
- * @note being initialized in |onCommand()|
+ * @note initialized in |onCommand()|
  */
-const FilteredCategory = {};
+let FilteredCategory = {};
 
 function ListFilter_init() {
   setStyleSheet();
@@ -108,6 +108,7 @@ function makeUI() {
   // TODO: the clear button has the last index in the console window on the
   // current version of Fx. so, if a new index has been appended after the
   // clear button in the future, we would need to re-index it
+  // @see chrome://browser/content/devtools/webconsole.xul::tabindex
   let lastTabIndex = clearButton.tabIndex;
 
   kItemList.forEach(({category, description}, i) => {
@@ -140,7 +141,7 @@ function setObserver() {
   }
 
   // @see resource://app/modules/devtools/webconsole/hudservice.js
-  let HUDService = getModule('devtools/webconsole/hudservice');
+  const HUDService = getModule('devtools/webconsole/hudservice');
 
   let browserConsole = HUDService.getBrowserConsole();
 
