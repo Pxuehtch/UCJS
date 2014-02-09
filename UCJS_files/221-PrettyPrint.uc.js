@@ -405,8 +405,8 @@ const Beautifier = (function() {
   }
 
   /**
-   * Add an extra line after '}' or '},' or '};' which is not the last one
-   * in a nesting block
+   * Add an extra line after '}' or '},' or '};' being not the last one in a
+   * nesting block
    *
    * @param aText {string}
    * return {string}
@@ -432,7 +432,8 @@ const Beautifier = (function() {
    * @param aTextType {kTextType}
    * @param aWrapLineLength {number}
    * @param aOptions {hash}
-   *   forceWrap {boolean}: the long line is wrapped forcibly
+   *   forceWrap {boolean}:
+   *     true: the long line without punctuation is forcibly wrapped
    * return {string}
    */
   function wrapLines(aText, aTextType, aWrapLineLength, aOptions) {
@@ -440,6 +441,8 @@ const Beautifier = (function() {
       forceWrap
     } = aOptions || {};
 
+    // a character, such as can wrap a line in the code syntax immediately
+    // behind
     let punctuation;
 
     switch (aTextType) {
@@ -447,7 +450,7 @@ const Beautifier = (function() {
         punctuation = /[,+-=<>&|?:]/;
         break;
       case kTextType.css:
-        punctuation = /[,>+~:]/;
+        punctuation = /[,>+~]/;
         break;
     }
 
