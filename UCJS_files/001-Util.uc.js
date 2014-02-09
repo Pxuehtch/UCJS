@@ -14,7 +14,7 @@
 // |window.ucjsUtil.XXX|
 
 // @note note the global property only in the main window (e.g. |gBrowser|)
-// when including in the other window
+// when being included in the other window
 
 
 const ucjsUtil = (function(window, undefined) {

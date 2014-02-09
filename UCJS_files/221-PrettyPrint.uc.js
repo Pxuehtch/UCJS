@@ -194,8 +194,10 @@ const Scratchpad = (function() {
    *   the new window object that holds Scratchpad
    */
   function open(aState) {
-    // @see chrome://browser/content/browser.js::Scratchpad
-    let scratchpadWindow = window.Scratchpad.openScratchpad();
+    const {ScratchpadManager} =
+      getModule('resource://app/modules/devtools/scratchpad-manager.jsm');
+
+    let scratchpadWindow = ScratchpadManager.openScratchpad();
 
     if (!scratchpadWindow) {
       return null;
