@@ -63,7 +63,7 @@ const URLUtil = (function() {
     const re = /%URIC%/g;
     const replacement = '\\w' + kURIC.mark;
 
-    return function(aStr) aStr.replace(re, replacement);
+    return (aStr) => aStr.replace(re, replacement);
   })();
 
   /**
@@ -278,12 +278,15 @@ function initRange(aRange, aSourceRange) {
 
 /**
  * hankaku / zenkaku converter for ASCII printable characters
+ *
  * 94 characters:
  * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
  * abcdefghijklmnopqrstuvwxyz{|}~
+ *
  * hankaku: 0x0021-0x007E
  * zenkaku: 0xFF01-0xFF5E
- * @note cf. http://taken.s101.xrea.com/blog/article.php?id=510
+ *
+ * @see http://taken.s101.xrea.com/blog/article.php?id=510
  */
 function han2zen(aChar) {
   let code = aChar.charCodeAt(0);

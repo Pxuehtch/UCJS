@@ -171,6 +171,7 @@ const XPCOM = (function() {
 
       aCID += '?' + params.join('&');
     }
+
     return aCID;
   }
 

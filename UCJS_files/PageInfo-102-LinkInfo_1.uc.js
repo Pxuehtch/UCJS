@@ -204,7 +204,10 @@ function grabLink(aNode) {
 
 // @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
 function getText(aNode, aDefault) {
-  let text = window.getValueText(aNode) || aNode.title || aDefault ||
+  let text =
+    window.getValueText(aNode) ||
+    aNode.title ||
+    aDefault ||
     kNote.error;
 
   return text.substr(0, 50);

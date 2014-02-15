@@ -105,7 +105,7 @@ const MenuHandler = (function() {
       getTextContainer(contentDocument);
 
     // @see chrome://browser/content/nsContextMenu.js::showItem
-    gContextMenu.showItem(kUI.prettifySourcePage.id, shouldShow);
+    window.gContextMenu.showItem(kUI.prettifySourcePage.id, shouldShow);
   }
 
   function onCommand(aEvent) {

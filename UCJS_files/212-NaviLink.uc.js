@@ -2024,7 +2024,6 @@ function trim(aText) {
   return '';
 }
 
-
 /**
  * Entry point
  */

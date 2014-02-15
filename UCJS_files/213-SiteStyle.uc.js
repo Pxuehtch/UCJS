@@ -55,7 +55,8 @@ const kUI = {
  *
  * @param {string} Tests with 'https?://(www.)?' + value
  * @param {regexp}
- * @note cf. http://d.hatena.ne.jp/edvakf/20090723/1248365807
+ *
+ * @see http://d.hatena.ne.jp/edvakf/20090723/1248365807
  */
 const kNoiseList = [
   // Hatena

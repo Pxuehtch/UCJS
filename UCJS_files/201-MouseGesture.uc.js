@@ -71,7 +71,6 @@ const kGestureSign = {
   quickShot: '!'
 };
 
-
 /**
  * Gestures setting
  *

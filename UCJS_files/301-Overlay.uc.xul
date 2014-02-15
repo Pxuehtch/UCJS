@@ -2,7 +2,6 @@
 
 <overlay id="ucjs_browser_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-
 <!--
 // ==UserScript==
 // @name        Overlay.uc.xul
@@ -13,17 +12,15 @@
 // @require [for command] Util.uc.js, UI.uc.js, Misc.uc.js
  -->
 
-
 <script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml">
 <![CDATA[
 (function() {
-  // some initializations
+  // optional initialization
 })();
 ]]>
 </script>
 
-
-<!-- command -->
+<!-- Command -->
 <commandset id="mainCommandSet">
   <!-- overwrite the default -->
   <command id="cmd_find"
@@ -42,8 +39,7 @@
     oncommand="window.openDialog('chrome://browser/content/search/engineManager.xul');"/>
 </commandset>
 
-
-<!-- key -->
+<!-- Key -->
 <keyset id="mainKeyset">
   <!--
    @note |window.moveTo(0,1)| for the themes of my Firefox and OS
@@ -93,8 +89,7 @@
     command="Tasks:InspectPage"/>
 </keyset>
 
-
-<!-- menu -->
+<!-- Menu -->
 <menupopup id="menu_FilePopup">
   <menu id="ucjs_menu_RestartApp"
     label="再起動" accesskey="R"
@@ -125,6 +120,5 @@
     position="1"
     command="ucjs_cmd_ToggleTabbar"/>
 </menupopup>
-
 
 </overlay>

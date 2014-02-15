@@ -83,7 +83,7 @@ const kPosType = {
 
   // after the far end tab of the sequential followings that are descendants of
   // the base tab from its next adjacent, or at the next adjacent
-  // @note The family relation is kept even if the base tab changes its
+  // @note the family relation is kept even if the base tab changes its
   // location
   NEXT_INCREMENT_DESCENDANT: 6,
 
@@ -329,7 +329,6 @@ const mTab = (function () {
       return manageFlagAttribute(aTab, kID.SUSPENDED);
     }
   };
-
 
   /**
    * Gets/Sets or Removes the key attribute of a tab
@@ -1014,7 +1013,6 @@ const mTabEvent = {
     moveTabTo(aTab, openPos, baseTab);
   }
 };
-
 
 /**
  * Tab handling functions
