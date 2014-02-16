@@ -212,12 +212,15 @@ function log(aMsg) {
     setPref(kPrefTabFocus, defaultTabFocus);
   }, false);
 
+  // WORKAROUND: use 'var' instead of 'let';
+  // in Fx27, a syntax error occurs when using 'let' in <oncommand>;
+  // SyntaxError: missing ; before statement browser.xul:1
   let command = '\
     (function() {\
-      let state = ucjsUtil.Prefs.get("%kPrefTabFocus%") !== 1 ? 1 : 7;\
+      var state = ucjsUtil.Prefs.get("%kPrefTabFocus%") !== 1 ? 1 : 7;\
       ucjsUtil.Prefs.set("%kPrefTabFocus%", state);\
       ucjsUI.StatusField.message("TAB focus: " + (state === 1 ?\
-      "text fields only." : "text fields, form elements, and links."));\
+      "text fields only" : "text fields, form elements, and links"));\
     })();\
   ';
 
