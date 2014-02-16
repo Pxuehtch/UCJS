@@ -219,13 +219,15 @@ function log(aMsg) {
       ucjsUI.StatusField.message("TAB focus: " + (state === 1 ?\
       "text fields only." : "text fields, form elements, and links."));\
     })();\
-  '
-  .replace(/\s+/g, ' ')
-  .replace(/%kPrefTabFocus%/g, kPrefTabFocus);
+  ';
+
+  command = command.
+  trim().replace(/\s+/g, ' ').
+  replace(/%kPrefTabFocus%/g, kPrefTabFocus);
 
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_toggleTabFocus',
-    key: 'f',
+    key: 'F',
     modifiers: 'shift,control,alt',
     oncommand: command
   }));
