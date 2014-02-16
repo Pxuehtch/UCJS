@@ -53,14 +53,6 @@ const XPCOM = (function() {
     'DocumentEncoder': {
       CID: '@mozilla.org/layout/documentEncoder;1',
       IID: 'nsIDocumentEncoder'
-    },
-    'Timer': {
-      CID: '@mozilla.org/timer;1',
-      IID: 'nsITimer'
-    },
-    'SupportsString': {
-      CID: '@mozilla.org/supports-string;1',
-      IID: 'nsISupportsString'
     }//,
   };
 
@@ -201,172 +193,20 @@ const XPCOM = (function() {
 /**
  * Timer handler
  *
- * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/timers.js
+ * @see resource://gre/modules/commonjs/sdk/timers.js
+ *
+ * TODO: get lazily
  */
-const Timer = (function() {
-  const {TYPE_ONE_SHOT, TYPE_REPEATING_SLACK} = Ci.nsITimer;
-
-  // instance constructor
-  const createTimer = XPCOM.$C('Timer');
-
-  let lastID = 0;
-  let timers = {};
-  let immediates = new Map();
-
-  function setTimer(aType, aCallback, aDelay, ...aParams) {
-    let id = ++lastID;
-    let timer = timers[id] = createTimer();
-
-    timer.initWithCallback({
-      notify: function notify() {
-        try {
-          if (aType === TYPE_ONE_SHOT) {
-            // delete the property that is not used anymore
-            delete timers[id];
-          }
-
-          aCallback.apply(null, aParams);
-        }
-        catch (ex) {}
-      }
-    }, aDelay || 0, aType);
-
-    return id;
-  }
-
-  function unsetTimer(aID) {
-    let timer = timers[aID];
-
-    // delete the property that is not used anymore
-    delete timers[aID];
-
-    if (timer) {
-      timer.cancel();
-    }
-  }
-
-  let dispatcher = () => {
-    dispatcher.scheduled = false;
-
-    let ids = [id for ([id] of immediates)];
-    for (let id of ids) {
-      let immediate = immediates.get(id);
-
-      if (immediate) {
-        immediates.delete(id);
-
-        try {
-          immediate();
-        }
-        catch (ex) {}
-      }
-    }
-  };
-
-  function setImmediate(aCallback, ...aParams) {
-    let id = ++lastID;
-
-    immediates.set(id, () => aCallback.apply(aCallback, aParams));
-
-    if (!dispatcher.scheduled) {
-      dispatcher.scheduled = true;
-
-      let currentThread = XPCOM.$S('tm').currentThread;
-      currentThread.dispatch(dispatcher, currentThread.DISPATCH_NORMAL);
-    }
-    return id;
-  }
-
-  function clearImmediate(aID) {
-    immediates.delete(aID);
-  }
-
-  // all timers are cleared out on unload
-  addEvent(window, 'unload', () => {
-    immediates.clear();
-    Object.keys(timers).forEach(unsetTimer);
-  }, false);
-
-  return {
-    setTimeout: setTimer.bind(null, TYPE_ONE_SHOT),
-    clearTimeout: unsetTimer,
-
-    setInterval: setTimer.bind(null, TYPE_REPEATING_SLACK),
-    clearInterval: unsetTimer,
-
-    setImmediate: setImmediate,
-    clearImmediate: clearImmediate
-  };
-})();
+const Timer = XPCOM.getModule('sdk/timers');
 
 /**
  * Preferences handler
  *
- * @see https://github.com/mozilla/addon-sdk/blob/master/lib/sdk/preferences/service.js
+ * @see resource://gre/modules/commonjs/sdk/preferences/service.js
+ *
+ * TODO: get lazily
  */
-const Prefs = (function() {
-  let getPrefs = () => XPCOM.$S('prefs');
-
-  function get(aKey, aDefaultValue) {
-    const prefs = getPrefs();
-
-    try {
-      switch (prefs.getPrefType(aKey)) {
-        case prefs.PREF_BOOL:
-          return prefs.getBoolPref(aKey);
-        case prefs.PREF_INT:
-          return prefs.getIntPref(aKey);
-        case prefs.PREF_STRING:
-          return prefs.getComplexValue(aKey, Ci.nsISupportsString).data;
-      }
-    }
-    catch (ex) {}
-
-    return aDefaultValue || null;
-  }
-
-  function set(aKey, aValue) {
-    const prefs = getPrefs();
-
-    if (aValue === null ||
-        aValue === undefined) {
-      log('invalid value to set to:\n' + aKey);
-      return;
-    }
-
-    if (get(aKey) === aValue) {
-      return;
-    }
-
-    switch (typeof aValue) {
-      case 'boolean':
-        prefs.setBoolPref(aKey, aValue);
-        break;
-      case 'number':
-        prefs.setIntPref(aKey, aValue);
-        break;
-      case 'string':
-        {
-          let string = XPCOM.$I('SupportsString');
-          string.data = aValue;
-          prefs.setComplexValue(aKey, Ci.nsISupportsString, string);
-        }
-        break;
-    }
-  }
-
-  function clear(aKey) {
-    const prefs = getPrefs();
-
-    prefs.clearUserPref(aKey);
-  }
-
-  return {
-    get: get,
-    set: set,
-    clear: clear
-  };
-})();
+const Prefs = XPCOM.getModule('sdk/preferences/service');
 
 /**
  * Functions for DOM handling
