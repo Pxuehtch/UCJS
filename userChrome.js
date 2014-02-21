@@ -6,6 +6,10 @@
 // @note exposes new property in the global scope;
 // |window[kSystem.loaderName]|
 
+// TODO: observe the chrome window that does not open alone (e.g. bookmark
+// edit panel, devtools panel). we are observing only the opening of the
+// sidebar for now
+
 // @see http://userchromejs.mozdev.org/
 // @see https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
 
