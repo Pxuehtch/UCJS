@@ -66,7 +66,9 @@ const kTextType = (function() {
  * the options in the recent version;
  * @see http://codemirror.net/doc/manual.html#config
  */
-const kEditorOptions = {};
+const kEditorOptions = {
+  lineWrapping: true
+};
 
 /**
  * Optional settings for the beautifier
@@ -300,31 +302,6 @@ const Beautifier = (function() {
     },
 
     /**
-     * Maximum characters per line
-     *
-     * @note wraps lines at next opportunity after this length without breaking
-     * the code
-     * @see |wrapLines()|
-     */
-    wrapLineLength: {
-      type: 'number',
-      defaultValue: 80,
-      validate: function(aValue) {
-        return (aValue < 0) ? 0 : aValue;
-      }
-    },
-
-    /**
-     * Forcibly wrap lines over the |wrapLineLength| value
-     *
-     * @note a syntax error may occur when you run a prettified output
-     */
-    forceWrap: {
-      type: 'boolean',
-      defaultValue: true
-    },
-
-    /**
      * Add an extra line after a block end
      *
      * @see |addExtraLine()|
@@ -418,10 +395,6 @@ const Beautifier = (function() {
 
     let result = beautify(aText, aOptions);
 
-    if (aOptions.wrapLineLength > 0) {
-      result = wrapLines(result, aTextType, aOptions.wrapLineLength, aOptions);
-    }
-
     if (aOptions.extraLine) {
       result = addExtraLine(result);
     }
@@ -455,89 +428,9 @@ const Beautifier = (function() {
   }
 
   /**
-   * Wrap lines
-   *
-   * @param aText {string}
-   * @param aTextType {kTextType}
-   * @param aWrapLineLength {number}
-   * @param aOptions {hash}
-   *   forceWrap {boolean}:
-   *     true: the long line without punctuation is forcibly wrapped
-   * return {string}
-   */
-  function wrapLines(aText, aTextType, aWrapLineLength, aOptions) {
-    let {
-      forceWrap
-    } = aOptions || {};
-
-    // a character, such as can wrap a line in the code syntax immediately
-    // behind
-    let punctuation;
-
-    switch (aTextType) {
-      case kTextType.js:
-        punctuation = /[,+-=<>&|?:]/;
-        break;
-      case kTextType.css:
-        punctuation = /[,>+~]/;
-        break;
-    }
-
-    let longLines = RegExp('^.{' + (aWrapLineLength + 1) + ',}$', 'gm');
-
-    return aText.replace(longLines, (text) => {
-      let lines = [];
-      let index = aWrapLineLength - 1;
-      let indent = /^\s*/.exec(text)[0];
-      let shouldWrap = false;
-
-      while (text.length > aWrapLineLength) {
-        if (punctuation.test(text[index]) && text[index - 1] !== '\\') {
-          // join the following repetition after the tail
-          if (index === aWrapLineLength - 1) {
-            index +=
-              RegExp('^[' + text[index] + ']*').
-              exec(text.slice(index + 1))[0].length;
-          }
-
-          shouldWrap = true;
-        }
-        else if (--index <= 0) {
-          if (forceWrap) {
-            // force to wrap in max length
-            index = aWrapLineLength - 1;
-            shouldWrap = true;
-          }
-          else {
-            // terminate without wrapping
-            break;
-          }
-        }
-
-        if (shouldWrap) {
-          // retrieve the wrapped line
-          lines.push(text.slice(0, index + 1));
-
-          // update text for the next line
-          text = indent + text.slice(index + 1).trim();
-
-          index = aWrapLineLength - 1;
-          shouldWrap = false;
-        }
-      }
-
-      // the rest of text
-      lines.push(text);
-
-      return lines.join('\n');
-    });
-  }
-
-  /**
    * JS beautifier
    *
    * @note calls the built-in function based on 'JS Beautifier'
-   * @note this built-in version does not support |wrap_line_length|
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
   function JSBeautify(aText, aOptions) {
