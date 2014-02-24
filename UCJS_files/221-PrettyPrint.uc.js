@@ -54,7 +54,22 @@ const kTextType = (function() {
 })();
 
 /**
- * Optional settings for beautifying
+ * Optional settings for the CodeMirror editor
+ *
+ * the initial settings;
+ * @see resource://app/modules/devtools/sourceeditor/editor.js::Editor
+ * @see chrome://browser/content/devtools/scratchpad.js::Scratchpad::onLoad
+ *
+ * the available options in the built-in version;
+ * @see chrome://browser/content/devtools/codemirror/codemirror.js::[OPTION DEFAULTS]
+ *
+ * the options in the recent version;
+ * @see http://codemirror.net/doc/manual.html#config
+ */
+const kEditorOptions = {};
+
+/**
+ * Optional settings for the beautifier
  *
  * @note the default values are used if absent
  * @see |Beautifier::kOptionList|
@@ -117,6 +132,7 @@ const MenuHandler = (function() {
         filename: contentDocument.URL,
         type: getTextType(contentDocument),
         text: getTextContent(contentDocument),
+        editorOptions: kEditorOptions,
         beautifierOptions: kBeautifierOptions
       };
 
@@ -143,13 +159,19 @@ const Scratchpad = (function() {
    *   filename {string}
    *   type {kTextType}
    *   text {string}
-   *   beautifierOptions {hash} [optional]
-   *     @see |Beautifier::kOptionList|
+   *   editorOptions {kEditorOptions} [optional]
+   *   beautifierOptions {kBeautifierOptions} [optional]
    *
    * TODO: a better check of parameters
    */
   function prettify(aState) {
-    let {filename, type, text, beautifierOptions} = aState || {};
+    let {
+      filename,
+      type,
+      text,
+      editorOptions,
+      beautifierOptions
+    } = aState || {};
 
     if (!type) {
       prompt('Error: unsupported text type');
@@ -174,7 +196,8 @@ const Scratchpad = (function() {
     let state = {
       filename: filename,
       type: type,
-      text: Beautifier.execute(type, text, beautifierOptions)
+      text: Beautifier.execute(type, text, beautifierOptions),
+      options: editorOptions
     };
 
     if (!open(state)) {
@@ -184,12 +207,13 @@ const Scratchpad = (function() {
   }
 
   /**
-   * Open the Scratchpad window and set a source text and the editor mode
+   * Open the Scratchpad window with an initial state
    *
    * @param {hash} aState
    *   filename {string}
    *   type {kTextType}
    *   text {string}
+   *   options {kEditorOptions}
    * @return {DOMWindow}
    *   the new window object that holds Scratchpad
    */
@@ -213,6 +237,21 @@ const Scratchpad = (function() {
           aScratchpad.setFilename(aState.filename);
           aScratchpad.setText(aState.text);
           aScratchpad.editor.setMode(aState.type);
+
+          /**
+           * WORKAROUND: extends the |setOption| function;
+           * |setOption| will be supported in Fx29
+           * @see https://bugzilla.mozilla.org/show_bug.cgi?id=951975
+           */
+          aScratchpad.editor.extend({
+            setOption: function({cm}, aKey, aValue) {
+              cm.setOption(aKey, aValue);
+            }
+          });
+
+          for (let [key, value] in Iterator(aState.options)) {
+            aScratchpad.editor.setOption(key, value);
+          }
         }
       });
     };
