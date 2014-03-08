@@ -643,7 +643,6 @@ const mTabSuspender = {
   timers: {},
 
   set: function(aTab, aDelay) {
-    // wait until the default process for a background tab is done
     let timer = setTimeout((tab) => {
       this.stop(tab);
     }, aDelay, aTab);
@@ -674,13 +673,20 @@ const mTabSuspender = {
     }
 
     let [browser, loadingURL] = this.getBrowserForTab(aTab);
-    let isBusy = aTab.hasAttribute('busy');
-    let isBlank = browser.currentURI.spec === 'about:blank';
 
-    // 1.a document in loading
-    // 2.a blank page when the default 'tabs on demand' works
-    if (loadingURL && (isBusy || isBlank)) {
-      mTab.state.suspended(aTab, true);
+    if (loadingURL) {
+      // a document in loading
+      let isBusy = aTab.hasAttribute('busy');
+
+      // a blank page when the default 'tabs on demand' works
+      let isBlank =
+        browser.currentURI.spec === 'about:blank' ||
+        (aTab.hasAttribute('pending') && isBusy);
+
+
+      if (isBusy || isBlank) {
+        mTab.state.suspended(aTab, true);
+      }
 
       if (isBusy) {
         browser.stop();
@@ -706,6 +712,7 @@ const mTabSuspender = {
     mTab.state.suspended(aTab, false);
 
     let [browser, loadingURL, query] = this.getBrowserForTab(aTab);
+
     if (loadingURL) {
       if (query) {
         // TODO: handle the POST data
