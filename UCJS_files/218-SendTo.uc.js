@@ -280,7 +280,7 @@ function getAvailableItems() {
       return;
     }
 
-    if (!onLink && !onImage && !onTextInput &&
+    if (!onLink && !onImage && !onTextInput && !selection &&
         types.indexOf('PAGE') > -1 &&
         /^https?:/.test(pageURL)) {
       items.push(makeItem('PAGE', pageURL, service));
