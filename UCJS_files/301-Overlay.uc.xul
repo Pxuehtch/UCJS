@@ -9,7 +9,7 @@
 // @include     main
 // ==/UserScript==
 
-// @require [for command] Util.uc.js, UI.uc.js, Misc.uc.js
+// @require [for command] Util.uc.js, UI.uc.js
  -->
 
 <script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml">
@@ -27,10 +27,10 @@
     oncommand="ucjsUI.FindBar.toggleFindbar();"/>
 
   <command id="ucjs_cmd_RestartApp"
-    oncommand="ucjsMisc.restartFx();"/>
+    oncommand="ucjsUtil.restartFx();"/>
 
   <command id="ucjs_cmd_RestartApp_PurgeCaches"
-    oncommand="ucjsMisc.restartFx({purgeCaches: true});"/>
+    oncommand="ucjsUtil.restartFx({purgeCaches: true});"/>
 
   <command id="ucjs_cmd_ToggleTabbar"
     oncommand="(function(el){el.collapsed=!el.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked',!el.collapsed);})(document.getElementById('TabsToolbar'));"/>

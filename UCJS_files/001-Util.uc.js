@@ -879,6 +879,22 @@ function removeAllTabsBut(aTab) {
 /**
  * Miscellaneous functions
  */
+function restartFx(aOption) {
+  let {purgeCaches} = aOption || {}
+
+  // @see chrome://global/content/globalOverlay.js::canQuitApplication
+  if (!window.canQuitApplication('restart')) {
+    return;
+  }
+
+  if (purgeCaches) {
+    XPCOM.$S('appinfo').invalidateCachesOnRestart();
+  }
+
+  XPCOM.$S('startup').
+    quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
+}
+
 function getWindowList(aType) {
   if (aType !== null) {
     aType = aType || 'navigator:browser';
@@ -1260,6 +1276,7 @@ return {
   removeTab: removeTab,
   removeAllTabsBut: removeAllTabsBut,
 
+  restartFx: restartFx,
   focusWindow: focusWindow,
   focusWindowAtIndex: focusWindowAtIndex,
   setGlobalStyleSheet: setGlobalStyleSheet,
