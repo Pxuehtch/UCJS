@@ -381,9 +381,13 @@ const mTabOpener = {
     ) {
       let newTab = $addTab.apply(this, arguments);
 
-      // when a tab is duplicated or undo-closed, its data will be restored
+      // not set the tab data when the resuming startup or a tab is
+      // duplicated/undo-closed since the data will be restored
       if (mSessionStore.isRestoring) {
-        mTab.state.restoring(newTab, true);
+        if (!mSessionStore.isResumeStartup) {
+          mTab.state.restoring(newTab, true);
+        }
+
         return newTab;
       }
 
@@ -801,10 +805,13 @@ const mSessionStore = {
         this.isRestoring = false;
 
         if (this.isResumeStartup) {
-          // delete the property that is not used anymore
-          delete this.isResumeStartup;
+          // reset the state of tabs after restored
+          mStartup.setupTabs();
 
           this.persistTabAttribute();
+
+          // delete the property that is not used anymore
+          delete this.isResumeStartup;
         }
         break;
       case 'DOMContentLoaded':
@@ -839,12 +846,18 @@ const mSessionStore = {
 /**
  * Startup tabs handler
  *
- * 1.the boot startup opens the startup tabs (e.g. homepages). Some pinned tabs
+ * 1.the boot startup opens the startup tabs (e.g. homepages). some pinned tabs
  * may be restored too
  * 2.the resume startup restores tabs
  */
 const mStartup = {
   init: function() {
+    // setup tabs after its data is restored when the resume startup
+    // @see |mSessionStore|
+    if (mSessionStore.isResumeStartup) {
+      return;
+    }
+
     /**
      * execute |setupTabs| just after all tabs open
      *
@@ -934,8 +947,9 @@ const mTabEvent = {
   },
 
   onTabSelect: function(aTab) {
-    // handle a duplicated/undo-closed tab in |onSSTabRestored|
-    // pass a startup restored tab
+    // 1.do not pass a duplicated/undo-closed tab. handle it in
+    // |onSSTabRestored|
+    // 2.pass a startup restored tab
     if (mTab.state.restoring(aTab)) {
       return;
     }
@@ -971,8 +985,8 @@ const mTabEvent = {
   },
 
   onSSTabRestored: function(aTab) {
-    // handle a duplicated/undo-closed tab
-    // do not pass a startup restored tab
+    // 1.pass a duplicated/undo-closed tab
+    // 2.do not pass a startup restored tab. it is its own place already
     if (!mTab.state.restoring(aTab)) {
       return;
     }
