@@ -75,29 +75,31 @@ const kString = {
 /**
  * Preset list
  *
- * @value {hash[]}
- *   @key label {string} a display name for menuitem
- *     %TYPE% is replaced into |kString.types|
- *   @key types {string[]}
- *     the passed data and case of showing the menuitem
- *     'PAGE': the page URL not on the following cases
- *     'LINK': the link URL on a link
- *     'IMAGE': the image URL on an image
- *     'TEXT': the selected text on a selection
- *     @note keep in sync with |kString.types|
- *   @key URL {string} a URL that opens
- *     pass the data by alias
- *     @see |AliasFixup|
- *   @key URL {function} for the custom formattings
- *     @param aData {string} the raw data
- *   @key extensions {string[]} [optional]
- *     specify the file extensions for 'LINK' type
- *   @key command {function} [optional] a command that is executed at showing
- *   the menuitem
- *     @param aParams {hash}
- *       @key menuitem {Element}
- *       @key data {string}
- *   @key disabled {boolean} [optional]
+ * @key label {string}
+ *   a display name for menuitem
+ *   @note %TYPE% is replaced into |kString.types|
+ * @key types {string[]}
+ *   the passed data and case of showing the menuitem
+ *   'PAGE' - the page URL not on the following cases
+ *   'LINK' - the link URL on a link
+ *   'IMAGE' - the image URL on an image
+ *   'TEXT' - the selected text on a selection
+ *   @note keep in sync with |kString.types|
+ * @key URL {string}
+ *   a URL that opens
+ *   @note pass the data by alias
+ *   @see |AliasFixup|
+ * @key URL {function}
+ *   a function handle for the custom formatting
+ *   @param aData {string} the raw data
+ * @key extensions {string[]} [optional]
+ *   specify the file extensions for 'LINK' type
+ * @key command {function} [optional]
+ *   a command that is executed at showing the menuitem
+ *   @param aParams {hash}
+ *     @key menuitem {Element}
+ *     @key data {string}
+ * @key disabled {boolean} [optional]
  */
 const kPreset = [
   {
@@ -136,12 +138,13 @@ const kPreset = [
       }
 
       window.ucjsWebService.get({
-        name: 'HatenaBookmarkCount',
+        name: 'HatenaBookmarkCounter',
         data: data,
-        callback: function(aResponse) {
-          if (aResponse !== null) {
-            updateLabel(aResponse);
-          }
+        onLoad: function(aResponseText) {
+          updateLabel(aResponseText);
+        },
+        onError: function() {
+          updateLabel('error');
         }
       });
     }

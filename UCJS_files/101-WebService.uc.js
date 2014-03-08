@@ -19,6 +19,9 @@ const ucjsWebService = (function(window, undefined) {
  * Imports
  */
 const {
+  XPCOM: {
+    getModule
+  },
   getFirstNodeByXPath: $X1,
   openTab
 } = window.ucjsUtil;
@@ -33,31 +36,30 @@ function log(aMsg) {
  *
  * @value {hash[]}
  *   type: {string}
- *     'get': requests data
- *     'open': opens tab
- *   name: {string} a preset name
- *   URL: {string} URL that opens
- *     pass the data by alias
+ *     'get' - requests data
+ *     'open' - opens tab
+ *   name: {string}
+ *     a preset name
+ *   URL: {string}
+ *     URL that opens
+ *     @note pass the data by alias
  *     @see |AliasFixup|
  *   form: {hash} [optional; only with type 'open']
  *     form: {XPath of <form>}
  *     input: {XPath of <input>}
- *   parse: {function} [optional; only with type 'get'] parses the response
- *   from HTTP request
- *     @param aValue {string} a response text of request
- *     @param aStatus {number} a response status of request
+ *   parse: {function} [optional; only with type 'get']
+ *     functions to parse the response text when the load is complete
+ *     @param aResponseText {string}
+ *     @param aXHR {nsIXMLHttpRequest}
  */
 const kPresets = [
   {
     type: 'get',
-    name: 'HatenaBookmarkCount',
+    name: 'HatenaBookmarkCounter',
     // @see http://developer.hatena.ne.jp/ja/documents/bookmark/apis/getcount
     URL: 'http://api.b.st-hatena.com/entry.count?url=%ENC%',
-    parse: function(aValue, aStatus) {
-      if (aStatus === 200) {
-        return aValue || 0;
-      }
-      return null;
+    parse: function(aResponseText) {
+      return aResponseText || 0;
     }
   },
   {
@@ -178,30 +180,14 @@ const RequestHandler = (function() {
     }
   };
 
-  function request(aURL, aFunc) {
-    let xhr = new XMLHttpRequest();
-
-    xhr.open('GET', aURL, true);
-
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        try {
-          aFunc(xhr.responseText, xhr.status);
-        }
-        catch (ex) {
-          // do nothing
-        }
-        finally {
-          xhr.onreadystatechange = null;
-          xhr = null;
-        }
-      }
-    };
-
+  function request(aURL, aOption) {
     let cooldownTime = RequestTime.update(aURL);
 
+    // TODO: implement the canceller
     setTimeout(() => {
-      xhr.send(null);
+      let {httpRequest} = getModule('resource://gre/modules/Http.jsm');
+
+      httpRequest(aURL, aOption);
     }, cooldownTime);
   }
 
@@ -214,11 +200,14 @@ const RequestHandler = (function() {
  * Opens a new tab with the service
  *
  * @param aParams {hash}
- *   name: {string} a preset name
- *   data: {string|number|[string|number]} [optional] the passed data
+ *   name: {string}
+ *     a preset name
+ *   data: {string|number|[string|number]} [optional]
+ *     data to complete the URL of the preset
  *     @note set the replaced values in the order in Array[] when a URL has
  *     multiple aliases
- *   tabOption: {hash} [optional] the option for a new tab
+ *   tabOption: {hash} [optional]
+ *     options for a new tab
  *     @see |ucjsUtil::openTab|
  *     e.g. |tabOption: {inBackground: true}| opens tab in background
  *
@@ -247,12 +236,21 @@ function open(aParams) {
  * Gets the response of request to the service
  *
  * @param aParams {hash}
- *   name: {string} a preset name
- *   data: {string|number|[string|number]} [optional] the passed data
- *     @note set the replaced values in the order in Array[] when a URL has
+ *   name: {string}
+ *     a preset name
+ *   data: {string|number|[string|number]} [optional]
+ *     data to complete the URL of the preset
+ *     @note set the replaced values in the order in Array[] when the URL has
  *     multiple aliases
- *   callback: {function} a method to handle a response value
- *     @param response {string} a response text of request
+ *   onLoad: {function}
+ *     a function handle to call when the load is complete
+ *     @param aResponseText {string}
+ *     @param aXHR {nsIXMLHttpRequest}
+ *   onError: {function} [optional]
+ *     a function handle to call when an error occcurs
+ *     @param aErrorText {string}
+ *     @param aResponseText {string}
+ *     @param aXHR {nsIXMLHttpRequest}
  *
  * @usage window.ucjsWebService.get(aParams);
  */
@@ -263,16 +261,24 @@ function get(aParams) {
     return;
   }
 
-  RequestHandler.request(
-    result.URL,
-    (response, status) => {
+  let options = {
+    onLoad: function(aResponseText, aXHR) {
       if (result.parse) {
-        response = result.parse(response, status);
+        aResponseText = result.parse(aResponseText, aXHR);
       }
 
-      result.callback(response);
+      if (result.onLoad) {
+        result.onLoad(aResponseText, aXHR);
+      }
+    },
+    onError: function(aErrorText, aResponseText, aXHR) {
+      if (result.onError) {
+        result.onError(aErrorText, aResponseText, aXHR);
+      }
     }
-  );
+  };
+
+  RequestHandler.request(result.URL, options);
 }
 
 function getResult(aParams, aType) {
