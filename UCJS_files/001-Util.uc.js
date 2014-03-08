@@ -716,11 +716,6 @@ function openTabs(aURLs, aOption) {
     doReplace
   } = aOption || {};
 
-  // delete the option that is useless for the following functions
-  if (aOption) {
-    delete aOption.doReplace;
-  }
-
   let firstTabAdded;
 
   if (doReplace) {
@@ -749,11 +744,6 @@ function openURL(aURL, aOption) {
     inTab
   } = aOption || {};
 
-  // delete the option that is useless for the following functions
-  if (aOption) {
-    delete aOption.inTab;
-  }
-
   if (inTab) {
     return openTab(aURL, aOption);
   }
@@ -773,13 +763,6 @@ function openTab(aURL, aOption) {
     trustURL,
     allowImageData
   } = aOption || {};
-
-  // delete the option that is useless for the following functions
-  if (aOption) {
-    delete aOption.skipSecurityCheck;
-    delete aOption.trustURL;
-    delete aOption.allowImageData;
-  }
 
   if (!skipSecurityCheck) {
     checkSecurity(URL, {
