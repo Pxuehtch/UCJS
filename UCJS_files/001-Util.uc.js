@@ -1194,21 +1194,36 @@ function asyncScanPlacesDB(aParam) {
 /**
  * Log function
  */
-function logMessage(aTarget, aMessage) {
-  if (Array.isArray(aMessage)) {
-    aMessage = aMessage.join('\n');
+function logMessage(aTargetName, aMessage) {
+  const kMessageFormat = '[%target%]\n%message%';
+  const kErrorFormat = '%name%: %message%\n%stack%';
+
+  if (!Array.isArray(aMessage)) {
+    aMessage = [aMessage];
   }
 
-  const kMessageFormat = '[%target%]\n%message%';
-  let formatMessage = kMessageFormat.
-    replace('%target%', aTarget).
-    replace('%message%', aMessage);
+  const {CommonUtils} =
+    XPCOM.getModule('resource://services-common/utils.js');
+
+  let messages = aMessage.map((value) => {
+    if (value instanceof Error) {
+      return kErrorFormat.
+        replace('%name%', value.name).
+        replace('%message%', value.message || '').
+        replace('%stack%', CommonUtils.stackTrace(value));
+    }
+    return value;
+  });
+
+  let output = kMessageFormat.
+    replace('%target%', aTargetName).
+    replace('%message%', messages.join('\n'));
 
   // output to the browser console
   // @note no outputs to the web console
-  XPCOM.$S('console').logStringMessage(formatMessage);
+  XPCOM.$S('console').logStringMessage(output);
 
-  return formatMessage;
+  return output;
 }
 
 function log(aMessage) {
