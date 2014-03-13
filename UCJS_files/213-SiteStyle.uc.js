@@ -414,9 +414,9 @@ const kSiteList = [
     quickScript: function(aDocument) {
       let location = aDocument.location;
 
-      // WORKAROUND: changes a hash for the start time of a video jumped
-      // from 'Play in Youtube.com' of an embedded player, so that we can pause
-      // at the time
+      // WORKAROUND: changes a parameter key for the start time of a video page
+      // that comes from 'Play in Youtube.com' of an embedded player so that we
+      // can pause at that time
       if (/#at=\d+/.test(location.href)) {
         location.replace(location.href.replace('#at=', '#t='));
         return false;
@@ -493,14 +493,16 @@ const kSiteList = [
  * @return {hash}
  *   @member init {function}
  *
- * TODO: surely detect that the document is loaded
+ * TODO: surely detect when the document is loaded
  * WORKAROUND: applies a script when the complete request URL equals the
  * document URL
  *
- * TODO: surely detect that a request in the same document is loaded (e.g.
+ * TODO: surely detect when a request in the same document is loaded (e.g.
  * a next page from a link of the navigation bar of Google result)
  * WORKAROUND: observes |about:document-onload-blocker| and delays execution
  * of a command
+ *
+ * TODO: surely detect the result page from the Google top page
  */
 const PageObserver = (function() {
   const {

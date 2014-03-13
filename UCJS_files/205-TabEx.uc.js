@@ -986,7 +986,7 @@ const mTabEvent = {
 
   onSSTabRestored: function(aTab) {
     // 1.pass a duplicated/undo-closed tab
-    // 2.do not pass a startup restored tab. it is its own place already
+    // 2.do not pass a startup restored tab. no relocation needed
     if (!mTab.state.restoring(aTab)) {
       return;
     }
