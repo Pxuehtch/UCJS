@@ -19,9 +19,6 @@
  * Imports
  */
 const {
-  XPCOM: {
-    getModule
-  },
   Prefs: {
     get: getPref,
     set: setPref
@@ -30,8 +27,7 @@ const {
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
   addEvent,
-  setChromeStyleSheet: setChromeCSS,
-  scanPlacesDB
+  setChromeStyleSheet: setChromeCSS
 } = window.ucjsUtil;
 
 function setGlobalAgentCSS(aCSS) {
