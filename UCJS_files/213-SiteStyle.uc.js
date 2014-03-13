@@ -51,130 +51,112 @@ const kUI = {
 };
 
 /**
- * List of noisy URL of the search results
+ * List of noisy URLs in the search results of the web search engine
  *
- * @param {string} Tests with 'https?://(www.)?' + value
- * @param {regexp}
+ * @value {string|regexp}
+ *   @see |URLFilter| for filter rules
  *
  * @see http://d.hatena.ne.jp/edvakf/20090723/1248365807
  */
 const kNoiseList = [
   // Hatena
-  'a.hatena.ne.jp',
-  'b.hatena.ne.jp',
-  'd.hatena.ne.jp/keyword',
-  'k.hatena.ne.jp/keywordblog',
-  'q.hatena.ne.jp',
+  '|a.hatena.ne.jp/*',
+  '|b.hatena.ne.jp/*',
+  '|d.hatena.ne.jp/keyword/*',
+  '|q.hatena.ne.jp/*',
+
+  // Google
+  '|google.com/buzz/*',
+
   // Yahoo
-  'chiebukuro.yahoo.co.jp',
-  'bookmarks.yahoo.co.jp',
-  'psearch.yahoo.co.jp',
-  // misc.
-  '1470.net',
-  'basefeed.net',
-  'bookmark.fc2.com',
-  'buzz.goo.ne.jp',
-  'buzzurl.jp',
-  'ceron.jp',
-  'clip.livedoor.com',
-  'clip.nifty.com',
-  'del.icio.us',
-  'delicious.com',
-  'faves.com',
-  'favolog.org',
-  'favotter.net',
-  'friendfeed.com',
-  'hiwihhi.com',
-  'i.pecipeci.net',
-  'knowledge.livedoor.com',
-  'mark.jolt.jp',
-  'matope.com',
-  'newsing.jp',
-  'pookmark.jp',
-  'script-scrap.com',
-  'swik.net',
-  'synclick.jp',
-  'tech.newzia.jp',
-  'twib.jp',
-  'tweetmeme.com',
-  'tyudon.com/blog',
-  'atwiki.jp',
-  'blogpet.net/bookmark',
-  'choix.jp',
-  'cssclip.com',
-  'google.com/buzz',
-  'marici.com',
-  'movook.com',
-  'soukyu-mugen.com',
-  'tarikin.net',
-  'twitmunin.com',
-  'wadaitter.com',
-  'wdclip.com',
-  /^http:\/\/(?:[\w-]+\.)*brothersoft\./,
-  /^http:\/\/(?:[\w-]+\.)*clipp\.in/,
-  /^http:\/\/(?:[\w-]+\.)*designiddatabase\./,
-  /^http:\/\/(?:[\w-]+\.)*designlinkdatabase\./,
-  /^http:\/\/(?:[\w-]+\.)*designrecipedatabase\./,
-  /^http:\/\/(?:[\w-]+\.)*pastebin\./,
-  /^http:\/\/(?:[\w-]+\.)*pg\-feed\./,
-  /^http:\/\/(?:[\w-]+\.)*recipester\./,
-  /^http:\/\/(?:[\w-]+\.)*rightclicksright\./,
-  /^http:\/\/(?:[\w-]+\.)*softpedia./,
-  /^http:\/\/(?:[\w-]+\.)*softonic\./,
-  /^http:\/\/(?:[\w-]+\.)*thumbnailcloud\./,
-  /^http:\/\/(?:[\w-]+\.)*tweetbuzz\./,
+  '||chiebukuro.yahoo.co.jp/*',
+
   // OKWave Q&A
-  'nandemo.',
-  'otasuke.',
-  'qa.',
-  'qanda.',
-  'questionbox.',
-  'mag2qa.com',
-  'ziddy.japan.zdnet.com',
-  /^http:\/\/(?:[\w-]+\.)*okwave\.jp/,
+  '|mag2qa.com',
+  '|nandemo.',
+  '|otasuke.',
+  '|qa.',
+  '|qanda.',
+  '|questionbox.',
+  '|ziddy.japan.zdnet.com',
   /^http:\/\/oshiete\d?\./,
   /^http:\/\/soudan\d?\./,
-  // proxy
-  '24hr-computersecurity.com',
-  'anticensure.com',
-  'autobypass.com',
-  'myproxysite.org',
-  'proxy.citec.us',
-  'proxydock.com',
-  'qqclip.appspot.com',
-  'rightpaths.com',
-  'safesurf.foxrot.com',
-  'takewii.com',
-  'tehvu.ir',
-  'unblockweb.us',
+
   // shopping
-  '3mori.com',
-  'e-shops.jp',
-  'r.tabelog.com',
-  /^http:\/\/(?:[\w-]+\.)*amazon\.(?:com|co\.jp)/,
-  /^http:\/\/(?:[\w-]+\.)*kakaku\.(?:com|co\.jp)/,
-  /^http:\/\/(?:[\w-]+\.)*rakuten\.(?:com|co\.jp)/
-  //,
+  '|addons.mozilla.tld/*',
+  '|chrome.google.com/*',
+  '|itunes.apple.com/*',
+  '|play.google.com/*',
+  '||amazon.tld/*',
+  '||kakaku.tld/*',
+  '||rakuten.tld/*',
+
+  // proxy
+  '||anticensure.com',
+  '||autobypass.com',
+  '||proxydock.com',
+  '||qqclip.appspot.com',
+  '||rightpaths.com',
+  '||tehvu.ir',
+
+  // misc.
+  '||1470.net',
+  '||atwiki.jp',
+  '||basefeed.net',
+  '||brothersoft.tld',
+  '||buzz.goo.ne.jp',
+  '||buzzurl.jp',
+  '||ceron.jp',
+  '||choix.jp',
+  '||cssclip.com',
+  '||del.icio.us',
+  '||delicious.com',
+  '||designiddatabase.tld',
+  '||designlinkdatabase.tld',
+  '||designrecipedatabase.tld',
+  '||faves.com',
+  '||favolog.org',
+  '||favotter.net',
+  '||friendfeed.com',
+  '||hiwihhi.com',
+  '||marici.com',
+  '||matope.com',
+  '||newsing.jp',
+  '||newzia.jp',
+  '||pastebin.tld',
+  '||pecipeci.net',
+  '||pg-feed.tld',
+  '||rightclicksright.tld',
+  '||script-scrap.com',
+  '||softonic.tld',
+  '||soukyu-mugen.com',
+  '||tabelog.com',
+  '||tarikin.net',
+  '||thumbnailcloud.tld',
+  '||tweetmeme.com',
+  '||tweetbuzz.jp',
+  '||twib.jp',
+  '||twitmunin.com',
+  '||tyudon.com',
+  '||wdclip.com'//,
 ];
 
 /**
  * List of sites
  *
  * @key name {string}
- *   this is displayed in the preference menu
+ *   displayed in the preference menu
  * @key include {regexp|string}|{regexp[]|string[]}
- *   describe the URL (or an array of URLs) that commands should run
- *   {string}: an exact match
+ *   describe the URL where the commands should run
+ *   @see |URLFilter| for filter rules
  *
  * define one or more commands;
- *
+ * ----------
  * @key quickScript {function} [optional]
  *   run the script as soon as a location changes
  *   @param aDocument {Document}
  *   @return {boolean}
- *     whether |script| is applied after |quickScript|
- *     true: do apply
- *     false: don't apply
+ *     whether |script| is applied or not after |quickScript|
  * @key script {function} [optional]
  *   run the script after the document loaded
  *   @param aDocument {Document}
@@ -182,13 +164,17 @@ const kNoiseList = [
  *   make CSS to apply to the document
  *   @param aDocument {Document}
  *   @return {CSS}
+ * ----------
  *
  * @key disabled {boolean} [optional]
+ *
+ * @note don't add a key '_includeFilter' that is reserved for internal use
+ * @see |PageObserver::testURL()|
  */
 const kSiteList = [
   {
     name: 'Google Result',
-    include: /^https?:\/\/www\.google\.[a-z.]+\/.*q=/,
+    include: '||google.tld/*q=',
     script: function(aDocument) {
       // sanitize links
       Array.forEach($S('li.g a', aDocument), (link) => {
@@ -214,7 +200,7 @@ const kSiteList = [
         }
 
         // weaken noisy item
-        if (NoisyURLHandler.test(link.href)) {
+        if (NoisyURLFilter.test(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
 
@@ -333,7 +319,7 @@ const kSiteList = [
   },
   {
     name: 'Yahoo!JAPAN Result',
-    include: /^http:\/\/search\.yahoo\.co\.jp\/search/,
+    include: '|search.yahoo.co.jp/search',
     script: function(aDocument) {
       // sanitize links
       Array.forEach($S('#contents a'), (link) => {
@@ -358,7 +344,7 @@ const kSiteList = [
         }
 
         // weaken a noisy item
-        if (NoisyURLHandler.test(link.href)) {
+        if (NoisyURLFilter.test(link.href)) {
           item.classList.add('ucjs_sitestyle_weaken');
         }
       });
@@ -383,13 +369,8 @@ const kSiteList = [
     }
   },
   {
-    disabled: true,
-    name: 'bing Result',
-    include: /^http:\/\/www\.bing\.com\/search/
-  },
-  {
     name: 'Wikipedia Article',
-    include: /^https?:\/\/[a-z]+\.wikipedia\.org\/wiki/,
+    include: '||wikipedia.org/wiki/',
     style: function(aDocument) {
       let css = '\
         /* popup reference */\
@@ -410,7 +391,7 @@ const kSiteList = [
   },
   {
     name: 'Youtube Player',
-    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch\?|channel\/|user\/)/,
+    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|channel|user)/,
     quickScript: function(aDocument) {
       let location = aDocument.location;
 
@@ -486,6 +467,119 @@ const kSiteList = [
     }
   }//,
 ];
+
+/**
+ * URL filter handler
+ *
+ * @return {hash}
+ *   @member init {function}
+ *
+ * [URL filter rules]
+ * @value {regexp|string}|{regexp[]|string[]}
+ *   {regexp} - used as-is
+ *   {string} - converted into regexp
+ *     @note special symbols are available;
+ *     1.the leading '||' -> ^https?:\/\/[\w-.]*?
+ *     2.the leading '|'  -> ^https?:\/\/(?:www\d*\.)?
+ *     3.the wildcard '*' -> .+?
+ *     4.'.tld' will match any top level domain
+ */
+const URLFilter = (function() {
+  /**
+   * Create URL filter instance
+   *
+   * @param aList {array}
+   * @return {hash}
+   *   @member test {function}
+   */
+  function init(aList) {
+    let [mergedRegExp, mergedRegExpTLD] = makeMergedRegExp(aList);
+
+    return {
+      test: test.bind(null, [mergedRegExp, mergedRegExpTLD])
+    };
+  }
+
+  function makeMergedRegExp(aList) {
+    let regExpList = [], regExpTLDList = [];
+
+    if (!Array.isArray(aList)) {
+      aList = [aList];
+    }
+
+    aList.forEach((item) => {
+      if (item instanceof RegExp) {
+        regExpList.push(item.source);
+        return;
+      }
+
+      let hasTLD = /^[^\/]*(?:\/\/)?[^\/]*\.tld(?:[:\/]|$)/.test(item);
+
+      let prefix;
+
+      if (item.startsWith('||')) {
+        prefix = '^https?:\\/\\/[\\w-.]*?';
+        item = item.substring(2);
+      }
+      else if (item.startsWith('|')) {
+        prefix = '^https?:\\/\\/(?:www\\d*\\.)?';
+        item = item.substring(1);
+      }
+
+      item = item.
+        replace(/[.?+\-|${}()\[\]\/\\]/g, '\\$&').
+        replace(/\*+/g, '.+?');
+
+      if (prefix) {
+        item = prefix + item;
+      }
+
+      (hasTLD ? regExpTLDList : regExpList).push(item);
+    });
+
+    return [regExpList, regExpTLDList].map(merge);
+  }
+
+  function merge(aList) {
+    if (!aList.length) {
+      return null;
+    }
+
+    if (aList.length < 2) {
+      return RegExp(aList[0]);
+    }
+
+    return RegExp(aList.map((data) => '(?:' + data + ')').join('|'));
+  }
+
+  function test([mergedRegExp, mergedRegExpTLD], aURL) {
+    if (!/^https?:/.test(aURL)) {
+      return false;
+    }
+
+    return (mergedRegExp && mergedRegExp.test(aURL)) ||
+           (mergedRegExpTLD && mergedRegExpTLD.test(getTLDURL(aURL)));
+  }
+
+  function getTLDURL(aURL) {
+    try {
+      // @see chrome://global/content/contentAreaUtils.js::makeURI
+      let uri = window.makeURI(aURL);
+      let tld = Services.eTLD.getPublicSuffix(uri);
+
+      uri.host = uri.host.slice(0, -tld.length) + 'tld';
+
+      return uri.spec;
+    }
+    catch (ex) {}
+
+    return aURL;
+  }
+
+  return {
+    init: init
+  };
+})();
 
 /**
  * Page observer handler
@@ -640,18 +734,15 @@ const PageObserver = (function() {
     return site;
   }
 
-  function testURL(aSite, aTargetURL) {
-    let {include} = aSite;
-
-    if (!Array.isArray(include)) {
-      include = [include];
+  function testURL(aSite, aURL) {
+    // set the URL filter for inclusion inside each item
+    // TODO: avoid adding a hidden key that could cause an unexpected conflict
+    // in a constant |kSiteList|
+    if (!aSite._includeFilter) {
+      aSite._includeFilter = URLFilter.init(aSite.include);
     }
 
-    return include.some((url) =>
-      (typeof url === 'string') ?
-      url === aTargetURL :
-      url.test(aTargetURL)
-    );
+    return aSite._includeFilter.test(aURL);
   }
 
   function init() {
@@ -660,6 +751,60 @@ const PageObserver = (function() {
 
   return {
     init: init
+  };
+})();
+
+/**
+ * Noisy URL filter
+ *
+ * @return {hash}
+ *   @member test {function}
+ */
+const NoisyURLFilter = (function() {
+  let filter = URLFilter.init(kNoiseList);
+
+  return {
+    test: filter.test
+  };
+})();
+
+/**
+ * Page CSS handler
+ *
+ * @return {hash}
+ *   @member set {function}
+ */
+const PageCSS = (function() {
+  function set(aDocument, aCSS) {
+    if (/^(?:complete|interactive)$/.test(aDocument.readyState)) {
+      setCSS(aDocument, aCSS);
+      return;
+    }
+
+    aDocument.addEventListener('DOMContentLoaded', onReady, false);
+    aDocument.defaultView.addEventListener('unload', cleanup, false);
+
+    function cleanup() {
+      aDocument.removeEventListener('DOMContentLoaded', onReady, false);
+      aDocument.defaultView.removeEventListener('unload', cleanup, false);
+    }
+
+    function onReady() {
+      cleanup();
+
+      setCSS(aDocument, aCSS);
+    }
+  }
+
+  function setCSS(aDocument, aCSS) {
+    setContentStyleSheet(aCSS, {
+      document: aDocument,
+      id: kID.STYLESHEET
+    });
+  }
+
+  return {
+    set: set
   };
 })();
 
@@ -720,70 +865,6 @@ const PrefMenu = (function() {
 
   return {
     init: init
-  };
-})();
-
-/**
- * Noisy URL handler
- *
- * @return {hash}
- *   @member test {function}
- */
-const NoisyURLHandler = (function() {
-  function test(aURL) {
-    if (!/^https?:/.test(aURL)) {
-      return false;
-    }
-
-    return kNoiseList.some((item) =>
-      (typeof item === 'string') ?
-      aURL.replace(/^https?:\/\/(?:www\.)?/, '').startsWith(item) :
-      item.test(aURL)
-    );
-  }
-
-  return {
-    test: test
-  };
-})();
-
-/**
- * Page CSS handler
- *
- * @return {hash}
- *   @member set {function}
- */
-const PageCSS = (function() {
-  function set(aDocument, aCSS) {
-    if (/^(?:complete|interactive)$/.test(aDocument.readyState)) {
-      setCSS(aDocument, aCSS);
-      return;
-    }
-
-    aDocument.addEventListener('DOMContentLoaded', onReady, false);
-    aDocument.defaultView.addEventListener('unload', cleanup, false);
-
-    function cleanup() {
-      aDocument.removeEventListener('DOMContentLoaded', onReady, false);
-      aDocument.defaultView.removeEventListener('unload', cleanup, false);
-    }
-
-    function onReady() {
-      cleanup();
-
-      setCSS(aDocument, aCSS);
-    }
-  }
-
-  function setCSS(aDocument, aCSS) {
-    setContentStyleSheet(aCSS, {
-      document: aDocument,
-      id: kID.STYLESHEET
-    });
-  }
-
-  return {
-    set: set
   };
 })();
 
