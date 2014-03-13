@@ -289,7 +289,7 @@ const kSiteList = [
             color:red;\
             margin-right:2px;\
           }\
-          .ucjs_sitestyle_weaken h3{\
+          #res .ucjs_sitestyle_weaken h3{\
             font-size:small!important;\
           }\
           .ucjs_sitestyle_weaken h3~*{\
@@ -350,7 +350,7 @@ const kSiteList = [
       });
 
       // process items
-      Array.forEach($S('.w'), (item) => {
+      Array.forEach($S('.w,.cmm'), (item) => {
         let link = $S1('.hd>h3>a', item);
 
         if (!link) {
