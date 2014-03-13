@@ -48,7 +48,7 @@ function $E(aTag, aAttribute) {
 /**
  * Application list
  *
- * @note don't add a property 'index' that is reserved for internal use
+ * @note don't add a key '_index' that is reserved for internal use
  * @see |initAppList()|
  */
 const kAppList = [
@@ -394,9 +394,9 @@ function initAppList() {
   );
 
   // set the array index inside each item
-  // TODO: avoid adding a new property that could cause an unexpected conflict
+  // TODO: avoid adding a hidden key that could cause an unexpected conflict
   // in a constant |kAppList|
-  apps.forEach((app, i) => app.index = i);
+  apps.forEach((app, i) => app._index = i);
 
   return apps;
 }
@@ -518,7 +518,7 @@ function makeActionItems(aPopup, aAppList) {
 function addMenuItem(aPopup, aParam) {
   let {action, app, inAppMenu} = aParam;
 
-  let appIndex = app ? app.index : -1;
+  let appIndex = app ? app._index : -1;
 
   let item = $E('menuitem', {
     label: makeMenuItemLabel(aParam),
