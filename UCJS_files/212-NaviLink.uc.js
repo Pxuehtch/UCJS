@@ -1051,7 +1051,7 @@ const NaviLink = (function() {
     let doc = getDocument();
     let metas = Array.slice(doc.getElementsByTagName('meta'));
 
-    // be sure to add <content-type> so that the meta list is not empty
+    // add <content-type> to avoid an empty meta list
     let empty = !metas.some((meta) =>
       meta.httpEquiv &&
       meta.httpEquiv.toLowerCase() === 'content-type'
@@ -1084,8 +1084,7 @@ const NaviLink = (function() {
 
     if (rels.feed ||
         (aNode.type && rels.alternate && !rels.stylesheet)) {
-      // @see chrome://browser/content/utilityOverlay.js::
-      // isValidFeed
+      // @see chrome://browser/content/utilityOverlay.js::isValidFeed()
       let feedType = window.isValidFeed(
         aNode, getDocument().nodePrincipal, rels.feed);
 
