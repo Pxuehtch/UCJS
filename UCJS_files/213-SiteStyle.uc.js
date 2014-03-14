@@ -72,6 +72,8 @@ const kNoiseList = [
   '||chiebukuro.yahoo.co.jp/*',
 
   // OKWave Q&A
+  '||okwave.tld',
+  '||okweb.tld',
   '|mag2qa.com',
   '|nandemo.',
   '|otasuke.',
@@ -709,9 +711,9 @@ const PageObserver = (function() {
   function fixupURL(aURL) {
     let uri;
 
-    const uriFixup = Services.uriFixup;
-
     try {
+      const uriFixup = Services.uriFixup;
+
       uri = uriFixup.createFixupURI(aURL, uriFixup.FIXUP_FLAG_NONE);
       uri = uriFixup.createExposableURI(uri);
     }
