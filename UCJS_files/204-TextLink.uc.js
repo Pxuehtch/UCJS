@@ -132,14 +132,15 @@ const URLUtil = (function() {
   /**
    * Makes a good URL
    *
+   * @param aString {string}
    * @return {string}
    */
-  function fix(aStr) {
-    return aStr.
+  function fix(aString) {
+    return aString.
       replace(/^[^s:\/]+(s?:\/)/, 'http$1').
       replace(/^www\./, 'http://www.').
-      // we may pick up a separator character unrelated to a URL
-      replace(/[()]?[.,:;]?$/, '');
+      // remove trailing characters that may be marks unrelated to the URL
+      replace(/["')\]]?[,.;:]?$/, '');
   }
 
   return {
