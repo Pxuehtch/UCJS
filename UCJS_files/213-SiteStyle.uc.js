@@ -479,10 +479,12 @@ const kSiteList = [
  * [URL filter rules]
  * @value {regexp|string}|{regexp[]|string[]}
  *   {regexp} - used as-is
- *   {string} - converted into regexp
+ *   {string} - usually a partial match
  *     @note special symbols are available;
  *     1.the leading '||' -> ^https?:\/\/[\w-.]*?
+ *                        -> ^ if URL scheme follows after
  *     2.the leading '|'  -> ^https?:\/\/(?:www\d*\.)?
+ *                        -> ^ if URL scheme follows after
  *     3.the wildcard '*' -> .+?
  *     4.'.tld' will match any top level domain
  */
@@ -519,14 +521,20 @@ const URLFilter = (function() {
 
       let prefix;
 
-      if (item.startsWith('||')) {
-        prefix = '^https?:\\/\\/[\\w-.]*?';
-        item = item.substring(2);
-      }
-      else if (item.startsWith('|')) {
-        prefix = '^https?:\\/\\/(?:www\\d*\\.)?';
-        item = item.substring(1);
-      }
+      [
+        ['||', /^https?:\/\/[\w-.]*?/],
+        ['|',  /^https?:\/\/(?:www\d*\.)?/],
+      ].
+      some(([symbol, re]) => {
+        if (item.startsWith(symbol)) {
+          item = item.substring(symbol.length);
+
+          prefix = /^\w+:/.test(item) ? '^' : re.source;
+
+          return true;
+        }
+        return false;
+      });
 
       item = item.
         replace(/[.?+\-|${}()\[\]\/\\]/g, '\\$&').
