@@ -47,83 +47,85 @@ function log(aMsg) {
  */
 const URLUtil = (function() {
   /**
-   * URI characters
-   */
-  const kURIC = {
-    word: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
-    mark: "-.!~*;/?:@&=+$,%#'()"
-  };
-
-  /**
-   * Converts the alias %URIC% into a string for RegExp()
+   * Converts fullwidth ASCII printable characters into halfwidth ones
    *
-   * @note %URIC% has to be contained in []
+   * @param aString {string}
+   * @return {string}
+   *
+   * [94 characters]
+   * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
+   * abcdefghijklmnopqrstuvwxyz{|}~
+   *
+   * [Unicode]
+   * halfwidth: 0x0021-0x007E
+   * fullwidth: 0xFF01-0xFF5E
+   *
+   * @see http://taken.s101.xrea.com/blog/article.php?id=510
    */
-  let resolve = (function() {
-    const re = /%URIC%/g;
-    const replacement = '\\w' + kURIC.mark;
+  let normalize =
+  (aString) => aString.replace(/[\uFF01-\uFF5E]/g, (aChar) => {
+      let code = aChar.charCodeAt(0);
+      code &= 0x007F; // FF01->0001
+      code += 0x0020;
 
-    return (aStr) => aStr.replace(re, replacement);
-  })();
+      return String.fromCharCode(code);
+  });
 
   /**
-   * Converts zennkaku URI chars into hankaku ones
+   * Tests if a string has only ASCII characters
+   *
+   * @param aString {string}
+   * @return {boolean}
    */
-  let normalize = (function() {
-    const zenkakuURIC = (kURIC.word + kURIC.mark).replace(/./g, han2zen);
-    const re = RegExp('[' + zenkakuURIC + ']', 'g');
-
-    return (aStr) => aStr.replace(re, zen2han);
-  })();
-
-  /**
-   * Tests if a string has only URI chars
-   */
-  let isURIC = (function() {
-    const exURIC = '[^%URIC%]';
-    const re = RegExp(resolve(exURIC));
-
-    return (aStr) => !re.test(normalize(aStr));
-  })();
+  let isASCII = (aString) => !/[^!-~]/.test(normalize(aString));
 
   /**
    * Retrieves an array of URL-like strings
    *
-   * @note returns null if no match
+   * @param aString {string}
+   * @return {array|null}
+   *   {null} - if no match
    */
   let match = (function() {
     const absolute =
-      '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[%URIC%]*';
+      '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[!-~]*';
     const relative =
-      '\\.\\.?\\/[%URIC%]+';
-    const re = RegExp(resolve(absolute + '|' + relative), 'ig');
+      '\\.\\.?\\/[!-~]+';
+    const re = RegExp(absolute + '|' + relative, 'ig');
 
-    return (aStr) => normalize(aStr).match(re);
+    return (aString) => normalize(aString).match(re);
   })();
 
   /**
-   * Tests if a selection text has only URI chars
+   * Tests if a selection text has only ASCII characters
    *
+   * @param aSelection {nsISelection}
    * @return {boolean}
    */
   function guess(aSelection) {
-    return isURIC(aSelection.toString());
+    return isASCII(aSelection.toString());
   }
 
   /**
    * Retrieves an array of URL-like strings from a range text
    *
+   * @param aRange {nsIDOMRange}
    * @return {array|null}
-   *   if no match is found returns null
+   *   {null} - if no match
    */
   function grab(aRange) {
     return match(encodeToPlain(aRange));
   }
 
   /**
-   * Gets a range string which its zenkaku URIC is converted into hankaku
+   * Gets a text that its fullwidth ASCII characters are converted into
+   * halfwidth
    *
+   * @param aRange {nsIDOMRange}
    * @return {string}
+   *
+   * @note the text is used as a map indicating the position of the target
+   * URL string
    */
   function map(aRange) {
     return normalize(aRange.toString());
@@ -275,33 +277,6 @@ function initRange(aRange, aSourceRange) {
   aRange.setEndAfter(result.border);
 
   return {start: startPos, end: endPos};
-}
-
-/**
- * hankaku / zenkaku converter for ASCII printable characters
- *
- * 94 characters:
- * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
- * abcdefghijklmnopqrstuvwxyz{|}~
- *
- * hankaku: 0x0021-0x007E
- * zenkaku: 0xFF01-0xFF5E
- *
- * @see http://taken.s101.xrea.com/blog/article.php?id=510
- */
-function han2zen(aChar) {
-  let code = aChar.charCodeAt(0);
-  code += 0xFEE0; // 0021->FF01
-
-  return String.fromCharCode(code);
-}
-
-function zen2han(aChar) {
-  let code = aChar.charCodeAt(0);
-  code &= 0x007F; // FF01->0001
-  code += 0x0020;
-
-  return String.fromCharCode(code);
 }
 
 function encodeToPlain(aRange) {
