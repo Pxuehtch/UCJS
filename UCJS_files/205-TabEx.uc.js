@@ -1530,11 +1530,11 @@ function htmlEscape(aString) {
 
 function htmlUnescape(aString) {
   return aString.
-    replace(/&amp;/g, '&').
     replace(/&gt;/g, '>').
     replace(/&lt;/g, '<').
     replace(/&quot;/g, '"').
-    replace(/&apos;/g, "'");
+    replace(/&apos;/g, "'").
+    replace(/&amp;/g, '&'); // must unescape at last
 }
 
 function fetchPageTitle(aURL, aCallback) {
