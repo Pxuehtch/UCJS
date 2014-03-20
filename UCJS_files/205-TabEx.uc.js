@@ -391,7 +391,7 @@ const mTabOpener = {
         return newTab;
       }
 
-      let aRelatedToCurrent, aFromExternal, aIsUTF8;
+      let aRelatedToCurrent, aFromExternal, aIsUTF8, aDisableMCB;
 
       if (arguments.length === 2 &&
           typeof arguments[1] === 'object' &&
@@ -403,6 +403,7 @@ const mTabOpener = {
         aFromExternal         = params.fromExternal;
         aRelatedToCurrent     = params.relatedToCurrent;
         aIsUTF8               = params.isUTF8;
+        aDisableMCB           = params.disableMCB;
       }
 
       let query;
@@ -414,7 +415,7 @@ const mTabOpener = {
         };
       }
       else {
-        // into URL string
+        // convert |nsIURI| into a URL string
         aReferrerURI = aReferrerURI && aReferrerURI.spec;
 
         let fromVisit;
@@ -444,8 +445,13 @@ const mTabOpener = {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
         }
 
-        // TODO: handle the POST data. |aPostData| is a |nsIInputStream| object
-        // that JSON does not support
+        if (aDisableMCB) {
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
+        }
+
+        // TODO: handle the POST data
+        // @note |aPostData| is a |nsIInputStream| object that JSON does not
+        // support
         query = {
           URL: aURI,
           flags: flags,

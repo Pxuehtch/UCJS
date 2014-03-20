@@ -794,6 +794,7 @@ function loadPage(aURL, aOption) {
     allowThirdPartyFixup,
     fromExternal,
     isUTF8,
+    disableMCB,
     skipSecurityCheck,
     trustURL,
     allowImageData
@@ -818,6 +819,10 @@ function loadPage(aURL, aOption) {
 
   if (isUTF8) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
+  }
+
+  if (disableMCB) {
+    flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
   }
 
   gBrowser.loadURIWithFlags(URL, flags, referrerURI, charset, postData);
