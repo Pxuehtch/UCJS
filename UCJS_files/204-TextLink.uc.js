@@ -9,8 +9,8 @@
 /**
  * @usage when 'double-click' on a URL-like text, a new tab will open
  * in the detected URL
- * @note if 'Shift' or 'Ctrl' has been pressed, the text is only selected
- * by the default behavior
+ * @note a text will only be selected (by the Fx default behavior) if
+ * 'Shift' or 'Ctrl' keys are being pressed
  */
 
 // @see https://github.com/piroor/textlink
@@ -62,14 +62,15 @@ const URLUtil = (function() {
    *
    * @see http://taken.s101.xrea.com/blog/article.php?id=510
    */
-  let normalize =
-  (aString) => aString.replace(/[\uFF01-\uFF5E]/g, (aChar) => {
+  let normalize = (aString) => aString.replace(/[\uFF01-\uFF5E]/g,
+    (aChar) => {
       let code = aChar.charCodeAt(0);
       code &= 0x007F; // FF01->0001
       code += 0x0020;
 
       return String.fromCharCode(code);
-  });
+    }
+  );
 
   /**
    * Tests if a string has only ASCII characters
