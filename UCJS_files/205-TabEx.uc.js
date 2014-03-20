@@ -391,7 +391,7 @@ const mTabOpener = {
         return newTab;
       }
 
-      let aRelatedToCurrent, aFromExternal, aIsUTF8, aDisableMCB;
+      let aRelatedToCurrent, aFromExternal, aDisableMCB;
 
       if (arguments.length === 2 &&
           typeof arguments[1] === 'object' &&
@@ -402,7 +402,6 @@ const mTabOpener = {
         aAllowThirdPartyFixup = params.allowThirdPartyFixup;
         aFromExternal         = params.fromExternal;
         aRelatedToCurrent     = params.relatedToCurrent;
-        aIsUTF8               = params.isUTF8;
         aDisableMCB           = params.disableMCB;
       }
 
@@ -439,10 +438,6 @@ const mTabOpener = {
 
         if (aFromExternal) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-        }
-
-        if (aIsUTF8) {
-          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
         }
 
         if (aDisableMCB) {

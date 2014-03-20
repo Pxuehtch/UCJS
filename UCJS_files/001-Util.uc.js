@@ -793,7 +793,6 @@ function loadPage(aURL, aOption) {
     postData,
     allowThirdPartyFixup,
     fromExternal,
-    isUTF8,
     disableMCB,
     skipSecurityCheck,
     trustURL,
@@ -815,10 +814,6 @@ function loadPage(aURL, aOption) {
 
   if (fromExternal) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-  }
-
-  if (isUTF8) {
-    flags |= Ci.nsIWebNavigation.LOAD_FLAGS_URI_IS_UTF8;
   }
 
   if (disableMCB) {
