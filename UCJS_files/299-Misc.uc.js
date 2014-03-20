@@ -161,23 +161,13 @@ function log(aMsg) {
  */
 (function() {
 
-  let tabPressed = false;
-
   addEvent(gBrowser.mPanelContainer, 'keypress', (event) => {
     if (event.keyCode === event.DOM_VK_TAB) {
-      if (tabPressed) {
+      if (event.repeat) {
         event.preventDefault();
         event.stopPropagation();
         return;
       }
-
-      tabPressed = true;
-    }
-  }, true);
-
-  addEvent(gBrowser.mPanelContainer, 'keyup', (event) => {
-    if (event.keyCode === event.DOM_VK_TAB) {
-      tabPressed = false;
     }
   }, true);
 
