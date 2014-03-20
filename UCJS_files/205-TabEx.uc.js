@@ -783,8 +783,6 @@ const mSessionStore = {
      * 2.resume startup: observes the first |SSWindowStateReady|
      *
      * TODO: consider the proper method of these observations
-     *
-     * TODO: in Fx27, a deprecation warning is logged when using |doRestore|
      */
     this.isResumeStartup =
       Cc['@mozilla.org/browser/sessionstartup;1'].
