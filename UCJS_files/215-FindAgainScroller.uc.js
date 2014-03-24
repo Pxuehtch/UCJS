@@ -342,20 +342,28 @@ function ScrollObserver() {
       aNode.clientHeight < aNode.scrollHeight ||
       aNode.clientWidth  < aNode.scrollWidth;
 
+    // @note the initial node is an element node
     let node = aBaseNode;
-    while (node && !(node instanceof HTMLBodyElement)) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        if (isRegistered(node)) {
-          return null;
-        }
 
-        if (isScrollable(node)) {
-          return node;
-        }
+    while (node) {
+      // <html> and <body> are handled as the scrollable document
+      if (node.nodeType !== Node.ELEMENT_NODE ||
+          node instanceof HTMLBodyElement ||
+          node instanceof HTMLHtmlElement) {
+        return null;
+      }
+
+      if (isRegistered(node)) {
+        return null;
+      }
+
+      if (isScrollable(node)) {
+        return node;
       }
 
       node = node.parentNode;
     }
+
     return null;
   }
 
@@ -463,19 +471,22 @@ function SkipInvisible() {
     let getComputedStyle = aNode.ownerDocument.defaultView.getComputedStyle;
     let style;
 
-    while (aNode) {
-      if (aNode.nodeType === Node.ELEMENT_NODE) {
-        if (aNode.hidden || aNode.collapsed) {
+    // the initial node is a text node
+    let node = aNode;
+
+    while (node) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.hidden || node.collapsed) {
           return false;
         }
 
-        style = getComputedStyle(aNode, '');
+        style = getComputedStyle(node, '');
 
         if (
           style.visibility !== 'visible' ||
           style.display === 'none' ||
-          // TODO: use a certain detection of the position hacks to hide the
-          // content
+
+          // TODO: ensure to detect the position hacks to hide the content
           (/absolute|fixed/.test(style.position) &&
            (parseInt(style.left, 10) < 0 ||
             parseInt(style.top, 10) < 0 ||
@@ -487,8 +498,9 @@ function SkipInvisible() {
         }
       }
 
-      aNode = aNode.parentNode;
+      node = node.parentNode;
     }
+
     return true;
   }
 

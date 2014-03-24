@@ -1141,17 +1141,23 @@ function inEditable(aEvent) {
 }
 
 function getLinkURL(aNode) {
+  const XLinkNS = 'http://www.w3.org/1999/xlink';
+
+  // @note the initial node may be a text node
   let node = aNode;
 
-  for (/* */; node; node = node.parentNode) {
+  while (node) {
     if (node.nodeType === Node.ELEMENT_NODE) {
       if (node instanceof HTMLAnchorElement ||
           node instanceof HTMLAreaElement ||
           node instanceof HTMLLinkElement ||
+          node.getAttributeNS(XLinkNS, 'type') === 'simple' ||
           node instanceof SVGAElement) {
         break;
       }
     }
+
+    node = node.parentNode
   }
 
   if (node) {
@@ -1166,6 +1172,7 @@ function getLinkURL(aNode) {
       return node.href;
     }
   }
+
   return null;
 }
 
@@ -1180,6 +1187,7 @@ function getImageURL(aNode) {
   else if (aNode instanceof HTMLImageElement) {
     return aNode.src;
   }
+
   return null;
 }
 

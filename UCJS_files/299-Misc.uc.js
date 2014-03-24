@@ -263,23 +263,30 @@ function log(aMsg) {
         mime === 'application/xhtml+xml'
       );
     }
+
     return false
   }
 
   function getLink(aNode) {
-    while (aNode) {
-      if (aNode.nodeType === Node.ELEMENT_NODE) {
-        if (aNode instanceof HTMLAnchorElement ||
-            aNode instanceof HTMLAreaElement ||
-            aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
-            'simple') {
-          break;
+    const XLinkNS = 'http://www.w3.org/1999/xlink';
+
+    // @note the initial node may be a text node
+    let node = aNode;
+
+    while (node) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node instanceof HTMLAnchorElement ||
+            node instanceof HTMLAreaElement ||
+            node instanceof HTMLLinkElement ||
+            node.getAttributeNS(XLinkNS, 'type') === 'simple') {
+          return node;
         }
       }
 
-      aNode = aNode.parentNode;
+      node = node.parentNode;
     }
-    return aNode;
+
+    return null;
   }
 
 })();

@@ -113,7 +113,7 @@ function setFastFindFor(aWindow) {
  * @param {Element}
  * @return {hash|null}
  */
-function getClickManager(aElement) {
+function getClickManager(aNode) {
   // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
   let isTextDocument = (aDocument) =>
     aDocument && window.mimeTypeIsTextBased(aDocument.contentType);
@@ -121,41 +121,46 @@ function getClickManager(aElement) {
   let isContentWindow = (aWindow) =>
     aWindow && aWindow.top === window.content;
 
-  if (!aElement ||
-      !isTextDocument(aElement.ownerDocument) ||
-      !isContentWindow(aElement.ownerDocument.defaultView)) {
+  if (!aNode ||
+      !isTextDocument(aNode.ownerDocument) ||
+      !isContentWindow(aNode.ownerDocument.defaultView)) {
     return null;
   }
 
   let isEditable =
-    aElement instanceof Ci.nsIDOMNSEditableElement &&
-    aElement.type !== 'submit' &&
-    aElement.type !== 'image';
+    aNode instanceof Ci.nsIDOMNSEditableElement &&
+    aNode.type !== 'submit' &&
+    aNode.type !== 'image';
 
-  let isImage = aElement instanceof HTMLImageElement;
+  let isImage = aNode instanceof HTMLImageElement;
 
   let isLinked = (function() {
-    let node = aElement;
+    const XLinkNS = 'http://www.w3.org/1999/xlink';
+
+    // @note the initial node may be a text node
+    let node = aNode;
+
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
         if (node instanceof HTMLAnchorElement ||
             node instanceof HTMLAreaElement ||
             node instanceof HTMLLinkElement ||
-            node.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
-            'simple') {
+            node.getAttributeNS(XLinkNS, 'type') === 'simple') {
           return true;
         }
       }
+
       node = node.parentNode;
     }
+
     return false;
   })();
 
   return {
-    clickedWindow: aElement.ownerDocument.defaultView,
-    // we handle <img> too, because clicking it is not reset the start point
-    // by default
-    clickedElement: (isEditable || isImage) && !isLinked ? aElement : null
+    clickedWindow: aNode.ownerDocument.defaultView,
+    // we also handle an image element since the start point of finding is not
+    // reset by clicking it
+    clickedElement: (isEditable || isImage) && !isLinked ? aNode : null
   };
 }
 

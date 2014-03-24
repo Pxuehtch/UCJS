@@ -139,7 +139,10 @@ const TooltipHandler = {
   storeTitles: function(aNode) {
     this._mTitleStore = new Map();
 
-    for (let node = aNode; node; node = node.parentNode) {
+    // @note the initial node may be a text node
+    let node = aNode;
+
+    while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
         if (node.title) {
           this._mTitleStore.set(node, node.title);
@@ -147,6 +150,8 @@ const TooltipHandler = {
           node.title = '';
         }
       }
+
+      node = node.parentNode;
     }
   },
 
@@ -250,12 +255,15 @@ const TooltipHandler = {
   build: function(aNode) {
     let tips = [];
 
-    for (let node = aNode; node; node = node.parentNode) {
-      if (node.nodeType !== Node.ELEMENT_NODE) {
-        break;
+    // @note the initial node may be a text node
+    let node = aNode;
+
+    while (node) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        tips = tips.concat(this.getNodeTip(node));
       }
 
-      tips = tips.concat(this.getNodeTip(node));
+      node = node.parentNode;
     }
 
     if (!tips.length) {
