@@ -9,7 +9,7 @@
 // @see https://github.com/Griever/userChromeJS/blob/master/IME-Colors.uc.js
 
 // XXX: in Fx27, detecting the IME key down fails just after switching focus
-// WORKAROUND: press the key a few times, it works
+// WORKAROUND: press the key a few times and it works
 // TODO: the keyup event did not fire in that case. should I handle the keydown
 // event?
 
@@ -215,7 +215,8 @@ function TextboxStyler() {
   }
 
   /**
-   * checks whether a target textbox is alive or not
+   * Checks whether a target textbox is alive or not
+   *
    * @return {boolean}
    *
    * TODO: this is a workaround for checking a dead object. consider a
