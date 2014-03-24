@@ -240,9 +240,13 @@ const TooltipPanel = {
   show: function(aEvent) {
     let target = aEvent.target;
 
-    // close a existing tooltip of the different target and open a new tooltip
-    if (this.mPanel.state === 'open' &&
-        this.mTarget !== target) {
+    if (this.mPanel.state === 'open') {
+      // don't open the tooltip of the same target
+      if (this.mTarget === target) {
+        return;
+      }
+
+      // close a existing tooltip of the different target and open a new one
       this.hide();
     }
     else if (this.mPanel.state !== 'closed') {
