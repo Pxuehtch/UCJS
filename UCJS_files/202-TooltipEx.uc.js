@@ -100,58 +100,50 @@ const kID = {
 };
 
 /**
- * Tooltip handler
+ * Target node handler
+ *
+ * TODO: ensure to uninitialize the handler
+ * WORKAROUND: makes many opportunity of uninitializing; when switching the
+ * current page for now
+ * @see |TooltipPanel::init()|
+ *
+ * XXX: I don't want to store a reference to the DOM element
  */
-const TooltipPanel = {
-  /**
-   * Tooltip <panel>
-   */
-  mPanel: null,
+const TargetNode = (function() {
+  let mTargetNode;
+  let mTitleStore;
 
-  /**
-   * Container <box> for tip items data
-   */
-  mBox: null,
+  function init(aNode) {
+    mTargetNode = aNode;
+    mTitleStore = new Map();
 
-  /**
-   * Target node which has tips
-   */
-  get mTarget() {
-    return this._mTarget;
-  },
+    // disable the default tooltip
+    storeTitles();
+  }
 
-  set mTarget(aNode) {
-    if (aNode !== null) {
-      // disable the default tooltip
-      this.storeTitles(aNode);
-
-      this._mTarget = aNode;
-
-      // cleanup when the document with a opened tooltip is unloaded
-      this._mTarget.ownerDocument.defaultView.
-      addEventListener('unload', this, false);
+  function uninit() {
+    // enable the default tooltip
+    // WORKAROUND: don't access to objects being unloaded unexpectedly
+    if (checkAlive(mTargetNode)) {
+      restoreTitles();
     }
-    else {
-      // enable the default tooltip
-      this.restoreTitles();
 
-      this._mTarget.ownerDocument.defaultView.
-      removeEventListener('unload', this, false);
+    mTargetNode = null;
+    mTitleStore = null;
+  }
 
-      this._mTarget = null;
-    }
-  },
+  function equals(aNode) {
+    return aNode === mTargetNode;
+  }
 
-  storeTitles: function(aNode) {
-    this._mTitleStore = new Map();
-
+  function storeTitles() {
     // @note the initial node may be a text node
-    let node = aNode;
+    let node = mTargetNode;
 
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
         if (node.title) {
-          this._mTitleStore.set(node, node.title);
+          mTitleStore.set(node, node.title);
 
           node.title = '';
         }
@@ -159,22 +151,60 @@ const TooltipPanel = {
 
       node = node.parentNode;
     }
-  },
+  }
 
-  restoreTitles: function() {
-    for (let [node, title] of this._mTitleStore) {
-      if (node && !node.title) {
-        node.title = title;
-      }
+  function restoreTitles() {
+    for (let [node, title] of mTitleStore) {
+      node.title = title;
     }
 
-    this._mTitleStore.clear();
+    mTitleStore.clear();
+  }
 
-    this._mTitleStore = null;
-  },
+  /**
+   * Checks whether a node is alive or not
+   *
+   * @param aNode {Node}
+   * @return {boolean}
+   *
+   * TODO: this is a workaround for checking a dead object. consider a
+   * legitimate method instead
+   */
+  function checkAlive(aNode) {
+    try {
+      return !!(aNode && aNode.parentNode);
+    }
+    catch (ex) {}
+
+    return false;
+  }
+
+  return {
+    init: init,
+    uninit: uninit,
+    equals: equals
+  };
+})();
+
+/**
+ * Tooltip panel handler
+ */
+const TooltipPanel = {
+  // tooltip <panel>
+  mPanel: null,
+
+  // container <box> for tip items data
+  mBox: null,
 
   init: function() {
+    // hide the tooltip when the current page is switched
+    addEvent(gBrowser, 'select', this, false);
+    addEvent(gBrowser, 'pagehide', this, false);
+
+    // observe the mouse moving to show the tooltip
     addEvent(gBrowser.mPanelContainer, 'mousemove', this, false);
+
+    // create the tooltip base and observe its closing
     addEvent(this.create(), 'popuphiding', this, false);
   },
 
@@ -189,8 +219,9 @@ const TooltipPanel = {
         }
         break;
 
-      // cleanup when the document with a opened tooltip is unloaded
-      case 'unload':
+      // cleanup when the current page is switched
+      case 'select':
+      case 'pagehide':
         this.hide();
         break;
 
@@ -242,7 +273,7 @@ const TooltipPanel = {
 
     if (this.mPanel.state === 'open') {
       // don't open the tooltip of the same target
-      if (this.mTarget === target) {
+      if (TargetNode.equals(target)) {
         return;
       }
 
@@ -286,7 +317,8 @@ const TooltipPanel = {
       return false;
     }
 
-    this.mTarget = aNode;
+    // @note use the initial |aNode|
+    TargetNode.init(aNode);
 
     let box = this.mBox;
 
@@ -304,7 +336,7 @@ const TooltipPanel = {
       box.removeChild(box.firstChild);
     }
 
-    this.mTarget = null;
+    TargetNode.uninit();
   },
 
   getNodeTip: function(aNode) {
