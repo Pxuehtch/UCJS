@@ -695,13 +695,9 @@ const PageObserver = (function() {
              aFlags & STATE_IS_REQUEST &&
              aRequest.name === 'about:document-onload-blocker')) {
           setTimeout((aDocument) => {
-            try {
-              // error will occur if the document is not alive
-              if (aDocument.readyState) {
-                state.site.script(aDocument);
-              }
+            if (checkAlive(aDocument)) {
+              state.site.script(aDocument);
             }
-            catch (ex) {}
           }, 500, aBrowser.contentDocument);
 
           mBrowserState.delete(aBrowser);
@@ -715,6 +711,24 @@ const PageObserver = (function() {
     onRefreshAttempted: function() {},
     onLinkIconAvailable: function() {}
   };
+
+  /**
+   * Checks whether a document is alive or not
+   *
+   * @param aDocument {Document}
+   * @return {boolean}
+   *
+   * TODO: this is a workaround for checking a dead object. consider a
+   * legitimate method instead
+   */
+  function checkAlive(aDocument) {
+    try {
+      return !!(aDocument && aDocument.defaultView);
+    }
+    catch (ex) {}
+
+    return false;
+  }
 
   function fixupURL(aURL) {
     let uri;
