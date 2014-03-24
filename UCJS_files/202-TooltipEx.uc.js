@@ -342,9 +342,10 @@ const TooltipHandler = {
     }
 
     if (data.length || isLinkNode(aNode)) {
+      let rest = isLinkNode(aNode) ? aNode.textContent : '';
+
       // add a tag name to the top of array
-      data.unshift(make($tag(aNode.localName),
-        isLinkNode(aNode) ? aNode.textContent : ''));
+      data.unshift(make($tag(aNode.localName), rest));
     }
 
     return data;
@@ -455,12 +456,10 @@ function isHtmlDocument(aDocument) {
 
 function isLinkNode(aNode) {
   return (
-    aNode.nodeType === Node.ELEMENT_NODE &&
-    (aNode instanceof HTMLAnchorElement ||
-     aNode instanceof HTMLAreaElement ||
-     aNode instanceof HTMLLinkElement ||
-     aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') ===
-     'simple')
+    aNode instanceof HTMLAnchorElement ||
+    aNode instanceof HTMLAreaElement ||
+    aNode instanceof HTMLLinkElement ||
+    aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') === 'simple'
   );
 }
 
