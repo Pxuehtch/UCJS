@@ -422,27 +422,32 @@ const TooltipPanel = {
     // the data equals the return value of |makeTipData|
     let {text, head, rest, cropped} = aTipData;
 
-    let item = $E('label', {
+    // helper functions
+    // TODO: use some element instead of <label>
+    let $span = (attribute) => $E('label', attribute);
+    let $text = (text) => window.document.createTextNode(text);
+
+    let item = $span({
       style: kPanelStyle.tipItem,
       'tiptext': text
     });
 
-    let accent = $E('label', {
+    let accent = $span({
       style: kPanelStyle.tipAccent + 'margin:0;'
     });
 
-    accent.appendChild($T(head));
+    accent.appendChild($text(head));
 
     item.appendChild(accent);
-    item.appendChild($T(rest));
+    item.appendChild($text(rest));
 
     if (cropped) {
-      let crop = $E('label', {
+      let crop = $span({
         style: kPanelStyle.tipCrop + 'margin:0;',
         tooltiptext: text
       });
 
-      crop.appendChild($T(kTipForm.ellipsis));
+      crop.appendChild($text(kTipForm.ellipsis));
 
       item.appendChild(crop);
     }
@@ -500,10 +505,6 @@ function handleAttribute(aNode, aName, aValue) {
     return true;
   }
   return false;
-}
-
-function $T(aText) {
-  return window.document.createTextNode(aText);
 }
 
 /**
