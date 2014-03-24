@@ -37,7 +37,7 @@ function unescURLForUI(aURL, aBaseURL) {
 
 // for debug
 function log(aMsg) {
-  return window.ucjsUti.logMessage('TooltipEx.uc.js', aMsg);
+  return window.ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
 }
 
 /**
