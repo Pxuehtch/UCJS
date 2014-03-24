@@ -43,25 +43,31 @@ function log(aMsg) {
 /**
  * Max width of tooltip panel
  *
- * @value {integer} [em] number of characters > 0
+ * @value {integer} [em > 0]
+ *   number of characters
  */
 const kMaxPanelWidth = 40;
 
 /**
  * CSS of tooltip panel
  *
- * @key BASE {CSS} base appearance of the tooltip panel
- * @key TIP_ITEM {CSS} styles for each tip item
- * @key TIP_ACCENT {CSS} accent in a tip item
- *      specifically, '<tag>', 'title-attribute=' and 'URL-attribute=scheme:'
- * @key TIP_CROP {CSS} ellipsis of a cropped long text in a tip item
- *      URL except 'javascript:' and 'data:' is not cropped
+ * @key base {CSS}
+ *   base appearance of the tooltip panel
+ * @key tipItem {CSS}
+ *   styles for each tip item
+ * @key tipAccent {CSS}
+ *   accent in a tip item
+ *   @note applied to '<tag>', 'description-attribute=' and
+ *   'URL-attribute=scheme:'
+ * @key tipCrop {CSS}
+ *   ellipsis of a cropped long text in a tip item
+ *   @note a URL except 'javascript:' and 'data:' is not cropped
  */
 const kPanelStyle = {
-  BASE: '-moz-appearance:tooltip;',
-  TIP_ITEM: 'font:1em/1.2 monospace;',
-  TIP_ACCENT: 'color:blue;font-weight:bold;',
-  TIP_CROP: 'color:red;font-weight:bold;'
+  base: '-moz-appearance:tooltip;',
+  tipItem: 'font:1em/1.2 monospace;',
+  tipAccent: 'color:blue;font-weight:bold;',
+  tipCrop: 'color:red;font-weight:bold;'
 };
 
 /**
@@ -74,29 +80,29 @@ const kTipForm = {
 };
 
 /**
- * Attributes that is scanned for a tip item
+ * Scanned attributes for a tip item
  *
- * @key titles {string[]}
+ * @key descriptions {string[]}
  * @key URLs {string[]}
  */
 const kScanAttribute = {
-  titles: ['title', 'alt', 'summary'],
-  URLs: ['href', 'src', 'usemap', 'action', 'data', 'cite', 'longdesc',
-         'background']
+	descriptions: ['title', 'alt', 'summary'],
+	URLs: ['href', 'src', 'usemap', 'action', 'data', 'cite', 'longdesc',
+	       'background']
 };
 
 /**
  * Identifiers
  */
 const kID = {
-  PANEL: 'ucjs_tooltipex_panel',
-  TIP_TEXT: 'ucjs_tooltipex_tiptext'
+	panel: 'ucjs_tooltipex_panel',
+	tipText: 'ucjs_tooltipex_tiptext'
 };
 
 /**
  * Tooltip handler
  */
-const TooltipHandler = {
+const TooltipPanel = {
   /**
    * Tooltip <panel>
    */
@@ -174,7 +180,7 @@ const TooltipHandler = {
 
   handleEvent: function(aEvent) {
     switch (aEvent.type) {
-      // trigger of the showing a tooltip
+      // display the tooltip
       case 'mousemove':
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
@@ -182,14 +188,17 @@ const TooltipHandler = {
           }
         }
         break;
+
       // cleanup when the document with a opened tooltip is unloaded
       case 'unload':
         this.hide();
         break;
-      // cleanup when a tooltip hides
+
+      // cleanup when a tooltip closes
       case 'popuphiding':
-        this.clean();
+        this.clear();
         break;
+
       // command of the context menu of a tooltip
       case 'command':
         this.copyTipInfo();
@@ -199,21 +208,24 @@ const TooltipHandler = {
 
   create: function() {
     let panel = $E('panel', {
-      id: kID.PANEL,
-      style: kPanelStyle.BASE + 'white-space:pre;',
+      id: kID.panel,
+      style: kPanelStyle.base + 'white-space:pre;',
       backdrag: true
     });
+
     panel.style.maxWidth = kMaxPanelWidth + 'em';
 
     // context menu
     let copymenu = $E('menuitem', {
       label: 'Copy'
     });
+
     addEvent(copymenu, 'command', this, false);
 
     let popup = $E('menupopup', {
       onpopuphiding: 'event.stopPropagation();'
     });
+
     popup.appendChild(copymenu);
 
     panel.contextMenu = '_child';
@@ -281,7 +293,7 @@ const TooltipHandler = {
     return true;
   },
 
-  clean: function() {
+  clear: function() {
     let box = this.mBox;
 
     while (box.firstChild) {
@@ -304,7 +316,7 @@ const TooltipHandler = {
       attributes[attribute.localName] = attribute.value;
     });
 
-    kScanAttribute.titles.forEach((name) => {
+    kScanAttribute.descriptions.forEach((name) => {
       let value = attributes[name];
 
       if (value === null || value === undefined) {
@@ -407,13 +419,14 @@ const TooltipHandler = {
     let {text, head, rest, cropped} = aTipData;
 
     let item = $E('label', {
-      style: kPanelStyle.TIP_ITEM,
+      style: kPanelStyle.tipItem,
       'tiptext': text
     });
 
     let accent = $E('label', {
-      style: kPanelStyle.TIP_ACCENT + 'margin:0;'
+      style: kPanelStyle.tipAccent + 'margin:0;'
     });
+
     accent.appendChild($T(head));
 
     item.appendChild(accent);
@@ -421,9 +434,10 @@ const TooltipHandler = {
 
     if (cropped) {
       let crop = $E('label', {
-        style: kPanelStyle.TIP_CROP + 'margin:0;',
+        style: kPanelStyle.tipCrop + 'margin:0;',
         tooltiptext: text
       });
+
       crop.appendChild($T(kTipForm.ellipsis));
 
       item.appendChild(crop);
@@ -436,7 +450,7 @@ const TooltipHandler = {
     let info = [];
 
     Array.forEach(this.mBox.childNodes, (node) => {
-      info.push(node[kID.TIP_TEXT]);
+      info.push(node[kID.tipText]);
     });
 
     copyToClipboard(info.join('\n'));
@@ -478,7 +492,7 @@ function copyToClipboard(aText) {
 
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'tiptext') {
-    aNode[kID.TIP_TEXT] = aValue;
+    aNode[kID.tipText] = aValue;
     return true;
   }
   return false;
@@ -492,7 +506,7 @@ function $T(aText) {
  * Entry point
  */
 function TooltipEx_init() {
-  TooltipHandler.init();
+  TooltipPanel.init();
 }
 
 TooltipEx_init();
