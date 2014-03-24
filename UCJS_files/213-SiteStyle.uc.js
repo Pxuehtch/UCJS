@@ -698,7 +698,7 @@ const PageObserver = (function() {
             if (checkAlive(aDocument)) {
               state.site.script(aDocument);
             }
-          }, 500, aBrowser.contentDocument);
+          }, 100, aBrowser.contentDocument);
 
           mBrowserState.delete(aBrowser);
         }
