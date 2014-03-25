@@ -252,7 +252,10 @@ function initRange(aRange, aSourceRange) {
       }
     }
 
-    return {border: border, count: count};
+    return {
+      border: border,
+      count: count
+    };
   }
 
   // expand range before the source selection
@@ -277,7 +280,10 @@ function initRange(aRange, aSourceRange) {
 
   aRange.setEndAfter(result.border);
 
-  return {start: startPos, end: endPos};
+  return {
+    start: startPos,
+    end: endPos
+  };
 }
 
 function encodeToPlain(aRange) {

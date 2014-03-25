@@ -86,17 +86,17 @@ const kTipForm = {
  * @key URLs {string[]}
  */
 const kScanAttribute = {
-	descriptions: ['title', 'alt', 'summary'],
-	URLs: ['href', 'src', 'usemap', 'action', 'data', 'cite', 'longdesc',
-	       'background']
+  descriptions: ['title', 'alt', 'summary'],
+  URLs: ['href', 'src', 'usemap', 'action', 'data', 'cite', 'longdesc',
+         'background']
 };
 
 /**
  * Identifiers
  */
 const kID = {
-	panel: 'ucjs_tooltipex_panel',
-	tipText: 'ucjs_tooltipex_tiptext'
+  panel: 'ucjs_tooltipex_panel',
+  tipText: 'ucjs_tooltipex_tiptext'
 };
 
 /**
@@ -286,7 +286,7 @@ const TooltipPanel = {
 
     if (this.build(target)) {
       this.mPanel.
-      openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
+        openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
     }
   },
 
@@ -527,8 +527,8 @@ function splitURL(aURL, aBaseURL) {
 
 function copyToClipboard(aText) {
   Cc['@mozilla.org/widget/clipboardhelper;1'].
-  getService(Ci.nsIClipboardHelper).
-  copyString(aText);
+    getService(Ci.nsIClipboardHelper).
+    copyString(aText);
 }
 
 function handleAttribute(aNode, aName, aValue) {

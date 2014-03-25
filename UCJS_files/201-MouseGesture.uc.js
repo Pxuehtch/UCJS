@@ -120,7 +120,7 @@ const kGestureSet = [
     name: 'ページの履歴',
     command: function({event}) {
       $ID('backForwardMenu').
-      openPopupAtScreen(event.screenX + 5, event.screenY + 5, false);
+        openPopupAtScreen(event.screenX + 5, event.screenY + 5, false);
     }
   },
   {

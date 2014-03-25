@@ -641,7 +641,7 @@ function Util() {
 
   function loadJscript(aPath, aDocument) {
     $S('@mozilla.org/moz/jssubscript-loader;1', 'mozIJSSubScriptLoader').
-    loadSubScript(aPath, aDocument.defaultView, 'UTF-8');
+      loadSubScript(aPath, aDocument.defaultView, 'UTF-8');
   }
 
   function loadOverlay(aData, aDocument) {
@@ -673,7 +673,7 @@ function Util() {
       replace('%message%', aMessage);
 
     $S('@mozilla.org/consoleservice;1', 'nsIConsoleService').
-    logStringMessage(str);
+      logStringMessage(str);
   }
 
   /**

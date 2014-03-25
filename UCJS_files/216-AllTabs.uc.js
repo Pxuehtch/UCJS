@@ -367,7 +367,7 @@ function onCommand(aEvent) {
   else if (element.parentNode.id === kID.ALLTABS_POPUP &&
            element.tab && element.tab.selected) {
     gBrowser.tabContainer.mTabstrip.
-    ensureElementIsVisible(element.tab);
+      ensureElementIsVisible(element.tab);
   }
 }
 

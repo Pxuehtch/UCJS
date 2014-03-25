@@ -222,7 +222,7 @@ function ScriptListPanel(aScripts) {
 
       treeRow.appendChild($E('treecell', {
         label: script.getURL('FILENAME').
-        replace(/^.+\.([a-z]+)$/i, '$1').toUpperCase()
+          replace(/^.+\.([a-z]+)$/i, '$1').toUpperCase()
       }));
 
       treeRow.appendChild($E('treecell', {

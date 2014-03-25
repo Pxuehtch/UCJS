@@ -441,11 +441,11 @@ const kSiteList = [
         }, intervalTime);
 
         aDocument.defaultView.
-        addEventListener('unload', clear, false);
+          addEventListener('unload', clear, false);
 
         function clear() {
           aDocument.defaultView.
-          removeEventListener('unload', clear, false);
+            removeEventListener('unload', clear, false);
 
           clearInterval(timerID);
         }

@@ -531,7 +531,7 @@ function HorizontalCentered() {
 
     return selectionController &&
       selectionController.
-      getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
+        getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
   }
 
   function scrollSelection(aSelection, aView) {

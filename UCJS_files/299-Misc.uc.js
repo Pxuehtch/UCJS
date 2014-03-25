@@ -207,8 +207,8 @@ function log(aMsg) {
   ';
 
   command = command.
-  trim().replace(/\s+/g, ' ').
-  replace(/%kPrefTabFocus%/g, kPrefTabFocus);
+    trim().replace(/\s+/g, ' ').
+    replace(/%kPrefTabFocus%/g, kPrefTabFocus);
 
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_toggleTabFocus',
@@ -322,7 +322,7 @@ function log(aMsg) {
   });
 
   gBrowser.tabContextMenu.
-  insertBefore(menu, $ID('context_undoCloseTab'));
+    insertBefore(menu, $ID('context_undoCloseTab'));
 
 })();
 

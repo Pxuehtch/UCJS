@@ -143,7 +143,7 @@ function TextboxStyler() {
     // a page navigation with shortcut key)
     if (!inChromeWindow()) {
       mTextbox.ownerDocument.defaultView.
-      addEventListener('pagehide', handleEvent, false);
+        addEventListener('pagehide', handleEvent, false);
     }
   }
 
@@ -155,7 +155,7 @@ function TextboxStyler() {
 
       if (!inChromeWindow()) {
         mTextbox.ownerDocument.defaultView.
-        removeEventListener('pagehide', handleEvent, false);
+          removeEventListener('pagehide', handleEvent, false);
       }
 
       restoreStyle();

@@ -231,7 +231,7 @@ const mTabBarClickEvent = {
         // Shift: the current opened tabs are closed
         // Ctrl: only the first of the multiple homepages is opened
         window.ucjsUtil.
-        openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
+          openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
         break;
       case (MC && notTabs):
         // reopen the prev-closed tab
@@ -276,7 +276,7 @@ const mTabBarClickEvent = {
 function switchTabsOnMouseWheel() {
   addEvent(gBrowser.tabContainer, 'wheel', (event) => {
     gBrowser.tabContainer.
-    advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
+      advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
 
     event.stopPropagation();
     event.preventDefault();
