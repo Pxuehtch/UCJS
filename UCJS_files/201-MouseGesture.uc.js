@@ -991,7 +991,7 @@ function GestureManager() {
       }
       catch (ex) {
         mError = 'Command error';
-        log(showStatusText() + '\n' + ex);
+        log([showStatusText(), ex]);
       }
     }
   }

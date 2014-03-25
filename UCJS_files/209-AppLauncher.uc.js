@@ -1139,7 +1139,7 @@ function warn(aTitle, aMsg) {
     aMsg = [aMsg];
   }
 
-  let msg = log('Error: ' + aTitle + '\n' + aMsg.join('\n'));
+  let msg = log(['Error: ' + aTitle, aMsg.join('\n')]);
 
   if (msg.length > kMaxLen) {
     msg = msg.substr(0, kMaxLen) + '\n...(see console log)';

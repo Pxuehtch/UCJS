@@ -229,7 +229,7 @@ function logOnMessageAdded(aMessageNode, aOutput) {
     return;
   }
 
-  log(aOutput + kLogMark);
+  log([aOutput, kLogMark]);
 }
 
 /**
