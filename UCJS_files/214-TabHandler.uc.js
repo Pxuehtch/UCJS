@@ -31,33 +31,38 @@ function log(aMsg) {
 }
 
 /**
- * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
- * click
- *
- * @value {integer} millisecond
- *
- * @note the default click is deactivated at 'mouseup' in time, otherwise
- * activated
+ * Preference
  */
-const kClickThresholdTimer = 200;
+const kPref = {
+  /**
+   * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
+   * click
+   *
+   * @value {integer} millisecond
+   *
+   * @note the default click is deactivated at 'mouseup' in time, otherwise
+   * activated
+   */
+  clickThresholdTime: 200,
 
-/**
- * Disable the default click action on the tab bar
- *
- * @value {boolean}
- *   true: disabled completely
- *   false: disabled when the custom click is recognized, otherwise enabled
- *
- * @note the default actions;
- *   middle-click on a tab: closes a tab
- *   double-click on a tabbar: opens a new tab
- *   middle-click on a tabbar: opens a new tab
- *   @see chrome://browser/content/tabbrowser.xml::
- *     <binding id="tabbrowser-tabs">::
- *     <handler event="dblclick">
- *     <handler event="click">
- */
-const kDisableDefaultClick = true;
+  /**
+   * Disable the default click action on the tab bar
+   *
+   * @value {boolean}
+   *   true: disabled completely
+   *   false: disabled when the custom click is recognized, otherwise enabled
+   *
+   * @note the default actions;
+   *   middle-click on a tab: closes a tab
+   *   double-click on a tabbar: opens a new tab
+   *   middle-click on a tabbar: opens a new tab
+   *   @see chrome://browser/content/tabbrowser.xml::
+   *     <binding id="tabbrowser-tabs">::
+   *     <handler event="dblclick">
+   *     <handler event="click">
+   */
+  disableDefaultClick: true
+}
 
 /**
  * Handler of the click event on the tab bar
@@ -88,7 +93,7 @@ const mTabBarClickEvent = {
 
   handleEvent: function(aEvent) {
     // 1.show the default contextmenu
-    // 2.do not handle an UI element(button/menu) on the tab bar
+    // 2.do not handle a UI element(button/menu) on the tab bar
     if (aEvent.button === 2 ||
         !this.checkTargetArea(aEvent)) {
       return;
@@ -98,12 +103,14 @@ const mTabBarClickEvent = {
       case 'mousedown':
         this.onMouseDown(aEvent);
         break;
+
       case 'mouseup':
         this.onMouseUp(aEvent);
         break;
+
       case 'click':
       case 'dblclick':
-        if (kDisableDefaultClick ||
+        if (kPref.disableDefaultClick ||
             this.handled) {
           aEvent.preventDefault();
           aEvent.stopPropagation();
@@ -120,7 +127,7 @@ const mTabBarClickEvent = {
     if (aVal === true) {
       this.mouseDownTimer = setTimeout(() => {
         this.idledMouseDown = false;
-      }, kClickThresholdTimer);
+      }, kPref.clickThresholdTime);
     }
     else if (aVal === false) {
       clearTimeout(this.mouseDownTimer);
@@ -138,7 +145,7 @@ const mTabBarClickEvent = {
         this.idledMouseUp = false;
         this.doAction();
         this.handled = false;
-      }, kClickThresholdTimer);
+      }, kPref.clickThresholdTime);
     }
     else if (aVal === false) {
       clearTimeout(this.mouseUpTimer);
@@ -187,7 +194,7 @@ const mTabBarClickEvent = {
 
     // skip UI elements on the tab bar
     // TODO: the probable elements 'menu*|toolbar*' are examined. and more
-    // other items may be needed
+    // other items may be needed to test
     if (/^(?:menu|toolbar)/.test(originalTarget.localName)) {
       return null;
     }
@@ -225,6 +232,11 @@ const mTabBarClickEvent = {
         backTab = area === 'backTab',
         notTabs = area === 'notTabs';
 
+    /**
+     * Action settings
+     *
+     * TODO: separate the definition of actions, and generalize the code
+     */
     switch (true) {
       case (LDC && notTabs):
         // open home pages
@@ -233,11 +245,13 @@ const mTabBarClickEvent = {
         window.ucjsUtil.
           openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
         break;
+
       case (MC && notTabs):
         // reopen the prev-closed tab
         // @see chrome://browser/content/browser.js::undoCloseTab
         window.undoCloseTab();
         break;
+
       case (LC && foreTab):
         if (ctrlKey) {
           // select/reopen the opener tab
@@ -251,6 +265,7 @@ const mTabBarClickEvent = {
           window.ucjsTabEx.selectPrevSelectedTab(target, option);
         }
         break;
+
       case (LDC && foreTab):
         // pin/unpin a tab
         if (!target.pinned) {
@@ -260,6 +275,7 @@ const mTabBarClickEvent = {
           gBrowser.unpinTab(target);
         }
         break;
+
       case (MC && (foreTab || backTab)):
         // close a tab
         window.ucjsUtil.removeTab(target, {safeBlock: true});
@@ -269,9 +285,10 @@ const mTabBarClickEvent = {
 };
 
 /**
- * cycle-selects tabs with the mouse wheel scroll on a tab/tabbar
+ * Cycle-selects tabs with a mouse wheel scroll on the tabbar
  *
- * @note disables the default scrolling at overflowed
+ * @note disables the default scrolling of tabs when the tabbar overflows with
+ * tabs
  */
 function switchTabsOnMouseWheel() {
   addEvent(gBrowser.tabContainer, 'wheel', (event) => {
