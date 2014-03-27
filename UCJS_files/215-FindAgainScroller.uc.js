@@ -207,76 +207,11 @@ function attachFindAgainCommand() {
  *   check: {function}
  */
 function ScrollObserver() {
-  let mScrollable = Scrollable();
-
-  function Scrollable() {
-    let mItems = new Map();
-    let mScrollState = null;
-
-    function uninit() {
-      mItems.clear();
-      mScrollState = null;
-    }
-
-    function addItem(aNode) {
-      mItems.set(aNode, getScroll(aNode));
-    }
-
-    function check() {
-      if (!mItems.size) {
-        return null;
-      }
-
-      updateScrollState();
-
-      return mScrollState;
-    }
-
-    function updateScrollState() {
-      // update the goal
-      // once the scrolled node is found, we simply observe it
-      if (mScrollState) {
-        let {node, goal} = mScrollState;
-        let now = getScroll(node);
-
-        if (now.x !== goal.x || now.y !== goal.y) {
-          mScrollState.goal = now;
-        }
-
-        return;
-      }
-
-      // first updating
-      for (let [node, scroll] of mItems) {
-        let now = getScroll(node);
-
-        if (now.x !== scroll.x || now.y !== scroll.y) {
-          // @note |mScrollState| is used as the parameters of
-          // |SmoothScroll::start|, |HorizontalCentered::align|
-          mScrollState = {
-            node: node,
-            start: scroll,
-            goal: now
-          };
-
-          return;
-        }
-      }
-    }
-
-    return {
-      uninit: uninit,
-      addItem: addItem,
-      check: check
-    };
-  }
+  let mScrollables = new Map();
+  let mScrollState = null;
 
   function attach() {
     scanScrollables(window.content);
-  }
-
-  function detach() {
-    mScrollable.uninit();
   }
 
   function scanScrollables(aWindow) {
@@ -297,74 +232,94 @@ function ScrollObserver() {
     }
 
     // register the document that can be scrolled
+    // @note including scrollable <html> and <body>
     if (aWindow.scrollMaxX || aWindow.scrollMaxY) {
-      mScrollable.addItem(aWindow);
+      addScrollable(aWindow);
     }
 
     // register the elements that can be scrolled
+    // @note we have a simple processing for performance problems
 
-    // WORKAROUND: skip a big document because of performance problems
-    // TODO: handle it
+    // WORKAROUND: filter out a big document
+    // TODO: handle any size
     if (doc.getElementsByTagName('*').length > 10000) {
       return;
     }
 
     // WORKAROUND: find only the typical scrollable element
-    // @note <div>|<p>: there may be many elements, so that we grab the deepest
-    // one
     // TODO: grab all kind of scrollable elements
     let xpath = [
       './/textarea',
       './/pre',
       './/ul',
       './/ol',
-      './/div[not(descendant::div)]',
-      './/p[not(descendant::p)]'
+      './/div',
+      './/p'
     ].join('|');
 
     let nodes = $X(xpath, root);
-    let scrollables = [];
 
+    // WORKAROUND: only check the scrollability of an element itself
+    // TODO: consider scrollable ancestors
     for (let i = 0, l = nodes.snapshotLength; i < l; i++) {
-      let scrollable = testScrollable(scrollables, nodes.snapshotItem(i));
+      let node = nodes.snapshotItem(i);
 
-      if (scrollable) {
-        scrollables.push(scrollable);
-        mScrollable.addItem(scrollable);
+      if (node.clientHeight < node.scrollHeight ||
+          node.clientWidth < node.scrollWidth) {
+        addScrollable(node);
       }
     }
   }
 
-  function testScrollable(aRegisteredNodes, aBaseNode) {
-    let isRegistered = (aNode) => aRegisteredNodes.indexOf(aNode) > -1;
+  function addScrollable(aNode) {
+    mScrollables.set(aNode, getScroll(aNode));
+  }
 
-    let isScrollable = (aNode) =>
-      aNode.clientHeight < aNode.scrollHeight ||
-      aNode.clientWidth  < aNode.scrollWidth;
+  function detach() {
+    mScrollables.clear();
+    mScrollState = null;
+  }
 
-    // @note the initial node is an element node
-    let node = aBaseNode;
-
-    while (node) {
-      // <html> and <body> are handled as the scrollable document
-      if (node.nodeType !== Node.ELEMENT_NODE ||
-          node instanceof HTMLBodyElement ||
-          node instanceof HTMLHtmlElement) {
-        return null;
-      }
-
-      if (isRegistered(node)) {
-        return null;
-      }
-
-      if (isScrollable(node)) {
-        return node;
-      }
-
-      node = node.parentNode;
+  function check() {
+    if (!mScrollables.size) {
+      return null;
     }
 
-    return null;
+    updateScrollState();
+
+    return mScrollState;
+  }
+
+  function updateScrollState() {
+    // update the goal
+    // once the scrolled node is found, we simply observe it
+    if (mScrollState) {
+      let {node, goal} = mScrollState;
+      let now = getScroll(node);
+
+      if (now.x !== goal.x || now.y !== goal.y) {
+        mScrollState.goal = now;
+      }
+
+      return;
+    }
+
+    // first updating
+    for (let [node, scroll] of mScrollables) {
+      let now = getScroll(node);
+
+      if (now.x !== scroll.x || now.y !== scroll.y) {
+        // @note |mScrollState| is used as the parameters of
+        // |SmoothScroll::start|, |HorizontalCentered::align|
+        mScrollState = {
+          node: node,
+          start: scroll,
+          goal: now
+        };
+
+        return;
+      }
+    }
   }
 
   function getScroll(aNode) {
@@ -391,7 +346,7 @@ function ScrollObserver() {
   return {
     attach: attach,
     detach: detach,
-    check: mScrollable.check
+    check: check
   };
 }
 
