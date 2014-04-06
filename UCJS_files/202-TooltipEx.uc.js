@@ -197,15 +197,15 @@ const TooltipPanel = {
   mBox: null,
 
   init: function() {
-    // hide the tooltip when the current page is switched
-    addEvent(gBrowser, 'select', this, false);
-    addEvent(gBrowser, 'pagehide', this, false);
+    // create the tooltip base and observe its closing
+    addEvent(this.create(), 'popuphiding', this, false);
 
     // observe the mouse moving to show the tooltip
     addEvent(gBrowser.mPanelContainer, 'mousemove', this, false);
 
-    // create the tooltip base and observe its closing
-    addEvent(this.create(), 'popuphiding', this, false);
+    // hide the tooltip when the current page is switched
+    addEvent(gBrowser, 'select', this, false);
+    addEvent(gBrowser, 'pagehide', this, false);
   },
 
   handleEvent: function(aEvent) {
