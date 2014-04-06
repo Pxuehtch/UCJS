@@ -508,12 +508,15 @@ function UserScript_getURL(aFile, aType) {
     // a file name
     case 'FILENAME':
       return aFile.leafName;
+
     // a path of folders under the chrome folder
     case 'FOLDER':
       return D(path()).slice(D(chrome()).length, -(aFile.leafName.length));
+
     // a path under the chrome folder
     case 'IN_CHROME':
       return D(path().slice(chrome().length));
+
     // a full path with the modified time to run a script
     // @note requesting a filename with the unique identifier can update the
     // script cache
@@ -523,6 +526,7 @@ function UserScript_getURL(aFile, aType) {
          getLastModifiedTime(aFile) :
          aFile.lastModifiedTime);
   }
+
   // a full path
   return D(path());
 }
@@ -738,20 +742,25 @@ function Log(aEnabled) {
       case (typeof aValue === 'string'):
         data = aValue;
         break;
+
       case (aValue === undefined):
         data = '<undefined>';
         break;
+
       case (aValue === null):
         data = '<null>';
         break;
+
       case (Array.isArray(aValue)):
         // TODO: format
         data = aValue.toSource();
         break;
+
       case (aValue.constructor === Object):
         // TODO: handle nested objects
         data = Object.keys(aValue).map((key) => key + ': ' + aValue[key]);
         break;
+
       default:
         data = '<unknown>: ' + aValue.toString();
     }

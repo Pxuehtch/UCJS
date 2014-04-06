@@ -349,9 +349,11 @@ const Beautifier = (function() {
               value = setting.defaultValue;
             }
             break;
+
           case 'string':
             value = value + '';
             break;
+
           case 'boolean':
             value = !!value;
             break;
@@ -384,9 +386,11 @@ const Beautifier = (function() {
       case kTextType.js:
         beautify = JSBeautify;
         break;
+
       case kTextType.css:
         beautify = CSSBeautify;
         break;
+
       default:
         throw Error('unsupported text type');
     }
@@ -549,9 +553,11 @@ function getTextType(aDocument) {
     case 'application/javascript':
     case 'application/x-javascript':
       return kTextType.js;
+
     case 'text/css':
       return kTextType.css;
   }
+
   return null;
 }
 

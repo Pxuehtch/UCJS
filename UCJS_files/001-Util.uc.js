@@ -970,6 +970,7 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
     case 'AUTHOR_SHEET':
       type = styleSheetService[aType];
       break;
+
     default:
       return;
   }
@@ -1136,7 +1137,7 @@ function scanPlacesDB(aParam) {
  *   onError: {function} [optional]
  *   onCancel: {function} [optional]
  * @return {mozIStoragePendingStatement}
- *   a object with a .cancel() method allowing to cancel the request
+ *   an object with a .cancel() method allowing to cancel the request
  *
  * TODO: use |createAsyncStatement|
  * I'm not sure why it doesn't work well
@@ -1196,8 +1197,10 @@ function asyncScanPlacesDB(aParam) {
           case Ci.mozIStorageStatementCallback.REASON_FINISHED:
             onSuccess(this.rows.length ? this.rows : null);
             break;
+
           case Ci.mozIStorageStatementCallback.REASON_ERROR:
             break;
+
           case Ci.mozIStorageStatementCallback.REASON_CANCELED:
             break;
         }

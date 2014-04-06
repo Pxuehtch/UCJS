@@ -151,7 +151,7 @@ const kPreset = [
 ];
 
 /**
- * Handler of fixing up a alias with the page information
+ * Handler of fixing up an alias with the page information
  *
  * @return {hash}
  *   @member create {function}
@@ -193,10 +193,12 @@ const AliasFixup = (function() {
       case 'URL':
       case 'u':
         return aPageInfo.URL;
+
       case 'TITLE':
       case 't':
         return aPageInfo.title;
     }
+
     return '';
   }
 
@@ -205,13 +207,16 @@ const AliasFixup = (function() {
       case 'SCHEMELESS':
       case 'sl':
         return aText.replace(/^https?:\/\//, '');
+
       case 'PARAMLESS':
       case 'pl':
         return aText.replace(/[?#].*$/, '');
+
       case 'ENCODE':
       case 'en':
         return encodeURIComponent(aText);
     }
+
     return '';
   }
 

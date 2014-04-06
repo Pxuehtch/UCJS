@@ -616,14 +616,17 @@ function handleAttribute(aNode, aName, aValue) {
     case 'icon':
       aNode.style.listStyleImage = 'url(' + aValue + ')';
       break;
+
     case 'action':
       aNode.setAttribute('oncommand', aValue);
       // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
       aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
       break;
+
     default:
       return false;
   }
+
   return true;
 }
 

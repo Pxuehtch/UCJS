@@ -270,9 +270,11 @@ function TextboxStyler() {
         }
         break;
       }
+
       case 'compositionend':
         StyleUpdater.set();
         break;
+
       case 'blur':
       case 'pagehide':
         uninit();

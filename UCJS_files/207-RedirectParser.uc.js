@@ -583,6 +583,7 @@ function handleAttribute(aNode, aName, aValue) {
         }
       });
       break;
+
     case 'action': {
       let command = makeActionCommand(aValue);
 
@@ -593,9 +594,11 @@ function handleAttribute(aNode, aName, aValue) {
       }
       break;
     }
+
     default:
       return false;
   }
+
   return true;
 }
 
@@ -612,10 +615,12 @@ function makeActionCommand(aValue) {
     case 'open':
       command = 'ucjsUtil.openTab("%URL%",{inBackground:event.button===1});';
       break;
+
     case 'copy':
       command = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
         'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
       break;
+
     default:
       return '';
   }

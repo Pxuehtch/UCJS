@@ -180,7 +180,7 @@ const kPreset = [
 ];
 
 /**
- * Handler of fixing up a alias with the data
+ * Handler of fixing up an alias with the data
  *
  * @return {hash}
  *   @member create {function}
@@ -216,14 +216,18 @@ const AliasFixup = (function() {
       case 'SCHEMELESS':
       case 'sl':
         return aData.replace(/^https?:\/\//, '');
+
       case 'PARAMLESS':
       case 'pl':
         return aData.replace(/[?#].*$/, '');
+
       case 'ENC':
         return encodeURIComponent(aData);
+
       case 'RAW':
         return aData;
     }
+
     return '';
   }
 

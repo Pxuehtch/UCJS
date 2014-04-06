@@ -638,21 +638,25 @@ const MenuUI = (function() {
             name: aData.name,
             title: aData.title
           });
+
         case 'official':
           return F(kFormat.official, {
             title: aData.title
           });
+
         case 'searching':
           return F(kFormat.searching, {
             title: aData.title,
             score: +(aData.score).toFixed(5)
           });
+
         case 'numbering':
           return F(kFormat.numbering, {
             here: aData.here,
             there: aData.there
           });
       }
+
       // unreachable here, for avoiding warnings
       return null;
     }
@@ -1871,6 +1875,7 @@ function createURI(aURI, aFlag) {
       path = removeQuery(path);
       spec = removeQuery(spec);
       // fall through
+
     case 'NO_REF':
       path = removeRef(path);
       spec = removeRef(spec);
@@ -1958,9 +1963,11 @@ function handleAttribute(aNode, aName, aValue) {
       aNode[kID.data] = {};
       aNode[kID.data][aName] = aValue;
       break;
+
     default:
       return false;
   }
+
   return true;
 }
 

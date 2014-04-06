@@ -469,6 +469,7 @@ function SkipInvisible() {
 
 /**
  * Handler for the centering horizontally of a found text
+ *
  * @return {hash}
  *   align: {function}
  */
@@ -534,6 +535,7 @@ function HorizontalCentered() {
 
 /**
  * Handler for scrolling an element smoothly
+ *
  * @return {hash}
  *   start: {function}
  *   cancel: {function}

@@ -48,7 +48,7 @@ function log(aMsg) {
  *     form: {XPath of <form>}
  *     input: {XPath of <input>}
  *   parse: {function} [optional; only with type 'get']
- *     functions to parse the response text when the load is complete
+ *     a function to parse the response text when the load is complete
  *     @param aResponseText {string}
  *     @param aXHR {nsIXMLHttpRequest}
  */
@@ -94,7 +94,7 @@ const kPresets = [
 ];
 
 /**
- * Handler of fixing up a alias with the data
+ * Handler of fixing up an alias with the data
  *
  * @return {hash}
  *   @member create {function}
@@ -136,14 +136,18 @@ const AliasFixup = (function() {
       case 'SCHEMELESS':
       case 'sl':
         return aData.replace(/^https?:\/\//, '');
+
       case 'PARAMLESS':
       case 'pl':
         return aData.replace(/[?#].*$/, '');
+
       case 'ENC':
         return encodeURIComponent(aData);
+
       case 'RAW':
         return aData;
     }
+
     return '';
   }
 
@@ -157,6 +161,7 @@ const AliasFixup = (function() {
  */
 const RequestHandler = (function() {
   // The minimum time for waiting a request
+  //
   // @value {integer} [milliseconds > 0]
   const kMinCooldownTime = 2000;
 
@@ -165,7 +170,7 @@ const RequestHandler = (function() {
     mRequestTimeList: {},
 
     update: function(aURL) {
-      // @note no error checks due to supposing that |URL| of a item of
+      // @note no error checks due to supposing that |URL| of an item of
       // |kPreset| is valid
       let host = (/^https?:\/\/([^\/]+)/.exec(aURL))[1];
 

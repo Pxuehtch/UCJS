@@ -123,9 +123,11 @@ const Button = {
       case 'mouseover':
         Tooltip.show(aEvent);
         break;
+
       case 'mouseout':
         Tooltip.hide(aEvent);
         break;
+
       case 'click':
         if (aEvent.button !== 2) {
           Tooltip.hide(aEvent);
@@ -313,6 +315,7 @@ const Tooltip = {
         dir = backward ? 'prev' : 'next';
         title = title || kUI.title.noHistory;
         break;
+
       case 'border':
         dir = backward ? 'rewind' : 'fastforward';
         if (distance === 1) {
@@ -320,6 +323,7 @@ const Tooltip = {
           URL = '';
         }
         break;
+
       case 'stop':
         dir = backward ? 'start' : 'end';
         if (distance === 1) {
@@ -331,6 +335,7 @@ const Tooltip = {
           URL = '';
         }
         break;
+
       case 'referrer':
         dir = 'referrer';
         break;

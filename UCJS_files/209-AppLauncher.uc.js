@@ -706,22 +706,27 @@ function doAction(aApp, aAction) {
   switch (FileExtUtil.getBaseAction(aAction)) {
     case 'launchTool':
       break;
+
     case 'openPage':
       targetURL = window.content.document.location.href;
       break;
+
     case 'viewPageSource':
       save = true;
       targetDocument = window.content.document;
       targetURL = targetDocument.location.href;
       break;
+
     case 'openFrame':
       targetURL = sourceDocument.location.href;
       break;
+
     case 'viewFrameSource':
       save = true;
       targetDocument = sourceDocument;
       targetURL = targetDocument.location.href;
       break;
+
     case 'openLink':
     case 'sendMail':
     case 'readNews':
@@ -729,6 +734,7 @@ function doAction(aApp, aAction) {
     case 'openFTP':
       targetURL = gContextMenu.linkURL;
       break;
+
     case 'openFile':
     case 'viewLinkSource':
     case 'openLinkMedia':
@@ -736,10 +742,12 @@ function doAction(aApp, aAction) {
       save = true;
       targetURL = gContextMenu.linkURL;
       break;
+
     case 'openMedia':
       save = true;
       targetURL = gContextMenu.mediaURL;
       break;
+
     case 'viewImage':
       save = true;
 
@@ -753,16 +761,20 @@ function doAction(aApp, aAction) {
         targetURL = sourceDocument.location.href;
       }
       break;
+
     case 'viewBGImage':
       save = true;
       targetURL = gContextMenu.bgImageURL;
       break;
+
     case 'downloadMedia':
       targetURL = gContextMenu.mediaURL;
       break;
+
     case 'downloadImage':
       targetURL = gContextMenu.imageURL;
       break;
+
     case 'downloadBGImage':
       targetURL = gContextMenu.bgImageURL;
       break;

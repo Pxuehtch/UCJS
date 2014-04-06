@@ -217,23 +217,28 @@ const mTab = (function () {
         getter = (value) =>  JSON.parse(htmlUnescape(value));
         setter = (value) => htmlEscape(JSON.stringify(value));
         break;
+
       case 'open': // {integer}
         name = kID.OPENTIME;
         getter = getInt;
         break;
+
       case 'select': // {integer}
         name = kID.SELECTTIME;
         getter = getInt;
         break;
+
       case 'read': // {integer}
         name = kID.READTIME;
         getter = getInt;
         break;
+
       case 'ancestors': // {integer[]}
         name = kID.ANCESTORS;
         getter = (value) => value.split(' ').map(getInt);
         setter = (value) => value.join(' ');
         break;
+
       default:
         throw Error('unknown aKey of tab data');
     }
@@ -280,10 +285,12 @@ const mTab = (function () {
         name = kID.OPENTIME;
         getter = getInt;
         break;
+
       case 'select': // {integer}
         name = kID.SELECTTIME;
         getter = getInt;
         break;
+
       default:
         throw Error('unsupported aKey of a closed tab data');
     }
@@ -483,6 +490,7 @@ const mTabOpener = {
         mTab.data(aTab, 'query', query);
         break;
       }
+
       case 'NewTab':
         if (mReferrer.isRelatedToCurrent(aTab)) {
           // inherit the ancestors so that the opener tab becomes the parent
@@ -493,6 +501,7 @@ const mTabOpener = {
           mTab.data(aTab, 'ancestors', [open].concat(ancs));
         }
         break;
+
       case 'DuplicatedTab': {
         // this duplicated tab has the same data of its original tab
         // renew the ancestors so that the original tab becomes the parent
@@ -800,6 +809,7 @@ const mSessionStore = {
       case 'SSWindowStateBusy':
         this.isRestoring = true;
         break;
+
       case 'SSWindowStateReady':
         this.isRestoring = false;
 
@@ -813,6 +823,7 @@ const mSessionStore = {
           delete this.isResumeStartup;
         }
         break;
+
       case 'DOMContentLoaded':
         window.removeEventListener('DOMContentLoaded', this, false);
         this.persistTabAttribute();
@@ -918,12 +929,15 @@ const mTabEvent = {
       case 'UcjsTabExTabOpen':
         this.onTabOpen(tab);
         break;
+
       case 'TabSelect':
         this.onTabSelect(tab);
         break;
+
       case 'TabClose':
         this.onTabClose(tab);
         break;
+
       case 'SSTabRestored':
         this.onSSTabRestored(tab);
         break;
@@ -1068,21 +1082,26 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
   switch (aPosType) {
     case kPosType.DEFAULT:
       break;
+
     case kPosType.FIRST_END:
       pos = 0;
       break;
+
     case kPosType.LAST_END:
       pos = tabsNum - 1;
       break;
+
     case kPosType.PREV_ADJACENT:
       pos =
         (0 < basePos) ?
         ((tabPos < basePos) ? basePos - 1 : basePos) :
         0;
       break;
+
     case kPosType.NEXT_ADJACENT:
       pos = (basePos < tabsNum - 1) ? basePos + 1 : tabsNum - 1;
       break;
+
     case kPosType.NEXT_INCREMENT_DESCENDANT:
       pos = getTabPos(tabs, getFamilyTab(baseTab,
         'next farthest descendant'));
@@ -1091,6 +1110,7 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
         ((pos < tabsNum - 1) ? pos + 1 : tabsNum - 1) :
         basePos + 1;
       break;
+
     default:
       throw Error('unknown kPosType for OPENPOS');
   }
@@ -1105,28 +1125,38 @@ function selectTabAt(aBaseTab, aPosTypes) {
     switch (posType) {
       case kPosType.DEFAULT:
         return true;
+
       case kPosType.FIRST_END:
         gBrowser.selectTabAtIndex(0)
         return true;
+
       case kPosType.LAST_END:
         gBrowser.selectTabAtIndex(-1)
         return true;
+
       case kPosType.PREV_ADJACENT:
         return !!selectTab(getAdjacentTab(aBaseTab, -1));
+
       case kPosType.NEXT_ADJACENT:
         return !!selectTab(getAdjacentTab(aBaseTab, +1));
+
       case kPosType.PREV_ADJACENT_ANCESTOR:
         return !!selectTab(getFamilyTab(aBaseTab,
           'prev adjacent ancestor'));
+
       case kPosType.NEXT_ADJACENT_EXTENDED_DESCENDANT:
         return !!selectTab(getFamilyTab(aBaseTab,
           'next adjacent extended descendant'));
+
       case kPosType.ANYWHERE_OPENER:
         return !!selectOpenerTab(aBaseTab);
+
       case kPosType.ANYWHERE_PREV_SELECTED:
         return !!selectPrevSelectedTab(aBaseTab, {traceBack: true});
+
       case kPosType.ANYWHERE_OLDEST_UNREAD:
         return !!selectOldestUnreadTab();
+
       default:
         throw Error('unknown kPosType for SELECTPOS');
     }

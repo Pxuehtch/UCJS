@@ -670,6 +670,7 @@ function MouseManager() {
           }
         }
         break;
+
       case 'mouseup':
         if (button === 2) {
           // allow the gesture stops
@@ -681,10 +682,12 @@ function MouseManager() {
           mElseDown = false;
         }
         break;
+
       case 'dragend':
         // @note always button===0
         mElseDown = false;
         break;
+
       case 'mousemove':
       case 'wheel':
         // a gesture is in progress
@@ -692,6 +695,7 @@ function MouseManager() {
           mSuppressMenu = true;
         }
         break;
+
       case 'contextmenu':
         enableContextMenu(!mSuppressMenu);
 
@@ -699,6 +703,7 @@ function MouseManager() {
           mSuppressMenu = false;
         }
         break;
+
       case 'click':
         if (button === 2) {
           // force to reset all states

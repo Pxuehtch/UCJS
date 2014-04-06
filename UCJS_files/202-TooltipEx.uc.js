@@ -272,12 +272,12 @@ const TooltipPanel = {
     let target = aEvent.target;
 
     if (this.mPanel.state === 'open') {
-      // don't open the tooltip of the same target
+      // leave the tooltip of the same target
       if (TargetNode.equals(target)) {
         return;
       }
 
-      // close a existing tooltip of the different target and open a new one
+      // close an existing tooltip of the different target and open a new one
       this.hide();
     }
     else if (this.mPanel.state !== 'closed') {
@@ -407,7 +407,8 @@ const TooltipPanel = {
       let lines = [], last = 0;
 
       for (let i = 0, l = text.length, count = 0; i < l; i++) {
-        // count character width
+        // count characters based on width
+        // WORKAROUND: regards only printable ASCII character as one letter
         count += /[ -~]/.test(text[i]) ? 1 : 2;
 
         if (count > maxLen) {
@@ -455,7 +456,7 @@ const TooltipPanel = {
     let {text, head, rest, cropped} = aTipData;
 
     // helper functions
-    // TODO: use some element instead of <label>
+    // TODO: use a reliable element instead of <label>
     let $span = (attribute) => $E('label', attribute);
     let $text = (text) => window.document.createTextNode(text);
 

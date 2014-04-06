@@ -265,6 +265,7 @@ function updateState(aOption) {
       case 'button':
         // nothing to do
         break;
+
       case 'checkbox':
         if (button.checked !== item.checked) {
           button.checked = item.checked;
