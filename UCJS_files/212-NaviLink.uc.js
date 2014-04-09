@@ -1948,6 +1948,29 @@ function getBaseDomain(aURI) {
     return '';
   }
 
+  /**
+   * WORKAROUND: |nsIEffectiveTLDService::getBaseDomain| returns a wrong value
+   * for a specific host
+   *
+   * I have found only 'github.io' for now
+   * e.g. for http://gitbookio.github.io/javascript/
+   * Expected:
+   * base domain = github.io
+   * public suffix = io
+   * Actual:
+   * base domain = gitbookio.github.io
+   * public suffix = github.io
+   */
+  const kBadHosts = [
+    'github.io'
+  ];
+
+  for (let host of kBadHosts) {
+    if (aURI.host.endsWith(host)) {
+      return host;
+    }
+  }
+
   try {
     return Services.eTLD.getBaseDomain(aURI);
   }

@@ -571,6 +571,11 @@ const URLFilter = (function() {
            (mergedRegExpTLD && mergedRegExpTLD.test(getTLDURL(aURL)));
   }
 
+  /**
+   * TODO: fix a wrong return value for a specific host
+   * I have found only 'github.io' for now
+   * @see NaviLink.uc.js::getBaseDomain
+   */
   function getTLDURL(aURL) {
     try {
       // @see chrome://global/content/contentAreaUtils.js::makeURI
