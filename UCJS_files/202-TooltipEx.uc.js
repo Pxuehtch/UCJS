@@ -41,12 +41,24 @@ function log(aMsg) {
 }
 
 /**
- * Max width of tooltip panel
- *
- * @value {integer} [em > 0]
- *   number of characters
+ * Preference
  */
-const kMaxPanelWidth = 40;
+const kPref = {
+  /**
+   * Max width of tooltip panel
+   *
+   * @value {integer} [>0]
+   *   number of characters
+   */
+  maxLineLength: 40,
+
+  /**
+   * Number of lines in the visible portion of the cropped text
+   *
+   * @value {integer} [>0]
+   */
+  visibleLinesWhenCropped: 2
+};
 
 /**
  * CSS of tooltip panel
@@ -244,7 +256,7 @@ const TooltipPanel = {
       backdrag: true
     });
 
-    panel.style.maxWidth = kMaxPanelWidth + 'em';
+    panel.style.maxWidth = kPref.maxLineLength + 'em';
 
     // context menu
     let copymenu = $E('menuitem', {
@@ -401,8 +413,9 @@ const TooltipPanel = {
 
   makeTipData: function(aHead, aRest, aUncrop) {
     function process(sourceText) {
-      // make new lines of the maxLen characters
-      let maxLen = kMaxPanelWidth;
+      const {maxLineLength, visibleLinesWhenCropped} = kPref;
+
+      // make new lines
       let text = sourceText, cropped = false;
       let lines = [], last = 0;
 
@@ -411,7 +424,7 @@ const TooltipPanel = {
         // WORKAROUND: regards only printable ASCII character as one letter
         count += /[ -~]/.test(text[i]) ? 1 : 2;
 
-        if (count > maxLen) {
+        if (count > maxLineLength) {
           lines.push(text.substring(last, i).trim());
           last = i;
           count = 1;
@@ -421,11 +434,9 @@ const TooltipPanel = {
       if (lines.length) {
         lines.push(text.substring(last).trim());
 
-        // number of lines in the visible portion of the cropped text
-        const kVisibleLines = 2;
-
-        cropped = !aUncrop && lines.length > kVisibleLines;
-        text = (cropped ? lines.slice(0, kVisibleLines) : lines).join('\n');
+        cropped = !aUncrop && lines.length > visibleLinesWhenCropped;
+        text = (cropped ? lines.slice(0, visibleLinesWhenCropped) : lines).
+          join('\n');
       }
 
       return [text, cropped];
