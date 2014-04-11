@@ -319,7 +319,7 @@ const TooltipPanel = {
 
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
-        tips = tips.concat(this.getNodeTip(node));
+        tips = tips.concat(this.collectTipData(node));
       }
 
       node = node.parentNode;
@@ -335,7 +335,7 @@ const TooltipPanel = {
     let box = this.mBox;
 
     tips.forEach((tip) => {
-      box.appendChild(this.buildTipItem(tip));
+      box.appendChild(this.createTipItem(tip));
     });
 
     return true;
@@ -351,7 +351,7 @@ const TooltipPanel = {
     TargetNode.uninit();
   },
 
-  getNodeTip: function(aNode) {
+  collectTipData: function(aNode) {
     // helper functions
     let make = this.makeTipData;
     let $attr = (name) => kTipForm.attribute.replace('%name%', name);
@@ -371,7 +371,7 @@ const TooltipPanel = {
         return;
       }
 
-      data.push(make($attr(name), value));
+      data.push(make($attr(name), value, true));
     });
 
     kScanAttribute.URLs.forEach((name) => {
@@ -384,20 +384,20 @@ const TooltipPanel = {
       if (value) {
         let [scheme, rest] = splitURL(value, aNode.baseURI);
 
-        // URL except 'javascript:' and 'data:' is displayed without cropped
-        let cropped = /^javascript:|^data:/.test(scheme);
+        // the long URL with 'javascript:' and 'data:' will be cropped
+        let doCrop = /^javascript:|^data:/.test(scheme);
 
-        data.push(make($attr(name) + scheme, rest, !cropped));
+        data.push(make($attr(name) + scheme, rest, doCrop));
       }
       else {
-        data.push(make($attr(name), ''));
+        data.push(make($attr(name), '', true));
       }
     });
 
     for (let name in attributes) {
       // <event> attribute
       if (/^on/.test(name)) {
-        data.push(make($attr(name), attributes[name]));
+        data.push(make($attr(name), attributes[name], true));
       }
     }
 
@@ -405,66 +405,90 @@ const TooltipPanel = {
       let rest = isLinkNode(aNode) ? aNode.textContent : '';
 
       // add a tag name to the top of array
-      data.unshift(make($tag(aNode.localName), rest));
+      data.unshift(make($tag(aNode.localName), rest, true));
     }
 
     return data;
   },
 
-  makeTipData: function(aHead, aRest, aUncrop) {
-    function process(sourceText) {
-      const {maxLineLength, visibleLinesWhenCropped} = kPref;
-
-      // make new lines
-      let text = sourceText, cropped = false;
-      let lines = [], last = 0;
-
-      for (let i = 0, l = text.length, count = 0; i < l; i++) {
-        // count characters based on width
-        // WORKAROUND: regards only printable ASCII character as one letter
-        count += /[ -~]/.test(text[i]) ? 1 : 2;
-
-        if (count > maxLineLength) {
-          lines.push(text.substring(last, i).trim());
-          last = i;
-          count = 1;
-        }
-      }
-
-      if (lines.length) {
-        lines.push(text.substring(last).trim());
-
-        cropped = !aUncrop && lines.length > visibleLinesWhenCropped;
-        text = (cropped ? lines.slice(0, visibleLinesWhenCropped) : lines).
-          join('\n');
-      }
-
-      return [text, cropped];
-    }
-
+  /**
+   * Make a formatted data for creating an element of tip info
+   *
+   * @param aHead {string}
+   * @param aRest {string}
+   * @param aDoCrop {boolean}
+   * @return {hash}
+   *   @note the value is passed to |createTipItem|
+   */
+  makeTipData: function(aHead, aRest, aDoCrop) {
     if (!aRest) {
       return {
         text: aHead,
-        head: aHead,
-        rest: '',
-        cropped: false
+        head: aHead
       };
     }
 
-    let rawText = (aHead + aRest).trim().replace(/\s+/g, ' ');
-    let [cookedText, cropped] = process(rawText);
+    let text = (aHead + aRest).trim().replace(/\s+/g, ' ');
+
+    let {wrappedText, croppedText} = this.wrapLines(text, aDoCrop);
 
     return {
-      text: rawText,
+      text: text,
       head: aHead,
-      rest: cookedText.substr(aHead.length),
-      cropped: cropped
+      rest: (croppedText || wrappedText).substr(aHead.length),
+      uncroppedText: croppedText && wrappedText
     };
   },
 
-  buildTipItem: function(aTipData) {
-    // the data equals the return value of |makeTipData|
-    let {text, head, rest, cropped} = aTipData;
+  function wrapLines(aText, aDoCrop) {
+    const {maxLineLength, visibleLinesWhenCropped} = kPref;
+
+    let lines = [];
+    let count = 0, last = 0;
+
+    for (let i = 0, l = aText.length; i < l; i++) {
+      // count characters based on width
+      // WORKAROUND: regards only printable ASCII character as one letter
+      count += /[ -~]/.test(aText[i]) ? 1 : 2;
+
+      if (count > maxLineLength) {
+        lines.push(aText.substring(last, i).trim());
+        last = i;
+        count = 1;
+      }
+    }
+
+    if (!lines.length) {
+      return {
+        wrappedText: aText
+      };
+    }
+
+    // add the last fragment of text
+    lines.push(aText.substring(last).trim());
+
+    let wrappedText = lines.join('\n');
+    let croppedText;
+
+    if (aDoCrop && lines.length > visibleLinesWhenCropped) {
+      croppedText = lines.slice(0, visibleLinesWhenCropped).join('\n');
+    }
+
+    return {
+      wrappedText: wrappedText,
+      croppedText: croppedText
+    };
+  },
+
+  /**
+   * Create an element of tip info
+   *
+   * @param aTipData {hash}
+   *   @note the value is created by |makeTipData|
+   * @return {Element}
+   */
+  createTipItem: function(aTipData) {
+    let {text, head, rest, uncroppedText} = aTipData;
 
     // helper functions
     // TODO: use a reliable element instead of <label>
@@ -485,7 +509,7 @@ const TooltipPanel = {
     item.appendChild(accent);
     item.appendChild($text(rest));
 
-    if (cropped) {
+    if (uncroppedText) {
       let crop = $span({
         style: kPanelStyle.tipCrop + 'margin:0;',
         tooltiptext: text
