@@ -414,7 +414,7 @@ const TooltipPanel = {
         if (count > maxLen) {
           lines.push(text.substring(last, i).trim());
           last = i;
-          count = 0;
+          count = 1;
         }
       }
 
