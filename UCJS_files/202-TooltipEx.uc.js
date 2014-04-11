@@ -202,32 +202,32 @@ const TargetNode = (function() {
 /**
  * Tooltip panel handler
  */
-const TooltipPanel = {
+const TooltipPanel = (function() {
   // tooltip <panel>
-  mPanel: null,
+  let mPanel;
 
   // container <box> for tip items data
-  mBox: null,
+  let mBox;
 
-  init: function() {
+  function init() {
     // create the tooltip base and observe its closing
-    addEvent(this.create(), 'popuphiding', this, false);
+    addEvent(create(), 'popuphiding', handleEvent, false);
 
     // observe the mouse moving to show the tooltip
-    addEvent(gBrowser.mPanelContainer, 'mousemove', this, false);
+    addEvent(gBrowser.mPanelContainer, 'mousemove', handleEvent, false);
 
     // hide the tooltip when the current page is switched
-    addEvent(gBrowser, 'select', this, false);
-    addEvent(gBrowser, 'pagehide', this, false);
-  },
+    addEvent(gBrowser, 'select', handleEvent, false);
+    addEvent(gBrowser, 'pagehide', handleEvent, false);
+  }
 
-  handleEvent: function(aEvent) {
+  function handleEvent(aEvent) {
     switch (aEvent.type) {
       // display the tooltip
       case 'mousemove':
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
-            this.show(aEvent);
+            show(aEvent);
           }
         }
         break;
@@ -235,22 +235,22 @@ const TooltipPanel = {
       // cleanup when the current page is switched
       case 'select':
       case 'pagehide':
-        this.hide();
+        hide();
         break;
 
       // cleanup when a tooltip closes
       case 'popuphiding':
-        this.clear();
+        clear();
         break;
 
       // command of the context menu of a tooltip
       case 'command':
-        this.copyTipInfo();
+        copyTipInfo();
         break;
     }
-  },
+  }
 
-  create: function() {
+  function create() {
     let panel = $E('panel', {
       id: kID.panel,
       style: kPanelStyle.base + 'white-space:pre;',
@@ -264,7 +264,7 @@ const TooltipPanel = {
       label: 'Copy'
     });
 
-    addEvent(copymenu, 'command', this, false);
+    addEvent(copymenu, 'command', handleEvent, false);
 
     let popup = $E('menupopup', {
       onpopuphiding: 'event.stopPropagation();'
@@ -275,44 +275,43 @@ const TooltipPanel = {
     panel.contextMenu = '_child';
     panel.appendChild(popup);
 
-    this.mBox = panel.appendChild($E('vbox'));
-    this.mPanel = $ID('mainPopupSet').appendChild(panel);
+    mBox = panel.appendChild($E('vbox'));
+    mPanel = $ID('mainPopupSet').appendChild(panel);
 
     return panel;
-  },
+  }
 
-  show: function(aEvent) {
+  function show(aEvent) {
     let target = aEvent.target;
 
-    if (this.mPanel.state === 'open') {
+    if (mPanel.state === 'open') {
       // leave the tooltip of the same target
       if (TargetNode.equals(target)) {
         return;
       }
 
       // close an existing tooltip of the different target and open a new one
-      this.hide();
+      hide();
     }
-    else if (this.mPanel.state !== 'closed') {
+    else if (mPanel.state !== 'closed') {
       return;
     }
 
-    if (this.build(target)) {
-      this.mPanel.
-        openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
+    if (build(target)) {
+      mPanel.openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
     }
-  },
+  }
 
-  hide: function() {
-    if (this.mPanel.state !== 'open') {
+  function hide() {
+    if (mPanel.state !== 'open') {
       return;
     }
 
     // |popuphiding| will be dispatched
-    this.mPanel.hidePopup();
-  },
+    mPanel.hidePopup();
+  }
 
-  build: function(aNode) {
+  function build(aNode) {
     let tips = [];
 
     // @note the initial node may be a text node
@@ -320,7 +319,7 @@ const TooltipPanel = {
 
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
-        tips = tips.concat(this.collectTipData(node));
+        tips = tips.concat(collectTipData(node));
       }
 
       node = node.parentNode;
@@ -333,28 +332,23 @@ const TooltipPanel = {
     // @note use the initial |aNode|
     TargetNode.init(aNode);
 
-    let box = this.mBox;
-
     tips.forEach((tip) => {
-      box.appendChild(this.createTipItem(tip));
+      mBox.appendChild(createTipItem(tip));
     });
 
     return true;
-  },
+  }
 
-  clear: function() {
-    let box = this.mBox;
-
-    while (box.firstChild) {
-      box.removeChild(box.firstChild);
+  function clear() {
+    while (mBox.firstChild) {
+      mBox.removeChild(mBox.firstChild);
     }
 
     TargetNode.uninit();
-  },
+  }
 
-  collectTipData: function(aNode) {
+  function collectTipData(aNode) {
     // helper functions
-    let make = this.makeTipData;
     let $attr = (name) => kTipForm.attribute.replace('%name%', name);
     let $tag = (name) => kTipForm.tag.replace('%tag%', name);
 
@@ -372,7 +366,7 @@ const TooltipPanel = {
         return;
       }
 
-      data.push(make($attr(name), value, true));
+      data.push(makeTipData($attr(name), value, true));
     });
 
     kScanAttribute.URLs.forEach((name) => {
@@ -388,17 +382,17 @@ const TooltipPanel = {
         // the long URL with 'javascript:' and 'data:' will be cropped
         let doCrop = /^javascript:|^data:/.test(scheme);
 
-        data.push(make($attr(name) + scheme, rest, doCrop));
+        data.push(makeTipData($attr(name) + scheme, rest, doCrop));
       }
       else {
-        data.push(make($attr(name), '', true));
+        data.push(makeTipData($attr(name), '', true));
       }
     });
 
     for (let name in attributes) {
       // <event> attribute
       if (/^on/.test(name)) {
-        data.push(make($attr(name), attributes[name], true));
+        data.push(makeTipData($attr(name), attributes[name], true));
       }
     }
 
@@ -406,11 +400,11 @@ const TooltipPanel = {
       let rest = isLinkNode(aNode) ? aNode.textContent : '';
 
       // add a tag name to the top of array
-      data.unshift(make($tag(aNode.localName), rest, true));
+      data.unshift(makeTipData($tag(aNode.localName), rest, true));
     }
 
     return data;
-  },
+  }
 
   /**
    * Make a formatted data for creating an element of tip info
@@ -421,7 +415,7 @@ const TooltipPanel = {
    * @return {hash}
    *   @note the value is passed to |createTipItem|
    */
-  makeTipData: function(aHead, aRest, aDoCrop) {
+  function makeTipData(aHead, aRest, aDoCrop) {
     if (!aRest) {
       return {
         text: aHead,
@@ -431,7 +425,7 @@ const TooltipPanel = {
 
     let text = (aHead + aRest).trim().replace(/\s+/g, ' ');
 
-    let {wrappedText, croppedText} = this.wrapLines(text, aDoCrop);
+    let {wrappedText, croppedText} = wrapLines(text, aDoCrop);
 
     return {
       text: text,
@@ -439,7 +433,7 @@ const TooltipPanel = {
       rest: (croppedText || wrappedText).substr(aHead.length),
       uncroppedText: croppedText && wrappedText
     };
-  },
+  }
 
   function wrapLines(aText, aDoCrop) {
     const {maxLineLength, visibleLinesWhenCropped} = kPref;
@@ -479,7 +473,7 @@ const TooltipPanel = {
       wrappedText: wrappedText,
       croppedText: croppedText
     };
-  },
+  }
 
   /**
    * Create an element of tip info
@@ -488,62 +482,72 @@ const TooltipPanel = {
    *   @note the value is created by |makeTipData|
    * @return {Element}
    */
-  createTipItem: function(aTipData) {
+  function createTipItem(aTipData) {
     let {text, head, rest, uncroppedText} = aTipData;
 
-    // helper functions
+    let $label = (attribute) => $E('label', attribute);
+
+    // an element for styling of a text
     // TODO: use a reliable element instead of <label>
-    let $span = (attribute) => $E('label', attribute);
+    let $span = (attribute) => {
+      attribute.style += 'margin:0';
+
+      return $E('label', attribute);
+    };
+
     let $text = (text) => window.document.createTextNode(text);
 
-    let item = $span({
+    let item = $label({
       style: kPanelStyle.tipItem,
       'tiptext': text
     });
 
     let accent = $span({
-      style: kPanelStyle.tipAccent + 'margin:0;'
+      style: kPanelStyle.tipAccent
     });
 
-    accent.appendChild($text(head));
+    item.appendChild(accent).appendChild($text(head));
 
-    item.appendChild(accent);
-    item.appendChild($text(rest));
+    if (rest) {
+      item.appendChild($text(rest));
+    }
 
     if (uncroppedText) {
       let subTooltip = $E('tooltip', {
         // TODO: consider more smart way to make a unique id
-        id: kID.subTooltip + this.mBox.childNodes.length,
+        id: kID.subTooltip + mBox.childNodes.length,
         style: kPanelStyle.tipItem
       });
 
       item.appendChild(subTooltip).
-        appendChild($E('label')).
+        appendChild($label()).
         appendChild($text(uncroppedText));
 
       let crop = $span({
-        style: kPanelStyle.tipCrop + 'margin:0;',
+        style: kPanelStyle.tipCrop,
         tooltip: subTooltip.id
       });
 
-      crop.appendChild($text(kTipForm.ellipsis));
-
-      item.appendChild(crop);
+      item.appendChild(crop).appendChild($text(kTipForm.ellipsis));
     }
 
     return item;
-  },
+  }
 
-  copyTipInfo: function() {
+  function copyTipInfo() {
     let info = [];
 
-    Array.forEach(this.mBox.childNodes, (node) => {
+    Array.forEach(mBox.childNodes, (node) => {
       info.push(node[kID.tipText]);
     });
 
     copyToClipboard(info.join('\n'));
   }
-};
+
+  return {
+    init: init
+  };
+})();
 
 function isHtmlDocument(aDocument) {
   let mime = aDocument.contentType;
