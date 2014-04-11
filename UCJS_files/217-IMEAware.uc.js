@@ -121,7 +121,9 @@ function TextboxStyler() {
     // clean-up existing handler
     uninit();
 
-    mTextbox = aNode.hasAttribute('anonid') ?
+    let inBrowserWindow = aNode.hasAttribute('anonid');
+
+    mTextbox = inBrowserWindow ?
       $X1('ancestor::*[local-name()="textbox"]', aNode) :
       aNode;
     mDefaultStyle = mTextbox.getAttribute('style') || null;
@@ -141,7 +143,7 @@ function TextboxStyler() {
 
     // watch 'pagehide' of a content window for when 'blur' unfired (e.g.
     // a page navigation with shortcut key)
-    if (!inChromeWindow()) {
+    if (!inBrowserWindow && mTextbox.ownerDocument.defaultView) {
       mTextbox.ownerDocument.defaultView.
         addEventListener('pagehide', handleEvent, false);
     }
@@ -153,7 +155,7 @@ function TextboxStyler() {
       mTextbox.removeEventListener('compositionend', handleEvent, false);
       mTextbox.removeEventListener('blur', handleEvent, false);
 
-      if (!inChromeWindow()) {
+      if (mTextbox.ownerDocument.defaultView) {
         mTextbox.ownerDocument.defaultView.
           removeEventListener('pagehide', handleEvent, false);
       }
@@ -196,9 +198,7 @@ function TextboxStyler() {
       style.setProperty(key, styleSet[key], 'important');
     }
 
-    if (inChromeWindow()) {
-      style.setProperty('-moz-appearance', 'none', 'important');
-    }
+    style.setProperty('-moz-appearance', 'none', 'important');
   }
 
   function restoreStyle() {
@@ -208,10 +208,6 @@ function TextboxStyler() {
     else {
       mTextbox.removeAttribute('style');
     }
-  }
-
-  function inChromeWindow() {
-    return mTextbox.ownerDocument.defaultView.top === window;
   }
 
   /**
