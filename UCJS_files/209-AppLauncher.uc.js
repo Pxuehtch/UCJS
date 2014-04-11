@@ -1058,7 +1058,8 @@ function makeFileName(aURI, aDocument) {
     }
   }
   else if (/^data$/.test(aURI.scheme)) {
-    let match = /image\/([a-z]+);/.exec(aURI.path);
+    let match = /^image\/([a-z]+);/.exec(aURI.path);
+
     if (match) {
       fileName = kDataImageFileName;
       extension = match[1];
