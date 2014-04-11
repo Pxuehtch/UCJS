@@ -107,8 +107,9 @@ const kScanAttribute = {
  * Identifiers
  */
 const kID = {
-  panel: 'ucjs_tooltipex_panel',
-  tipText: 'ucjs_tooltipex_tiptext'
+  panel: 'ucjs_TooltipEx_panel',
+  tipText: 'ucjs_TooltipEx_tipText',
+  subTooltip: 'ucjs_TooltipEx_subTooltip'
 };
 
 /**
@@ -510,9 +511,19 @@ const TooltipPanel = {
     item.appendChild($text(rest));
 
     if (uncroppedText) {
+      let subTooltip = $E('tooltip', {
+        // TODO: consider more smart way to make a unique id
+        id: kID.subTooltip + this.mBox.childNodes.length,
+        style: kPanelStyle.tipItem
+      });
+
+      item.appendChild(subTooltip).
+        appendChild($E('label')).
+        appendChild($text(uncroppedText));
+
       let crop = $span({
         style: kPanelStyle.tipCrop + 'margin:0;',
-        tooltiptext: text
+        tooltip: subTooltip.id
       });
 
       crop.appendChild($text(kTipForm.ellipsis));
