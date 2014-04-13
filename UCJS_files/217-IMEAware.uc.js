@@ -143,27 +143,24 @@ function TextboxStyler() {
 
     // watch 'pagehide' of a content window for when 'blur' unfired (e.g.
     // a page navigation with shortcut key)
-    if (!inBrowserWindow && mTextbox.ownerDocument.defaultView) {
-      mTextbox.ownerDocument.defaultView.
-        addEventListener('pagehide', handleEvent, false);
+    if (!inBrowserWindow) {
+      gBrowser.addEventListener('pagehide', handleEvent, false);
     }
   }
 
   function uninit() {
+    StyleUpdater.clear();
+
     if (checkAlive(mTextbox)) {
+      restoreStyle();
+
       mTextbox.removeEventListener('keyup', handleEvent, false);
       mTextbox.removeEventListener('compositionend', handleEvent, false);
       mTextbox.removeEventListener('blur', handleEvent, false);
-
-      if (mTextbox.ownerDocument.defaultView) {
-        mTextbox.ownerDocument.defaultView.
-          removeEventListener('pagehide', handleEvent, false);
-      }
-
-      restoreStyle();
     }
 
-    StyleUpdater.clear();
+    // @note no effect for unregistered event
+    gBrowser.removeEventListener('pagehide', handleEvent, false);
 
     mTextbox = null;
     mDefaultStyle = null;
@@ -235,19 +232,18 @@ function TextboxStyler() {
    * @return {string} key in |kStyleSet|
    */
   function getIMEState() {
-    let win = mTextbox.ownerDocument.defaultView;
+    // TODO: should I use |mTextbox.ownerDocument.defaultView| to the context
+    // view? but it looks like working well by using |window|
+    let imeMode = window.getComputedStyle(mTextbox, null).imeMode;
+    let utils = window.
+      QueryInterface(Ci.nsIInterfaceRequestor).
+      getInterface(Ci.nsIDOMWindowUtils);
 
-    if (win) {
-      let imeMode = win.getComputedStyle(mTextbox, null).imeMode;
-      let utils = win.
-        QueryInterface(Ci.nsIInterfaceRequestor).
-        getInterface(Ci.nsIDOMWindowUtils);
-
-      if (imeMode !== 'disabled' &&
-          utils.IMEStatus === utils.IME_STATUS_ENABLED) {
-        return utils.IMEIsOpen ? 'ON' : 'OFF';
-      }
+    if (imeMode !== 'disabled' &&
+        utils.IMEStatus === utils.IME_STATUS_ENABLED) {
+      return utils.IMEIsOpen ? 'ON' : 'OFF';
     }
+
     return 'DISABLED';
   }
 
