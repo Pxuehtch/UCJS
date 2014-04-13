@@ -121,11 +121,13 @@ function TextboxStyler() {
     // clean-up existing handler
     uninit();
 
-    let inBrowserWindow = aNode.hasAttribute('anonid');
+    let inContent =
+      aNode.ownerDocument.defaultView.top === gBrowser.contentWindow;
 
-    mTextbox = inBrowserWindow ?
+    mTextbox = aNode.hasAttribute('anonid') ?
       $X1('ancestor::*[local-name()="textbox"]', aNode) :
       aNode;
+
     mDefaultStyle = mTextbox.getAttribute('style') || null;
     mIMEState = getIMEState();
 
@@ -138,12 +140,12 @@ function TextboxStyler() {
     mTextbox.addEventListener('compositionend', handleEvent, false);
 
     // observe events for clean-up
-    // 'blur' will raise also before a page unloads
+    // @note 'blur' will raise also before a tab is selected/unloaded
     mTextbox.addEventListener('blur', handleEvent, false);
 
     // watch 'pagehide' of a content window for when 'blur' unfired (e.g.
-    // a page navigation with shortcut key)
-    if (!inBrowserWindow) {
+    // history back in a page)
+    if (inContent) {
       gBrowser.addEventListener('pagehide', handleEvent, false);
     }
   }
