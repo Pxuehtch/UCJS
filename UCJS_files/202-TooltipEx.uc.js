@@ -180,8 +180,8 @@ const TargetNode = (function() {
    * @param aNode {Node}
    * @return {boolean}
    *
-   * TODO: this is a workaround for checking a dead object. consider a
-   * legitimate method instead
+   * TODO: this is a workaround for checking a dead object. consider a reliable
+   * method instead
    */
   function checkAlive(aNode) {
     try {

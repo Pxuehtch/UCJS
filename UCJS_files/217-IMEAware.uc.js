@@ -150,7 +150,7 @@ function TextboxStyler() {
   }
 
   function uninit() {
-    if (checkValidity()) {
+    if (checkAlive(mTextbox)) {
       mTextbox.removeEventListener('keyup', handleEvent, false);
       mTextbox.removeEventListener('compositionend', handleEvent, false);
       mTextbox.removeEventListener('blur', handleEvent, false);
@@ -171,7 +171,8 @@ function TextboxStyler() {
   }
 
   function updateStyle() {
-    if (!checkValidity()) {
+    // @note check the validity for delayed execution
+    if (!checkAlive(mTextbox)) {
       return;
     }
 
@@ -211,16 +212,17 @@ function TextboxStyler() {
   }
 
   /**
-   * Checks whether a target textbox is alive or not
+   * Checks whether a node is alive or not
    *
+   * @param aNode {Node}
    * @return {boolean}
    *
-   * TODO: this is a workaround for checking a dead object. consider a
-   * legitimate method instead
+   * TODO: this is a workaround for checking a dead object. consider a reliable
+   * method instead
    */
-  function checkValidity() {
+  function checkAlive(aNode) {
     try {
-      return !!(mTextbox && mTextbox.parentNode);
+      return !!(aNode && aNode.parentNode);
     }
     catch (ex) {}
 
