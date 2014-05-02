@@ -66,7 +66,8 @@ function log(aMsg) {
 
   let tooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
-      id: 'ucjs_misc_urltooltip'
+      id: 'ucjs_misc_urltooltip',
+      style: 'word-break:break-all;word-wrap:break-word;'
     })
   );
 
