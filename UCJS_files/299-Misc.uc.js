@@ -340,6 +340,21 @@ function log(aMsg) {
     hidden: 'ucjs_statusInURLBar_hidden'
   };
 
+  /**
+   * Fx native UI elements
+   */
+   const UI = {
+    get statusInput() {
+      // <statuspanel>
+      return window.XULBrowserWindow.statusTextField;
+    },
+
+    get URLInput() {
+      // <input.urlbar-input>
+      return $ANONID('input', gURLBar);
+    }
+  };
+
   observeURLBar();
 
   function observeURLBar() {
@@ -353,25 +368,20 @@ function log(aMsg) {
         return;
       }
 
-      let statusPanel = getStatusPanel();
+      let statusInput = UI.statusInput;
 
-      if (statusPanel.hasAttribute(kState.hidden)) {
-        statusPanel.removeAttribute(kState.hidden);
+      if (statusInput.hasAttribute(kState.hidden)) {
+        statusInput.removeAttribute(kState.hidden);
       }
     }
 
     function hideStatus(aEvent) {
-      let statusPanel = getStatusPanel();
+      let statusInput = UI.statusInput;
 
-      if (!statusPanel.hasAttribute(kState.hidden)) {
-        statusPanel.setAttribute(kState.hidden, true);
+      if (!statusInput.hasAttribute(kState.hidden)) {
+        statusInput.setAttribute(kState.hidden, true);
       }
     }
-  }
-
-  function getStatusPanel() {
-    // <statuspanel>
-    return window.XULBrowserWindow.statusTextField;
   }
 
   // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
@@ -381,29 +391,28 @@ function log(aMsg) {
   function ucjsMisc_showStatusToURLBar_updateStatusField() {
     $updateStatusField.apply(this, arguments);
 
-    // TODO: should I change the timing of updating the panel rect in order to
-    // just fit the position?
-    updateStatusPanelRect();
+    // TODO: should I change the timing of updating the size in order to just
+    // fit the position?
+    updateStatusInputRect();
   };
 
-  function updateStatusPanelRect() {
-    let statusPanelStyle = getStatusPanel().style;
+  function updateStatusInputRect() {
+    let statusInputStyle = UI.statusInput.style;
     let rectKeys = ['top', 'left', 'width', 'height'];
 
     if (!window.fullScreen) {
-      // <input.urlbar-input>
-      let urlbarInputRect = $ANONID('input', gURLBar).getBoundingClientRect();
+      let URLInputRect = UI.URLInput.getBoundingClientRect();
 
       rectKeys.forEach((key) => {
-        if (statusPanelStyle[key] !== urlbarInputRect[key] + 'px') {
-          statusPanelStyle[key] = urlbarInputRect[key] + 'px';
+        if (statusInputStyle[key] !== URLInputRect[key] + 'px') {
+          statusInputStyle[key] = URLInputRect[key] + 'px';
         }
       });
     }
     else {
       rectKeys.forEach((key) => {
-        if (statusPanelStyle[key]) {
-          statusPanelStyle.removeProperty(key);
+        if (statusInputStyle[key]) {
+          statusInputStyle.removeProperty(key);
         }
       });
     }
