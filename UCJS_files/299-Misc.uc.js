@@ -66,7 +66,7 @@ function log(aMsg) {
 
   let tooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
-      id: 'ucjs_misc_urltooltip',
+      id: 'ucjs_misc_URLTooltip',
       style: 'word-break:break-all;word-wrap:break-word;'
     })
   );
@@ -118,7 +118,7 @@ function log(aMsg) {
 /**
  * Relocates the scroll-buttons when tabs overflowed on the tab bar
  */
-(function() {
+(function relocateTabbarScrollButtons() {
 
   // @note the margin of a pinned tab is 3px
   setChromeCSS('\
@@ -298,7 +298,7 @@ function log(aMsg) {
 (function() {
 
   let menu = $E('menu', {
-    id: 'ucjs_tabcontext_openNewTab',
+    id: 'ucjs_tabContext_openNewTab',
     label: '新しいタブ',
     accesskey: 'N'
   });
@@ -337,7 +337,7 @@ function log(aMsg) {
 (function() {
 
   const kState = {
-    hidden: 'ucjs_StatusInURLBar_hidden'
+    hidden: 'ucjs_statusInURLBar_hidden'
   };
 
   observeURLBar();

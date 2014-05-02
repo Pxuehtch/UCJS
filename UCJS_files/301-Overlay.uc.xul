@@ -29,8 +29,8 @@
   <command id="ucjs_cmd_RestartApp"
     oncommand="ucjsUtil.restartFx();"/>
 
-  <command id="ucjs_cmd_RestartApp_PurgeCaches"
-    oncommand="ucjsUtil.restartFx({purgeCaches: true});"/>
+  <command id="ucjs_cmd_RestartAppWithPurgeCaches"
+    oncommand="ucjsUtil.restartFx({purgeCaches:true});"/>
 
   <command id="ucjs_cmd_ToggleTabbar"
     oncommand="(function(el){el.collapsed=!el.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked',!el.collapsed);})(document.getElementById('TabsToolbar'));"/>
@@ -68,9 +68,9 @@
     key="[" modifiers="control,alt"
     command="ucjs_cmd_RestartApp"/>
 
-  <key id="ucjs_key_RestartApp_PurgeCaches"
+  <key id="ucjs_key_RestartAppWithPurgeCaches"
     key="{" modifiers="control,alt,shift"
-    command="ucjs_cmd_RestartApp_PurgeCaches"/>
+    command="ucjs_cmd_RestartAppWithPurgeCaches"/>
 
   <key id="ucjs_key_StopAllRequest"
     keycode="VK_ESCAPE" modifiers="shift"
@@ -91,31 +91,31 @@
 
 <!-- Menu -->
 <menupopup id="menu_FilePopup">
-  <menu id="ucjs_menu_RestartApp"
+  <menu id="ucjs_FileMenu_RestartAppMenu"
     label="再起動" accesskey="R"
     insertbefore="menu_FileQuitItem">
     <menupopup>
-      <menuitem id="ucjs_menuitem_RestartApp"
+      <menuitem id="ucjs_RestartAppMenu_RestartApp"
         label="再起動"
         key="ucjs_key_RestartApp"
         command="ucjs_cmd_RestartApp"/>
-      <menuitem id="ucjs_menuitem_RestartApp_PurgeCaches"
+      <menuitem id="ucjs_RestartAppMenu_RestartAppWithPurgeCaches"
         label="再起動（キャッシュ再構築）"
-        key="ucjs_key_RestartApp_PurgeCaches"
-        command="ucjs_cmd_RestartApp_PurgeCaches"/>
+        key="ucjs_key_RestartAppWithPurgeCaches"
+        command="ucjs_cmd_RestartAppWithPurgeCaches"/>
     </menupopup>
   </menu>
 </menupopup>
 
 <menupopup id="menu_ToolsPopup">
-  <menuitem id="ucjs_menuitem_OpenSearchEngineManager"
+  <menuitem id="ucjs_ToolsMenu_OpenSearchEngineManager"
     label="検索エンジンの管理" accesskey="s"
     insertbefore="menu_pageInfo"
     command="ucjs_cmd_OpenSearchEngineManager"/>
 </menupopup>
 
 <menupopup id="toolbar-context-menu">
-  <menuitem id="ucjs_menuitem_ToggleTabbar"
+  <menuitem id="ucjs_ToolbarContextMenu_ToggleTabbar"
     label="タブバー" accesskey="z" type="checkbox" checked="true"
     position="1"
     command="ucjs_cmd_ToggleTabbar"/>
