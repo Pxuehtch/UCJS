@@ -240,17 +240,6 @@ const Scratchpad = (function() {
           aScratchpad.setText(aState.text);
           aScratchpad.editor.setMode(aState.type);
 
-          /**
-           * WORKAROUND: extends the |setOption| function;
-           * |setOption| will be supported in Fx29
-           * @see https://bugzilla.mozilla.org/show_bug.cgi?id=951975
-           */
-          aScratchpad.editor.extend({
-            setOption: function({cm}, aKey, aValue) {
-              cm.setOption(aKey, aValue);
-            }
-          });
-
           for (let [key, value] in Iterator(aState.options)) {
             aScratchpad.editor.setOption(key, value);
           }
