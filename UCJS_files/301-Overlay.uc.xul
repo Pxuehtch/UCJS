@@ -115,10 +115,16 @@
 </menupopup>
 
 <menupopup id="toolbar-context-menu">
+  <!-- TODO: set the position with the order of bars -->
   <menuitem id="ucjs_ToolbarContextMenu_ToggleTabbar"
-    label="タブバー" accesskey="z" type="checkbox" checked="true"
-    position="1"
+    label="タブバー" accesskey="t" type="checkbox" checked="true"
+    insertbefore="viewToolbarsMenuSeparator"
     command="ucjs_cmd_ToggleTabbar"/>
+  <!-- TODO: set the anchor to more reliable element -->
+  <menuitem id="ucjs_ToolbarContextMenu_ShowPanelUI"
+    label="パネルメニューを表示" accesskey="p"
+    insertafter="viewToolbarsMenuSeparator"
+    oncommand="PanelUI.show({target:document.getElementById('nav-bar')});"/>
 </menupopup>
 
 </overlay>
