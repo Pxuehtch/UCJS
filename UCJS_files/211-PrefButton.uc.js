@@ -327,7 +327,7 @@ function makeButtons() {
 
 function setStyleSheet() {
   // @note the styles are adjusted to my themes
-  // @note assuming that the height of the toolbar-menubar is 24pt
+  // @note assuming that the nav-bar's height is 24px
   let css = '\
     #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\

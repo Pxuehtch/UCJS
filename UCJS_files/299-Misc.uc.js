@@ -119,7 +119,7 @@ function log(aMsg) {
  */
 (function() {
 
-  // the margin of a pinned tab is 3px
+  // @note the margin of a pinned tab is 3px
   setChromeCSS('\
     .tabbrowser-arrowscrollbox>.arrowscrollbox-scrollbox{\
       -moz-box-ordinal-group:1;\
@@ -445,7 +445,7 @@ function log(aMsg) {
 })();
 
 /**
- * The clear viewed scrollbars
+ * The clear scrollbar
  *
  * @note the setting for the themes of my Firefox and OS
  */
