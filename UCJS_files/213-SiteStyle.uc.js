@@ -116,6 +116,7 @@ const kNoiseList = [
   '||designiddatabase.tld',
   '||designlinkdatabase.tld',
   '||designrecipedatabase.tld',
+  '||dic.nicovideo.jp',
   '||faves.com',
   '||favolog.org',
   '||favotter.net',
@@ -123,6 +124,7 @@ const kNoiseList = [
   '||hiwihhi.com',
   '||marici.com',
   '||matope.com',
+  '||matome.naver.jp',
   '||newsing.jp',
   '||newzia.jp',
   '||pastebin.tld',
@@ -140,7 +142,8 @@ const kNoiseList = [
   '||twib.jp',
   '||twitmunin.com',
   '||tyudon.com',
-  '||wdclip.com'//,
+  '||wdclip.com',
+  '||xmarks.com'//,
 ];
 
 /**
