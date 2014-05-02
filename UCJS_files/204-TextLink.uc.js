@@ -143,7 +143,7 @@ const URLUtil = (function() {
       replace(/^[^s:\/]+(s?:\/)/, 'http$1').
       replace(/^www\./, 'http://www.').
       // remove trailing characters that may be marks unrelated to the URL
-      replace(/["')\]]?[,.;:]?$/, '');
+      replace(/["')\]]*[,.;:]*$/, '');
   }
 
   return {
