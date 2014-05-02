@@ -430,6 +430,7 @@ function log(aMsg) {
       max-width:none!important;\
       border-radius:1.5px!important;\
       background-color:hsl(0,0%,90%)!important;\
+      z-index:2!important;\
     }\
     #main-window:not([inFullscreen]) .statuspanel-inner{\
       margin:0!important;\
