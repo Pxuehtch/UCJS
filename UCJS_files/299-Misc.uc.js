@@ -45,6 +45,7 @@ function log(aMsg) {
  * @note the setting for the themes of my Firefox and OS
  *
  * TODO: |chromemargin| is reset after returning from the print-preview
+ * TODO: Fx29, |chromemargin| is reset when toggling the menubar
  * WORKAROUND: key command 'Alt+0'
  * @see |Overlay.uc.xul::ucjs_key_ResetMargin|
  *
