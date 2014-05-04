@@ -75,8 +75,14 @@ function log(aMsg) {
   const kTooltipShowDelay = 500; // [ms]
   let tooltipTimer = null;
 
+  // TODO: Fx29, the URL tooltip shows even if the URL does not overflow at
+  // startup. I guess that the overflow event occurs at startup, and leave
+  // |gURLBar._contentIsCropped| to true until a long URL loads
+  // WORKAROUND: reset to false, but it may be wrong timing
+  gURLBar._contentIsCropped = false;
+
   // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
-  $ID('urlbar')._initURLTooltip =
+  gURLBar._initURLTooltip =
   function ucjsMisc_uncropTooltip_initURLTooltip() {
     if (this.focused || !this._contentIsCropped || tooltipTimer) {
       return;
@@ -90,7 +96,7 @@ function log(aMsg) {
   };
 
   // @modified chrome://browser/content/urlbarBindings.xml::_hideURLTooltip
-  $ID('urlbar')._hideURLTooltip =
+  gURLBar._hideURLTooltip =
   function ucjsMisc_uncropTooltip_hideURLTooltip() {
     if (tooltipTimer) {
       clearTimeout(tooltipTimer);
