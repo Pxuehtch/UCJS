@@ -388,12 +388,9 @@ const mTabOpener = {
     ) {
       let newTab = $addTab.apply(this, arguments);
 
-      // not set the tab data when the resuming startup or a tab is
-      // duplicated/undo-closed since the data will be restored
+      // the data of duplicated/undo-closed tab will be restored
       if (mSessionStore.isRestoring) {
-        if (!mSessionStore.isResumeStartup) {
-          mTab.state.restoring(newTab, true);
-        }
+        mTab.state.restoring(newTab, true);
 
         return newTab;
       }
@@ -783,53 +780,66 @@ const mSessionStore = {
       Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
 
-    addEvent(window, 'SSWindowStateBusy', this, false);
-    addEvent(window, 'SSWindowStateReady', this, false);
+    addEvent(window, 'SSWindowStateBusy', () => {
+      this.isRestoring = true;
+    }, false);
+
+    addEvent(window, 'SSWindowStateReady', () => {
+      this.isRestoring = false;
+    }, false);
 
     /**
-     * we should wait until |persistTabAttribute| is ready for use;
-     * 1.boot startup: observes |DOMContentLoaded| which fires on the document
-     * for the first selected tab at startup
-     * @see |mStartup::init|
-     * 2.resume startup: observes the first |SSWindowStateReady|
+     * execute processing just after all tabs open at startup
      *
-     * TODO: consider the proper method of these observations
+     * TODO: use a reliable observer
+     * WORKAROUND:
+     * 1.on boot startup, observes |DOMContentLoaded| that fires on the
+     * document first selected
+     * 2.on resume startup, observes |SSTabRestored| that fires on the tab
+     * first selected
      */
-    this.isResumeStartup =
+    let isResumeStartup =
       Cc['@mozilla.org/browser/sessionstartup;1'].
       getService(Ci.nsISessionStartup).
       doRestore();
 
-    if (!this.isResumeStartup) {
-      window.addEventListener('DOMContentLoaded', this, false);
+    let eventTarget, eventType;
+
+    if (isResumeStartup) {
+      eventTarget = gBrowser.tabContainer;
+      eventType = 'SSTabRestored';
     }
+    else {
+      eventTarget = window;
+      eventType = 'DOMContentLoaded';
+    }
+
+    let onLoad = () => {
+      eventTarget.removeEventListener(eventType, onLoad, false);
+
+      this.setStartupTabs();
+      this.persistTabAttribute();
+    };
+
+    eventTarget.addEventListener(eventType, onLoad, false);
   },
 
-  handleEvent: function(aEvent) {
-    switch (aEvent.type) {
-      case 'SSWindowStateBusy':
-        this.isRestoring = true;
-        break;
+  setStartupTabs: function() {
+    Array.forEach(gBrowser.tabs, (tab) => {
+      // a boot startup tab (e.g. homepage)
+      if (!mTab.data(tab, 'open')) {
+        mTabOpener.set(tab, 'StartupTab');
+      }
 
-      case 'SSWindowStateReady':
-        this.isRestoring = false;
-
-        if (this.isResumeStartup) {
-          // reset the state of tabs after restored
-          mStartup.setupTabs();
-
-          this.persistTabAttribute();
-
-          // delete the property that is not used anymore
-          delete this.isResumeStartup;
-        }
-        break;
-
-      case 'DOMContentLoaded':
-        window.removeEventListener('DOMContentLoaded', this, false);
-        this.persistTabAttribute();
-        break;
-    }
+      if (tab.selected) {
+        // update |select|, and set |read| if first selected
+        mTabSelector.update(tab);
+      }
+      else {
+        // immediately stop the loading of a background tab
+        mTabSuspender.stop(tab);
+      }
+    });
   },
 
   persistTabAttribute: function() {
@@ -851,62 +861,6 @@ const mSessionStore = {
       return JSON.parse(this.SessionStore.getClosedTabData(window));
     }
     return null;
-  }
-};
-
-/**
- * Startup tabs handler
- *
- * 1.the boot startup opens the startup tabs (e.g. homepages). some pinned tabs
- * may be restored too
- * 2.the resume startup restores tabs
- */
-const mStartup = {
-  init: function() {
-    // setup tabs after its data is restored when the resume startup
-    // @see |mSessionStore|
-    if (mSessionStore.isResumeStartup) {
-      return;
-    }
-
-    /**
-     * execute |setupTabs| just after all tabs open
-     *
-     * the first |DOMContentLoaded| fires for the first selected tab at
-     * startup. that time seems enough after all tabs open
-     *
-     * XXX: I am not sure that all tabs may be opened before this user script
-     * runs
-     * TODO: use a proper method of observation
-     */
-    window.addEventListener('DOMContentLoaded', this, false);
-  },
-
-  uninit: function() {
-    window.removeEventListener('DOMContentLoaded', this, false);
-  },
-
-  handleEvent: function(aEvent) {
-    this.uninit();
-    this.setupTabs();
-  },
-
-  setupTabs: function() {
-    Array.forEach(gBrowser.tabs, (tab) => {
-      // a boot startup tab (e.g. homepage)
-      if (!mTab.data(tab, 'open')) {
-        mTabOpener.set(tab, 'StartupTab');
-      }
-
-      if (tab.selected) {
-        // update |select|, and set |read| if first selected
-        mTabSelector.update(tab);
-      }
-      else {
-        // immediately stop the loading of a background tab
-        mTabSuspender.stop(tab);
-      }
-    }, this);
   }
 };
 
@@ -1718,7 +1672,6 @@ function TabEx_init() {
   mTabOpener.init();
   mTabEvent.init();
   mSessionStore.init();
-  mStartup.init();
 }
 
 TabEx_init();
