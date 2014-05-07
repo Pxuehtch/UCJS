@@ -150,12 +150,10 @@ function setObserver() {
     return;
   }
 
-  Services.obs.addObserver(function observer() {
-    Services.obs.removeObserver(observer, 'web-console-created');
+  Services.obs.addObserver(function observer(aSubject, aTopic) {
+    Services.obs.removeObserver(observer, aTopic);
 
-    browserConsole = HUDService.getBrowserConsole();
-
-    observeMessageAdded(browserConsole);
+    observeMessageAdded(HUDService.getBrowserConsole());
   }, 'web-console-created', false);
 }
 
