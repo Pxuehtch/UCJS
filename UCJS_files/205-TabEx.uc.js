@@ -701,7 +701,8 @@ const mTabSuspender = {
       }
 
       if (isBusy) {
-        browser.stop();
+        // WORKAROUND: wait for the Fx processing to stop surely
+        setTimeout(() => browser.stop(), 0);
       }
 
       if (isBlank) {
@@ -726,19 +727,24 @@ const mTabSuspender = {
     let [browser, loadingURL, query] = this.getBrowserForTab(aTab);
 
     if (loadingURL) {
+      let loadPage;
+
       if (query) {
         // TODO: handle the POST data
-        browser.loadURIWithFlags(
-          query.URL,
+        loadPage = () => browser.loadURIWithFlags(
+          loadingURL,
           query.flags,
-          makeURI(query.referrerURL),
-          query.charset,
+          makeURI(query.referrerURL) || null,
+          query.charset || null,
           null // POST data
         );
       }
       else {
-        browser.loadURI(loadingURL);
+        loadPage = () => browser.loadURI(loadingURL);
       }
+
+      // WORKAROUND: wait for the Fx processing to load correctly
+      setTimeout(loadPage, 0);
     }
   },
 
