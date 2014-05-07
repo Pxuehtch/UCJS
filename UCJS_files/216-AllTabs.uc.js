@@ -116,6 +116,13 @@ const mTabs = {
  */
 const mTabView = {
   get GroupItems() {
+    // TODO: make sure initializing |TabView| module
+    // WORKAROUND: check each time called
+    //
+    // TODO: sometimes uninitialized at the first called (logged an error
+    // 'TabView.getContentWindow() is null')
+    this.init();
+
     return window.TabView.getContentWindow().GroupItems;
   },
 
