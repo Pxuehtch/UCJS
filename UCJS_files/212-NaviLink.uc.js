@@ -1978,9 +1978,11 @@ function getBaseDomain(aURI) {
     'github.io'
   ];
 
-  for (let host of kBadHosts) {
-    if (aURI.host.endsWith(host)) {
-      return host;
+  if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
+    for (let host of kBadHosts) {
+      if (aURI.host.endsWith(host)) {
+        return host;
+      }
     }
   }
 
