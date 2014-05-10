@@ -396,9 +396,6 @@ const mStatusField = (function() {
    * Expose
    */
   return {
-    get textBox() {
-      return getTextBox();
-    },
     message: showMessage,
     setOverLink: OverLink.toggle
   };
