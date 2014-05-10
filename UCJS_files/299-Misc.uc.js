@@ -44,19 +44,42 @@ function log(aMsg) {
  *
  * @note the setting for the themes of my Firefox and OS
  *
- * TODO: |chromemargin| is reset after returning from the print-preview
- * TODO: Fx29, |chromemargin| is reset when toggling the menubar
- * WORKAROUND: key command 'Alt+0'
- * @see |Overlay.uc.xul::ucjs_key_ResetMargin|
- *
  * TODO: the window layout sometimes breaks after returning from the fullscreen
  */
 (function setMainWindowStyle() {
 
   let mainWindow = $ID('main-window');
 
-  mainWindow.setAttribute('chromemargin', '0,0,0,0');
+  // set the border
   mainWindow.style.border = '1px solid #000099';
+
+  // hide the outer frame including the title bar
+  let chromeMargin = {
+    name: 'chromemargin',
+    value: '0,0,0,0',
+
+    set: function (aValue) {
+      if (mainWindow.getAttribute(this.name) !== this.value) {
+        mainWindow.setAttribute(this.name, this.value);
+      }
+    }
+  };
+
+  chromeMargin.set();
+
+  // fix 'chromemargin' attribute
+  let mutationObserver = new MutationObserver(() => {
+    chromeMargin.set();
+  });
+
+  addEvent(window, 'unload', () => {
+    mutationObserver.disconnect();
+  }, false);
+
+  mutationObserver.observe(mainWindow, {
+    attributes: true,
+    attributeFilter: [chromeMargin.name]
+  });
 
 })();
 
