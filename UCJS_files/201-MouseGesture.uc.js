@@ -725,7 +725,7 @@ function MouseManager() {
   }
 
   function enableContextMenu(aEnable) {
-    contentAreaContextMenu.hidden = !aEnable;
+    contentAreaContextMenu.get().hidden = !aEnable;
   }
 
   return {

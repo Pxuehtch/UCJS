@@ -40,26 +40,35 @@ function log(aMsg) {
 /**
  * Content area
  */
-const mContentArea = {
-  get contextMenu() {
-    return $ID('contentAreaContextMenu');
-  }
-};
+const mContentArea = (function() {
+  let getContextMenu = () => $ID('contentAreaContextMenu');
+
+  let contextMenu = createPopupMenuHandler(getContextMenu);
+
+  return {
+    contextMenu: contextMenu
+  };
+})();
 
 /**
- * Location bar
+ * URL bar
  *
  * @see chrome://browser/content/urlbarBindings.xml
  */
-const mURLBar = {
-  get textBox() {
-    return $ANONID('textbox-input-box', gURLBar);
-  },
+const mURLBar = (function() {
+  let getTextBox = () => $ANONID('textbox-input-box', gURLBar);
+  let getContextMenu = () => $ANONID('input-box-contextmenu', getTextBox());
 
-  get contextMenu() {
-    return $ANONID('input-box-contextmenu', this.textBox);
-  }
-};
+  // UI customization resets the context menu of the URL bar to Fx default
+  // value. so, observe it to fix user settings for the context menu
+  let contextMenu = createPopupMenuHandler(getContextMenu, {
+    observeUICustomization: true
+  });
+
+  return {
+    contextMenu: contextMenu
+  };
+})();
 
 /**
  * Find bar
@@ -424,24 +433,54 @@ const mMenuitem = {
 };
 
 /**
- * Manages the visibility of menu separators in the context menu
+ * Creates PopupMenu handler
+ *
+ * @param aPopupMenuGetter {function}
+ *   a function to get the <popupmenu> element
+ *   @see |EventManager|
+ * @param aOption {hash}
+ *   @key observeUICustomization {boolean}
+ *     whether observe UI customization to restore user settings
+ *     @see |EventManager|
+ * @return {hash}
+ *   @member get {function}
+ *   @member register {function}
  */
-function manageContextMenuSeparators() {
-  [mContentArea, mURLBar].forEach((container) => {
-    let contextMenu = container.contextMenu;
+function createPopupMenuHandler(aPopupMenuGetter, aOption) {
+  let eventManager = EventManager(aPopupMenuGetter, aOption);
 
-    addEvent(contextMenu, 'popupshowing', (event) => {
-      if (event.target === contextMenu) {
-        setImmediate(
-          manage,
-          $X('xul:menuseparator', contextMenu, {
-            ordered: true,
-            toArray: true
-          })
-        );
-      }
-    }, false);
+  eventManager.register({
+    events: [
+      ['popupshowing', manageMenuSeparators, false]
+    ]
   });
+
+  return {
+    get: aPopupMenuGetter,
+    register: eventManager.register
+  };
+}
+
+/**
+ * Manages the visibility of menu separators in a popup menu
+ *
+ * @param aEvent {Event}
+ *   @note the 'popupshowing' event should be attached to the popup menu
+ *   element
+ */
+function manageMenuSeparators(aEvent) {
+  let popupMenu = aEvent.currentTarget;
+
+  if (aEvent.target !== popupMenu) {
+    return;
+  }
+
+  let separators = $X('xul:menuseparator', popupMenu, {
+    ordered: true,
+    toArray: true
+  });
+
+  setImmediate(manage, separators);
 
   function manage(aSeparators) {
     let last = null;
@@ -479,13 +518,133 @@ function manageContextMenuSeparators() {
 }
 
 /**
- * Entry point
+ * Event manager
+ *
+ * @param aTargetGetter {function}
+ *   a function to get the target node
+ *   @note it is not the node itself to update it when cleanup and rebuild
+ * @param aOption {hash}
+ *   @key observeUICustomization {boolean}
+ *     if UI customization breaks user settings to the target, set true to
+ *     observe UI customization to restore user settings
+ *     @note used only to the context menu of the URL bar for now
+ * @return {hash}
+ *   @member register {function}
  */
-function UI_init() {
-  manageContextMenuSeparators();
-}
+function EventManager(aTargetGetter, aOption) {
+  const {observeUICustomization} = aOption || {};
 
-UI_init();
+  let setTarget = () => aTargetGetter();
+
+  let mTarget;
+  let mEventData = [];
+  let mOnCreateHandlers = [];
+  let mOnDestroyHandlers = [];
+
+  init();
+
+  function init() {
+    create();
+
+    // restore user settings after UI customization
+    if (observeUICustomization) {
+      addEvent(window, 'beforecustomization', destroy, false);
+      addEvent(window, 'aftercustomization', create, false);
+    }
+
+    // cleanup at shutdown of the main browser
+    addEvent(window, 'unload', uninit, false);
+  }
+
+  function uninit() {
+    destroy();
+
+    mTarget = null;
+    mEventData = null;
+    mOnCreateHandlers = null;
+    mOnDestroyHandlers = null;
+  }
+
+  function create() {
+    // update the reference
+    mTarget = setTarget();
+
+    manageEvents(true);
+    manageHandlers(true);
+  }
+
+  function destroy() {
+    manageEvents(false);
+    manageHandlers(false);
+  }
+
+  function manageEvents(aDoCreate) {
+    let method = aDoCreate ? 'addEventListener' : 'removeEventListener';
+
+    mEventData.forEach(({type, listener, capture}) => {
+      mTarget[method](type, listener, capture);
+    });
+  }
+
+  function manageHandlers(aDoCreate) {
+    let handlers = aDoCreate ? mOnCreateHandlers : mOnDestroyHandlers;
+
+    handlers.forEach((handler) => {
+      handler(mTarget);
+    });
+  }
+
+  /**
+   * Registers event handlers and functions
+   *
+   * @param {hash}
+   *   @key events {array}
+   *     array of array [type, listener, capture] for event handler
+   *     @note the handlers are attached when the target is initialized, and
+   *     detached when the target is cleaned up
+   *   @key onCreate {function}
+   *     a function called once when the target is initialized. the target is
+   *     passed as an argument
+   *   @key onDestroy {function}
+   *     a function called once when the target is cleaned up. the target is
+   *     passed as an argument
+   *
+   * @note the registered event to the target will be detached automatically.
+   * if you attach an event to descendant element of the target, you should do
+   * |removeEventListener| to it in |onDestroy| function. so it is recommended
+   * to attach all events to the target and observe the descendants by event
+   * delegation
+   */
+  function register({events, onCreate, onDestroy}) {
+    if (events) {
+      events.forEach(([type, listener, capture]) => {
+        capture = !!capture;
+
+        mEventData.push({
+          type: type,
+          listener: listener,
+          capture: capture
+        });
+
+        mTarget.addEventListener(type, listener, capture);
+      });
+    }
+
+    if (onCreate) {
+      mOnCreateHandlers.push(onCreate);
+
+      onCreate(mTarget);
+    }
+
+    if (onDestroy) {
+      mOnDestroyHandlers.push(onDestroy);
+    }
+  }
+
+  return {
+    register: register
+  };
+}
 
 /**
  * Exports

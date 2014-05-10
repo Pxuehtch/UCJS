@@ -156,11 +156,16 @@ const kUI = {
 };
 
 function RedirectParser_init() {
-  initMenu()
+  contentAreaContextMenu.register({
+    events: [
+      ['popupshowing', onPopupShowing, false],
+      ['popuphiding', onPopupHiding, false]
+    ],
+    onCreate: createMenu
+  });
 }
 
-function initMenu() {
-  let context = contentAreaContextMenu;
+function createMenu(aContextMenu) {
   let refItem = $ID('context-sep-copylink');
 
   let ui = kUI.menu;
@@ -171,14 +176,16 @@ function initMenu() {
   });
 
   menu.appendChild($E('menupopup'));
-  context.insertBefore(menu, refItem);
-
-  addEvent(context, 'popupshowing', showContextMenu, false);
-  addEvent(context, 'popuphiding', hideContextMenu, false);
+  aContextMenu.insertBefore(menu, refItem);
 }
 
-function showContextMenu(aEvent) {
-  if (aEvent.target === contentAreaContextMenu) {
+function onPopupShowing(aEvent) {
+  aEvent.stopPropagation();
+
+  let menupopup = aEvent.target;
+  let contextMenu = aEvent.currentTarget;
+
+  if (menupopup === contextMenu) {
     // @see chrome://browser/content/nsContextMenu.js
     const {showItem, linkURL, mediaURL} = window.gContextMenu;
 
@@ -191,8 +198,13 @@ function showContextMenu(aEvent) {
   }
 }
 
-function hideContextMenu(aEvent) {
-  if (aEvent.target === contentAreaContextMenu) {
+function onPopupHiding(aEvent) {
+  aEvent.stopPropagation();
+
+  let menupopup = aEvent.target;
+  let contextMenu = aEvent.currentTarget;
+
+  if (menupopup === contextMenu) {
     let menu = $ID(kUI.menu.id);
 
     while (menu.itemCount) {

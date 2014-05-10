@@ -84,7 +84,7 @@ const kBeautifierOptions = {};
 const MenuHandler = (function() {
   const kUI = {
     prettifySourcePage: {
-      id: 'ucjs_prettyprint_prettifySourcePage_menuitem',
+      id: 'ucjs_PrettyPrint_prettifySourcePage_menuitem',
       label: '表示コードを整形',
       accesskey: 'P'
     }
@@ -93,42 +93,45 @@ const MenuHandler = (function() {
   let getViewSourceItem = () => $ID('context-viewsource');
 
   function init() {
-    let context = contentAreaContextMenu;
+    contentAreaContextMenu.register({
+      events: [
+        ['popupshowing', onPopupShowing, false],
+        ['command', onCommand, false]
+      ],
+      onCreate: createMenu
+    });
+  }
 
-    addEvent(context, 'popupshowing', showContextMenu, false);
-
-    let prettifySourcePageItem = $E('menuitem', {
+  function createMenu(aContextMenu) {
+    aContextMenu.insertBefore($E('menuitem', {
       id: kUI.prettifySourcePage.id,
       label: kUI.prettifySourcePage.label,
       accesskey: kUI.prettifySourcePage.accesskey
-    });
-
-    addEvent(prettifySourcePageItem, 'command', onCommand, false);
-
-    context.insertBefore(prettifySourcePageItem, getViewSourceItem());
+    }), getViewSourceItem());
   }
 
-  function showContextMenu(aEvent) {
-    let contextMenu = aEvent.target;
+  function onPopupShowing(aEvent) {
+    aEvent.stopPropagation();
 
-    if (contextMenu !== contentAreaContextMenu) {
-      return;
+    let menupopup = aEvent.target;
+    let contextMenu = aEvent.currentTarget;
+
+    if (menupopup === contextMenu) {
+      let contentDocument = gBrowser.contentDocument;
+      let shouldShow =
+        !getViewSourceItem().hidden &&
+        getTextType(contentDocument) &&
+        getTextContainer(contentDocument);
+
+      // @see chrome://browser/content/nsContextMenu.js::showItem
+      window.gContextMenu.showItem(kUI.prettifySourcePage.id, shouldShow);
     }
-
-    let contentDocument = gBrowser.contentDocument;
-    let shouldShow =
-      !getViewSourceItem().hidden &&
-      getTextType(contentDocument) &&
-      getTextContainer(contentDocument);
-
-    // @see chrome://browser/content/nsContextMenu.js::showItem
-    window.gContextMenu.showItem(kUI.prettifySourcePage.id, shouldShow);
   }
 
   function onCommand(aEvent) {
-    let menuitem = aEvent.target;
+    aEvent.stopPropagation();
 
-    if (menuitem.id === kUI.prettifySourcePage.id) {
+    if (aEvent.target.id === kUI.prettifySourcePage.id) {
       let contentDocument = gBrowser.contentDocument;
       let state = {
         filename: contentDocument.URL,

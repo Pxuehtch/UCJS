@@ -80,95 +80,101 @@ const kID = {
 const mMenu = (function() {
 
   function init() {
-    let context = contentAreaContextMenu;
-    let refItem = context.firstChild;
+    contentAreaContextMenu.register({
+      events: [
+        ['popupshowing', onPopupShowing, false],
+        ['popuphiding', onPopupHiding, false]
+      ],
+      onCreate: createMenu
+    });
+  }
+
+  function createMenu(aContextMenu) {
+    let refItem = aContextMenu.firstChild;
 
     function addSeparator(aId) {
-      context.insertBefore($E('menuseparator', {
+      aContextMenu.insertBefore($E('menuseparator', {
         id: aId
       }), refItem);
     }
 
-    function addMenu(aId, aLabel, aAccesskey, aHandler) {
-      let menu = context.insertBefore($E('menu', {
+    function addMenu(aId, aLabel, aAccesskey) {
+      let menu = aContextMenu.insertBefore($E('menu', {
         id: aId,
         label: aLabel,
         accesskey: aAccesskey
       }), refItem);
 
-      addEvent(
-        menu.appendChild($E('menupopup')),
-        'popupshowing',
-        (aEvent) => {
-          buildMenu(aEvent, aHandler.build);
-        },
-        false
-      );
+      menu.appendChild($E('menupopup'));
     }
 
     addSeparator(kID.startSeparator);
-    addMenu(kID.historyMenu, 'History Tab/Recent', 'H', mHistoryList);
-    addMenu(kID.openedMenu, 'Opened Tab/Window', 'O', mOpenedList);
-    addMenu(kID.closedMenu, 'Closed Tab/Window', 'C', mClosedList);
+    addMenu(kID.historyMenu, 'History Tab/Recent', 'H');
+    addMenu(kID.openedMenu, 'Opened Tab/Window', 'O');
+    addMenu(kID.closedMenu, 'Closed Tab/Window', 'C');
     addSeparator(kID.endSeparator);
-
-    addEvent(context, 'popupshowing', showContextMenu, false);
-    addEvent(context, 'popuphiding', hideContextMenu, false);
   }
 
-  function buildMenu(aEvent, aBuilder) {
+  function onPopupShowing(aEvent) {
     aEvent.stopPropagation();
 
-    let popup = aEvent.target;
+    let menupopup = aEvent.target;
+    let contextMenu = aEvent.currentTarget;
 
-    if (popup.hasChildNodes()) {
-      return;
+    if (menupopup === contextMenu) {
+      // @see chrome://browser/content/nsContextMenu.js
+      const {gContextMenu} = window;
+
+      let hidden =
+        gContextMenu.onLink ||
+        gContextMenu.onTextInput ||
+        gContextMenu.isTextSelected;
+
+      [
+        kID.historyMenu,
+        kID.openedMenu,
+        kID.closedMenu
+      ].
+      forEach((id) => {
+        gContextMenu.showItem(id, !hidden);
+      });
     }
+    else {
+      let menu = menupopup.parentElement;
 
-    aBuilder(popup);
+      [
+        [kID.historyMenu, mHistoryList],
+        [kID.openedMenu, mOpenedList],
+        [kID.closedMenu, mClosedList]
+      ].
+      some(([id, handler]) => {
+        if (menu.id === id && !menupopup.hasChildNodes()) {
+          handler.build(menupopup);
+        }
+      });
+    }
   }
 
-  // @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
-  // separators
-  function showContextMenu(aEvent) {
-    if (aEvent.target !== contentAreaContextMenu) {
-      return;
+  function onPopupHiding(aEvent) {
+    aEvent.stopPropagation();
+
+    let menupopup = aEvent.target;
+    let contextMenu = aEvent.currentTarget;
+
+    if (menupopup === contextMenu) {
+      [
+        kID.historyMenu,
+        kID.openedMenu,
+        kID.closedMenu
+      ].
+      forEach((id) => {
+        let menu = $ID(id);
+
+        while (menu.itemCount) {
+          menu.removeItemAt(0);
+        }
+      });
     }
-
-    // @see chrome://browser/content/nsContextMenu.js
-    const {gContextMenu} = window;
-
-    let hidden =
-      gContextMenu.onLink ||
-      gContextMenu.onTextInput ||
-      gContextMenu.isTextSelected;
-
-    [
-      kID.historyMenu,
-      kID.openedMenu,
-      kID.closedMenu
-    ].
-    forEach((aId) => {
-      gContextMenu.showItem(aId, !hidden);
-    });
-  }
-
-  function hideContextMenu(aEvent) {
-    if (aEvent.target !== contentAreaContextMenu) {
-      return;
-    }
-
-    [
-      kID.historyMenu,
-      kID.openedMenu,
-      kID.closedMenu
-    ].
-    forEach((aId) => {
-      let menu = $ID(aId);
-      while (menu.itemCount) {
-        menu.removeItemAt(0);
-      }
-    });
   }
 
   return {

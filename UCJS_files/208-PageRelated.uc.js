@@ -226,21 +226,25 @@ const AliasFixup = (function() {
 })();
 
 function PageRelated_init() {
-  initMenu()
+  URLBarContextMenu.register({
+    events: [
+      ['popupshowing', onPopupShowing, false]
+    ],
+    onCreate: createMenu
+  });
 }
 
-function initMenu() {
-  let contextMenu = URLBarContextMenu;
-
-  setSeparators(contextMenu);
-
-  addEvent(contextMenu, 'popupshowing', showContextMenu, false);
+function createMenu(aContextMenu) {
+  setSeparators(aContextMenu);
 }
 
-function showContextMenu(aEvent) {
-  let contextMenu = aEvent.target;
+function onPopupShowing(aEvent) {
+  aEvent.stopPropagation();
 
-  if (contextMenu !== URLBarContextMenu) {
+  let menupopup = aEvent.target;
+  let contextMenu = aEvent.currentTarget;
+
+  if (menupopup !== contextMenu) {
     return;
   }
 
@@ -323,8 +327,6 @@ function getAvailableMenus() {
   return menus;
 }
 
-// @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
-// separators
 function setSeparators(aContextMenu, aReferenceNode) {
   if (aReferenceNode === undefined) {
     aReferenceNode = null;
@@ -333,9 +335,14 @@ function setSeparators(aContextMenu, aReferenceNode) {
   [
     kID.startSeparator,
     kID.endSeparator
-  ].forEach((id) => {
+  ].
+  forEach((id) => {
     aContextMenu.insertBefore(
-      $E('menuseparator', {id: id}), aReferenceNode);
+      $E('menuseparator', {
+        id: id
+      }),
+      aReferenceNode
+    );
   });
 }
 

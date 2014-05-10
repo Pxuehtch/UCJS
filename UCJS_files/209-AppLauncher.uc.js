@@ -353,7 +353,7 @@ function AppLauncher_init() {
   let appList = initAppList();
 
   if (appList) {
-    makeMainMenu(appList);
+    initMenu(appList);
   }
 }
 
@@ -401,7 +401,49 @@ function initAppList() {
   return apps;
 }
 
-function makeMainMenu(aAppList) {
+function initMenu(aAppList) {
+  contentAreaContextMenu.register({
+    events: [
+      ['popupshowing', onPopupShowing, false],
+      ['command', (aEvent) => {
+        onCommand(aEvent, aAppList);
+      }, false]
+    ],
+    onCreate: (aContextMenu) => {
+      makeMainMenu(aContextMenu, aAppList);
+    }
+  });
+}
+
+function onPopupShowing(aEvent) {
+  aEvent.stopPropagation();
+
+  let menupopup = aEvent.target;
+
+  if (menupopup.parentElement.id === kID.mainMenu) {
+    doBrowse(menupopup);
+  }
+}
+
+function onCommand(aEvent, aAppList) {
+  aEvent.stopPropagation();
+
+  let element = aEvent.target;
+
+  if (!element.hasAttribute(kID.appIndexKey)) {
+    return;
+  }
+
+  let appIndex = +(element.getAttribute(kID.appIndexKey));
+
+  if (appIndex < 0) {
+    return;
+  }
+
+  doAction(aAppList[appIndex], element.getAttribute(kID.actionKey));
+}
+
+function makeMainMenu(aContextMenu, aAppList) {
   let menu = $E('menu', {
     id: kID.mainMenu,
     label: kUI.mainMenuLabel,
@@ -410,45 +452,14 @@ function makeMainMenu(aAppList) {
 
   let popup = $E('menupopup');
 
-  addEvent(popup, 'popupshowing', (aEvent) => {
-    aEvent.stopPropagation();
-
-    let target = aEvent.target;
-
-    if (target.parentElement.id !== kID.mainMenu) {
-      return;
-    }
-
-    doBrowse(target);
-  }, false);
-
-  addEvent(popup, 'command', (aEvent) => {
-    aEvent.stopPropagation();
-
-    let target = aEvent.target;
-
-    if (!target.hasAttribute(kID.appIndexKey)) {
-      return;
-    }
-
-    let appIndex = +(target.getAttribute(kID.appIndexKey));
-    if (appIndex < 0) {
-      return;
-    }
-
-    doAction(aAppList[appIndex], target.getAttribute(kID.actionKey));
-  }, false);
-
   makeAppMenu(popup, aAppList);
   makeActionItems(popup, aAppList);
 
   menu.appendChild(popup);
 
-  // @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
-  // separators
-  addSeparator(contentAreaContextMenu, kID.startSeparator);
-  contentAreaContextMenu.appendChild(menu);
-  addSeparator(contentAreaContextMenu, kID.endSeparator);
+  addSeparator(aContextMenu, kID.startSeparator);
+  aContextMenu.appendChild(menu);
+  addSeparator(aContextMenu, kID.endSeparator);
 }
 
 function makeAppMenu(aPopup, aAppList) {

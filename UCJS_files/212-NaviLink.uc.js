@@ -47,10 +47,14 @@ const {
   }
 } = window.ucjsUI;
 
+/**
+ * Preference
+ */
 const kPref = {
   // show the unregistered navigation links
   // @see |kNaviLinkType| for the registered types
   showSubNaviLinks: true,
+
   // show the page information menu
   // @see |kPageInfoType|
   showPageInfo: true
@@ -272,14 +276,19 @@ const kID = (function() {
  */
 const MenuUI = (function() {
   function init() {
-    let contextMenu = URLBarContextMenu;
+    URLBarContextMenu.register({
+      events: [
+        ['click', onClick, false],
+        ['command', onCommand, false],
+        ['popupshowing', onPopupShowing, false],
+        ['popuphiding', onPopupHiding, false]
+      ],
+      onCreate: createMenu
+    });
+  }
 
-    setSeparators(contextMenu);
-
-    addEvent(contextMenu, 'click', onClick, false);
-    addEvent(contextMenu, 'command', onCommand, false);
-    addEvent(contextMenu, 'popupshowing', onPopupShowing, false);
-    addEvent(contextMenu, 'popuphiding', onPopupHiding, false);
+  function createMenu(aContextMenu) {
+    setSeparators(aContextMenu);
   }
 
   function onClick(aEvent) {
@@ -333,9 +342,10 @@ const MenuUI = (function() {
   function onPopupShowing(aEvent) {
     aEvent.stopPropagation();
 
-    let contextMenu = aEvent.target;
+    let menupopup = aEvent.target;
+    let contextMenu = aEvent.currentTarget;
 
-    if (contextMenu !== URLBarContextMenu) {
+    if (menupopup !== contextMenu) {
       return;
     }
 
@@ -364,9 +374,10 @@ const MenuUI = (function() {
   function onPopupHiding(aEvent) {
     aEvent.stopPropagation();
 
-    let contextMenu = aEvent.target;
+    let menupopup = aEvent.target;
+    let contextMenu = aEvent.currentTarget;
 
-    if (contextMenu !== URLBarContextMenu) {
+    if (menupopup !== contextMenu) {
       return;
     }
 
@@ -378,8 +389,6 @@ const MenuUI = (function() {
     }
   }
 
-  // @note |ucjsUI::manageContextMenuSeparators()| manages the visibility of
-  // separators
   function setSeparators(aContextMenu, aReferenceNode) {
     if (aReferenceNode === undefined) {
       aReferenceNode = null;
@@ -391,7 +400,11 @@ const MenuUI = (function() {
     ].
     forEach((id) => {
       aContextMenu.insertBefore(
-        $E('menuseparator', {id: id}), aReferenceNode);
+        $E('menuseparator', {
+          id: id
+        }),
+        aReferenceNode
+      );
     });
   }
 
