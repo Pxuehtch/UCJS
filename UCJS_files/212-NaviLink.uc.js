@@ -335,7 +335,7 @@ const MenuUI = (function() {
       });
     }
     else if (data.submit) {
-      data.submit.submit();
+      getDocument().forms[data.submit].submit();
     }
   }
 
@@ -458,13 +458,13 @@ const MenuUI = (function() {
         formatText(data, {
           siblingScanType: scanType
         }),
-        data.form ? kFormat.submit : data.URL
+        data.URL || kFormat.submit
       );
 
       node = $E('menuitem', {
         tooltiptext: tooltip,
         'open': data.URL,
-        'submit': data.form
+        'submit': data.formIndex
       });
     }
     else {
@@ -761,7 +761,7 @@ const PresetNavi = (function() {
    * {
    *   name:,
    *   title:,
-   *   URL or form:
+   *   URL or formIndex:
    * }
    */
   function getData(aDirection) {
@@ -792,11 +792,21 @@ const PresetNavi = (function() {
     }
 
     if (node instanceof HTMLInputElement && node.form && node.value) {
+      let index = 0;
+
+      for (let form of getDocument().forms) {
+        if (node.form === form) {
+          break;
+        }
+
+        index++;
+      }
+
       return {
         // <data> for a submit preset
         name: item.name,
         title: node.value,
-        form: node.form
+        formIndex: index
       };
     }
 
@@ -1302,7 +1312,7 @@ const SiblingNavi = (function() {
    *
    * <data> has the proper members assigned to |kSiblingScanType|
    * {name:, title:, URL:} for a <preset>
-   * {name:, title:, form:} for a submit <preset>
+   * {name:, title:, formIndex:} for a submit <preset>
    * {name:, content:} for a meta of <official>
    * {title:, attributes:, URL:} for a script or rel of <official>
    * {title:, score:, URL:} for a sibling by <searching>
