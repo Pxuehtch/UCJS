@@ -780,7 +780,7 @@ const PresetNavi = (function() {
       return null;
     }
 
-    let node = $X1(item[aDirection]);
+    let node = $X1(item[aDirection], getDocument());
 
     if (node && node.href) {
       return {
@@ -966,7 +966,7 @@ const NaviLink = (function() {
     scanMeta(infoList);
     scanScript(infoList);
 
-    Array.forEach($S('[rel][href], [rev][href]'), (node) => {
+    Array.forEach($S('[rel][href], [rev][href]', getDocument()), (node) => {
       let rel = node.rel || node.rev;
 
       if (!rel ||
