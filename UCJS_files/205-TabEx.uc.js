@@ -1543,13 +1543,13 @@ function fetchPageTitle(aURL, aCallback) {
   const {PlacesUtils} = getModule('resource://gre/modules/PlacesUtils.jsm');
 
   PlacesUtils.promisePlaceInfo(uri).then(
-    function onSuccess(aPlaceInfo) {
+    function onFulfill(aPlaceInfo) {
       aCallback(aPlaceInfo.title || aURL);
     },
-    function onFailure(aReason) {
+    function onReject(aReason) {
       aCallback(aURL);
     }
-  );
+  ).then(null, Cu.reportError);
 }
 
 function makeURI(aURL) {
