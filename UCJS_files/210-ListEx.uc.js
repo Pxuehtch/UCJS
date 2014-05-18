@@ -147,7 +147,7 @@ const mMenu = (function() {
         [kID.closedMenu, mClosedList]
       ].
       some(([id, handler]) => {
-        if (menu.id === id && !menupopup.hasChildNodes()) {
+        if (menu.id === id && !menu.itemCount) {
           handler.build(menupopup);
         }
       });
