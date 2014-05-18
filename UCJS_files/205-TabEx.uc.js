@@ -401,6 +401,7 @@ const mTabOpener = {
           typeof arguments[1] === 'object' &&
           !(arguments[1] instanceof Ci.nsIURI)) {
         let params = arguments[1];
+
         aReferrerURI          = params.referrerURI;
         aCharset              = params.charset;
         aAllowThirdPartyFixup = params.allowThirdPartyFixup;
@@ -424,13 +425,15 @@ const mTabOpener = {
         let fromVisit;
 
         if (!aReferrerURI) {
+          let testHTTP = (value) => /^https?:/.test(value);
+
           if (aRelatedToCurrent) {
             let currentURL = gBrowser.currentURI.spec;
-            fromVisit = /^https?:/.test(currentURL) && currentURL;
+
+            fromVisit = testHTTP(currentURL) && currentURL;
           }
           else {
-            fromVisit = /^https?:/.test(aURI) &&
-              mReferrer.getFromVisit(aURI);
+            fromVisit = testHTTP(aURI) && mReferrer.getFromVisit(aURI);
           }
         }
 
