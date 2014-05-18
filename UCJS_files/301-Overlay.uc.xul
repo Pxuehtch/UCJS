@@ -35,8 +35,11 @@
   <command id="ucjs_cmd_ToggleTabbar"
     oncommand="(function(el){el.collapsed=!el.collapsed;document.getElementById('ucjs_menuitem_ToggleTabbar').setAttribute('checked',!el.collapsed);})(document.getElementById('TabsToolbar'));"/>
 
+  <!--
+   @see chrome://browser/content/search/search.xml#searchbar::openManager
+   -->
   <command id="ucjs_cmd_OpenSearchEngineManager"
-    oncommand="window.openDialog('chrome://browser/content/search/engineManager.xul');"/>
+    oncommand="(function(w){if(w){w.focus();}else{setTimeout(()=>openDialog('chrome://browser/content/search/engineManager.xul','_blank','chrome,dialog,modal,centerscreen,resizable'),0);}})(Cc['@mozilla.org/appshell/window-mediator;1'].getService(Ci.nsIWindowMediator).getMostRecentWindow('Browser:SearchManager'));"/>
 </commandset>
 
 <!-- Key -->
