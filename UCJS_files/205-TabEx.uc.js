@@ -34,7 +34,7 @@ const {
   addEvent,
   openTab,
   removeTab,
-  scanPlacesDB
+  getPlacesDBResult
 } = window.ucjsUtil;
 
 // for debug
@@ -433,6 +433,8 @@ const mTabOpener = {
             fromVisit = testHTTP(currentURL) && currentURL;
           }
           else {
+            // TODO: I want to make asynchronous |getFromVisit|. but I don't
+            // know how to handle it in this modified native function |addTab|
             fromVisit = testHTTP(aURI) && mReferrer.getFromVisit(aURI);
           }
         }
@@ -568,14 +570,15 @@ const mReferrer = {
       "LIMIT 1"
     ].join(' ');
 
-    let resultRows = scanPlacesDB({
+    // TODO: async-query Places DB
+    let resultRows = getPlacesDBResult({
       expression: SQLExp,
       params: {'url': aURL},
       columns: ['url']
     });
 
     if (resultRows) {
-      // we ordered only one row
+      // we ordered a single row
       return resultRows[0].url;
     }
     return null;

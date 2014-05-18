@@ -25,7 +25,7 @@ const {
   createNode: $E,
   getNodeById: $ID,
   addEvent,
-  scanPlacesDB
+  getPlacesDBResult
 } = window.ucjsUtil;
 
 // for debug
@@ -213,7 +213,7 @@ function getShortcutData() {
     'JOIN moz_places p ON p.id = b.fk'
   ].join(' ');
 
-  let resultRows = scanPlacesDB({
+  let resultRows = getPlacesDBResult({
     expression: SQLExp,
     columns: ['title', 'keyword', 'url']
   });

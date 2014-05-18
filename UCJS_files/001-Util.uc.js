@@ -1070,14 +1070,18 @@ function normalizeCSS(aCSS) {
  * Query the Places database
  *
  * @param aParam {hash}
- *   expression: {string} a SQL expression
- *   params: {hash} [optional] the binding parameters
- *   columns: {array} the column names
+ *   expression: {string}
+ *     a SQL expression
+ *   params: {hash} [optional]
+ *     the binding parameters
+ *   columns: {array}
+ *     the column names
  * @return {hash[]|null}
- *   hash[]: array of {column name: value, ...}
- *   null: no result
+ *   array of {column name: value, ...}, or null if no result
+ *
+ * TODO: consider to unite with |promisePlacesDBResult|
  */
-function scanPlacesDB(aParam) {
+function getPlacesDBResult(aParam) {
   const {
     expression,
     params,
@@ -1090,9 +1094,6 @@ function scanPlacesDB(aParam) {
   let statement =
     PlacesUtils.history.DBConnection.createStatement(expression);
 
-  let rows = [];
-
-  try {
     for (let key in statement.params) {
       if (!(key in params)) {
         throw Error('parameter is not defined: ' + key);
@@ -1101,6 +1102,9 @@ function scanPlacesDB(aParam) {
       statement.params[key] = params[key];
     }
 
+  let rows = [];
+
+  try {
     while (statement.executeStep()) {
       let result = {};
 
@@ -1292,7 +1296,7 @@ return {
   removeGlobalStyleSheet: removeGlobalStyleSheet,
   setChromeStyleSheet: registerChromeStyleSheet,
   setContentStyleSheet: registerContentStyleSheet,
-  scanPlacesDB: scanPlacesDB,
+  getPlacesDBResult: getPlacesDBResult,
   promisePlacesDBResult: promisePlacesDBResult,
 
   logMessage: logMessage
