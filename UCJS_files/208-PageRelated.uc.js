@@ -5,11 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage access to items in the URLbar context menu
-
-// TODO: the URLbar is initialized when the toolbar customization panel opens,
-// so, observe it and fix our broken functions
-// WORKAROUND: restart Firefox after customizing
+// @usage creates items in the URLbar context menu
 
 
 (function(window, undefined) {

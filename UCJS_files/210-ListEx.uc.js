@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage access to items in the main context menu
+// @usage creates items in the main context menu
 
 
 (function(window, undefined) {
@@ -74,7 +74,8 @@ const kID = {
 /**
  * Menu settings
  *
- * @member init {function}
+ * @return {hash}
+ *   @member init {function}
  */
 const mMenu = (function() {
 
@@ -185,7 +186,8 @@ const mMenu = (function() {
 /**
  * List of the tab/recent history
  *
- * @member build {function}
+ * @return {hash}
+ *   @member build {function}
  */
 const mHistoryList = (function() {
 
@@ -398,7 +400,9 @@ const mHistoryList = (function() {
 
 /**
  * List of the opened tabs/windows
- * @member build {function}
+ *
+ * @return {hash}
+ *   @member build {function}
  */
 const mOpenedList = (function() {
 
@@ -510,7 +514,9 @@ const mOpenedList = (function() {
 
 /**
  * List of the closed tabs/windows
- * @member build {function}
+ *
+ * @return {hash}
+ *   @member build {function}
  */
 const mClosedList = (function() {
 
@@ -722,8 +728,18 @@ function getFavicon(aIconURL) {
   return PlacesUtils.favicons.defaultFavicon.spec;
 }
 
-// @return {string} string for <oncommand> attribute
-// TODO: assemble only with built-in functions
+/**
+ * Gets a command string to focus to a window
+ *
+ * @param aIndex {number}
+ *   the window order index
+ * @return {string}
+ *   a string for <oncommand> attribute
+ *
+ * @note used in |mOpenedList::buildOpenedWindows|
+ *
+ * TODO: assemble only with built-in functions
+ */
 function focusWindowAtIndex(aIndex) {
   return 'ucjsUtil.focusWindowAtIndex(' + aIndex + ');';
 }

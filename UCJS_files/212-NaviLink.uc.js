@@ -9,10 +9,6 @@
 // @note some functions are exposed to the global scope;
 // |window.ucjsNaviLink.XXX|
 
-// TODO: the URLbar is initialized when the toolbar customization panel opens,
-// so, observe it and fix our broken functions
-// WORKAROUND: restart Firefox after customizing
-
 
 const ucjsNaviLink = (function(window, undefined) {
 

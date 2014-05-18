@@ -510,8 +510,8 @@ function createPopupMenuHandler(aPopupMenuGetter, aOption) {
  * Manages the visibility of menu separators in a popup menu
  *
  * @param aEvent {Event}
- *   @note the 'popupshowing' event should be attached to the popup menu
- *   element
+ *
+ * @note 'popupshowing' event should be attached to the <menupopup> element
  */
 function manageMenuSeparators(aEvent) {
   let popupMenu = aEvent.currentTarget;

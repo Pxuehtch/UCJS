@@ -6,7 +6,7 @@
 
 // @require Util.uc.js, UI.uc.js
 
-// @usage access to items in the main context menu
+// @usage creates a menu in the main context menu
 // @note available menu items will vary depending on where the menu opens
 // @see |getAvailableActions()|
 

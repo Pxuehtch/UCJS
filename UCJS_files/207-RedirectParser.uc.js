@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage access to a menu in the main context menu
+// @usage creates a menu in the main context menu
 
 
 (function(window, undefined) {

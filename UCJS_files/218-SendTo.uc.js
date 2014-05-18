@@ -6,7 +6,7 @@
 
 // @require Util.uc.js, UI.uc.js
 // @require [optional][for preset] WebService.uc.js
-// @usage access to items in the main context menu
+// @usage creates items in the main context menu
 
 
 (function(window, undefined) {

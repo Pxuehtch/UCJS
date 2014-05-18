@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage access to items on the navigation toolbar
+// @usage creates items on the navigation toolbar
 // @note some about:config preferences are changed. see @pref
 
 // @note the styles are adjusted to the themes of my Fx and OS

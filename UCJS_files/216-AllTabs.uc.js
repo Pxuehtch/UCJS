@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage access to the tab view button in the tab bar
+// @usage creates items in the context menu of the tab view button
 // @note some default functions are modified. see @modified
 
 

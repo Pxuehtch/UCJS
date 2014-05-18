@@ -5,7 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage access to items in the tab context menu
+// @usage creates a menu in the tab context menu
 
 
 (function(window, undefined) {
