@@ -22,7 +22,7 @@ const {
     getModule
   },
   getNodeById: $ID,
-  asyncScanPlacesDB
+  promisePlacesDBResult
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {
@@ -258,13 +258,13 @@ const mHistoryList = (function() {
         action: action || null
       }));
 
-      getTimeAndFavicon(URL, (aTime, aIcon) => {
+      asyncGetTimeAndIcon(URL, ({time, icon}) => {
         $E(menuitem, {
           label: formatLabel({
-            time: aTime,
+            time: time,
             title: getTitle(title)
           }),
-          icon: getFavicon(aIcon)
+          icon: getFavicon(icon)
         });
       });
     }
@@ -273,16 +273,15 @@ const mHistoryList = (function() {
   }
 
   function asyncBuildRecentHistory(aRefNode, aCallback) {
-    getRecentHistory((aRecentHistory) => {
-      if (!aRecentHistory) {
-        aCallback(false);
-        return;
+    promiseRecentHistory().then(
+      function onFulFill(aRecentHistory) {
+        if (aRecentHistory) {
+          buildRecentHistory(aRefNode, aRecentHistory);
+        }
+
+        aCallback(!!aRecentHistory);
       }
-
-      buildRecentHistory(aRefNode, aRecentHistory)
-
-      aCallback(true);
-    });
+    ).then(null, Cu.reportError);
   }
 
   function buildRecentHistory(aRefNode, aRecentHistory) {
@@ -320,36 +319,7 @@ const mHistoryList = (function() {
     });
   }
 
-  function getTimeAndFavicon(aURL, aCallback) {
-    let SQLExp = [
-      "SELECT h.visit_date time, f.url icon",
-      "FROM moz_places p",
-      "JOIN moz_historyvisits h ON p.id = h.place_id",
-      "LEFT JOIN moz_favicons f ON p.favicon_id = f.id",
-      "WHERE p.url = :url",
-      "ORDER BY h.visit_date DESC",
-      "LIMIT 1"
-    ].join(' ');
-
-    asyncScanPlacesDB({
-      expression: SQLExp,
-      params: {'url': aURL},
-      columns: ['time', 'icon'],
-      onSuccess: function(aRows) {
-        let time, icon;
-
-        if (aRows) {
-          // we ordered only one row
-          time = aRows[0].time;
-          icon = aRows[0].icon;
-        }
-
-        aCallback(time, icon);
-      }
-    });
-  }
-
-  function getRecentHistory(aCallback) {
+  function promiseRecentHistory() {
     let SQLExp = [
       "SELECT p.title, p.url, h.visit_date time, f.url icon",
       "FROM moz_places p",
@@ -365,14 +335,45 @@ const mHistoryList = (function() {
     const maxNum = kPref.maxListItems;
     let limit = (maxNum > 0) ? maxNum : -1;
 
-    asyncScanPlacesDB({
+    return promisePlacesDBResult({
       expression: SQLExp,
       params: {'limit': limit},
-      columns: ['title', 'url', 'time', 'icon'],
-      onSuccess: function(aRows) {
-        aCallback(aRows);
-      }
+      columns: ['title', 'url', 'time', 'icon']
     });
+  }
+
+  function asyncGetTimeAndIcon(aURL, aCallback) {
+    promiseTimeAndIcon(aURL).then(
+      function onFulFill(aResult) {
+        aCallback(aResult);
+      }
+    ).then(null, Cu.reportError);
+  }
+
+  function promiseTimeAndIcon(aURL) {
+    // don't query a URL which cannot be recorded about its time and favicon
+    // in the places DB
+    if (!/^(?:https?|ftp|file):/.test(aURL)) {
+      return Promise.resolve({});
+    }
+
+    let SQLExp = [
+      "SELECT h.visit_date time, f.url icon",
+      "FROM moz_places p",
+      "JOIN moz_historyvisits h ON p.id = h.place_id",
+      "LEFT JOIN moz_favicons f ON p.favicon_id = f.id",
+      "WHERE p.url = :url",
+      "ORDER BY h.visit_date DESC",
+      "LIMIT 1"
+    ].join(' ');
+
+    return promisePlacesDBResult({
+      expression: SQLExp,
+      params: {'url': aURL},
+      columns: ['time', 'icon']
+    }).
+    // we ordered a single row
+    then((aRows) => aRows ? aRows[0] : {});
   }
 
   function formatLabel(aValue) {

@@ -29,7 +29,7 @@ const {
   getNodesByXPath: $X,
   addEvent,
   setChromeStyleSheet: setCSS,
-  scanPlacesDB
+  promisePlacesDBResult
 } = window.ucjsUtil;
 
 // for debug
@@ -228,11 +228,12 @@ const mStatusField = (function() {
     }
 
     /**
-     * Customize the default functions
+     * Patches the native function
+     *
+     * @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
      */
-
-    // @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
     const $setOverLink = XULBrowserWindow.setOverLink;
+
     XULBrowserWindow.setOverLink =
     function ucjsUI_StatusField_setOverLink(url, anchorElt) {
       if (disableSetOverLink) {
@@ -249,39 +250,155 @@ const mStatusField = (function() {
       // clear the message to hide it after the cursor leaves
       showMessage('');
 
-      // |URL| can be updated with its visited date
-      let {linkState, URL} = getLinkState(url, anchorElt);
+      Task.spawn(function*() {
+        // |newURL| can be updated with its visited date
+        let {linkState, newURL} = yield examineLinkURL(url, anchorElt);
 
-      const {LINKSTATE} = kStatusAttribute;
-      let textField = getTextBox();
-
-      if (linkState) {
-        if (textField.getAttribute(LINKSTATE) !== linkState) {
-          textField.setAttribute(LINKSTATE, linkState);
+        // this task was not completed while over link
+        if (lastOverLinkURL !== url) {
+          return;
         }
-      }
-      else {
-        if (textField.hasAttribute(LINKSTATE)) {
-          textField.removeAttribute(LINKSTATE);
+
+        const {LINKSTATE} = kStatusAttribute;
+        let textField = getTextBox();
+
+        if (linkState) {
+          if (textField.getAttribute(LINKSTATE) !== linkState) {
+            textField.setAttribute(LINKSTATE, linkState);
+          }
         }
-      }
+        else {
+          if (textField.hasAttribute(LINKSTATE)) {
+            textField.removeAttribute(LINKSTATE);
+          }
+        }
 
-      // disable the delayed showing while over link
-      this.hideOverLinkImmediately = true;
+        // disable the delayed showing while over link
+        this.hideOverLinkImmediately = true;
 
-      // @note use |call| for the updated |URL|
-      $setOverLink.call(this, URL, anchorElt);
+        // @note use |call| for the updated |newURL|
+        $setOverLink.call(this, newURL, anchorElt);
 
-      // restore the delayed showing
-      this.hideOverLinkImmediately = false;
+        // restore the delayed showing
+        this.hideOverLinkImmediately = false;
+
+      // make |this| to refer to |window.XULBrowserWindow|
+      // TODO: maybe |bind(this)| will be unnecessary in Fx30
+      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=966182
+      }.bind(this)).then(null, Cu.reportError);
     };
 
-    // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
+    /**
+     * Gets the bookmarked or visited state of a link URL, and update the URL
+     * with the visited date
+     *
+     * @param aURL {string}
+     * @param aAnchorElt {Element}
+     * @return {Promise}
+     *   @resolved {hash}
+     *     newURL: {string}
+     *     linkState: {string}
+     *
+     * @note called from a task in |ucjsUI_StatusField_setOverLink|
+     */
+    function examineLinkURL(aURL, aAnchorElt) {
+      return Task.spawn(function*() {
+        if (!aURL) {
+          return {
+            newURL: '',
+            linkState: null
+          };
+        }
+
+        // query the Places DB with the raw URL of a link in the content area
+        // so that we can get the proper result
+        let originalURL = (aAnchorElt && aAnchorElt.href) || aURL;
+        let newURL = aURL;
+        let linkState = 'unknown';
+
+        // visited check
+        let visitedDate = yield getVisitedDate(originalURL);
+
+        if (visitedDate) {
+          // convert microseconds into milliseconds
+          let time = (new Date(visitedDate / 1000)).
+            toLocaleFormat(kTimeFormat);
+
+          // update the URL with the visited date
+          newURL = kLinkFormat.
+            replace('%url%', newURL).replace('%time%', time);
+
+          linkState = 'visited';
+        }
+
+        // bookmarked check
+        let bookmarked = yield checkBookmarked(originalURL);
+
+        if (bookmarked) {
+          linkState = 'bookmarked';
+        }
+
+        return {
+          newURL: newURL,
+          linkState: linkState
+        };
+      });
+    }
+
+    function getVisitedDate(aURL) {
+      // don't query a URL which cannot be recorded about its visit date in the
+      // places DB
+      if (!/^(?:https?|ftp|file):/.test(aURL)) {
+        return Promise.resolve(null);
+      }
+
+      let SQLExp = [
+        "SELECT h.visit_date",
+        "FROM moz_historyvisits h",
+        "JOIN moz_places p ON p.id = h.place_id",
+        "WHERE p.url = :url",
+        "ORDER BY h.visit_date DESC",
+        "LIMIT 1"
+      ].join(' ');
+
+      return promisePlacesDBResult({
+        expression: SQLExp,
+        params: {'url': aURL},
+        columns: ['visit_date']
+      }).
+      // resolved with the date or null
+      // @note we ordered a single row
+      then((aRows) => aRows ? aRows[0].visit_date : null);
+    }
+
+    function checkBookmarked(aURL) {
+      let SQLExp = [
+        "SELECT b.id",
+        "FROM moz_bookmarks b",
+        "JOIN moz_places p ON p.id = b.fk",
+        "WHERE p.url = :url",
+        "LIMIT 1"
+      ].join(' ');
+
+      return promisePlacesDBResult({
+        expression: SQLExp,
+        params: {'url': aURL},
+        columns: ['id']
+      }).
+      // resolved with bookmarked or not
+      then((aRows) => !!aRows);
+    }
+
+    /**
+     * Patches the native function
+     *
+     * @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
+     */
     const $updateStatusField = XULBrowserWindow.updateStatusField;
 
     XULBrowserWindow.updateStatusField =
     function ucjsUI_StatusField_updateStatusField() {
-      // suppress the display except a message
+      // suppress the others while a message is shown
       if (messageStatus) {
         return;
       }
@@ -323,79 +440,7 @@ const mStatusField = (function() {
       setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
     }
 
-    function getLinkState(aURL, aAnchorElt) {
-      if (!aURL) {
-        return {
-          linkState: null,
-          URL: aURL
-        };
-      }
-
-      // query the Places DB with the raw URL of a link in the content area
-      // so that we can get the proper result
-      let originalURL = (aAnchorElt && aAnchorElt.href) || aURL;
-      let linkState;
-      let SQLExp, resultRows;
-
-      // visited check
-      SQLExp = [
-        "SELECT h.visit_date",
-        "FROM moz_historyvisits h",
-        "JOIN moz_places p ON p.id = h.place_id",
-        "WHERE p.url = :url",
-        "ORDER BY h.visit_date DESC",
-        "LIMIT 1"
-      ].join(' ');
-
-      resultRows = scanPlacesDB({
-        expression: SQLExp,
-        params: {'url': originalURL},
-        columns: ['visit_date']
-      });
-
-      if (resultRows) {
-        // we ordered one row
-        let row = resultRows[0];
-        // convert microseconds into milliseconds
-        let time = row.visit_date / 1000;
-
-        time = (new Date(time)).toLocaleFormat(kTimeFormat);
-
-        aURL = kLinkFormat.replace('%url%', aURL).replace('%time%', time);
-
-        linkState = 'visited';
-      }
-
-      // bookmarked check
-      SQLExp = [
-        "SELECT b.id",
-        "FROM moz_bookmarks b",
-        "JOIN moz_places p ON p.id = b.fk",
-        "WHERE p.url = :url",
-        "LIMIT 1"
-      ].join(' ');
-
-      resultRows = scanPlacesDB({
-        expression: SQLExp,
-        params: {'url': originalURL},
-        columns: ['id']
-      });
-
-      if (resultRows) {
-        linkState = 'bookmarked';
-      }
-
-      if (!linkState) {
-        linkState = 'unknown';
-      }
-
-      return {
-        linkState: linkState,
-        URL: aURL
-      };
-    }
-
-    // expose
+    // Expose
     return {
       toggle: toggle
     };

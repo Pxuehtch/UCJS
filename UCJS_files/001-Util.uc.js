@@ -1125,31 +1125,32 @@ function scanPlacesDB(aParam) {
  * Query the Places database asynchronously
  *
  * @param aParam {hash}
- *   expression: {string} a SQL expression
- *   params: {hash} [optional] the binding parameters
- *   columns: {array} the column names
- *   onSuccess: {function} functions to be called when done successfully
- *     @param aRows {hash[]|null}
- *       hash[]: array of {column name: value, ...}
- *       null: no result
- *   onError: {function} [optional]
- *   onCancel: {function} [optional]
- * @return {mozIStoragePendingStatement}
- *   an object with a .cancel() method allowing to cancel the request
+ *   expression: {string}
+ *     a SQL expression
+ *   params: {hash} [optional]
+ *     the binding parameters
+ *   columns: {array}
+ *     the column names
+ * @return {Promise}
+ *   onFulFill: {hash[]|null}
+ *     resolved with an array of {column-name: value, ...}, or null if no
+ *     result
+ *   onReject: {Error}
+ *     rejected with an error object
  *
  * TODO: use |createAsyncStatement|
  * I'm not sure why it doesn't work well
  *
- * TODO: handlings on error and cancel
+ * TODO: handle cancelling
+ *
+ * TODO: consider to use a reliable built-in module
+ * e.g. resource://gre/modules/Sqlite.jsm
  */
-function asyncScanPlacesDB(aParam) {
+function promisePlacesDBResult(aParam) {
   const {
     expression,
     params,
-    columns,
-    onSuccess,
-    onError,
-    onCancel
+    columns
   } = aParam || {};
 
   const {PlacesUtils} =
@@ -1158,53 +1159,61 @@ function asyncScanPlacesDB(aParam) {
   let statement =
     PlacesUtils.history.DBConnection.createStatement(expression);
 
-  try {
-    for (let key in statement.params) {
-      if (!(key in params)) {
-        throw Error('parameter is not defined: ' + key);
-      }
-
-      statement.params[key] = params[key];
+  for (let key in statement.params) {
+    if (!(key in params)) {
+      throw Error('parameter is not defined: ' + key);
     }
 
-    return statement.executeAsync({
-      rows: [],
+    statement.params[key] = params[key];
+  }
 
-      handleResult: function(aResultSet) {
-        let row;
+  let deferred = Promise.defer();
 
-        while ((row = aResultSet.getNextRow())) {
-          let result = {};
+  statement.executeAsync({
+    rows: [],
+    error: null,
 
-          columns.forEach((name) => {
-            result[name] = row.getResultByName(name);
-          });
+    handleResult: function(aResultSet) {
+      let row;
 
-          this.rows.push(result);
-        }
-      },
-
-      handleError: function(aError) {
-      },
-
-      handleCompletion: function(aReason) {
-        switch (aReason) {
-          case Ci.mozIStorageStatementCallback.REASON_FINISHED:
-            onSuccess(this.rows.length ? this.rows : null);
-            break;
-
-          case Ci.mozIStorageStatementCallback.REASON_ERROR:
-            break;
-
-          case Ci.mozIStorageStatementCallback.REASON_CANCELED:
-            break;
-        }
+      if (!aResultSet) {
+        return;
       }
-    });
-  }
-  finally {
-    statement.finalize();
-  }
+
+      while ((row = aResultSet.getNextRow())) {
+        let result = {};
+
+        columns.forEach((name) => {
+          result[name] = row.getResultByName(name);
+        });
+
+        this.rows.push(result);
+      }
+    },
+
+    handleError: function(aError) {
+      this.error = aError;
+    },
+
+    handleCompletion: function(aReason) {
+      statement.finalize();
+
+      switch (aReason) {
+        case Ci.mozIStorageStatementCallback.REASON_FINISHED:
+          deferred.resolve(this.rows.length ? this.rows : null);
+          break;
+
+        case Ci.mozIStorageStatementCallback.REASON_ERROR:
+          deferred.reject(this.error);
+          break;
+
+        case Ci.mozIStorageStatementCallback.REASON_CANCELED:
+          break;
+      }
+    }
+  });
+
+  return deferred.promise;
 }
 
 /**
@@ -1284,7 +1293,7 @@ return {
   setChromeStyleSheet: registerChromeStyleSheet,
   setContentStyleSheet: registerContentStyleSheet,
   scanPlacesDB: scanPlacesDB,
-  asyncScanPlacesDB: asyncScanPlacesDB,
+  promisePlacesDBResult: promisePlacesDBResult,
 
   logMessage: logMessage
 }
