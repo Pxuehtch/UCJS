@@ -581,7 +581,7 @@ function EventManager(aTargetGetter, aOption) {
   function manageEvents(aDoCreate) {
     let method = aDoCreate ? 'addEventListener' : 'removeEventListener';
 
-    mEventData.forEach(({type, listener, capture}) => {
+    mEventData.forEach(([type, listener, capture]) => {
       mTarget[method](type, listener, capture);
     });
   }
@@ -618,13 +618,7 @@ function EventManager(aTargetGetter, aOption) {
   function register({events, onCreate, onDestroy}) {
     if (events) {
       events.forEach(([type, listener, capture]) => {
-        capture = !!capture;
-
-        mEventData.push({
-          type: type,
-          listener: listener,
-          capture: capture
-        });
+        mEventData.push([type, listener, !!capture]);
 
         mTarget.addEventListener(type, listener, capture);
       });
