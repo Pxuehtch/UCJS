@@ -1088,10 +1088,7 @@ function scanPlacesDB(aParam) {
     XPCOM.getModule('resource://gre/modules/PlacesUtils.jsm');
 
   let statement =
-    PlacesUtils.history.
-    QueryInterface(Ci.nsPIPlacesDatabase).
-    DBConnection.
-    createStatement(expression);
+    PlacesUtils.history.DBConnection.createStatement(expression);
 
   let rows = [];
 
@@ -1159,10 +1156,7 @@ function asyncScanPlacesDB(aParam) {
     XPCOM.getModule('resource://gre/modules/PlacesUtils.jsm');
 
   let statement =
-    PlacesUtils.history.
-    QueryInterface(Ci.nsPIPlacesDatabase).
-    DBConnection.
-    createStatement(expression);
+    PlacesUtils.history.DBConnection.createStatement(expression);
 
   try {
     for (let key in statement.params) {
