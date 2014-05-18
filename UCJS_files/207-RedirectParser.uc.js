@@ -124,6 +124,9 @@ const kPreset = [
   //,
 ];
 
+/**
+ * UI constants
+ */
 const kUI = {
   menu: {
     id: 'ucjs_redirectparser_menu',

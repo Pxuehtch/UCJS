@@ -188,7 +188,7 @@ const RequestHandler = (function() {
   function request(aURL, aOption) {
     let cooldownTime = RequestTime.update(aURL);
 
-    // TODO: implement the canceller
+    // TODO: implement a canceller
     setTimeout(() => {
       let {httpRequest} = getModule('resource://gre/modules/Http.jsm');
 

@@ -201,9 +201,11 @@ const mHistoryList = (function() {
 
     makeMenuSeparator(aPopup);
 
+    // recent history items will be async-appended before this separator
     let recentHistorySep = makeMenuSeparator(aPopup);
-    asyncBuildRecentHistory(recentHistorySep, (aHasBuilt) => {
-      if (!aHasBuilt) {
+
+    asyncBuildRecentHistory(recentHistorySep, (aBuilt) => {
+      if (!aBuilt) {
         makeDisabledMenuItem(recentHistorySep, 'Recent: No history.');
       }
     });
@@ -249,7 +251,7 @@ const mHistoryList = (function() {
 
       className.push(direction);
 
-      // @note |label|,|icon| will be async-set by |getTimeAndFavicon|
+      // @note |label| and |icon| will be set asynchronously
       let menuitem = aPopup.appendChild($E('menuitem', {
         tooltiptext: getTooltip(title, URL),
         class: className.join(' '),

@@ -54,11 +54,14 @@ function log(aMsg) {
   mainWindow.style.border = '1px solid #000099';
 
   // hide the outer frame including the title bar
+  // WORKAROUND: fix 'chromemargin' attribute, since 'chromemargin' is
+  // initialized to the Fx default value when togging the menu bar, print
+  // preview, etc.
   let chromeMargin = {
     name: 'chromemargin',
     value: '0,0,0,0',
 
-    set: function (aValue) {
+    set: function () {
       if (mainWindow.getAttribute(this.name) !== this.value) {
         mainWindow.setAttribute(this.name, this.value);
       }
@@ -67,7 +70,6 @@ function log(aMsg) {
 
   chromeMargin.set();
 
-  // fix 'chromemargin' attribute
   let mutationObserver = new MutationObserver(() => {
     chromeMargin.set();
   });
