@@ -22,7 +22,6 @@ const {
     getModule
   },
   getNodeById: $ID,
-  addEvent,
   asyncScanPlacesDB
 } = window.ucjsUtil;
 

@@ -27,7 +27,6 @@ const {
   getNodeById: $ID,
   getNodesBySelector: $S,
   getFirstNodeByXPath: $X1,
-  addEvent,
   openURL,
   unescapeURLCharacters: unescURLChar
 } = window.ucjsUtil;

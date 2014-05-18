@@ -34,7 +34,6 @@ const {
   checkApp,
   runApp,
   makeURIURL,
-  addEvent,
   getNodesByXPath: $X,
   contentAreaContextMenu,
   // for debug
@@ -1184,7 +1183,6 @@ return {
   runApp: runApp,
   makeURIURL: makeURIURL,
 
-  addEvent: window.ucjsUtil.addEvent,
   createNode: window.ucjsUtil.createNode,
   getNodesByXPath: window.ucjsUtil.getNodesByXPath,
   contentAreaContextMenu: window.ucjsUI.ContentArea.contextMenu,

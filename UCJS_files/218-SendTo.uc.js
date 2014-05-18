@@ -20,7 +20,6 @@
  */
 const {
   getNodeById: $ID,
-  addEvent,
   getSelectionAtCursor
 } = window.ucjsUtil;
 

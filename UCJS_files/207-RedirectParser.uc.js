@@ -22,7 +22,6 @@ const {
     get: getPref
   },
   getNodeById: $ID,
-  addEvent,
   unescapeURLCharacters: unescURLChars,
   unescapeURLForUI: unescURLforUI
 } = window.ucjsUtil;

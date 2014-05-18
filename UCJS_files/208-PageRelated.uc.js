@@ -23,7 +23,6 @@
  */
 const {
   getNodeById: $ID,
-  addEvent
 } = window.ucjsUtil;
 
 function $E(aTag, aAttribute) {
