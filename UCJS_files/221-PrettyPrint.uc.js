@@ -450,7 +450,14 @@ const Beautifier = (function() {
       indent_char: aOptions.indentChar
     };
 
-    return css_beautify(aText, options);
+    return patch(css_beautify(aText, options));
+
+    function patch(aText) {
+      // trim a leading space of a top-level declaration after the comment
+      // line
+      // @note patch for beautify-css.js [Apr 28, 2013]
+      return aText.replace(/(\*\/\n) (?! )/g, '$1');
+    }
   }
 
   /**
