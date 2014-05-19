@@ -40,7 +40,7 @@ const {
 /**
  * Text type constants
  *
- * @note used to set a beautifier method and the syntax highlight mode for
+ * @note used to set a prettifier method and the syntax highlight mode for
  * the Scratchpad editor
  */
 const kTextType = (function() {
@@ -61,7 +61,7 @@ const kTextType = (function() {
  * @see chrome://browser/content/devtools/scratchpad.js::Scratchpad::onLoad
  *
  * the available options in the built-in version;
- * @see chrome://browser/content/devtools/codemirror/codemirror.js::[OPTION DEFAULTS]
+ * @see chrome://browser/content/devtools/codemirror/codemirror.js::OPTION DEFAULTS
  *
  * the options in the recent version;
  * @see http://codemirror.net/doc/manual.html#config
@@ -71,17 +71,17 @@ const kEditorOptions = {
 };
 
 /**
- * Optional settings for the beautifier
+ * Optional settings for the prettifier
  *
  * @note the default values are used if absent
- * @see |Beautifier::kOptionList|
+ * @see |Prettifier::kOptionList|
  */
-const kBeautifierOptions = {};
+const kPrettifierOptions = {};
 
 /**
  * Menu handler
  */
-const MenuHandler = (function() {
+const Menu = (function() {
   const kUI = {
     prettifySourcePage: {
       id: 'ucjs_PrettyPrint_prettifySourcePage_menuitem',
@@ -138,7 +138,7 @@ const MenuHandler = (function() {
         type: getTextType(contentDocument),
         text: getTextContent(contentDocument),
         editorOptions: kEditorOptions,
-        beautifierOptions: kBeautifierOptions
+        prettifierOptions: kPrettifierOptions
       };
 
       Scratchpad.prettify(state);
@@ -165,7 +165,7 @@ const Scratchpad = (function() {
    *   type {kTextType}
    *   text {string}
    *   editorOptions {kEditorOptions} [optional]
-   *   beautifierOptions {kBeautifierOptions} [optional]
+   *   prettifierOptions {kPrettifierOptions} [optional]
    *
    * TODO: a better check of parameters
    */
@@ -175,7 +175,7 @@ const Scratchpad = (function() {
       type,
       text,
       editorOptions,
-      beautifierOptions
+      prettifierOptions
     } = aState || {};
 
     if (!type) {
@@ -201,7 +201,7 @@ const Scratchpad = (function() {
     let state = {
       filename: filename,
       type: type,
-      text: Beautifier.execute(type, text, beautifierOptions),
+      text: Prettifier.execute(type, text, prettifierOptions),
       options: editorOptions
     };
 
@@ -264,9 +264,9 @@ const Scratchpad = (function() {
 })();
 
 /**
- * Beautifier handler
+ * Prettifier handler
  */
-const Beautifier = (function() {
+const Prettifier = (function() {
   /**
    * Optional value setting
    */
@@ -363,7 +363,7 @@ const Beautifier = (function() {
   }
 
   /**
-   * Beautify a code text
+   * Prettify a code text
    *
    * @param aTextType {kTextType}
    * @param aText {string}
@@ -372,15 +372,15 @@ const Beautifier = (function() {
    * @return {string}
    */
   function execute(aTextType, aText, aOptions) {
-    let beautify;
+    let prettify;
 
     switch (aTextType) {
       case kTextType.js:
-        beautify = JSBeautify;
+        prettify = prettifyJS;
         break;
 
       case kTextType.css:
-        beautify = CSSBeautify;
+        prettify = prettifyCSS;
         break;
 
       default:
@@ -389,7 +389,7 @@ const Beautifier = (function() {
 
     aOptions = fixupOptions(aOptions);
 
-    let result = beautify(aText, aOptions);
+    let result = prettify(aText, aOptions);
 
     if (aOptions.extraLine) {
       result = addExtraLine(result);
@@ -424,14 +424,14 @@ const Beautifier = (function() {
   }
 
   /**
-   * JS beautifier
+   * JS Prettifier
    *
    * @note calls the built-in function 'js_beautify'
    * @see resource://app/modules/devtools/Jsbeautify.jsm
    * @note this is based on 'JS Beautifier'
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
-  function JSBeautify(aText, aOptions) {
+  function prettifyJS(aText, aOptions) {
     let options = {
       indent_size: aOptions.indentSize,
       indent_char: aOptions.indentChar//,
@@ -454,11 +454,11 @@ const Beautifier = (function() {
   }
 
   /**
-   * CSS beautifier
+   * CSS Prettifier
    *
    * @note calls 'JS Beautifier beautify-css.js'
    */
-  function CSSBeautify(aText, aOptions) {
+  function prettifyCSS(aText, aOptions) {
     let options = {
       indent_size: aOptions.indentSize,
       indent_char: aOptions.indentChar//,
@@ -477,7 +477,7 @@ const Beautifier = (function() {
   }
 
   /**
-   * 'JS Beautifier' beautify-css.js [Apr 28, 2013]
+   * JS Beautifier beautify-css.js [Apr 28, 2013]
    *
    * TODO: the newer version [Nov 22, 2013] seems to be incompatible with this
    * user script, so, stop updating until I find what wrong
@@ -592,7 +592,7 @@ function prompt(aMessage, aOption) {
  * Entry point
  */
 function PrettyPrint_init() {
-  MenuHandler.init();
+  Menu.init();
 }
 
 PrettyPrint_init()
