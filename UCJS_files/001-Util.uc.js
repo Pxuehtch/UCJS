@@ -1094,13 +1094,15 @@ function getPlacesDBResult(aParam) {
   let statement =
     PlacesUtils.history.DBConnection.createStatement(expression);
 
-    for (let key in statement.params) {
-      if (!(key in params)) {
-        throw Error('parameter is not defined: ' + key);
-      }
+  for (let key in statement.params) {
+    if (!(key in params)) {
+      statement.finalize();
 
-      statement.params[key] = params[key];
+      throw Error('parameter is not defined: ' + key);
     }
+
+    statement.params[key] = params[key];
+  }
 
   let rows = [];
 
@@ -1165,6 +1167,8 @@ function promisePlacesDBResult(aParam) {
 
   for (let key in statement.params) {
     if (!(key in params)) {
+      statement.finalize();
+
       throw Error('parameter is not defined: ' + key);
     }
 
