@@ -262,8 +262,6 @@ function getSearchEngineKeywordData() {
 }
 
 function getBookmarkKeywordData() {
-  let data = [];
-
   let SQLExp = [
     'SELECT b.title, k.keyword, p.url',
     'FROM moz_bookmarks b',
@@ -279,6 +277,8 @@ function getBookmarkKeywordData() {
     if (!aRows || !aRows.length) {
       return [];
     }
+
+    let data = [];
 
     aRows.forEach((aItem) => {
       data.push({
