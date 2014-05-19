@@ -426,13 +426,25 @@ const Beautifier = (function() {
   /**
    * JS beautifier
    *
-   * @note calls the built-in function based on 'JS Beautifier'
+   * @note calls the built-in function 'js_beautify'
+   * @see resource://app/modules/devtools/Jsbeautify.jsm
+   * @note this is based on 'JS Beautifier'
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
   function JSBeautify(aText, aOptions) {
     let options = {
       indent_size: aOptions.indentSize,
-      indent_char: aOptions.indentChar
+      indent_char: aOptions.indentChar//,
+
+      // internal options
+      //preserve_newlines: true, // [default: true]
+      //max_preserve_newlines: false, // [default: false]
+      //jslint_happy: false, // [default: false]
+      //brace_style: 'collapse', // [default: 'collapse']
+      //space_before_conditional: true, // [default: true]
+      //unescape_strings: false, // [default: false]
+      //keep_array_indentation: false, // [default: false]
+      //indent_case: false // [default: false]
     };
 
     const {js_beautify} =
@@ -443,11 +455,15 @@ const Beautifier = (function() {
 
   /**
    * CSS beautifier
+   *
+   * @note calls 'JS Beautifier beautify-css.js'
    */
   function CSSBeautify(aText, aOptions) {
     let options = {
       indent_size: aOptions.indentSize,
-      indent_char: aOptions.indentChar
+      indent_char: aOptions.indentChar//,
+
+      // no internal options for now
     };
 
     return patch(css_beautify(aText, options));
