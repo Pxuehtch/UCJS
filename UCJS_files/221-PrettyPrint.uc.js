@@ -404,13 +404,13 @@ const Beautifier = (function() {
 
   /**
    * Add an extra line after '}' or '},' or '};' being not the last one in a
-   * nesting block
+   * nesting block or in a block comment
    *
    * @param aText {string}
    * return {string}
    */
   function addExtraLine(aText) {
-    return aText.replace(/(}[,;]?\n)(?!\s*})/g, '$1\n');
+    return aText.replace(/(}[,;]?\n)(?!\s*(?:}|\*\/))/g, '$1\n');
   }
 
   /**
