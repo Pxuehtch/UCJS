@@ -49,6 +49,12 @@ function init() {
     // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
     mLinkView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
     tree.view = mLinkView;
+
+    // clean up when the Page Info window is closed
+    // @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
+    window.onUnloadRegistry.push(() => {
+      mLinkView = null;
+    });
   }
 
   build();
