@@ -4,7 +4,8 @@
 // @include     main
 // ==/UserScript==
 
-// @require Util.uc.js, UI.uc.js, Overlay.uc.xul
+// @require Util.uc.js, UI.uc.js
+// @require [optional] Overlay.uc.xul
 // @usage creates a menu in the URL bar context menu
 
 // @see https://addons.mozilla.org/en-US/firefox/addon/location-bar-characters/
@@ -160,7 +161,9 @@ function buildMenuItems(aPopup) {
   insertElement(aPopup, $E('menuitem', {
     label: kUI.openSearchEngineManager.label,
     accesskey: kUI.openSearchEngineManager.accesskey,
-    // @require Overlay.uc.xul
+    // @require [optional] Overlay.uc.xul
+    // @note you can set <oncommand> with a code to open the manager instead
+    // of <command>
     command: 'ucjs_cmd_OpenSearchEngineManager'
   }));
 }

@@ -46,8 +46,9 @@ const SortState = (function() {
  *
  * @see chrome://browser/content/pageinfo/pageInfo.js
  */
-window.pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
-  // useless of sorting when a single row
+window.pageInfoTreeView.prototype.cycleHeader =
+  function ucjsSortList_cycleHeader(aColumn) {
+  // ignore a sorting for a single row
   if (this.rowCount < 2) {
     return;
   }
@@ -69,7 +70,7 @@ window.pageInfoTreeView.prototype.cycleHeader = function(aColumn) {
     state.sortColumn = aColumn;
   }
 
-  // only the first time store the natural order
+  // store the natural order at the first time
   if (!state.naturalData) {
     state.naturalData = this.data.concat();
   }
@@ -117,7 +118,7 @@ window.gImageView.onPageMediaSort =
  *
  * @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
  */
-window.onUnloadRegistry.push(function() {
+window.onUnloadRegistry.push(() => {
   SortState.clear();
 });
 
