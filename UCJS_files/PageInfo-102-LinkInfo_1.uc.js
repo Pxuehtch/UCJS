@@ -227,26 +227,21 @@ function addLink(aValueArray) {
  * Opens URL of a row being double-clicked
  */
 function openLink(aEvent) {
-  if (aEvent.originalTarget.localName != 'treechildren') {
+  if (aEvent.originalTarget.localName !== 'treechildren') {
     return;
   }
 
-  let tree = aEvent.target;
+  let tree = window.document.getElementById(kID.linkTree);
 
-  if (!('treeBoxObject' in tree)) {
-    tree = tree.parentNode;
-  }
+  // chrome://browser/content/pageinfo/pageInfo.js::getSelectedRow()
+  let row = window.getSelectedRow(tree);
 
-  let row = {};
-
-  tree.treeBoxObject.getCellAt(aEvent.clientX, aEvent.clientY, row, {}, {});
-
-  if (row.value == -1) {
+  if (row === -1) {
     return;
   }
 
   let column = tree.columns.getNamedColumn(kID.addressColumn);
-  let URL = tree.treeBoxObject.view.getCellText(row.value, column);
+  let URL = mLinkView.data[row][column.index];
 
   let opener = window.opener;
 
