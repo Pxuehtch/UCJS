@@ -40,52 +40,6 @@ function log(aMsg) {
 }
 
 /**
- * Sets style of Firefox window
- *
- * @note the setting for the themes of my Firefox and OS
- *
- * TODO: the window layout sometimes breaks after returning from the fullscreen
- */
-(function setMainWindowStyle() {
-
-  let mainWindow = $ID('main-window');
-
-  // set the border
-  mainWindow.style.border = '1px solid #000099';
-
-  // hide the outer frame including the title bar
-  // WORKAROUND: fix 'chromemargin' attribute, since 'chromemargin' is
-  // initialized to the Fx default value when togging the menu bar, print
-  // preview, etc.
-  let chromeMargin = {
-    name: 'chromemargin',
-    value: '0,0,0,0',
-
-    set: function () {
-      if (mainWindow.getAttribute(this.name) !== this.value) {
-        mainWindow.setAttribute(this.name, this.value);
-      }
-    }
-  };
-
-  chromeMargin.set();
-
-  let mutationObserver = new MutationObserver(() => {
-    chromeMargin.set();
-  });
-
-  addEvent(window, 'unload', () => {
-    mutationObserver.disconnect();
-  }, false);
-
-  mutationObserver.observe(mainWindow, {
-    attributes: true,
-    attributeFilter: [chromeMargin.name]
-  });
-
-})();
-
-/**
  * Shows a long URL text without cropped in a tooltip of the URL bar
  */
 (function() {

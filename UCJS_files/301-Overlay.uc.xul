@@ -44,20 +44,17 @@
 
 <!-- Key -->
 <keyset id="mainKeyset">
-  <!--
-   @note |window.moveTo(0,1)| for the themes of my Firefox and OS
-   -->
   <key id="ucjs_key_Resize1"
     key="1" modifiers="alt"
-    oncommand="window.moveTo(0,1);window.resizeTo(800,600);"/>
+    oncommand="window.resizeTo(800,600);"/>
 
   <key id="ucjs_key_Resize2"
     key="2" modifiers="alt"
-    oncommand="window.moveTo(0,1);window.resizeTo(1280,800);"/>
+    oncommand="window.resizeTo(1280,768);"/>
 
   <key id="ucjs_key_ResizeMax"
     key="3" modifiers="alt"
-    oncommand="window.moveTo(0,1);window.outerHeight=screen.availHeight-1;window.outerWidth=screen.availWidth;"/>
+    oncommand="window.outerHeight=screen.availHeight-1;window.outerWidth=screen.availWidth;"/>
 
   <key id="ucjs_key_RestartApp"
     key="[" modifiers="control,alt"
