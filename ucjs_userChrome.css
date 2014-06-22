@@ -29,14 +29,3 @@
 .tabbrowser-tab[ucjs_tabex_suspended] {
   font-style: italic !important;
 }
-
-/**
- * [AllTabs.uc.js] all tabs menupopup
- * menuitem about an overflowed tab on tabstrip
- */
-.alltabs-item[tabIsVisible] {
-  box-shadow: none !important;
-}
-#ucjs_alltabs_group_tag_menuitem[ucjs_alltabs_tabOverflowed] ~ .alltabs-item:not([tabIsVisible]) {
-  box-shadow: 0 0 0 2em hsla(0, 0%, 50%, .4) inset;
-}
