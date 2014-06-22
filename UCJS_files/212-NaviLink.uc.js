@@ -1146,8 +1146,7 @@ const NaviLink = (function() {
       }
     }
 
-    // TODO: smart flag setting
-    let added = false;
+    let itemNums = 0;
 
     for (let type in aRels) {
       type = NaviLinkTypeFixup.registered(type);
@@ -1155,11 +1154,11 @@ const NaviLink = (function() {
       if (type) {
         attributes.push(['rel', aRels.exceptFor(type)]);
         addItem(aList, type, aNode, attributes);
-        added || (added = true);
+        itemNums++;
       }
     }
 
-    return added;
+    return itemNums > 0;
   }
 
   function scanSubNaviLink(aList, aNode, aRels) {
