@@ -533,15 +533,13 @@ const mClosedList = (function() {
   }
 
   function buildClosedTabs(aPopup) {
-    let sessionStore = getSessionStore();
+    let closedTabs = getClosedTabsData();
 
-    if (sessionStore.getClosedTabCount(window) === 0) {
+    if (!closedTabs) {
       return false;
     }
 
-    let closedTabs = JSON.parse(sessionStore.getClosedTabData(window));
-
-    for (let i = 0; i < closedTabs.length; i++) {
+    for (let i = 0, il = closedTabs.length; i < il; i++) {
       let closedTab = closedTabs[i];
 
       let entries = closedTab.state.entries;
@@ -571,14 +569,13 @@ const mClosedList = (function() {
   }
 
   function buildClosedWindows(aPopup) {
-    let sessionStore = getSessionStore();
+    let closedWindows = getClosedWindowsData();
 
-    if (sessionStore.getClosedWindowCount() === 0) {
+    if (!closedWindows) {
       return false;
     }
 
-    let closedWindows = JSON.parse(sessionStore.getClosedWindowData());
-    for (let i = 0; i < closedWindows.length; i++) {
+    for (let i = 0, il = closedWindows.length; i < il; i++) {
       let closedWindow = closedWindows[i];
 
       let tabs = closedWindow.tabs;
@@ -617,6 +614,30 @@ const mClosedList = (function() {
   function getSessionStore() {
     return Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
+  }
+
+  function getClosedTabsData() {
+    let sessionStore = getSessionStore();
+
+    try {
+      if (sessionStore.getClosedTabCount(window) > 0) {
+        return JSON.parse(sessionStore.getClosedTabData(window));
+      }
+    } catch (ex) {}
+
+    return null;
+  }
+
+  function getClosedWindowsData() {
+    let sessionStore = getSessionStore();
+
+    try {
+      if (sessionStore.getClosedWindowCount() > 0) {
+        return JSON.parse(sessionStore.getClosedWindowData());
+      }
+    } catch (ex) {}
+
+    return null;
   }
 
   return {
