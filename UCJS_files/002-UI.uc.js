@@ -283,9 +283,8 @@ const mStatusField = (function() {
         this.hideOverLinkImmediately = false;
 
       // make |this| to refer to |window.XULBrowserWindow|
-      // TODO: maybe |bind(this)| will be unnecessary in Fx30
-      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=966182
-      }.bind(this)).then(null, Cu.reportError);
+      }.bind(this)).
+      then(null, Cu.reportError);
     };
 
     /**
