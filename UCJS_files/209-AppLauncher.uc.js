@@ -628,7 +628,7 @@ function getAvailableActions() {
 
     actions.push('viewImage');
 
-    if (/^(?:https?|ftp):/.test(gContextMenu.imageURL)) {
+    if (/^(?:https?|ftp):/.test(gContextMenu.mediaURL)) {
       actions.push('downloadImage');
     }
   }
@@ -762,7 +762,7 @@ function doAction(aApp, aAction) {
       save = true;
 
       if (gContextMenu.onImage) {
-        targetURL = gContextMenu.imageURL;
+        targetURL = gContextMenu.mediaURL;
       }
       else if (gContextMenu.onCanvas) {
         targetURL = gContextMenu.target.toDataURL();
@@ -778,11 +778,8 @@ function doAction(aApp, aAction) {
       break;
 
     case 'downloadMedia':
-      targetURL = gContextMenu.mediaURL;
-      break;
-
     case 'downloadImage':
-      targetURL = gContextMenu.imageURL;
+      targetURL = gContextMenu.mediaURL;
       break;
 
     case 'downloadBGImage':
