@@ -1283,7 +1283,7 @@ return {
   unescapeURLCharacters: unescapeURLCharacters,
   unescapeURLForUI: unescapeURLForUI,
   resolveURL: resolveURL,
-  openWindow: openNewWindow,
+  openNewWindow: openNewWindow,
   openHomePages: openHomePages,
   openTabs: openTabs,
   openURL: openURL,
