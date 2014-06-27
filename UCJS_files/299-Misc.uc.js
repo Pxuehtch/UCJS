@@ -43,10 +43,12 @@ function log(aMsg) {
  * Customizes the tooltip of a tab
  *
  * @require TabEx.uc.js
+ *
+ * TODO: create a custom tooltip with more information instead of overwriting
+ * a default tooltip
  */
 (function() {
 
-  // @see chrome://browser/content/tabbrowser.xml::createTooltip
   addEvent($ID('tabbrowser-tab-tooltip'), 'popupshowing', onPopup, false);
 
   function onPopup(aEvent) {
@@ -72,6 +74,8 @@ function log(aMsg) {
     if (!tab.linkedBrowser.canGoBack && referrer.exists(tab)) {
       // the document title is fetched by async history API
       referrer.fetchTitle(tab, (aTitle) => {
+        // a tooltip label would be set with a tab label by Fx native function
+        // @see chrome://browser/content/tabbrowser.xml::createTooltip
         let label = tooltip.label + '\n\nFrom: ' + aTitle;
 
         tooltip.setAttribute('label', label);
@@ -96,7 +100,7 @@ function log(aMsg) {
   const kTooltipShowDelay = 500; // [ms]
   let tooltipTimer = null;
 
-  // TODO: Fx29, the URL tooltip shows even if the URL does not overflow at
+  // TODO: in Fx29, the URL tooltip shows even if the URL does not overflow at
   // startup. I guess that the overflow event occurs at startup, and leave
   // |gURLBar._contentIsCropped| to true until a long URL loads
   // WORKAROUND: reset to false, but it may be wrong timing

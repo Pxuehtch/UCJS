@@ -156,7 +156,7 @@ const kPreset = [
   {
     URL: 'https://docs.google.com/viewer?url=%ENC%',
     types: ['LINK'],
-    // @see https://docs.google.com/support/bin/answer.py?answer=1189935
+    // @see https://support.google.com/drive/answer/2423485
     extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf'],
     label: '%TYPE%を Google Docs Viewer で表示'
   },

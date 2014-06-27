@@ -78,8 +78,7 @@ const kItemList = [
     description: 'Switch CSS (Tab)',
 
     // gets the content viewer for the current content document
-    // @see chrome://browser/content/tabbrowser.xml::
-    // markupDocumentViewer
+    // @see chrome://browser/content/tabbrowser.xml::markupDocumentViewer
     get documentViewer() {
       return gBrowser.markupDocumentViewer;
     },

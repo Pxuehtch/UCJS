@@ -46,7 +46,7 @@ const {
  *
  * @note valid values are string 'true' or 'false', and missing key or empty
  * value equals 'false'
- * @see http://mxr.mozilla.org/mozilla-release/source/toolkit/locales/en-US/chrome/global/intl.properties#64
+ * @see http://mxr.mozilla.org/mozilla-release/source/toolkit/locales/en-US/chrome/global/intl.properties#63
  */
 const kUnderlinedAccesskey =
   getPref('intl.menuitems.alwaysappendaccesskeys', 'false') === 'false';
