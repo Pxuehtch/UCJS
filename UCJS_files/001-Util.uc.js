@@ -675,8 +675,7 @@ function openNewWindow(aURL, aOption) {
   checkSecurity(URL);
 
   // @see chrome://browser/content/utilityOverlay.js::openNewWindowWith()
-  let newWin = window.
-    openNewWindowWith(URL, getFocusedDocument(), null, false);
+  let newWin = window.openNewWindowWith(URL, getFocusedDocument());
 
   if (inBackground) {
     setTimeout(window.focus, 0);
