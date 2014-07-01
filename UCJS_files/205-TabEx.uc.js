@@ -214,7 +214,7 @@ const mTab = (function () {
     switch (aKey) {
       case 'query': // {hash}
         name = kID.OPENQUERY;
-        getter = (value) =>  JSON.parse(htmlUnescape(value));
+        getter = (value) => JSON.parse(htmlUnescape(value));
         setter = (value) => htmlEscape(JSON.stringify(value));
         break;
 

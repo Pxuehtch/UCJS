@@ -311,12 +311,18 @@ const mStatusField = (function() {
 
         // query the Places DB with the raw URL of a link in the content area
         // so that we can get the proper result
-        let originalURL = (aAnchorElt && aAnchorElt.href) || aURL;
+        let rawURL = (aAnchorElt && aAnchorElt.href) || aURL;
+
+        // retrieve a URL sring of a link around an SVG element
+        if (rawURL.baseVal) {
+          rawURL = rawURL.baseVal;
+        }
+
         let newURL = aURL;
         let linkState = 'unknown';
 
         // visited check
-        let visitedDate = yield getVisitedDate(originalURL);
+        let visitedDate = yield getVisitedDate(rawURL);
 
         if (visitedDate) {
           // convert microseconds into milliseconds
@@ -331,7 +337,7 @@ const mStatusField = (function() {
         }
 
         // bookmarked check
-        let bookmarked = yield checkBookmarked(originalURL);
+        let bookmarked = yield checkBookmarked(rawURL);
 
         if (bookmarked) {
           linkState = 'bookmarked';
