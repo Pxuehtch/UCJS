@@ -241,11 +241,12 @@ const mStatusField = (function() {
         return;
       }
 
-      // WORKAROUND: sometimes |setOverLink| is called on mouseover event (e.g.
+      // WORKAROUND: sometimes |setOverLink| is called on mousemove event (e.g.
       // on history/bookmark sidebar), so we discard redundant callings
       if (lastOverLinkURL === url) {
         return;
       }
+
       lastOverLinkURL = url;
 
       // clear the message to hide it after the cursor leaves
@@ -255,7 +256,8 @@ const mStatusField = (function() {
         // |newURL| can be updated with its visited date
         let {linkState, newURL} = yield examineLinkURL(url, anchorElt);
 
-        // this task was not completed while over link
+        // this task is useless any more since it was not completed while over
+        // link and a new task has raised on another over link
         if (lastOverLinkURL !== url) {
           return;
         }
