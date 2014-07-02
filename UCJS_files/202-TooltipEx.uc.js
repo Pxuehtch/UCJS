@@ -23,16 +23,12 @@
 const {
   getNodeById: $ID,
   addEvent,
+  unescapeURLForUI,
+  resolveURL
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
-
-function unescURLForUI(aURL, aBaseURL) {
-  const util = window.ucjsUtil;
-
-  return util.unescapeURLForUI(util.resolveURL(aURL, aBaseURL));
 }
 
 // for debug
@@ -377,10 +373,11 @@ const TooltipPanel = (function() {
       }
 
       if (value) {
-        let [scheme, rest] = splitURL(value, aNode.baseURI);
+        let URL = unescapeURLForUI(resolveURL(value, aNode.baseURI));
+        let [scheme, rest] = splitURL(URL);
 
-        // the long URL with 'javascript:' and 'data:' will be cropped
-        let doCrop = /^javascript:|^data:/.test(scheme);
+        // the long URL with javascript/data scheme will be cropped
+        let doCrop = /^(?:javascript|data):/.test(scheme);
 
         data.push(makeTipData($attr(name) + scheme, rest, doCrop));
       }
@@ -569,11 +566,10 @@ function isLinkNode(aNode) {
   );
 }
 
-function splitURL(aURL, aBaseURL) {
-  let URL = unescURLForUI(aURL, aBaseURL);
-  let colon = URL.indexOf(':') + 1;
+function splitURL(aURL) {
+  let colon = aURL.indexOf(':') + 1;
 
-  return [URL.substring(0, colon), URL.substring(colon)];
+  return [aURL.substring(0, colon), aURL.substring(colon)];
 }
 
 function copyToClipboard(aText) {
