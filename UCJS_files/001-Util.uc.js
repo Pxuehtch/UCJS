@@ -648,17 +648,22 @@ function unescapeURLForUI(aURL, aCharset) {
 
 function resolveURL(aURL, aBaseURL) {
   if (!aURL || !/\S/.test(aURL)) {
-    return '';
+    return null;
   }
 
-  if (/^[a-zA-Z]+:/.test(aURL)) {
+  if (/^(?:https?|ftp):/.test(aURL)) {
     return aURL;
   }
 
   let baseURL = aBaseURL || getFocusedDocument().documentURI;
 
-  // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
-  return window.makeURLAbsolute(baseURL, aURL);
+  try {
+    // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
+    return window.makeURLAbsolute(baseURL, aURL);
+  }
+  catch (ex) {}
+
+  return null;
 }
 
 function openNewWindow(aURL, aOption) {
