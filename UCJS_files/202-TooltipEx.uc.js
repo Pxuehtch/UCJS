@@ -513,7 +513,8 @@ const TooltipPanel = (function() {
       let subTooltip = $E('tooltip', {
         // TODO: consider more smart way to make a unique id
         id: kID.subTooltip + mBox.childNodes.length,
-        style: kPanelStyle.tipItem
+        style: kPanelStyle.tipItem,
+        onpopuphiding: 'event.stopPropagation();'
       });
 
       item.appendChild(subTooltip).
