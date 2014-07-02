@@ -28,6 +28,7 @@ const {
   getNodeByAnonid: $ANONID,
   getNodesByXPath: $X,
   addEvent,
+  resolveURL,
   setChromeStyleSheet: setCSS,
   promisePlacesDBResult
 } = window.ucjsUtil;
@@ -309,13 +310,23 @@ const mStatusField = (function() {
           };
         }
 
-        // query the Places DB with the raw URL of a link in the content area
-        // so that we can get the proper result
-        let rawURL = (aAnchorElt && aAnchorElt.href) || aURL;
+        // |aURL| that is passed to the native function |setOverLink| may be
+        // a processed URL for UI, so we query the Places DB with the raw URL
+        // of an anchor element to fetch the proper result
+        // @note |Element.href| will always return the absolute path
+        let rawURL = aAnchorElt && aAnchorElt.href;
 
-        // retrieve a URL sring of a link around an SVG element
-        if (rawURL.baseVal) {
-          rawURL = rawURL.baseVal;
+        // get a URL sring of an SVGAElement
+        if (rawURL && rawURL.baseVal) {
+          // @note |baseVal| may be a relative path
+          rawURL = resolveURL(rawURL.baseVal, aAnchorElt.baseURI);
+        }
+
+        // use the cooked URL if a raw URL cannot be retrieved
+        // TODO: ensure an absolute |aURL|. I'm not sure whether an absolute
+        // URL is always passed to |setOverLink| in Fx native processing
+        if (!rawURL) {
+          rawURL = aURL;
         }
 
         let newURL = aURL;
