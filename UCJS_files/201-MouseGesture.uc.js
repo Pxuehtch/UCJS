@@ -37,6 +37,7 @@ const {
   getNodeById: $ID,
   addEvent,
   getSelectionAtCursor,
+  resolveURL,
   openTab
 } = window.ucjsUtil;
 
@@ -1158,7 +1159,9 @@ function getLinkURL(aNode) {
           node instanceof HTMLLinkElement ||
           node.getAttributeNS(XLinkNS, 'type') === 'simple' ||
           node instanceof SVGAElement) {
-        break;
+        if (node.href) {
+          break;
+        }
       }
     }
 
@@ -1167,29 +1170,21 @@ function getLinkURL(aNode) {
 
   if (node) {
     if (node instanceof SVGAElement) {
-      try {
-        // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
-        return window.makeURLAbsolute(node.baseURI, node.href.baseVal);
-      }
-      catch (ex) {}
+      return resolveURL(node.href.baseVal, node.baseURI);
     }
-    else {
-      return node.href;
-    }
+
+    return node.href;
   }
 
   return null;
 }
 
 function getImageURL(aNode) {
-  if (aNode instanceof SVGImageElement) {
-    try {
-      // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
-      return window.makeURLAbsolute(aNode.baseURI, aNode.href.baseVal);
-    }
-    catch (ex) {}
+  if (aNode instanceof SVGImageElement && aNode.href) {
+    return resolveURL(aNode.href.baseVal, aNode.baseURI);
   }
-  else if (aNode instanceof HTMLImageElement) {
+
+  if (aNode instanceof HTMLImageElement && aNode.src) {
     return aNode.src;
   }
 
