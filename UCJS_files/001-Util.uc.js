@@ -898,6 +898,10 @@ function restartFx(aOption) {
     XPCOM.$S('appinfo').invalidateCachesOnRestart();
   }
 
+  // WORKAROUND: in Fx30, the browser cannot often restart on resume startup,
+  // so set the preference to force to restore the session
+  Prefs.set('browser.sessionstore.resume_session_once', true);
+
   XPCOM.$S('startup').
     quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
 }
