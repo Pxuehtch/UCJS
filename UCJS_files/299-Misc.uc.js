@@ -261,18 +261,27 @@ function log(aMsg) {
 })();
 
 /**
- * Content area link click handler
+ * Prevent new page opening by the target attribute on link click
+ *
+ * @note follows the action by clicking with modifier keys
  */
 (function() {
 
   addEvent(gBrowser.mPanelContainer, 'mousedown', onMouseDown, true);
 
   function onMouseDown(aEvent) {
-    let link;
-
     if (aEvent.button !== 0 ||
-        !isHtmlDocument(aEvent.target.ownerDocument) ||
-        !(link = getLink(aEvent.target))) {
+        aEvent.shiftKey || aEvent.ctrlKey || aEvent.altKey) {
+      return;
+    }
+
+    if (!isHtmlDocument(aEvent.target.ownerDocument)) {
+      return;
+    }
+
+    let link = getLink(aEvent.target);
+
+    if (!link) {
       return;
     }
 
