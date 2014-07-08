@@ -264,6 +264,9 @@ function log(aMsg) {
  * Prevent new page opening by the target attribute on link click
  *
  * @note follows the action by clicking with modifier keys
+ * @note follows the valid target in <frame> windows
+ *
+ * TODO: handling for <iframe>
  */
 (function() {
 
@@ -285,11 +288,21 @@ function log(aMsg) {
       return;
     }
 
-    /**
-     * get rid of target="_blank" links
-     */
-    if (/^(?:_blank|_new|blank|new)$/i.test(link.target)) {
-      link.target = '_top';
+    if (link.target) {
+      let hasTargetFrame = false;
+
+      let view = aEvent.target.ownerDocument.defaultView;
+
+      if (view.frameElement instanceof HTMLFrameElement) {
+        let target = link.target;
+
+        hasTargetFrame =
+          Array.some(view.top.frames, (frame) => frame.name === target);
+      }
+
+      if (!hasTargetFrame) {
+        link.target = '_top';
+      }
     }
   }
 
