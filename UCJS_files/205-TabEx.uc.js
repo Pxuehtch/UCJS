@@ -541,16 +541,14 @@ const mReferrer = {
   },
 
   fetchInfo: function(aTab, aCallback) {
-    let info = {};
-
     let URL = this.getURL(aTab);
 
     // the document title is fetched by async history API
     fetchPageTitle(URL, (aTitle) => {
-      info.URL = URL;
-      info.title = aTitle;
-
-      aCallback(info);
+      aCallback({
+        title: aTitle,
+        URL: URL
+      });
     });
   },
 
