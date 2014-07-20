@@ -212,7 +212,8 @@ function insertElement(aRefItem, aElement) {
   if (aRefItem.localName === 'menupopup') {
     popup = aRefItem;
     refItem = null;
-  } else {
+  }
+  else {
     popup = aRefItem.parentNode;
     refItem = aRefItem;
   }

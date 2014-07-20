@@ -520,6 +520,7 @@ function selectOrOpen(aURL, aOption) {
   function getURL(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
 
+    // |userTypedValue| holds the URL of a document till it successfully loads
     return browser.userTypedValue || browser.currentURI.spec;
   }
 
