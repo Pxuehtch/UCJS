@@ -73,10 +73,10 @@ function log(aMsg) {
     // add the information of the parent tab to a tab which is newly opened
     if (!tab.linkedBrowser.canGoBack && referrer.exists(tab)) {
       // the document title is fetched by async history API
-      referrer.fetchTitle(tab, (aTitle) => {
+      referrer.fetchInfo(tab, (aInfo) => {
         // a tooltip label would be set with a tab label by Fx native function
         // @see chrome://browser/content/tabbrowser.xml::createTooltip
-        let label = tooltip.label + '\n\nFrom: ' + aTitle;
+        let label = tooltip.label + '\n\nFrom: ' + aInfo.title;
 
         tooltip.setAttribute('label', label);
       });

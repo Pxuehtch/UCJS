@@ -540,8 +540,18 @@ const mReferrer = {
     return query.referrerURL || query.fromVisit;
   },
 
-  fetchTitle: function(aTab, aCallback) {
-    fetchPageTitle(this.getURL(aTab), aCallback);
+  fetchInfo: function(aTab, aCallback) {
+    let info = {};
+
+    let URL = this.getURL(aTab);
+
+    // the document title is fetched by async history API
+    fetchPageTitle(URL, (aTitle) => {
+      info.URL = URL;
+      info.title = aTitle;
+
+      aCallback(info);
+    });
   },
 
   exists: function(aTab) {

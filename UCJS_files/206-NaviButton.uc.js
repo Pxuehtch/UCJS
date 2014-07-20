@@ -200,15 +200,7 @@ const Referrer = {
   },
 
   fetchInfo: function(aCallback) {
-    let info = {};
-
-    info.URL = this.referrer.getURL(gBrowser.selectedTab);
-
-    // the document title is fetched by async history API
-    this.referrer.fetchTitle(gBrowser.selectedTab, (aTitle) => {
-      info.title = aTitle;
-      aCallback(info);
-    });
+    this.referrer.fetchInfo(gBrowser.selectedTab, aCallback);
   }
 };
 
