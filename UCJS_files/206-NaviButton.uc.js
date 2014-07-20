@@ -83,8 +83,8 @@ const kUI = {
 
   style: {
     title: 'font-weight:bold;',
-    referrer: 'color:blue;',
-    url: ''
+    URL: '',
+    referrer: 'color:blue;'
   }
 };
 
@@ -253,41 +253,48 @@ const Tooltip = {
       tooltip.removeChild(tooltip.firstChild);
     }
 
-    ['neighbor', 'border', 'stop', 'referrer'].
+    [
+      'neighbor', 'border', 'stop', 'referrer'
+    ].
     forEach((key) => {
       let [title, URL] = this.formatData(aData, key);
 
-      setLabel(title, {title: true, referrer: key === 'referrer'});
-      setLabel(URL, {url: true});
+      setLabel({
+        title: title,
+        referrer: key === 'referrer'
+      });
+
+      setLabel({
+        URL: URL
+      });
     });
 
-    function setLabel(aValue, aType) {
-      if (!aValue) {
+    function setLabel({title, URL, referrer}) {
+      let value = title || URL;
+
+      if (!value) {
         return;
       }
 
-      let label = $E('label');
-
-      label.setAttribute('value', aValue);
-      label.setAttribute('crop', 'center');
-
       let style = '';
 
-      if (aType.title) {
+      if (title) {
         style += kUI.style.title
       }
 
-      if (aType.referrer) {
+      if (URL) {
+        style += kUI.style.URL
+      }
+
+      if (referrer) {
         style += kUI.style.referrer
       }
 
-      if (aType.url) {
-        style += kUI.style.url
-      }
-
-      if (style) {
-        label.setAttribute('style', style);
-      }
+      let label = $E('label', {
+        value: value,
+        crop: 'center',
+        style: style || null,
+      });
 
       tooltip.appendChild(label);
     }
