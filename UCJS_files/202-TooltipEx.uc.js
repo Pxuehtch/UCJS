@@ -73,8 +73,8 @@ const kPref = {
  */
 const kPanelStyle = {
   base: '-moz-appearance:tooltip;',
-  tipItem: 'font:1em/1.2 monospace;',
-  tipAccent: 'color:blue;font-weight:bold;',
+  tipItem: 'font:1em/1.2 monospace;letter-spacing:.1em;',
+  tipAccent: 'color:blue;',
   tipCrop: 'color:red;font-weight:bold;'
 };
 
@@ -487,7 +487,7 @@ const TooltipPanel = (function() {
     // an element for styling of a text
     // TODO: use a reliable element instead of <label>
     let $span = (attribute) => {
-      attribute.style += 'margin:0';
+      attribute.style += 'margin:0;';
 
       return $E('label', attribute);
     };
