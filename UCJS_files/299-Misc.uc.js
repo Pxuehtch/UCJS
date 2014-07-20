@@ -187,7 +187,7 @@ function log(aMsg) {
  */
 (function() {
 
-  let tooltip = $ID('mainPopupSet').appendChild(
+  let mTooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
       id: 'ucjs_misc_URLTooltip',
       style: 'word-break:break-all;word-wrap:break-word;'
@@ -195,7 +195,7 @@ function log(aMsg) {
   );
 
   const kTooltipShowDelay = 500; // [ms]
-  let tooltipTimer = null;
+  let mTooltipTimer = null;
 
   // TODO: in Fx29, the URL tooltip shows even if the URL does not overflow at
   // startup. I guess that the overflow event occurs at startup, and leave
@@ -206,27 +206,27 @@ function log(aMsg) {
   // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
   gURLBar._initURLTooltip =
   function ucjsMisc_uncropTooltip_initURLTooltip() {
-    if (this.focused || !this._contentIsCropped || tooltipTimer) {
+    if (this.focused || !this._contentIsCropped || mTooltipTimer) {
       return;
     }
 
-    tooltipTimer = setTimeout(() => {
-      tooltip.label = this.value;
-      tooltip.maxWidth = this.boxObject.width;
-      tooltip.openPopup(this, 'after_start', 0, 0, false, false);
+    mTooltipTimer = setTimeout(() => {
+      mTooltip.label = this.value;
+      mTooltip.maxWidth = this.boxObject.width;
+      mTooltip.openPopup(this, 'after_start', 0, 0, false, false);
     }, kTooltipShowDelay);
   };
 
   // @modified chrome://browser/content/urlbarBindings.xml::_hideURLTooltip
   gURLBar._hideURLTooltip =
   function ucjsMisc_uncropTooltip_hideURLTooltip() {
-    if (tooltipTimer) {
-      clearTimeout(tooltipTimer);
-      tooltipTimer = null;
+    if (mTooltipTimer) {
+      clearTimeout(mTooltipTimer);
+      mTooltipTimer = null;
     }
 
-    tooltip.hidePopup();
-    tooltip.label = '';
+    mTooltip.hidePopup();
+    mTooltip.label = '';
   };
 
 })();
