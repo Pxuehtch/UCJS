@@ -43,44 +43,141 @@ function log(aMsg) {
  * Customizes the tooltip of a tab
  *
  * @require TabEx.uc.js
- *
- * TODO: create a custom tooltip with more information instead of overwriting
- * a default tooltip
  */
 (function() {
 
-  addEvent($ID('tabbrowser-tab-tooltip'), 'popupshowing', onPopup, false);
+  const kMaxWidth = 40; // [em]
 
-  function onPopup(aEvent) {
+  const kUI = {
+    sign: {
+      referrer: 'From:'
+    },
+
+    style: {
+      title: 'font-weight:bold;',
+      URL: '',
+      referrer: 'color:blue;'
+    }
+  };
+
+  let mTooltip = $ID('mainPopupSet').appendChild(
+    $E('tooltip', {
+      id: 'ucjs_misc_TabTooltip',
+      style:
+        'max-width:' + kMaxWidth + 'em;' +
+        'word-break:break-all;word-wrap:break-word;'
+    })
+  );
+
+  addEvent(mTooltip, 'popupshowing', onPopupShowing, false);
+  addEvent(mTooltip, 'popuphiding', onPopupHiding, false);
+
+  // replace the default tooltip 'tabbrowser-tab-tooltip'
+  $ID('tabbrowser-tabs').tooltip = 'ucjs_misc_TabTooltip';
+
+  function onPopupHiding(aEvent) {
+    aEvent.stopPropagation();
+
+    if (mTooltip.label) {
+      mTooltip.label = '';
+    }
+
+    while (mTooltip.hasChildNodes()) {
+      mTooltip.removeChild(mTooltip.firstChild);
+    }
+  }
+
+  // @see chrome://browser/content/tabbrowser.xml::createTooltip
+  function onPopupShowing(aEvent) {
     aEvent.stopPropagation();
 
     let tab = window.document.tooltipNode;
 
-    if (tab.localName !== 'tab' || tab.mOverCloseButton) {
+    if (tab.localName !== 'tab') {
+      aEvent.preventDefault();
       return;
     }
 
-    // WORKAROUND: the tooltip is delayed-shown after a tab under a cursor is
-    // removed (e.g. clicking the middle button of mouse on the tab). so, this
-    // tooltip is useless
-    if (!tab.linkedBrowser) {
+    let browser = gBrowser.getBrowserForTab(tab);
+
+    // WORKAROUND: hide a useless tooltip that is delayed-shown after a tab
+    // under a cursor is removed (e.g. by clicking the mouse middle button on
+    // the tab before tooltip shows)
+    if (!browser) {
       return;
     }
 
-    let tooltip = aEvent.target;
-    let referrer = window.ucjsTabEx.referrer;
+    if (tab.mOverCloseButton) {
+      mTooltip.label = tab.getAttribute('closetabtext');
+      return;
+    }
 
-    // add the information of the parent tab to a tab which is newly opened
-    if (!tab.linkedBrowser.canGoBack && referrer.exists(tab)) {
-      // the document title is fetched by async history API
+    // |userTypedValue| holds the URL of a document till it successfully loads
+    buildData({
+      title: tab.label,
+      URL: browser.userTypedValue || browser.currentURI.spec
+    });
+
+    const {referrer} = window.ucjsTabEx;
+
+    // add the information of the parent tab to a newly opened tab
+    if (!browser.canGoBack && referrer.exists(tab)) {
       referrer.fetchInfo(tab, (aInfo) => {
-        // a tooltip label would be set with a tab label by Fx native function
-        // @see chrome://browser/content/tabbrowser.xml::createTooltip
-        let label = tooltip.label + '\n\nFrom: ' + aInfo.title;
-
-        tooltip.setAttribute('label', label);
+        buildData({
+          title: aInfo.title,
+          URL: aInfo.URL,
+          referrer: true
+        });
       });
     }
+  }
+
+  function buildData({title, URL, referrer}) {
+    setLabel({
+      title: title,
+      referrer: referrer
+    });
+
+    if (title !== URL) {
+      setLabel({
+        URL: URL
+      });
+    }
+  }
+
+  function setLabel({title, URL, referrer}) {
+    let value = title || URL;
+
+    let $text = (text) => window.document.createTextNode(text);
+
+    let style = '';
+
+    if (title) {
+      style += kUI.style.title
+    }
+
+    if (URL) {
+      style += kUI.style.URL
+    }
+
+    if (referrer) {
+      value = kUI.sign.referrer + ' ' + value;
+      style += kUI.style.referrer
+    }
+
+    let maxLength = kMaxWidth * 4;
+
+    if (value.length > maxLength) {
+      let half = Math.floor(maxLength / 2);
+
+      value = [value.substr(0, half), value.substr(-half)].join('...');
+    }
+
+    let label = $E('label', {
+      style: style || null
+    });
+
+    mTooltip.appendChild(label).appendChild($text(value));
   }
 
 })();
