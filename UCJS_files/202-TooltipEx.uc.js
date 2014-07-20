@@ -517,6 +517,12 @@ const TooltipPanel = (function() {
         onpopuphiding: 'event.stopPropagation();'
       });
 
+      let tooLong = kPref.maxLineLength * 20;
+
+      if (uncroppedText.length > tooLong) {
+        uncroppedText = uncroppedText.substr(0, tooLong) + kTipForm.ellipsis;
+      }
+
       item.appendChild(subTooltip).
         appendChild($label()).
         appendChild($text(uncroppedText));
