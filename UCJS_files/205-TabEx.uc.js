@@ -319,20 +319,26 @@ const mTab = (function () {
   };
 
   /**
-   * Tests the state of a tab
+   * Exported members of |ucjsTabEx| in the global scope
    */
-  const stateTest = {
-    // whether a user read a tab
-    //
-    // @return {boolean}
-    read: function(aTab) {
+  const exports = {
+    /**
+     * Tests whether a user read a tab
+     *
+     * @param aTab {Element}
+     * @return {boolean}
+     */
+    isRead: function(aTab) {
       return manageFlagAttribute(aTab, kID.READ);
     },
 
-    // whether the loading of a tab is suspended
-    //
-    // @return {boolean}
-    suspended: function(aTab) {
+    /**
+     * Tests whether the loading of a tab is suspended
+     *
+     * @param aTab {Element}
+     * @return {boolean}
+     */
+    isSuspended: function(aTab) {
       return manageFlagAttribute(aTab, kID.SUSPENDED);
     }
   };
@@ -366,7 +372,7 @@ const mTab = (function () {
     data: data,
     SSdata: SSdata,
     state: state,
-    stateTest: stateTest
+    exports: exports
   };
 })();
 
@@ -1647,7 +1653,7 @@ TabEx_init();
  * Export
  */
 return {
-  tabState: mTab.stateTest,
+  tabState: mTab.exports,
   referrer: mReferrer,
   selectOpenerTab: selectOpenerTab,
   selectPrevSelectedTab: selectPrevSelectedTab,

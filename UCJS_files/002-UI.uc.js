@@ -485,7 +485,7 @@ const mMenuitem = {
     if (window.ucjsTabEx) {
       // @note we check the *read* state of a tab and then set the *unread*
       // attribute of a menuitem
-      if (window.ucjsTabEx.tabState.read(aTab)) {
+      if (window.ucjsTabEx.tabState.isRead(aTab)) {
         aMenuitem.classList.remove(kATTR_UNREADTAB);
       }
       else {
