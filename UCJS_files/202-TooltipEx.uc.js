@@ -72,7 +72,6 @@ const kPref = {
  *   @note a URL except 'javascript:' and 'data:' is not cropped
  */
 const kPanelStyle = {
-  base: '-moz-appearance:tooltip;',
   tipItem: 'font:1em/1.2 monospace;letter-spacing:.1em;',
   tipAccent: 'color:blue;',
   tipCrop: 'color:red;font-weight:bold;'
@@ -247,9 +246,11 @@ const TooltipPanel = (function() {
   }
 
   function create() {
+    // @note set 'white-space:pre;' that suppresses text wrapping for our own
+    // control of it
     let panel = $E('panel', {
       id: kID.panel,
-      style: kPanelStyle.base + 'white-space:pre;',
+      style: '-moz-appearance:tooltip;white-space:pre;',
       backdrag: true
     });
 
