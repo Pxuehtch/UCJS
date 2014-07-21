@@ -41,7 +41,7 @@ function log(aMsg) {
  */
 const kPref = {
   /**
-   * Max width of tooltip panel
+   * Max width of the tooltip panel
    *
    * @value {integer} [>0]
    *   number of characters
@@ -49,7 +49,7 @@ const kPref = {
   maxLineLength: 40,
 
   /**
-   * Number of lines in the visible portion of the cropped text
+   * Number of lines in the visible portion of a long text being cropped
    *
    * @value {integer} [>0]
    */
@@ -57,45 +57,49 @@ const kPref = {
 };
 
 /**
- * CSS of tooltip panel
+ * Style setting
  *
- * @key base {CSS}
- *   base appearance of the tooltip panel
- * @key tipItem {CSS}
- *   styles for each tip item
- * @key tipAccent {CSS}
- *   accent in a tip item
- *   @note applied to '<tag>', 'description-attribute=' and
- *   'URL-attribute=scheme:'
- * @key tipCrop {CSS}
- *   ellipsis of a cropped long text in a tip item
- *   @note a URL except 'javascript:' and 'data:' is not cropped
+ * @key item {CSS}
+ *   styles for tip items
+ * @key accent {CSS}
+ *   styles for accent portions
+ *   @note applied to;
+ *     '<tag>'
+ *     'description-attribute='
+ *     'URL-attribute=scheme:'
+ * @key crop {CSS}
+ *   styles for ellipsis mark of a cropped text
+ *   @note a URL without 'javascript:' and 'data:' schemes is not cropped
  */
-const kPanelStyle = {
-  tipItem: 'font:1em/1.2 monospace;letter-spacing:.1em;',
-  tipAccent: 'color:blue;',
-  tipCrop: 'color:red;font-weight:bold;'
+const kStyle = {
+  item: 'font:1em/1.2 monospace;letter-spacing:.1em;',
+  accent: 'color:blue;',
+  crop: 'color:red;font-weight:bold;'
 };
 
 /**
- * Format of a tip item
+ * Format in tip items
  */
-const kTipForm = {
-  attribute: '%name%=',
+const kTipFormat = {
   tag: '<%tag%>',
+  attribute: '%name%=',
   ellipsis: '...'
 };
 
 /**
- * Scanned attributes for a tip item
+ * Attribute names for the informations of an element
  *
  * @key descriptions {string[]}
  * @key URLs {string[]}
  */
-const kScanAttribute = {
-  descriptions: ['title', 'alt', 'summary'],
-  URLs: ['href', 'src', 'usemap', 'action', 'data', 'cite', 'longdesc',
-         'background']
+const kInfoAttribute = {
+  descriptions: [
+    'title', 'alt', 'summary'
+  ],
+  URLs: [
+    'href', 'src', 'usemap', 'action', 'data',
+    'cite', 'longdesc', 'background'
+  ]
 };
 
 /**
@@ -346,8 +350,8 @@ const TooltipPanel = (function() {
 
   function collectTipData(aNode) {
     // helper functions
-    let $attr = (name) => kTipForm.attribute.replace('%name%', name);
-    let $tag = (name) => kTipForm.tag.replace('%tag%', name);
+    let $tag = (name) => kTipFormat.tag.replace('%tag%', name);
+    let $attr = (name) => kTipFormat.attribute.replace('%name%', name);
 
     let data = [];
     let attributes = {};
@@ -356,7 +360,7 @@ const TooltipPanel = (function() {
       attributes[attribute.localName] = attribute.value;
     });
 
-    kScanAttribute.descriptions.forEach((name) => {
+    kInfoAttribute.descriptions.forEach((name) => {
       let value = attributes[name];
 
       if (value === null || value === undefined) {
@@ -366,7 +370,7 @@ const TooltipPanel = (function() {
       data.push(makeTipData($attr(name), value, true));
     });
 
-    kScanAttribute.URLs.forEach((name) => {
+    kInfoAttribute.URLs.forEach((name) => {
       let value = attributes[name];
 
       if (value === null || value === undefined) {
@@ -377,7 +381,7 @@ const TooltipPanel = (function() {
         let URL = unescapeURLForUI(resolveURL(value, aNode.baseURI));
         let [scheme, rest] = splitURL(URL);
 
-        // the long URL with javascript/data scheme will be cropped
+        // long URL with 'javascript:' or 'data:' scheme will be cropped
         let doCrop = /^(?:javascript|data):/.test(scheme);
 
         data.push(makeTipData($attr(name) + scheme, rest, doCrop));
@@ -496,12 +500,12 @@ const TooltipPanel = (function() {
     let $text = (text) => window.document.createTextNode(text);
 
     let item = $label({
-      style: kPanelStyle.tipItem,
+      style: kStyle.item,
       'tiptext': text
     });
 
     let accent = $span({
-      style: kPanelStyle.tipAccent
+      style: kStyle.accent
     });
 
     item.appendChild(accent).appendChild($text(head));
@@ -514,14 +518,14 @@ const TooltipPanel = (function() {
       let subTooltip = $E('tooltip', {
         // TODO: consider more smart way to make a unique id
         id: kID.subTooltip + mBox.childNodes.length,
-        style: kPanelStyle.tipItem,
+        style: kStyle.item,
         onpopuphiding: 'event.stopPropagation();'
       });
 
       let tooLong = kPref.maxLineLength * 20;
 
       if (uncroppedText.length > tooLong) {
-        uncroppedText = uncroppedText.substr(0, tooLong) + kTipForm.ellipsis;
+        uncroppedText = uncroppedText.substr(0, tooLong) + kTipFormat.ellipsis;
       }
 
       item.appendChild(subTooltip).
@@ -529,11 +533,11 @@ const TooltipPanel = (function() {
         appendChild($text(uncroppedText));
 
       let crop = $span({
-        style: kPanelStyle.tipCrop,
+        style: kStyle.crop,
         tooltip: subTooltip.id
       });
 
-      item.appendChild(crop).appendChild($text(kTipForm.ellipsis));
+      item.appendChild(crop).appendChild($text(kTipFormat.ellipsis));
     }
 
     return item;
