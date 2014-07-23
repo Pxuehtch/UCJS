@@ -112,15 +112,28 @@ function log(aMsg) {
       return;
     }
 
-    // |userTypedValue| holds the URL of a document till it successfully loads
+    const {tabState, referrer} = window.ucjsTabEx;
+
+    let loadingURL;
+
+    // 1.retrieve the loading URL from the tab data by |ucjsTabEx| for a new
+    // tab that is suspended to load a document
+    // 2.|userTypedValue| holds the URL of a document till it successfully
+    // loads
+    if (tabState.isSuspended(tab)) {
+      let query = tabState.getData(tab, 'query');
+
+      loadingURL =
+        (query && query.URL !== 'about:blank' && query.URL) ||
+        browser.userTypedValue;
+    }
+
     buildData({
       title: tab.label,
-      URL: browser.userTypedValue || browser.currentURI.spec
+      URL: loadingURL || browser.currentURI.spec
     });
 
-    const {referrer} = window.ucjsTabEx;
-
-    // add the information of the parent tab to a newly opened tab
+    // add the referrer information to a tab without backward history
     if (!browser.canGoBack && referrer.exists(tab)) {
       referrer.fetchInfo(tab, (aInfo) => {
         buildData({
