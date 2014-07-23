@@ -323,6 +323,18 @@ const mTab = (function () {
    */
   const exports = {
     /**
+     * Gets the data of a tab
+     *
+     * @param aTab {Element}
+     * @param aKey {string}
+     * @return {}
+     * @see |data|
+     */
+    getData: function(aTab, aKey) {
+      return data(aTab, aKey);
+    },
+
+    /**
      * Tests whether a user read a tab
      *
      * @param aTab {Element}
