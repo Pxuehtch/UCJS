@@ -1243,15 +1243,14 @@ function logMessage(aTargetName, aMessage) {
     aMessage = [aMessage];
   }
 
-  const {CommonUtils} =
-    XPCOM.getModule('resource://services-common/utils.js');
+  const {Log} = XPCOM.getModule('resource://gre/modules/Log.jsm');
 
   let messages = aMessage.map((value) => {
     if (value instanceof Error) {
       return kErrorFormat.
         replace('%name%', value.name).
         replace('%message%', value.message || '').
-        replace('%stack%', CommonUtils.stackTrace(value));
+        replace('%stack%', Log.stackTrace(value));
     }
     return value;
   });
