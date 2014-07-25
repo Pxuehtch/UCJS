@@ -19,6 +19,7 @@
 const {
   Timer: {
     setTimeout,
+    clearTimeout
   },
   addEvent,
   createNode: $E,
