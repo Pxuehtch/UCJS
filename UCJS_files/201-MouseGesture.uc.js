@@ -1141,7 +1141,6 @@ function inEditable(aEvent) {
     node instanceof HTMLTextAreaElement ||
     node instanceof HTMLInputElement ||
     node.isContentEditable ||
-    node.contentEditable === 'true' ||
     node.ownerDocument.designMode === 'on'
   );
 }
