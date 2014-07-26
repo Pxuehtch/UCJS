@@ -146,9 +146,9 @@ const SignPanel = (function() {
     let target = getTargetElement();
 
     if (target) {
-      let panel = $E(getPanel(), {
-        label: kIMESign[isIMEActive(target) ? 'ON' : 'OFF']
-      });
+      let panel = getPanel();
+
+      panel.label = kIMESign[isIMEActive(target) ? 'ON' : 'OFF'];
 
       panel.openPopup(target, 'before_start');
     }

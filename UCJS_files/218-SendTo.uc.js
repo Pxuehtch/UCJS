@@ -122,6 +122,8 @@ const kPreset = [
 
       function updateLabel(text) {
         if (menuitem) {
+          // @note we can't touch the 'label' property since |command| is
+          // called before |menuitem| is appended to the DOM tree
           let label = menuitem.getAttribute('label');
 
           $E(menuitem, {
