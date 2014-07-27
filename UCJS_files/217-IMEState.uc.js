@@ -71,11 +71,14 @@ function handleEvent(aEvent) {
 
     case 'keyup': {
       // update a sign if IME toggled, otherwise clear
+      // TODO: detect a 'Caps Lock' key for opening IME. but the key can be
+      // found for closing IME ('Hiragana' in my case)
       let IMEkeys = [
         'HalfWidth',
         'FullWidth',
         'Alphanumeric',
-        'Convert'
+        'Convert',
+        'Hiragana'
       ];
 
       let doClear = IMEkeys.indexOf(aEvent.key) < 0;
