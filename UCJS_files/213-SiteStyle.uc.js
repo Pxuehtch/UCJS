@@ -418,21 +418,45 @@ const kSiteList = [
     script: function(aDocument) {
       // exclude the playlist mode
       if (!/[?&]list=/.test(aDocument.location.search)) {
-        preventAutoplay();
+        preventAutoplay(aDocument);
       }
 
-      // using Youtube Player API
-      // @see https://developers.google.com/youtube/js_api_reference
-      function preventAutoplay() {
+      function preventAutoplay(aDocument) {
         let intervalTime = 500;
         let waitCount = 20;
+        let timerID = null;
 
-        let timerID = setInterval(() => {
+        let clear = () => {
+          aDocument.defaultView.removeEventListener('unload', clear, false);
+
+          clearInterval(timerID);
+          timerID = null;
+        }
+
+        aDocument.defaultView.addEventListener('unload', clear, false);
+
+        timerID = setInterval(() => {
           if (--waitCount < 0) {
             clear();
             return;
           }
 
+          if (pauseVideo(aDocument)) {
+            clear();
+          }
+        }, intervalTime);
+
+        /**
+         * Pauses a video in an embedded player
+         *
+         * @param aDocument {HTMLDocument}
+         * @return {boolean}
+         *   true if a video is paused, false otherwise
+         *
+         * @note using Youtube Player API
+         * @see https://developers.google.com/youtube/js_api_reference
+         */
+        function pauseVideo(aDocument) {
           let player =
             // new Flash in channel page
             aDocument.getElementById('c4-player') ||
@@ -443,27 +467,18 @@ const kSiteList = [
 
           if (player) {
             player = player.wrappedJSObject;
+
             if (player.getPlayerState) {
               switch (player.getPlayerState()) {
                 case 1: // playing
                 case 2: // paused
-                  clear();
                   player.pauseVideo();
                   player.seekTo(getStartTime(aDocument.location.href));
-                  break;
+                  return true;
               }
             }
           }
-        }, intervalTime);
-
-        aDocument.defaultView.
-          addEventListener('unload', clear, false);
-
-        function clear() {
-          aDocument.defaultView.
-            removeEventListener('unload', clear, false);
-
-          clearInterval(timerID);
+          return false;
         }
 
         function getStartTime(aURL) {
