@@ -22,6 +22,10 @@ const {
   XPCOM: {
     getModule
   },
+  Timer: {
+    setTimeout,
+    clearTimeout
+  },
   getFirstNodeByXPath: $X1,
   openTab
 } = window.ucjsUtil;

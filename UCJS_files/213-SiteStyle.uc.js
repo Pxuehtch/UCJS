@@ -18,6 +18,12 @@
  * Imports
  */
 const {
+  Timer: {
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval
+  },
   createNode: $E,
   getNodeById: $ID,
   getNodesBySelector: $S,

@@ -34,6 +34,10 @@
  * Imports
  */
 const {
+  Timer: {
+    setTimeout,
+    clearTimeout
+  },
   createNode: $E,
   getNodeById: $ID
 } = window.ucjsUtil;
