@@ -433,7 +433,14 @@ const kSiteList = [
             return;
           }
 
-          let player = $S1('[id^="movie_player"]', aDocument);
+          let player =
+            // new Flash in channel page
+            aDocument.getElementById('c4-player') ||
+            // old Flash in channel page / Flash in watch page
+            aDocument.getElementById('movie_player') ||
+            // HTML5 in watch page
+            aDocument.getElementById('watch7-video');
+
           if (player) {
             player = player.wrappedJSObject;
             if (player.getPlayerState) {
