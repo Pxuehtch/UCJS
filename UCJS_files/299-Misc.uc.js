@@ -657,7 +657,7 @@ function log(aMsg) {
 /**
  * Patch the alltabs menu
  *
- * @require TabEx.uc.js
+ * @require UI.uc.js, TabEx.uc.js
  */
 (function() {
 
@@ -733,6 +733,55 @@ function log(aMsg) {
       window.XULBrowserWindow.setOverLink(loadingURL, null);
     }
   }, false);
+
+  /**
+   * Update the state of a menuitem for an unread tab
+   *
+   * @note workaround for an unread tab by TabEx.uc.js
+   */
+  addEvent(alltabsPopup, 'popupshowing', (aEvent) => {
+    aEvent.stopPropagation();
+
+    let popup = aEvent.target;
+
+    if (popup.id !== kID.ALLTABS_POPUP) {
+      return;
+    }
+
+    Array.forEach(popup.childNodes, (menuitem) => {
+      if (menuitem.tab) {
+        setStateForUnreadTab(menuitem, menuitem.tab);
+      }
+    });
+
+    gBrowser.tabContainer.
+      addEventListener('TabAttrModified', onTabAttrModified, false);
+  }, false);
+
+  addEvent(alltabsPopup, 'popuphiding', (aEvent) => {
+    aEvent.stopPropagation();
+
+    let popup = aEvent.target;
+
+    if (popup.id !== kID.ALLTABS_POPUP) {
+      return;
+    }
+
+    gBrowser.tabContainer.
+      removeEventListener('TabAttrModified', onTabAttrModified, false);
+  }, false);
+
+  function onTabAttrModified(aEvent) {
+    let tab = aEvent.target;
+
+    if (tab.mCorrespondingMenuitem) {
+      setStateForUnreadTab(tab.mCorrespondingMenuitem, tab);
+    }
+  }
+
+  function setStateForUnreadTab(aMenuitem, aTab) {
+    ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
+  }
 
 })();
 
