@@ -654,5 +654,44 @@ function log(aMsg) {
 
 })();
 
+/**
+ * Patch the alltabs menu
+ */
+(function() {
+
+  const kID = {
+    ALLTABS_POPUP: 'alltabs-popup'
+  };
+
+  let alltabsPopup = $ID(kID.ALLTABS_POPUP);
+
+  /**
+   * Ensure that the target tab is visible by the command of a menuitem in
+   * the alltabs popup
+   *
+   * @note An *unselected* tab will be selected and visible by the command,
+   * but nothing happens for a *selected* tab. It is inconvenient that a
+   * selected tab which is scrolled out the tab bar stays invisible.
+   *
+   * @see chrome://browser/content/tabbrowser.xml::
+   *   <binding id="tabbrowser-alltabs-popup">::
+   *   <handler event="command">
+   */
+  addEvent(alltabsPopup, 'command', (aEvent) => {
+    aEvent.stopPropagation();
+
+    let menuitem = aEvent.target;
+
+    if (menuitem.parentNode.id !== kID.ALLTABS_POPUP) {
+      return;
+    }
+
+    if (menuitem.tab && menuitem.tab.selected) {
+      gBrowser.tabContainer.mTabstrip.ensureElementIsVisible(menuitem.tab);
+    }
+  }, false);
+
+})();
+
 
 })(this);
