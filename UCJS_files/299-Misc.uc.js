@@ -656,6 +656,8 @@ function log(aMsg) {
 
 /**
  * Patch the alltabs menu
+ *
+ * @require TabEx.uc.js
  */
 (function() {
 
@@ -688,6 +690,47 @@ function log(aMsg) {
 
     if (menuitem.tab && menuitem.tab.selected) {
       gBrowser.tabContainer.mTabstrip.ensureElementIsVisible(menuitem.tab);
+    }
+  }, false);
+
+  /**
+   * Show the URL of a suspended tab to the status field when a menuitem is
+   * on active
+   *
+   * @note workaround for a suspended tab by TabEx.uc.js
+   */
+  addEvent(alltabsPopup, 'DOMMenuItemActive', (aEvent) => {
+    aEvent.stopPropagation();
+
+    let menuitem = aEvent.target;
+
+    if (menuitem.parentNode.id !== kID.ALLTABS_POPUP) {
+      return;
+    }
+
+    let tab = menuitem.tab;
+
+    if (!tab) {
+      return;
+    }
+
+    const {tabState} = window.ucjsTabEx;
+
+    if (tabState.isSuspended(tab)) {
+      let loadingURL;
+
+      // 1.retrieve the loading URL from the tab data by |ucjsTabEx| for a new
+      // tab that is suspended to load a document
+      // 2.|userTypedValue| holds the URL of a document till it successfully
+      // loads
+      let query = tabState.getData(tab, 'query');
+
+      loadingURL =
+        (query && query.URL !== 'about:blank' && query.URL) ||
+        gBrowser.getBrowserForTab(tab).userTypedValue;
+
+      // @see chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
+      window.XULBrowserWindow.setOverLink(loadingURL, null);
     }
   }, false);
 
