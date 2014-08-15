@@ -207,6 +207,8 @@ const kItemList = [
   },
   {
     // open the sanitize dialog
+    // @note disabled since I hardly use this
+    disabled: true,
     type: 'button',
     label: 'CLR',
     description: 'Clear cache',
