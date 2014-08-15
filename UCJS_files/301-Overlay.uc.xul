@@ -112,11 +112,10 @@
     label="タブバー" accesskey="t" type="checkbox" checked="true"
     insertbefore="viewToolbarsMenuSeparator"
     command="ucjs_cmd_ToggleTabbar"/>
-  <!-- TODO: set the anchor to more reliable element -->
   <menuitem id="ucjs_ToolbarContextMenu_ShowPanelUI"
     label="パネルメニューを表示" accesskey="p"
     insertafter="viewToolbarsMenuSeparator"
-    oncommand="PanelUI.show({target:document.getElementById('nav-bar')});"/>
+    oncommand="PanelUI.show();"/>
 </menupopup>
 
 </overlay>
