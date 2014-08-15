@@ -11,6 +11,8 @@
 // @note the styles are adjusted to the themes of my Fx and OS
 // @see |setStyleSheet()|
 
+// TODO: apply the customizable UI
+
 
 (function(window, undefined) {
 
@@ -41,10 +43,11 @@ function log(aMsg) {
  * Identifiers
  */
 const kID = {
-  // default
+  // native UI
   NAVIGATION_TOOLBAR: 'nav-bar',
+  PANELUI_BUTTON: 'PanelUI-button',
 
-  // custom
+  // custom UI
   CONTAINER: 'ucjs_prefbutton_container',
   ITEM: 'ucjs_prefbutton_item'
 };
@@ -321,7 +324,7 @@ function makeButtons() {
     hbox.appendChild(button);
   });
 
-  toolbar.appendChild(hbox);
+  toolbar.insertBefore(hbox, $ID(kID.PANELUI_BUTTON));
 }
 
 function setStyleSheet() {
