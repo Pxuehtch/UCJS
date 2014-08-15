@@ -604,7 +604,8 @@ const URLFilter = (function() {
 
   /**
    * TODO: fix a wrong return value for a specific host
-   * I have found only 'github.io' for now
+   * @note I have found only 'github.io' for now. So, no 'github.io' in URL
+   * filters and no workaround for fixing it
    * @see NaviLink.uc.js::getBaseDomain
    */
   function getTLDURL(aURL) {

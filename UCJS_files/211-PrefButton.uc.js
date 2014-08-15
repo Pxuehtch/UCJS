@@ -60,7 +60,7 @@ const kID = {
  *   set true if |command| should work only on the selected tab
  * @param type {string}
  *   'button': a normal button
- *   'checkbox': can be in two states
+ *   'checkbox': a toggle button with on/off
  * @param label {string}
  * @param image {URL string} [optional]
  *   the image instead of the label text of a button
@@ -166,7 +166,7 @@ const kItemList = [
   },
   {
     // switch Java
-    // @note I uninstalled Java plugin, so, I can't test this block
+    // @note I can't test this block anymore since I uninstalled Java plugin
     type: 'checkbox',
     label: 'Java',
     description: 'Switch Java',
@@ -320,8 +320,8 @@ function makeButtons() {
 }
 
 function setStyleSheet() {
-  // @note the styles are adjusted to my themes
-  // @note assuming that the nav-bar's height is 24px
+  // @note the styles are adjusted to the themes of my Firefox and OS
+  // @note the positioning assumes that the nav-bar's height is 24px
   let css = '\
     #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\
