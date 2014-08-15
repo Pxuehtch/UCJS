@@ -39,7 +39,7 @@
    @see chrome://browser/content/search/search.xml#searchbar::openManager
    -->
   <command id="ucjs_cmd_OpenSearchEngineManager"
-    oncommand="(function(w){if(w){w.focus();}else{setTimeout(()=>openDialog('chrome://browser/content/search/engineManager.xul','_blank','chrome,dialog,modal,centerscreen,resizable'),0);}})(Services.wm.getMostRecentWindow('Browser:SearchManager'));"/>
+    oncommand="(function(sm){sm?sm.focus():setTimeout(()=>open('chrome://browser/content/search/engineManager.xul','','chrome,dialog,modal,centerscreen,resizable'),0);})(Services.wm.getMostRecentWindow('Browser:SearchManager'));"/>
 </commandset>
 
 <!-- Key -->
