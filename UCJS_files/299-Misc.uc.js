@@ -780,7 +780,7 @@ function log(aMsg) {
   }
 
   function setStateForUnreadTab(aMenuitem, aTab) {
-    ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
+    window.ucjsUI.Menuitem.setStateForUnreadTab(aMenuitem, aTab);
   }
 
 })();
