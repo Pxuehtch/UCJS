@@ -295,9 +295,10 @@ function doCommand(aEvent) {
 function makeButtons() {
   let toolbar = $ID(kID.NAVIGATION_TOOLBAR);
 
-  let hbox = $E('hbox');
+  let hbox = $E('hbox', {
+    id: kID.CONTAINER
+  });
 
-  hbox.id = kID.CONTAINER;
   addEvent(hbox, 'click', doCommand, false);
 
   kItemList.forEach((item, i) => {
@@ -305,25 +306,14 @@ function makeButtons() {
       return;
     }
 
-    let button = $E('button');
-
-    button.id = kID.ITEM + i;
-    button.className = kID.ITEM;
-
-    if (item.type !== 'button') {
-      button.setAttribute('type', item.type);
-    }
-
-    if (item.image) {
-      button.setAttribute('image', item.image);
-    }
-    else {
-      button.setAttribute('label', item.label);
-    }
-
-    button.setAttribute('tooltiptext', item.description);
-
-    hbox.appendChild(button);
+    hbox.appendChild($E('button', {
+      id: kID.ITEM + i,
+      class: kID.ITEM,
+      type: (item.type !== 'button') ? item.type : null,
+      image: item.image || null,
+      label: !item.image ? item.label : null,
+      tooltiptext: item.description
+    }));
   });
 
   toolbar.insertBefore(hbox, $ID(kID.PANELUI_BUTTON));
