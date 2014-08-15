@@ -207,15 +207,14 @@ const SignPanel = (function() {
       QueryInterface(Ci.nsIInterfaceRequestor).
       getInterface(Ci.nsIDOMWindowUtils);
 
-    let IMEIsOpen;
-
     try {
-      IMEIsOpen = utils.IMEStatus === utils.IME_STATUS_ENABLED &&
-        utils.IMEIsOpen
+      return imeMode !== 'disabled' &&
+        utils.IMEStatus === utils.IME_STATUS_ENABLED &&
+        utils.IMEIsOpen;
     }
     catch (ex) {}
 
-    return imeMode !== 'disabled' && IMEIsOpen;
+    return false;
   }
 
   return {
