@@ -306,11 +306,11 @@ const kUI = {
  * Identifier
  */
 const kID = {
-  mainMenu: 'ucjs_applauncher_menu',
-  appIndexKey: 'ucjs_applauncher_appIndex',
-  actionKey: 'ucjs_applauncher_action',
-  startSeparator: 'ucjs_applauncher_startsep',
-  endSeparator: 'ucjs_applauncher_endsep'
+  mainMenu: 'ucjs_AppLauncher_menu',
+  appIndexKey: 'ucjs_AppLauncher_appIndex',
+  actionKey: 'ucjs_AppLauncher_action',
+  startSeparator: 'ucjs_AppLauncher_startSeparator',
+  endSeparator: 'ucjs_AppLauncher_endSeparator'
 };
 
 /**

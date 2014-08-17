@@ -56,8 +56,8 @@ const kID = {
   FORWARD_BUTTON: 'forward-button',
 
   // custom
-  TOOLTIP: 'ucjs_navibutton_tooltip',
-  REFERRER: 'ucjs_navibutton_referrer'
+  TOOLTIP: 'ucjs_NaviButton_tooltip',
+  REFERRER: 'ucjs_NaviButton_referrer'
 };
 
 /**

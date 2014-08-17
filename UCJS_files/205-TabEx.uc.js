@@ -46,14 +46,14 @@ function log(aMsg) {
  * Identifier
  */
 const kID = {
-  OPENTIME: 'ucjs_tabex_opentime',
-  READTIME: 'ucjs_tabex_readtime',
-  SELECTTIME: 'ucjs_tabex_selecttime',
-  ANCESTORS: 'ucjs_tabex_ancestors',
-  OPENINFO: 'ucjs_tabex_openinfo',
-  SUSPENDED: 'ucjs_tabex_suspended',
-  READ: 'ucjs_tabex_read',
-  RESTORING: 'ucjs_tabex_restoring'
+  OPENTIME: 'ucjs_TabEx_openTime',
+  READTIME: 'ucjs_TabEx_readTime',
+  SELECTTIME: 'ucjs_TabEx_selectTime',
+  ANCESTORS: 'ucjs_TabEx_ancestors',
+  OPENINFO: 'ucjs_TabEx_openInfo',
+  SUSPENDED: 'ucjs_TabEx_suspended',
+  READ: 'ucjs_TabEx_read',
+  RESTORING: 'ucjs_TabEx_restoring',
 };
 
 /**

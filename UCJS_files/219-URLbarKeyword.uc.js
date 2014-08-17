@@ -50,8 +50,8 @@ const kUI = {
     accesskey: 'k'
   },
   separator: {
-    start: 'ucjs_URLbarKeyword_startSep',
-    end: 'ucjs_URLbarKeyword_endSep'
+    start: 'ucjs_URLbarKeyword_startSeparator',
+    end: 'ucjs_URLbarKeyword_endSeparator'
   },
   item: {
     label: '%keyword% : %name%'
@@ -164,7 +164,7 @@ function buildMenuItems(aPopup) {
     // @require [optional] Overlay.uc.xul
     // @note you can set <oncommand> with a code to open the manager instead
     // of <command>
-    command: 'ucjs_cmd_OpenSearchEngineManager'
+    command: 'ucjs_cmd_openSearchEngineManager'
   }));
 }
 

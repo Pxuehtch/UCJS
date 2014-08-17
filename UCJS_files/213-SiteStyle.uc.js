@@ -41,8 +41,8 @@ function log(aMsg) {
  * Identifiers
  */
 const kID = {
-  STYLESHEET: 'ucjs_sitestyle_stylesheet',
-  PREFMENU: 'ucjs_sitestyle_prefmenu'
+  STYLESHEET: 'ucjs_SiteStyle_styleSheet',
+  PREFMENU: 'ucjs_SiteStyle_prefMenu'
 };
 
 /**
@@ -212,14 +212,14 @@ const kSiteList = [
 
         // weaken noisy item
         if (NoisyURLFilter.test(link.href)) {
-          item.classList.add('ucjs_sitestyle_weaken');
+          item.classList.add('ucjs_SiteStyle_weaken');
         }
 
         // emphasize the same host item
         let host = link.hostname;
 
         if (host === lastHost) {
-          item.classList.add('ucjs_sitestyle_samehost');
+          item.classList.add('ucjs_SiteStyle_sameHost');
         }
         else {
           lastHost = host;
@@ -280,19 +280,19 @@ const kSiteList = [
       // except for images, shopping, application, books
       if (!testMode('isch|shop|app|bks')) {
         css += '\
-          .ucjs_sitestyle_samehost cite::before{\
+          .ucjs_SiteStyle_sameHost cite::before{\
             content:"=";\
             font-weight:bold;\
             color:red;\
             margin-right:2px;\
           }\
-          #res .ucjs_sitestyle_weaken h3{\
+          #res .ucjs_SiteStyle_weaken h3{\
             font-size:small!important;\
           }\
-          .ucjs_sitestyle_weaken h3~*{\
+          .ucjs_SiteStyle_weaken h3~*{\
             opacity:.3!important;\
           }\
-          .ucjs_sitestyle_weaken:hover *{\
+          .ucjs_SiteStyle_weaken:hover *{\
             opacity:1!important;\
             transition:opacity .5s!important;\
           }';
@@ -356,22 +356,22 @@ const kSiteList = [
 
         // weaken a noisy item
         if (NoisyURLFilter.test(link.href)) {
-          item.classList.add('ucjs_sitestyle_weaken');
+          item.classList.add('ucjs_SiteStyle_weaken');
         }
       });
     },
     style: function(aDocument) {
       let css = '\
         /* custom class */\
-        .ucjs_sitestyle_weaken h3{\
+        .ucjs_SiteStyle_weaken h3{\
           font-size:small!important;\
         }\
-        .ucjs_sitestyle_weaken .hd~*,\
-        .ucjs_sitestyle_weaken h3~*\
+        .ucjs_SiteStyle_weaken .hd~*,\
+        .ucjs_SiteStyle_weaken h3~*\
         {\
           opacity:.3!important;\
         }\
-        .ucjs_sitestyle_weaken:hover *{\
+        .ucjs_SiteStyle_weaken:hover *{\
           opacity:1!important;\
           transition:opacity .5s!important;\
         }';

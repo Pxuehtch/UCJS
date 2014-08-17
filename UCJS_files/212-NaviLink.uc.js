@@ -253,7 +253,7 @@ const kFormat = {
  * Identifiers
  */
 const kID = (function() {
-  const prefix = 'ucjs_navilink_';
+  const prefix = 'ucjs_NaviLink_';
   const names = [
     'upper', 'prev', 'next', 'naviLink', 'pageInfo',
     'startSeparator', 'endSeparator', 'pageInfoSeparator',

@@ -48,8 +48,8 @@ const kID = {
   PANELUI_BUTTON: 'PanelUI-button',
 
   // custom UI
-  CONTAINER: 'ucjs_prefbutton_container',
-  ITEM: 'ucjs_prefbutton_item'
+  CONTAINER: 'ucjs_PrefButton_container',
+  ITEM: 'ucjs_PrefButton_item'
 };
 
 /**

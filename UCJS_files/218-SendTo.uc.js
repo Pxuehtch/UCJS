@@ -42,8 +42,8 @@ const {
  * Identifiers
  */
 const kID = {
-  startSeparator: 'ucjs_sendTo_startsep',
-  endSeparator: 'ucjs_sendTo_endsep'
+  startSeparator: 'ucjs_SendTo_startSeparator',
+  endSeparator: 'ucjs_SendTo_endSeparator'
 };
 
 /**

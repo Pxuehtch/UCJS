@@ -14,7 +14,7 @@
 %40namespace%20url('http%3A%2F%2Fwww.mozilla.org%2Fkeymaster%2Fgatekeeper%2Fthere.is.only.xul')%3B%40namespace%20html%20url('http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml')%3B%23linkTab%7Blist-style-image%3Aurl('chrome%3A%2F%2Fmozapps%2Fskin%2Fextensions%2FlocaleGeneric.png')!important%3B%7D%23linktree-index%7Btext-align%3Aright%3B%7D
 " type="text/css"?>
 
-<overlay id="ucjs_pageInfo_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay id="ucjs_PageInfo_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <!--
 // ==UserScript==

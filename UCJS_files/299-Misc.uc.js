@@ -49,6 +49,10 @@ function log(aMsg) {
   const kMaxWidth = 40; // [em]
 
   const kUI = {
+    tooltip: {
+      id: 'ucjs_Misc_tabTooltip'
+    },
+
     sign: {
       referrer: 'From:'
     },
@@ -62,7 +66,7 @@ function log(aMsg) {
 
   let mTooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
-      id: 'ucjs_misc_TabTooltip',
+      id: kUI.tooltip.id,
       style:
         'max-width:' + kMaxWidth + 'em;' +
         'word-break:break-all;word-wrap:break-word;'
@@ -73,7 +77,7 @@ function log(aMsg) {
   addEvent(mTooltip, 'popuphiding', onPopupHiding, false);
 
   // replace the default tooltip 'tabbrowser-tab-tooltip'
-  $ID('tabbrowser-tabs').tooltip = 'ucjs_misc_TabTooltip';
+  $ID('tabbrowser-tabs').tooltip = kUI.tooltip.id;
 
   function onPopupHiding(aEvent) {
     aEvent.stopPropagation();
@@ -202,7 +206,7 @@ function log(aMsg) {
 
   let mTooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
-      id: 'ucjs_misc_URLTooltip',
+      id: 'ucjs_Misc_URLTooltip',
       style: 'word-break:break-all;word-wrap:break-word;'
     })
   );
@@ -462,7 +466,7 @@ function log(aMsg) {
 (function() {
 
   let menu = $E('menu', {
-    id: 'ucjs_tabContext_openNewTab',
+    id: 'ucjs_TabContextMenu_openNewTab',
     label: '新しいタブ',
     accesskey: 'N'
   });
@@ -501,7 +505,7 @@ function log(aMsg) {
 (function() {
 
   const kState = {
-    hidden: 'ucjs_statusInURLBar_hidden'
+    hidden: 'ucjs_Misc_StatusInURLBar_hidden'
   };
 
   /**

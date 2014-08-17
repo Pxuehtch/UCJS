@@ -36,7 +36,7 @@ function log(aMsg) {
  */
 const kUI = {
   menu: {
-    id: 'ucjs_moveTabToWindow_menu',
+    id: 'ucjs_MoveTabToWindow_menu',
     label: '他のウィンドウへ移動',
     accesskey: 'W'
   },
@@ -51,7 +51,7 @@ const kUI = {
     tooltiptext: 'プライベートウィンドウ'
   },
   newWindow: {
-    id: 'ucjs_moveTabToWindow_newWindow',
+    id: 'ucjs_MoveTabToWindow_newWindow',
     label: '新しいウィンドウ'
   }
 };

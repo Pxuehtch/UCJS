@@ -64,11 +64,11 @@ const kPref = {
  * Identifiers
  */
 const kID = {
-  historyMenu: 'ucjs_listex_history_menu',
-  openedMenu: 'ucjs_listex_opened_menu',
-  closedMenu: 'ucjs_listex_closed_menu',
-  startSeparator: 'ucjs_listex_startsep',
-  endSeparator: 'ucjs_listex_endsep'
+  historyMenu: 'ucjs_ListEx_historyMenu',
+  openedMenu: 'ucjs_ListEx_openedMenu',
+  closedMenu: 'ucjs_ListEx_closedMenu',
+  startSeparator: 'ucjs_ListEx_startSeparator',
+  endSeparator: 'ucjs_ListEx_endSeparator'
 };
 
 /**

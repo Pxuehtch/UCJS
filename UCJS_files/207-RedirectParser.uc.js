@@ -128,7 +128,7 @@ const kPreset = [
  */
 const kUI = {
   menu: {
-    id: 'ucjs_redirectparser_menu',
+    id: 'ucjs_RedirectParser_menu',
     label: 'リンクの URL を分類',
     accesskey: 'P'
   },

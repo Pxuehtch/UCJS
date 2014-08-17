@@ -161,8 +161,8 @@ const mStatusField = (function() {
   const {XULBrowserWindow} = window;
 
   const kStatusAttribute = {
-    LINKSTATE: 'ucjs_ui_statusField_linkstate',
-    MESSAGE: 'ucjs_ui_statusField_message'
+    LINKSTATE: 'ucjs_UI_StatusField_linkState',
+    MESSAGE: 'ucjs_UI_StatusField_message'
   };
 
   // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
@@ -480,7 +480,7 @@ const mStatusField = (function() {
  */
 const mMenuitem = {
   setStateForUnreadTab: function(aMenuitem, aTab) {
-    const kATTR_UNREADTAB = 'ucjs_ui_menuitem_unreadTab';
+    const kATTR_UNREADTAB = 'ucjs_UI_Menuitem_unreadTab';
 
     if (window.ucjsTabEx) {
       // @note we check the *read* state of a tab and then set the *unread*

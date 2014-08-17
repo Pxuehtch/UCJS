@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<overlay id="ucjs_browser_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay id="ucjs_MainBrowser_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 <!--
 // ==UserScript==
@@ -26,51 +26,51 @@
   <command id="cmd_find"
     oncommand="ucjsUI.FindBar.toggleFindbar();"/>
 
-  <command id="ucjs_cmd_RestartApp"
+  <command id="ucjs_cmd_restartApp"
     oncommand="ucjsUtil.restartFx();"/>
 
-  <command id="ucjs_cmd_RestartAppWithPurgeCaches"
+  <command id="ucjs_cmd_restartAppWithPurgeCaches"
     oncommand="ucjsUtil.restartFx({purgeCaches:true});"/>
 
-  <command id="ucjs_cmd_ToggleTabbar"
-    oncommand="(function(tb){tb.collapsed=!tb.collapsed;document.getElementById('ucjs_ToolbarContextMenu_ToggleTabbar').setAttribute('checked',!tb.collapsed);})(document.getElementById('TabsToolbar'));"/>
+  <command id="ucjs_cmd_toggleTabbar"
+    oncommand="(function(tb){tb.collapsed=!tb.collapsed;document.getElementById('ucjs_ToolbarContextMenu_toggleTabbar').setAttribute('checked',!tb.collapsed);})(document.getElementById('TabsToolbar'));"/>
 
   <!--
    @see chrome://browser/content/search/search.xml#searchbar::openManager
    -->
-  <command id="ucjs_cmd_OpenSearchEngineManager"
+  <command id="ucjs_cmd_openSearchEngineManager"
     oncommand="(function(sm){sm?sm.focus():setTimeout(()=>open('chrome://browser/content/search/engineManager.xul','','chrome,dialog,modal,centerscreen,resizable'),0);})(Services.wm.getMostRecentWindow('Browser:SearchManager'));"/>
 </commandset>
 
 <!-- Key -->
 <keyset id="mainKeyset">
-  <key id="ucjs_key_Resize1"
+  <key id="ucjs_key_resize1"
     key="1" modifiers="alt"
     oncommand="window.resizeTo(800,600);"/>
 
-  <key id="ucjs_key_Resize2"
+  <key id="ucjs_key_resize2"
     key="2" modifiers="alt"
     oncommand="window.resizeTo(1280,768);"/>
 
-  <key id="ucjs_key_ResizeMax"
+  <key id="ucjs_key_resizeMax"
     key="3" modifiers="alt"
     oncommand="window.outerHeight=screen.availHeight-1;window.outerWidth=screen.availWidth;"/>
 
-  <key id="ucjs_key_RestartApp"
+  <key id="ucjs_key_restartApp"
     key="[" modifiers="control,alt"
-    command="ucjs_cmd_RestartApp"/>
+    command="ucjs_cmd_restartApp"/>
 
-  <key id="ucjs_key_RestartAppWithPurgeCaches"
+  <key id="ucjs_key_restartAppWithPurgeCaches"
     key="{" modifiers="control,alt,shift"
-    command="ucjs_cmd_RestartAppWithPurgeCaches"/>
+    command="ucjs_cmd_restartAppWithPurgeCaches"/>
 
-  <key id="ucjs_key_StopAllRequest"
+  <key id="ucjs_key_stopAllRequest"
     keycode="VK_ESCAPE" modifiers="shift"
     oncommand="BrowserStop();"/>
 
   <!-- Error Console -->
   <!-- TODO: remove this because the Error Console is deprecated -->
-  <key id="ucjs_key_ErrorConsole"
+  <key id="ucjs_key_errorConsole"
     key="J" modifiers="control,alt,shift"
     oncommand="toJavaScriptConsole();"/>
 
@@ -83,36 +83,36 @@
 
 <!-- Menu -->
 <menupopup id="menu_FilePopup">
-  <menu id="ucjs_FileMenu_RestartAppMenu"
+  <menu id="ucjs_FileMenu_restartAppMenu"
     label="再起動" accesskey="R"
     insertbefore="menu_FileQuitItem">
     <menupopup>
-      <menuitem id="ucjs_RestartAppMenu_RestartApp"
+      <menuitem id="ucjs_RestartAppMenu_restartApp"
         label="再起動"
-        key="ucjs_key_RestartApp"
-        command="ucjs_cmd_RestartApp"/>
-      <menuitem id="ucjs_RestartAppMenu_RestartAppWithPurgeCaches"
+        key="ucjs_key_restartApp"
+        command="ucjs_cmd_restartApp"/>
+      <menuitem id="ucjs_RestartAppMenu_restartAppWithPurgeCaches"
         label="再起動（キャッシュ再構築）"
-        key="ucjs_key_RestartAppWithPurgeCaches"
-        command="ucjs_cmd_RestartAppWithPurgeCaches"/>
+        key="ucjs_key_restartAppWithPurgeCaches"
+        command="ucjs_cmd_restartAppWithPurgeCaches"/>
     </menupopup>
   </menu>
 </menupopup>
 
 <menupopup id="menu_ToolsPopup">
-  <menuitem id="ucjs_ToolsMenu_OpenSearchEngineManager"
+  <menuitem id="ucjs_ToolsMenu_openSearchEngineManager"
     label="検索エンジンの管理" accesskey="s"
     insertbefore="menu_pageInfo"
-    command="ucjs_cmd_OpenSearchEngineManager"/>
+    command="ucjs_cmd_openSearchEngineManager"/>
 </menupopup>
 
 <menupopup id="toolbar-context-menu">
   <!-- TODO: set the position with the order of bars -->
-  <menuitem id="ucjs_ToolbarContextMenu_ToggleTabbar"
+  <menuitem id="ucjs_ToolbarContextMenu_toggleTabbar"
     label="タブバー" accesskey="t" type="checkbox" checked="true"
     insertbefore="viewToolbarsMenuSeparator"
-    command="ucjs_cmd_ToggleTabbar"/>
-  <menuitem id="ucjs_ToolbarContextMenu_ShowPanelUI"
+    command="ucjs_cmd_toggleTabbar"/>
+  <menuitem id="ucjs_ToolbarContextMenu_showPanelUI"
     label="パネルメニューを表示" accesskey="p"
     insertafter="viewToolbarsMenuSeparator"
     oncommand="PanelUI.show();"/>

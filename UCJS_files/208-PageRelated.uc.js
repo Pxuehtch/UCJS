@@ -40,8 +40,8 @@ const {
  * Identifiers
  */
 const kID = {
-  startSeparator: 'ucjs_relatedInfo_startSep',
-  endSeparator: 'ucjs_relatedInfo_endSep'
+  startSeparator: 'ucjs_PageRelated_startSeparator',
+  endSeparator: 'ucjs_PageRelated_endSeparator'
 };
 
 /**
