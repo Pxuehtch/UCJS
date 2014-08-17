@@ -57,6 +57,13 @@ const kID = {
 };
 
 /**
+ * Custom event type
+ */
+const kEventType = {
+  TabOpen: 'ucjs_TabEx_TabOpen'
+};
+
+/**
  * Position for OPENPOS/SELECTPOS
  */
 const kPosType = {
@@ -489,7 +496,7 @@ const mTabOpener = {
 
       let event = document.createEvent('Events');
 
-      event.initEvent('UcjsTabExTabOpen', true, false);
+      event.initEvent(kEventType.TabOpen, true, false);
       newTab.dispatchEvent(event);
 
       return newTab;
@@ -913,7 +920,7 @@ const mTabEvent = {
   init: function() {
     let tc = gBrowser.tabContainer;
 
-    addEvent(tc, 'UcjsTabExTabOpen', this, false);
+    addEvent(tc, kEventType.TabOpen, this, false);
     addEvent(tc, 'TabSelect', this, false);
     addEvent(tc, 'TabClose', this, false);
     addEvent(tc, 'SSTabRestored', this, false);
@@ -923,7 +930,7 @@ const mTabEvent = {
     let tab = aEvent.originalTarget;
 
     switch (aEvent.type) {
-      case 'UcjsTabExTabOpen':
+      case kEventType.TabOpen:
         this.onTabOpen(tab);
         break;
 
