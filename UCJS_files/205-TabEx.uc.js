@@ -50,7 +50,7 @@ const kID = {
   READTIME: 'ucjs_tabex_readtime',
   SELECTTIME: 'ucjs_tabex_selecttime',
   ANCESTORS: 'ucjs_tabex_ancestors',
-  OPENQUERY: 'ucjs_tabex_openquery',
+  OPENINFO: 'ucjs_tabex_openinfo',
   SUSPENDED: 'ucjs_tabex_suspended',
   READ: 'ucjs_tabex_read',
   RESTORING: 'ucjs_tabex_restoring'
@@ -212,8 +212,8 @@ const mTab = (function () {
     let name, getter, setter;
 
     switch (aKey) {
-      case 'query': // {hash}
-        name = kID.OPENQUERY;
+      case 'openInfo': // {hash}
+        name = kID.OPENINFO;
         getter = (value) => JSON.parse(htmlUnescape(value));
         setter = (value) => htmlEscape(JSON.stringify(value));
         break;
@@ -428,10 +428,10 @@ const mTabOpener = {
         aDisableMCB           = params.disableMCB;
       }
 
-      let query;
+      let openInfo;
 
       if (!aURI || aURI === 'about:blank') {
-        query = {
+        openInfo = {
           URL: 'about:blank',
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
@@ -475,7 +475,7 @@ const mTabOpener = {
         // TODO: handle the POST data
         // @note |aPostData| is a |nsIInputStream| object that JSON does not
         // support
-        query = {
+        openInfo = {
           URL: aURI,
           flags: flags,
           referrerURL: aReferrerURI || undefined,
@@ -485,7 +485,7 @@ const mTabOpener = {
         };
       }
 
-      mTab.data(newTab, 'query', query);
+      mTab.data(newTab, 'openInfo', openInfo);
 
       let event = document.createEvent('Events');
 
@@ -503,12 +503,12 @@ const mTabOpener = {
         // |userTypedValue| holds the URL of a document till it successfully
         // loads
         let URL = browser.userTypedValue || browser.currentURI.spec;
-        let query = {
+        let openInfo = {
           URL: URL,
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
 
-        mTab.data(aTab, 'query', query);
+        mTab.data(aTab, 'openInfo', openInfo);
         break;
       }
 
@@ -543,13 +543,15 @@ const mTabOpener = {
  */
 const mReferrer = {
   getURL: function(aTab) {
-    let query = mTab.data(aTab, 'query');
+    let openInfo = mTab.data(aTab, 'openInfo');
 
-    if (!query) {
+    if (!openInfo) {
       return null;
     }
 
-    return query.referrerURL || query.fromVisit;
+    let {referrerURL, fromVisit} = openInfo;
+
+    return referrerURL || fromVisit;
   },
 
   fetchInfo: function(aTab, aCallback) {
@@ -569,14 +571,15 @@ const mReferrer = {
   },
 
   isRelatedToCurrent: function(aTab) {
-    let query = mTab.data(aTab, 'query');
+    let openInfo = mTab.data(aTab, 'openInfo');
 
-    if (!query) {
+    if (!openInfo) {
       return null;
     }
 
-    return !!(query.referrerURL ||
-      (query.relatedToCurrent && query.fromVisit));
+    let {referrerURL, relatedToCurrent, fromVisit} = openInfo;
+
+    return !!(referrerURL || (relatedToCurrent && fromVisit));
   },
 
   getFromVisit: function(aURL) {
@@ -756,18 +759,18 @@ const mTabSuspender = {
 
     mTab.state.suspended(aTab, false);
 
-    let [browser, loadingURL, query] = this.getBrowserForTab(aTab);
+    let [browser, loadingURL, openInfo] = this.getBrowserForTab(aTab);
 
     if (loadingURL) {
       let loadPage;
 
-      if (query) {
+      if (openInfo) {
         // TODO: handle the POST data
         loadPage = () => browser.loadURIWithFlags(
           loadingURL,
-          query.flags,
-          makeURI(query.referrerURL) || null,
-          query.charset || null,
+          openInfo.flags,
+          makeURI(openInfo.referrerURL) || null,
+          openInfo.charset || null,
           null // POST data
         );
       }
@@ -783,26 +786,27 @@ const mTabSuspender = {
   getBrowserForTab: function(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
     let loadingURL;
-    let query;
+    let openInfo;
 
     // TODO: use a proper method of detection whether a tab newly opens or not
     let isNewTab = !browser.canGoBack;
 
     if (isNewTab) {
-      query = mTab.data(aTab, 'query');
+      openInfo = mTab.data(aTab, 'openInfo');
     }
 
-    // 1.a new tab has no query when it bypassed our hooked |gBrowser.addTab|
+    // 1.a new tab has no |openInfo| when it bypassed our hooked
+    // |gBrowser.addTab|
     // 2.|userTypedValue| holds the URL of a document till it successfully
     // loads
-    if (query && query.URL !== 'about:blank') {
-      loadingURL = query.URL;
+    if (openInfo && openInfo.URL !== 'about:blank') {
+      loadingURL = openInfo.URL;
     }
     else {
       loadingURL = browser.userTypedValue;
     }
 
-    return [browser, loadingURL, query];
+    return [browser, loadingURL, openInfo];
   }
 };
 
@@ -886,7 +890,7 @@ const mSessionStore = {
       kID.READTIME,
       kID.SELECTTIME,
       kID.ANCESTORS,
-      kID.OPENQUERY
+      kID.OPENINFO
     ];
 
     savedAttributes.forEach((key) => {

@@ -121,10 +121,10 @@ function log(aMsg) {
     // 2.|userTypedValue| holds the URL of a document till it successfully
     // loads
     if (tabState.isSuspended(tab)) {
-      let query = tabState.getData(tab, 'query');
+      let openInfo = tabState.getData(tab, 'openInfo');
 
       loadingURL =
-        (query && query.URL !== 'about:blank' && query.URL) ||
+        (openInfo && openInfo.URL !== 'about:blank' && openInfo.URL) ||
         browser.userTypedValue;
     }
 
@@ -723,10 +723,10 @@ function log(aMsg) {
       // tab that is suspended to load a document
       // 2.|userTypedValue| holds the URL of a document till it successfully
       // loads
-      let query = tabState.getData(tab, 'query');
+      let openInfo = tabState.getData(tab, 'openInfo');
 
       loadingURL =
-        (query && query.URL !== 'about:blank' && query.URL) ||
+        (openInfo && openInfo.URL !== 'about:blank' && openInfo.URL) ||
         gBrowser.getBrowserForTab(tab).userTypedValue;
 
       // @see chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
