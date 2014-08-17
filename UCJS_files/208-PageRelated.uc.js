@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name PageRelated.uc.js
-// @description Makes related links about current page
+// @description Makes related links about a current page
 // @include main
 // ==/UserScript==
 
@@ -55,22 +55,18 @@ const kString = {
 /**
  * Preset list
  *
- * {hash[]}
  * @key category {string} a display name for menu
  * @key items {hash[]}
  *   @key disabled {boolean} [optional]
  *   @key name {string} a display name for menuitem
- *   @key URL
- *     {string} a URL string
- *       pass the page information by alias
- *       @see |AliasFixup|
- *     {function} for the custom formattings
- *       @param aPageInfo {hash}
- *         @key URL {string} a page URL
- *         @key title {string} a page title
- *       @return {string} a URL string
- *     @note a URL string can have aliases for the page information
+ *   @key URL {string} URL string of a related page
+ *     pass the current page information with alias
  *     @see |AliasFixup|
+ *   @key URL {function} for the custom formatting
+ *     @param aPageInfo {hash}
+ *       @key URL {string} a page URL
+ *       @key title {string} a page title
+ *     @return {string} a URL string
  *
  * @note displayed in the declared order
  */
@@ -268,7 +264,7 @@ function getAvailableMenus() {
     URL: gBrowser.currentURI.spec
   };
 
-  // warning of a URL with a parameter
+  // security warning for a URL with parameters
   if (/[?#].*$/.test(pageInfo.URL)) {
     menus.push($E('menuitem', {
       label: kString.warnParameter,

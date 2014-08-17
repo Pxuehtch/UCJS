@@ -513,9 +513,9 @@ const kSiteList = [
  *   {string} - usually a partial match
  *     @note special symbols are available;
  *     1.the leading '||' -> ^https?:\/\/[\w-.]*?
- *                        -> ^ if URL scheme follows after
+ *                        -> ^ (if URL scheme follows after)
  *     2.the leading '|'  -> ^https?:\/\/(?:www\d*\.)?
- *                        -> ^ if URL scheme follows after
+ *                        -> ^ (if URL scheme follows after)
  *     3.the wildcard '*' -> .+?
  *     4.'.tld' will match any top level domain
  */

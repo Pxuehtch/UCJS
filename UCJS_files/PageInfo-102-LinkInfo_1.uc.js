@@ -71,7 +71,7 @@ function build() {
     catch (ex) {
       // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]
       // gWindow.frames.length is undefined after closing the target page
-      // which have frames
+      // which has frames
       return;
     }
 

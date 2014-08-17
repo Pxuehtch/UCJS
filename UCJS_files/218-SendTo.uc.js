@@ -78,19 +78,21 @@ const kString = {
  *   a display name for menuitem
  *   @note %TYPE% is replaced into |kString.types|
  * @key types {string[]}
- *   the passed data and case of showing the menuitem
+ *   available value - case of showing the menuitem;
  *   'PAGE' - the page URL not on the following cases
  *   'LINK' - the link URL on a link
  *   'IMAGE' - the image URL on an image
  *   'TEXT' - the selected text on a selection
  *   @note keep in sync with |kString.types|
+ *
  * @key URL {string}
- *   a URL that opens
- *   @note pass the data by alias
+ *   URL string of a web service
+ *   @note pass the data with alias
  *   @see |AliasFixup|
- * @key URL {function}
- *   a function handle for the custom formatting
- *   @param aData {string} the raw data
+ * @key URL {function} for the custom formatting
+ *   @param aData {string}
+ *   @return {string}
+ *
  * @key extensions {string[]} [optional]
  *   specify the file extensions for 'LINK' type
  * @key command {function} [optional]

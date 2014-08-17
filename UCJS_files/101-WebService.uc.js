@@ -38,23 +38,22 @@ function log(aMsg) {
 /**
  * Preset list
  *
- * @value {hash[]}
- *   type: {string}
- *     'get' - requests data
- *     'open' - opens tab
- *   name: {string}
- *     a preset name
- *   URL: {string}
- *     URL that opens
- *     @note pass the data by alias
- *     @see |AliasFixup|
- *   form: {hash} [optional; only with type 'open']
- *     form: {XPath of <form>}
- *     input: {XPath of <input>}
- *   parse: {function} [optional; only with type 'get']
- *     a function to parse the response text when the load is complete
- *     @param aResponseText {string}
- *     @param aXHR {nsIXMLHttpRequest}
+ * @key type {string}
+ *   'get' - requests data
+ *   'open' - opens tab
+ * @key name {string}
+ *   a preset name
+ * @key URL {string}
+ *   URL string of a web service
+ *   @note pass the data with alias
+ *   @see |AliasFixup|
+ * @key form {hash} [optional; only with type 'open']
+ *   @key form {XPath of <form>}
+ *   @key input {XPath of <input>}
+ * @key parse {function} [optional; only with type 'get']
+ *   a function to parse the response text when the load is complete
+ *   @param aResponseText {string}
+ *   @param aXHR {nsIXMLHttpRequest}
  */
 const kPresets = [
   {
