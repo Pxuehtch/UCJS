@@ -714,14 +714,15 @@ function getTitle(aText) {
     getModule('resource://app/modules/PlacesUIUtils.jsm');
 
   if (aText && aText.length > kMaxTextLen) {
+    const {ellipsis} = PlacesUIUtils;
+
     if (/^(?:https?|ftp|file):/i.test(aText)) {
       let half = Math.floor(kMaxTextLen / 2);
 
-      aText = aText.substr(0, half) + PlacesUIUtils.ellipsis +
-        aText.substr(-half);
+      aText = [aText.substr(0, half), aText.substr(-half)].join(ellipsis);
     }
     else {
-      aText = aText.substr(0, kMaxTextLen) + PlacesUIUtils.ellipsis;
+      aText = aText.substr(0, kMaxTextLen) + ellipsis;
     }
   }
 
