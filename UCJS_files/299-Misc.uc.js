@@ -830,7 +830,14 @@ function log(aMsg) {
   }
 
   function getLockButton() {
-    return gFindBar.getElementsByClassName(kID.lockButton)[0];
+    // Get the lock button if a findbar in the current tab is initialized.
+    // @note Avoid creating a needless findbar once the lazy getter |gFindBar|
+    // is called.
+    if (gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
+      return gFindBar.getElementsByClassName(kID.lockButton)[0];
+    }
+
+    return null;
   }
 
   addEvent(gBrowser.mPanelContainer, 'command', handleEvent, false);
@@ -844,7 +851,9 @@ function log(aMsg) {
       case 'command': {
         let button = aEvent.target;
 
-        if (button.classList.contains(kID.lockButton)) {
+        let lockButton = getLockButton();
+
+        if (lockButton && button === lockButton) {
           mIsLocked = button.checked;
           mFindString = mIsLocked ? gFindBar._findField.value : null;
         }
@@ -861,11 +870,15 @@ function log(aMsg) {
       }
 
       case 'TabSelect': {
-        getLockButton().checked = mIsLocked;
-
         if (mIsLocked) {
           gFindBar.open(gFindBar.FIND_NORMAL);
           gFindBar._findField.value = mFindString;
+        }
+
+        let lockButton = getLockButton();
+
+        if (lockButton) {
+          lockButton.checked = mIsLocked;
         }
 
         break;
