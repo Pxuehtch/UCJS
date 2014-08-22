@@ -330,7 +330,7 @@ const mFindBar = {
     }
   },
 
-  toggleFindbar: function() {
+  toggle: function() {
     if (gFindBar.hidden) {
       gFindBar.onFindCommand();
     }

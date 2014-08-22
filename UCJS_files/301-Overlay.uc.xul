@@ -24,7 +24,7 @@
 <commandset id="mainCommandSet">
   <!-- overwrite the default -->
   <command id="cmd_find"
-    oncommand="ucjsUI.FindBar.toggleFindbar();"/>
+    oncommand="ucjsUI.FindBar.toggle();"/>
 
   <command id="ucjs_cmd_restartApp"
     oncommand="ucjsUtil.restartFx();"/>
