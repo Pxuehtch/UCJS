@@ -74,7 +74,7 @@ const TextFinder = {
   get isResultFound() {
     let {foundEditable, currentWindow} = this.finder._fastFind;
 
-    return foundEditable || currentWindow;
+    return !!(foundEditable || currentWindow);
   },
 
   get selectionController() {
