@@ -373,7 +373,7 @@ const mFindBar = {
   },
 
   clearText: function() {
-    this.text = '';
+    gFindBar.clear();
 
     if (this.highlightButton.checked) {
       this.toggleHighlight(false);
