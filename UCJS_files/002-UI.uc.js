@@ -39,12 +39,240 @@ function log(aMsg) {
 }
 
 /**
+ * Popup menu handler
+ *
+ * @return {hash}
+ *   @key init {function}
+ */
+const PopupMenuHandler = (function() {
+  /**
+   * Creates a new handler
+   *
+   * @param aPopupMenuGetter {function}
+   *   A function to get the <popupmenu> element.
+   *   @see |HandlerManager|
+   * @param aOption {hash}
+   *   @key observeUICustomization {boolean}
+   *     Whether observe UI customization to restore user settings.
+   *     @see |HandlerManager|
+   * @return {hash}
+   *   @key get {function}
+   *   @key register {function}
+   */
+  function init(aPopupMenuGetter, aOption) {
+    let handlerManager = HandlerManager(aPopupMenuGetter, aOption);
+
+    handlerManager.register({
+      events: [
+        ['popupshowing', manageMenuSeparators, false]
+      ]
+    });
+
+    return {
+      get: aPopupMenuGetter,
+      register: handlerManager.register
+    };
+  }
+
+  /**
+   * Manages the visibility of menu separators in a popup menu
+   *
+   * @param aEvent {Event}
+   *
+   * @note 'popupshowing' event should be attached to the <menupopup> element.
+   */
+  function manageMenuSeparators(aEvent) {
+    let popupMenu = aEvent.currentTarget;
+
+    if (aEvent.target !== popupMenu) {
+      return;
+    }
+
+    let separators = $X('xul:menuseparator', popupMenu, {
+      ordered: true,
+      toArray: true
+    });
+
+    setImmediate(manage, separators);
+
+    function manage(aSeparators) {
+      let last = null;
+
+      aSeparators.forEach((separator) => {
+        if (separator.hidden) {
+          separator.hidden = false;
+        }
+
+        if (!shouldShow(separator, 'previousSibling')) {
+          separator.hidden = true;
+        }
+        else {
+          last = separator;
+        }
+      });
+
+      if (last && !shouldShow(last, 'nextSibling')) {
+        last.hidden = true;
+      }
+    }
+
+    function shouldShow(aSeparator, aSibling) {
+      // @see chrome://browser/content/utilityOverlay.js::isElementVisible()
+      const isElementVisible = window.isElementVisible;
+
+      let node = aSeparator;
+
+      do {
+        node = node[aSibling];
+      } while (node && !isElementVisible(node));
+
+      return node && node.localName !== 'menuseparator';
+    }
+  }
+
+  /**
+   * Manager of handlers on create/destroy the target popup menu
+   *
+   * @param aTargetGetter {function}
+   *   A function to get the target popup menu element.
+   *   @note It is not the element itself since we should update the reference
+   *   to the new target when cleaned up and rebuilt.
+   * @param aOption {hash}
+   *   @key observeUICustomization {boolean}
+   *     If UI customization breaks user settings to the target, set true to
+   *     observe UI customization to restore user settings.
+   *     @note Used only to the context menu of the URL bar for now.
+   * @return {hash}
+   *   @key register {function}
+   */
+  function HandlerManager(aTargetGetter, aOption) {
+    const {
+      observeUICustomization
+    } = aOption || {};
+
+    let setTarget = () => aTargetGetter();
+
+    let mTarget;
+    let mEventData = [];
+    let mOnCreateHandlers = [];
+    let mOnDestroyHandlers = [];
+
+    init();
+
+    function init() {
+      create();
+
+      // restore user settings after UI customization
+      if (observeUICustomization) {
+        addEvent(window, 'beforecustomization', destroy, false);
+        addEvent(window, 'aftercustomization', create, false);
+      }
+
+      // cleanup at shutdown of the main browser
+      addEvent(window, 'unload', uninit, false);
+    }
+
+    function uninit() {
+      destroy();
+
+      mTarget = null;
+      mEventData = null;
+      mOnCreateHandlers = null;
+      mOnDestroyHandlers = null;
+    }
+
+    function create() {
+      // update the reference of popup menu
+      mTarget = setTarget();
+
+      manageHandlers({
+        doCreate: true
+      });
+    }
+
+    function destroy() {
+      manageHandlers({
+        doDestroy: true
+      });
+    }
+
+    function manageHandlers({doCreate}) {
+      let method = doCreate ? 'addEventListener' : 'removeEventListener';
+
+      mEventData.forEach(([type, listener, capture]) => {
+        mTarget[method](type, listener, capture);
+      });
+
+      let handlers = doCreate ? mOnCreateHandlers : mOnDestroyHandlers;
+
+      handlers.forEach((handler) => {
+        handler(mTarget);
+      });
+    }
+
+    /**
+     * Registers events and handlers
+     *
+     * @param {hash}
+     *   @key events {array}
+     *     Array of array [type, listener, capture] for events.
+     *     @note The listeners are attached when the target popup menu element
+     *     is initialized, and detached when the target is cleaned up.
+     *   @key onCreate {function}
+     *     A function called once when the target is initialized.
+     *     @param {Element} A target popup menu element.
+     *     @see |manageHandlers|
+     *   @key onDestroy {function}
+     *     A function called once when the target is cleaned up.
+     *     @param {Element} A target popup menu element.
+     *     @see |manageHandlers|
+     *
+     * @note The registered events to the target will be automatically detached
+     * on destroying the target. If you attach some events to the descendant
+     * element of the target, you should do |removeEventListener| to it in
+     * |onDestroy| function. So it is recommended to attach all events to the
+     * target and observe the descendants by event delegation.
+     */
+    function register({events, onCreate, onDestroy}) {
+      if (events) {
+        events.forEach(([type, listener, capture]) => {
+          mEventData.push([type, listener, !!capture]);
+
+          mTarget.addEventListener(type, listener, capture);
+        });
+      }
+
+      if (onCreate) {
+        mOnCreateHandlers.push(onCreate);
+
+        onCreate(mTarget);
+      }
+
+      if (onDestroy) {
+        mOnDestroyHandlers.push(onDestroy);
+      }
+    }
+
+    return {
+      register: register
+    };
+  }
+
+  /**
+   * Expose
+   */
+  return {
+    init: init
+  };
+})();
+
+/**
  * Content area
  */
 const mContentArea = (function() {
   let getContextMenu = () => $ID('contentAreaContextMenu');
 
-  let contextMenu = createPopupMenuHandler(getContextMenu);
+  let contextMenu = PopupMenuHandler.init(getContextMenu);
 
   return {
     contextMenu: contextMenu
@@ -62,7 +290,7 @@ const mURLBar = (function() {
 
   // UI customization resets the context menu of the URL bar to Fx default
   // value. so, observe it to fix user settings for the context menu
-  let contextMenu = createPopupMenuHandler(getContextMenu, {
+  let contextMenu = PopupMenuHandler.init(getContextMenu, {
     observeUICustomization: true
   });
 
@@ -494,214 +722,6 @@ const mMenuitem = {
     }
   }
 };
-
-/**
- * Creates PopupMenu handler
- *
- * @param aPopupMenuGetter {function}
- *   a function to get the <popupmenu> element
- *   @see |EventManager|
- * @param aOption {hash}
- *   @key observeUICustomization {boolean}
- *     whether observe UI customization to restore user settings
- *     @see |EventManager|
- * @return {hash}
- *   @member get {function}
- *   @member register {function}
- */
-function createPopupMenuHandler(aPopupMenuGetter, aOption) {
-  let eventManager = EventManager(aPopupMenuGetter, aOption);
-
-  eventManager.register({
-    events: [
-      ['popupshowing', manageMenuSeparators, false]
-    ]
-  });
-
-  return {
-    get: aPopupMenuGetter,
-    register: eventManager.register
-  };
-}
-
-/**
- * Manages the visibility of menu separators in a popup menu
- *
- * @param aEvent {Event}
- *
- * @note 'popupshowing' event should be attached to the <menupopup> element
- */
-function manageMenuSeparators(aEvent) {
-  let popupMenu = aEvent.currentTarget;
-
-  if (aEvent.target !== popupMenu) {
-    return;
-  }
-
-  let separators = $X('xul:menuseparator', popupMenu, {
-    ordered: true,
-    toArray: true
-  });
-
-  setImmediate(manage, separators);
-
-  function manage(aSeparators) {
-    let last = null;
-
-    aSeparators.forEach((separator) => {
-      if (separator.hidden) {
-        separator.hidden = false;
-      }
-
-      if (!shouldShow(separator, 'previousSibling')) {
-        separator.hidden = true;
-      }
-      else {
-        last = separator;
-      }
-    });
-
-    if (last && !shouldShow(last, 'nextSibling')) {
-      last.hidden = true;
-    }
-  }
-
-  function shouldShow(aSeparator, aSibling) {
-    // @see chrome://browser/content/utilityOverlay.js::isElementVisible()
-    const isElementVisible = window.isElementVisible;
-
-    let node = aSeparator;
-
-    do {
-      node = node[aSibling];
-    } while (node && !isElementVisible(node));
-
-    return node && node.localName !== 'menuseparator';
-  }
-}
-
-/**
- * Event manager
- *
- * @param aTargetGetter {function}
- *   a function to get the target node
- *   @note it is not the node itself to update it when cleanup and rebuild
- * @param aOption {hash}
- *   @key observeUICustomization {boolean}
- *     if UI customization breaks user settings to the target, set true to
- *     observe UI customization to restore user settings
- *     @note used only to the context menu of the URL bar for now
- * @return {hash}
- *   @member register {function}
- */
-function EventManager(aTargetGetter, aOption) {
-  const {observeUICustomization} = aOption || {};
-
-  let setTarget = () => aTargetGetter();
-
-  let mTarget;
-  let mEventData = [];
-  let mOnCreateHandlers = [];
-  let mOnDestroyHandlers = [];
-
-  init();
-
-  function init() {
-    create();
-
-    // restore user settings after UI customization
-    if (observeUICustomization) {
-      addEvent(window, 'beforecustomization', destroy, false);
-      addEvent(window, 'aftercustomization', create, false);
-    }
-
-    // cleanup at shutdown of the main browser
-    addEvent(window, 'unload', uninit, false);
-  }
-
-  function uninit() {
-    destroy();
-
-    mTarget = null;
-    mEventData = null;
-    mOnCreateHandlers = null;
-    mOnDestroyHandlers = null;
-  }
-
-  function create() {
-    // update the reference
-    mTarget = setTarget();
-
-    manageEvents(true);
-    manageHandlers(true);
-  }
-
-  function destroy() {
-    manageEvents(false);
-    manageHandlers(false);
-  }
-
-  function manageEvents(aDoCreate) {
-    let method = aDoCreate ? 'addEventListener' : 'removeEventListener';
-
-    mEventData.forEach(([type, listener, capture]) => {
-      mTarget[method](type, listener, capture);
-    });
-  }
-
-  function manageHandlers(aDoCreate) {
-    let handlers = aDoCreate ? mOnCreateHandlers : mOnDestroyHandlers;
-
-    handlers.forEach((handler) => {
-      handler(mTarget);
-    });
-  }
-
-  /**
-   * Registers event handlers and functions
-   *
-   * @param {hash}
-   *   @key events {array}
-   *     array of array [type, listener, capture] for event handler
-   *     @note the handlers are attached when the target is initialized, and
-   *     detached when the target is cleaned up
-   *   @key onCreate {function}
-   *     a function called once when the target is initialized. the target is
-   *     passed as an argument
-   *   @key onDestroy {function}
-   *     a function called once when the target is cleaned up. the target is
-   *     passed as an argument
-   *
-   * @note the registered event to the target will be detached automatically.
-   * if you attach an event to descendant element of the target, you should do
-   * |removeEventListener| to it in |onDestroy| function. so it is recommended
-   * to attach all events to the target and observe the descendants by event
-   * delegation
-   */
-  function register({events, onCreate, onDestroy}) {
-    if (events) {
-      events.forEach(([type, listener, capture]) => {
-        mEventData.push([type, listener, !!capture]);
-
-        mTarget.addEventListener(type, listener, capture);
-      });
-    }
-
-    if (onCreate) {
-      mOnCreateHandlers.push(onCreate);
-
-      onCreate(mTarget);
-    }
-
-    if (onDestroy) {
-      mOnDestroyHandlers.push(onDestroy);
-    }
-  }
-
-  return {
-    register: register
-  };
-}
 
 /**
  * Exports
