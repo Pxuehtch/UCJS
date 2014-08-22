@@ -348,6 +348,88 @@ const mFindBar = (function() {
     }
   };
 
+  /**
+   * Manager of handlers on create/destroy the target findbar
+   *
+   * @return {hash}
+   *   @key register {function}
+   */
+  const HandlerManager = (function() {
+    let mOnCreateHandlers = [];
+    let mOnDestroyHandlers = [];
+
+    let tc = gBrowser.tabContainer;
+
+    addEvent(tc, 'TabFindInitialized', handleEvent, false);
+    addEvent(tc, 'TabClose', handleEvent, false);
+
+    function handleEvent(aEvent) {
+      let tab = aEvent.target;
+
+      switch (aEvent.type) {
+        case 'TabFindInitialized':
+          manageHandlers({
+            doCreate: true,
+            tab: tab
+          });
+          break;
+
+        case 'TabClose':
+          manageHandlers({
+            doDestroy: true,
+            tab: tab
+          });
+          break;
+      }
+    }
+
+    function manageHandlers({doCreate, tab}) {
+      let handlers = doCreate ? mOnCreateHandlers : mOnDestroyHandlers;
+
+      handlers.forEach((handler) => {
+        handler({
+          tab: tab,
+          findBar: tab._findBar
+        });
+      });
+    }
+
+    /**
+     * Registers the handlers
+     *
+     * @param {hash}
+     *   @key onCreate {function}
+     *     A function called once when a findbar is initialized.
+     *     @param {hash}
+     *       @key tab {Element} The tab that has the initialized findbar.
+     *       @key findBar {Element} The initialized findbar.
+     *       @see |manageHandlers|
+     *   @key onDestroy {function}
+     *     A function called once when the findbar is destroyed.
+     *     @param {hash}
+     *       @key tab {Element}
+     *       @key findBar {Element}
+     */
+    function register(aParam = {}) {
+      let {
+        onCreate,
+        onDestroy
+      } = aParam;
+
+      if (onCreate) {
+        mOnCreateHandlers.push(onCreate);
+      }
+
+      if (onDestroy) {
+        mOnDestroyHandlers.push(onDestroy);
+      }
+    }
+
+    return {
+      register: register
+    };
+  })();
+
   function toggle() {
     if (gFindBar.hidden) {
       gFindBar.onFindCommand();
@@ -389,6 +471,7 @@ const mFindBar = (function() {
    * Expose
    */
   return {
+    register: HandlerManager.register,
     toggle: toggle,
     findWith: findWith
   };

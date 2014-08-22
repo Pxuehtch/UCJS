@@ -4,8 +4,7 @@
 // @include     main
 // ==/UserScript==
 
-// @require Util.uc.js
-// @note some default functions are modified. see @modified
+// @require Util.uc.js, UI.uc.js
 
 
 (function(window, undefined) {
@@ -26,6 +25,10 @@ const {
 function log(aMsg) {
   return window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
 }
+
+const {
+  FindBar
+} = window.ucjsUI;
 
 /**
  * Preferences
@@ -114,20 +117,9 @@ const TimeKeeper = {
 };
 
 function FindAgainScroller_init() {
-  // @modified chrome://browser/content/tabbrowser.xml::getFindBar
-  const $getFindBar = gBrowser.getFindBar;
-
-  gBrowser.getFindBar =
-  function ucjsFindAgainScroller_getFindBar(aTab) {
-    let initialized = gBrowser.isFindBarInitialized(aTab);
-    let findBar = $getFindBar.apply(this, arguments);
-
-    if (!initialized) {
-      attachFindAgainCommand();
-    }
-
-    return findBar;
-  };
+  FindBar.register({
+    onCreate: attachFindAgainCommand
+  });
 }
 
 function attachFindAgainCommand() {
