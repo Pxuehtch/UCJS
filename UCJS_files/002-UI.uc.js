@@ -304,77 +304,95 @@ const mURLBar = (function() {
  *
  * @see chrome://global/content/bindings/findbar.xml
  */
-const mFindBar = {
-  get textBox() {
-    return gFindBar.getElement('findbar-textbox');
-  },
+const mFindBar = (function() {
+  /**
+   * Fx native UI elements
+   */
+  const UI = {
+    get textBox() {
+      return gFindBar.getElement('findbar-textbox');
+    },
 
-  get highlightButton() {
-    return gFindBar.getElement('highlight');
-  },
-
-  get text() {
-    return this.textBox.value;
-  },
-
-  set text(aValue) {
-    aValue =  aValue || '';
-
-    if (this.text !== aValue) {
-      this.textBox.value = aValue;
+    get highlightButton() {
+      return gFindBar.getElement('highlight');
     }
+  };
 
-    if (!gFindBar.hidden) {
-      this.textBox.focus();
-      this.textBox.select();
+  /**
+   * Gets/Sets a text in the textbox
+   */
+  const FindText = {
+    get value() {
+      return UI.textBox.value;
+    },
+
+    set value(aValue) {
+      aValue =  aValue || '';
+
+      if (this.value !== aValue) {
+        UI.textBox.value = aValue;
+      }
+
+      if (!gFindBar.hidden) {
+        UI.textBox.focus();
+        UI.textBox.select();
+      }
+    },
+
+    clear: function() {
+      gFindBar.clear();
+
+      if (UI.highlightButton.checked) {
+        toggleHighlight(false);
+      }
     }
-  },
+  };
 
-  toggle: function() {
+  function toggle() {
     if (gFindBar.hidden) {
       gFindBar.onFindCommand();
     }
     else {
       gFindBar.close();
     }
-  },
+  }
 
-  toggleHighlight: function(aHighlight) {
-    gFindBar.toggleHighlight(aHighlight);
-
-    this.highlightButton.checked = aHighlight;
-  },
-
-  findWith: function(aText, aOption) {
+  function findWith(aText, aOption = {}) {
     if (!aText) {
       return;
     }
 
     let {
       doHighlight
-    } = aOption || {};
+    } = aOption;
 
-    if (this.text) {
-      this.clearText();
+    if (FindText.value) {
+      FindText.clear();
     }
 
     gFindBar.onFindCommand();
-    this.text = aText;
+    FindText.value = aText;
     gFindBar.onFindAgainCommand();
 
     if (doHighlight) {
-      this.toggleHighlight(true);
-    }
-  },
-
-  clearText: function() {
-    gFindBar.clear();
-
-    if (this.highlightButton.checked) {
-      this.toggleHighlight(false);
+      toggleHighlight(true);
     }
   }
-};
+
+  function toggleHighlight(aHighlight) {
+    gFindBar.toggleHighlight(aHighlight);
+
+    UI.highlightButton.checked = aHighlight;
+  }
+
+  /**
+   * Expose
+   */
+  return {
+    toggle: toggle,
+    findWith: findWith
+  };
+})();
 
 /**
  * Status bar
