@@ -624,15 +624,13 @@ function log(aMsg) {
 })();
 
 /**
- * The clear scrollbar
+ * Style for anonymous elements
  *
- * @note the setting for the themes of my Firefox and OS
+ * @note AGENT-STYLE-SHEETS can apply styles to native anonymous elements
+ * @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
  */
 (function() {
-
-  // @note Firefox allows to style scrollbars only to the styles applied with
-  // agent-style-sheets
-  // @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
+  /* clear scrollbar */
   setGlobalAgentCSS('\
     scrollbar {\
       -moz-appearance:none!important;\
@@ -653,6 +651,14 @@ function log(aMsg) {
       -moz-appearance:none!important;\
       background-image:\
         linear-gradient(to right,hsl(0,0%,60%),hsl(0,0%,90%))!important;\
+    }\
+  ');
+
+  /* tooltip text with tight line-wrapping */
+  setGlobalAgentCSS('\
+    .tooltip-label {\
+      word-break:break-all!important;\
+      word-wrap:break-word!important;\
     }\
   ');
 
