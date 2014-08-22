@@ -46,8 +46,7 @@ const kPref = {
     'chrome://browser/content/preferences/*',
     'chrome://inspector/*',
     'chrome://adblockplus/*',
-    'chrome://noscript/*',
-    'chrome://securelogin/*'
+    'chrome://noscript/*'
   ]
 };
 
