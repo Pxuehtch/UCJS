@@ -789,5 +789,81 @@ function log(aMsg) {
 
 })();
 
+/**
+ * Common findbar
+ *
+ * @require UI.uc.js
+ */
+(function() {
+
+  const kID = {
+    lockButton: 'ucjs_Misc_CommonFindbar_lockButton'
+  };
+
+  let mIsLocked = false;
+  let mFindString = null;
+
+  window.ucjsUI.FindBar.register({
+    onCreate: onCreate
+  });
+
+  function onCreate(aParam) {
+    let {findBar} = aParam;
+
+    findBar.appendChild($E('toolbarbutton', {
+      label: 'Lock',
+      accesskey: 'l',
+      tooltiptext: 'Use the same find string in all tabs',
+      type: 'checkbox',
+      class: kID.lockButton
+    }));
+  }
+
+  function getLockButton() {
+    return gFindBar.getElementsByClassName(kID.lockButton)[0];
+  }
+
+  addEvent(gBrowser.mPanelContainer, 'command', handleEvent, false);
+  addEvent(gBrowser.mPanelContainer, 'find', handleEvent, false);
+  addEvent(gBrowser.tabContainer, 'TabSelect', handleEvent, false);
+
+  function handleEvent(aEvent) {
+    aEvent.stopPropagation();
+
+    switch (aEvent.type) {
+      case 'command': {
+        let button = aEvent.target;
+
+        if (button.classList.contains(kID.lockButton)) {
+          mIsLocked = button.checked;
+          mFindString = mIsLocked ? gFindBar._findField.value : null;
+        }
+
+        break;
+      }
+
+      case 'find': {
+        if (mIsLocked) {
+          mFindString = gFindBar._findField.value;
+        }
+
+        break;
+      }
+
+      case 'TabSelect': {
+        getLockButton().checked = mIsLocked;
+
+        if (mIsLocked) {
+          gFindBar.open(gFindBar.FIND_NORMAL);
+          gFindBar._findField.value = mFindString;
+        }
+
+        break;
+      }
+    }
+  }
+
+})();
+
 
 })(this);
