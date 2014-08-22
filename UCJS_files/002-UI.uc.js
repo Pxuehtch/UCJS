@@ -342,12 +342,7 @@ const mFindBar = {
   toggleHighlight: function(aHighlight) {
     gFindBar.toggleHighlight(aHighlight);
 
-    if (aHighlight) {
-      this.highlightButton.setAttribute('checked', 'true');
-    }
-    else {
-      this.highlightButton.removeAttribute('checked');
-    }
+    this.highlightButton.checked = aHighlight;
   },
 
   findWith: function(aText, aOption) {
