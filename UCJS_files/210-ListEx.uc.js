@@ -75,7 +75,7 @@ const kID = {
  * Menu settings
  *
  * @return {hash}
- *   @member init {function}
+ *   @key init {function}
  */
 const mMenu = (function() {
 
@@ -187,7 +187,7 @@ const mMenu = (function() {
  * List of the tab/recent history
  *
  * @return {hash}
- *   @member build {function}
+ *   @key build {function}
  */
 const mHistoryList = (function() {
 
@@ -402,7 +402,7 @@ const mHistoryList = (function() {
  * List of the opened tabs/windows
  *
  * @return {hash}
- *   @member build {function}
+ *   @key build {function}
  */
 const mOpenedList = (function() {
 
@@ -516,7 +516,7 @@ const mOpenedList = (function() {
  * List of the closed tabs/windows
  *
  * @return {hash}
- *   @member build {function}
+ *   @key build {function}
  */
 const mClosedList = (function() {
 

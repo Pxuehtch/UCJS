@@ -40,10 +40,10 @@ function log(aMsg) {
  * URL string handler
  *
  * @return {hash}
- *   @member guess {function}
- *   @member grab {function}
- *   @member map {function}
- *   @member fix {function}
+ *   @key guess {function}
+ *   @key grab {function}
+ *   @key map {function}
+ *   @key fix {function}
  */
 const URLUtil = (function() {
   /**

@@ -1606,7 +1606,7 @@ function makeURI(aURL) {
  * @param aDelimiter {string}
  * @param aSupportedStatements {array} [optional]
  * @return {hash}
- *   @member matchKey {function}
+ *   @key matchKey {function}
  *
  * @note used in getFamilyTab(), getTabs()
  */

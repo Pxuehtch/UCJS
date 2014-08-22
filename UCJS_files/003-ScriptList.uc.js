@@ -65,8 +65,8 @@ function ScriptList_init() {
  *
  * @param aScriptLoader {hash}
  * @return {hash}
- *   @member count {number}
- *   @member data {function}
+ *   @key count {number}
+ *   @key data {function}
  */
 function getScripts(aScriptLoader) {
   const {jscripts, overlays} = aScriptLoader.scriptList;
@@ -119,7 +119,7 @@ function createMenu(aScripts) {
  *
  * @param aScripts {hash} scripts data handler
  * @return {hash}
- *   @member open {function}
+ *   @key open {function}
  */
 function ScriptListPanel(aScripts) {
   const {panel: kPanelUI} = kUI;

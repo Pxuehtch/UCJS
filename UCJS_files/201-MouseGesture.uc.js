@@ -612,7 +612,7 @@ function MouseGesture() {
  * Observes the mouse events
  * Manages to suppress the contextmenu popup and the click event
  * @return {hash}
- *   @member update {function}
+ *   @key update {function}
  *
  * TODO: prevent contextmenu popups when a right mouse button is clicked while
  * dragging
@@ -738,10 +738,10 @@ function MouseManager() {
  * Builds the mouse gestures and performs its command
  *
  * @return {hash}
- *   @member clear {function}
- *   @member init {function}
- *   @member update {function}
- *   @member evaluate {function}
+ *   @key clear {function}
+ *   @key init {function}
+ *   @key update {function}
+ *   @key evaluate {function}
  *
  * TODO: show some clear sign to the user that a quickshot has fired
  */
@@ -1061,9 +1061,9 @@ function GestureManager() {
  * Traces the coordinates of a mouse pointer
  *
  * @return {hash}
- *   @member clear {function}
- *   @member init {function}
- *   @member update {function}
+ *   @key clear {function}
+ *   @key init {function}
+ *   @key update {function}
  */
 function GestureTracer() {
   // The minimum distance of movement for the gesture is detected

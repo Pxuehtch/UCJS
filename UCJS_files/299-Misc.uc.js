@@ -481,7 +481,11 @@ function log(aMsg) {
     accesskey: 'S'
   }));
 
-  [['about:home', 'H'], ['about:newtab', 'N'], ['about:blank', 'B']].
+  [
+    ['about:home',   'H'],
+    ['about:newtab', 'N'],
+    ['about:blank',  'B']
+  ].
   forEach(([url, accesskey]) => {
     popup.appendChild($E('menuitem', {
       label: url,

@@ -505,7 +505,7 @@ const kSiteList = [
  * URL filter handler
  *
  * @return {hash}
- *   @member init {function}
+ *   @key init {function}
  *
  * [URL filter rules]
  * @value {regexp|string}|{regexp[]|string[]}
@@ -525,7 +525,7 @@ const URLFilter = (function() {
    *
    * @param aList {array}
    * @return {hash}
-   *   @member test {function}
+   *   @key test {function}
    */
   function init(aList) {
     let [mergedRegExp, mergedRegExpTLD] = makeMergedRegExp(aList);
@@ -632,7 +632,7 @@ const URLFilter = (function() {
  * Page observer handler
  *
  * @return {hash}
- *   @member init {function}
+ *   @key init {function}
  *
  * TODO: surely detect when the document is loaded
  * WORKAROUND: applies a script when the complete request URL equals the
@@ -819,7 +819,7 @@ const PageObserver = (function() {
  * Noisy URL filter
  *
  * @return {hash}
- *   @member test {function}
+ *   @key test {function}
  */
 const NoisyURLFilter = (function() {
   let filter = URLFilter.init(kNoiseList);
@@ -833,7 +833,7 @@ const NoisyURLFilter = (function() {
  * Page CSS handler
  *
  * @return {hash}
- *   @member set {function}
+ *   @key set {function}
  */
 const PageCSS = (function() {
   function set(aDocument, aCSS) {
@@ -873,7 +873,7 @@ const PageCSS = (function() {
  * Preference menu handler
  *
  * @return {hash}
- *   @member init {function}
+ *   @key init {function}
  */
 const PrefMenu = (function() {
   function init() {

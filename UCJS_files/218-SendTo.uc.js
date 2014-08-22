@@ -186,7 +186,7 @@ const kPreset = [
  * Handler of fixing up an alias with the data
  *
  * @return {hash}
- *   @member create {function}
+ *   @key create {function}
  *
  * [aliases]
  * %RAW% : data itself
