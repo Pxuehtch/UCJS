@@ -216,19 +216,19 @@ const PopupMenuHandler = (function() {
      * @param {hash}
      *   @key events {array}
      *     Array of array [type, listener, capture] for events.
-     *     @note The listeners are attached when the target popup menu element
-     *     is initialized, and detached when the target is cleaned up.
+     *     @note The listeners are attached after the target popup menu element
+     *     is initialized, and detached before the target is destroyed.
      *   @key onCreate {function}
      *     A function called once when the target is initialized.
      *     @param {Element} A target popup menu element.
      *     @see |manageHandlers|
      *   @key onDestroy {function}
-     *     A function called once when the target is cleaned up.
+     *     A function called once when the target is about to be destroyed.
      *     @param {Element} A target popup menu element.
      *     @see |manageHandlers|
      *
      * @note The registered events to the target will be automatically detached
-     * on destroying the target. If you attach some events to the descendant
+     * on destroy of the target. If you attach some events to the descendant
      * element of the target, you should do |removeEventListener| to it in
      * |onDestroy| function. So it is recommended to attach all events to the
      * target and observe the descendants by event delegation.
@@ -405,7 +405,7 @@ const mFindBar = (function() {
      *       @key findBar {Element} The initialized findbar.
      *       @see |manageHandlers|
      *   @key onDestroy {function}
-     *     A function called once when the findbar is destroyed.
+     *     A function called once when the findbar is about to be destroyed.
      *     @param {hash}
      *       @key tab {Element}
      *       @key findBar {Element}
