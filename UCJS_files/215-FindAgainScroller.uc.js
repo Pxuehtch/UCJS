@@ -102,29 +102,39 @@ const TextFinder = {
 };
 
 /**
- * Handler of the interval of times
- *
- * @note used to observe consecutive calls of the find-again command
- * @see |attachFindAgainCommand|
- */
-const TimeKeeper = {
-  countInterval: function() {
-    let currentTime = window.performance.now();
-    let interval = currentTime - (this.lastTime || 0);
-
-    this.lastTime = currentTime;
-
-    return interval;
-  }
-};
-
-/**
  * Handler of a custom find-again command
  *
  * @return {hash}
  *   init: {function}
  */
 const FindAgainCommand = (function() {
+  /**
+   * Detects a short time interval of calls of a find-again command
+   *
+   * @note Perform only the native processing when the command is called in
+   * quick repeating (e.g. holding F3 key down) because an observation of
+   * scrolling and animations are useless when they are reset in a short time.
+   */
+  let isRepeatingCommand = (function() {
+    /**
+     * Max threshold interval time for a repeating command
+     *
+     * @value {integer} [ms]
+     */
+    const kMaxIntervalForRepeating = 500;
+
+    let mLastTime = 0;
+
+    return function() {
+      let currentTime = window.performance.now();
+      let interval = currentTime - mLastTime;
+
+      mLastTime = currentTime;
+
+      return interval < kMaxIntervalForRepeating;
+    }
+  })();
+
   let mScrollObserver = ScrollObserver();
 
   // Optional functions
@@ -149,14 +159,8 @@ const FindAgainCommand = (function() {
         mFoundBlink.cancel();
       }
 
-      // perform only the default behavior when a command is called in quick
-      // succession (e.g. holding a shortcut key down)
-      // because an observation of document and animations are useless when
-      // they are reset in a short time
-      // TODO: adjust the interval time
-      const kMaxIntervalToSkip = 500; // [millisecond]
-
-      if (TimeKeeper.countInterval() < kMaxIntervalToSkip) {
+      // Apply only the native processing for a short time repeating command
+      if (isRepeatingCommand()) {
         $onFindAgainCommand.apply(this, arguments);
         return;
       }
