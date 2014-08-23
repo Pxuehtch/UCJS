@@ -5,6 +5,8 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
+// @note A native function |gFindBar.onFindAgainCommand| is modified.
+// see @modified
 
 
 (function(window, undefined) {
@@ -62,7 +64,7 @@ const kPref = {
 };
 
 /**
- * Helper of the finder
+ * Helper functions of the finder in the current tab
  *
  * @see resource://gre/modules/Finder.jsm
  */
@@ -116,79 +118,89 @@ const TimeKeeper = {
   }
 };
 
-function FindAgainScroller_init() {
-  FindBar.register({
-    onCreate: attachFindAgainCommand
-  });
-}
-
-function attachFindAgainCommand() {
+/**
+ * Handler of a custom find-again command
+ *
+ * @return {hash}
+ *   init: {function}
+ */
+const FindAgainCommand = (function() {
   let mScrollObserver = ScrollObserver();
 
-  // optional functions
+  // Optional functions
   let mSkipInvisible = kPref.skipInvisible && SkipInvisible();
   let mHCentered = kPref.horizontalCentered && HorizontalCentered();
   let mSmoothScroll = kPref.smoothScroll && SmoothScroll();
   let mFoundBlink = kPref.foundBlink && FoundBlink();
 
-  // @modified chrome://global/content/bindings/findbar.xml::onFindAgainCommand
-  const $onFindAgainCommand = gFindBar.onFindAgainCommand;
+  function init() {
+    // Customize the native function
+    // @modified chrome://global/content/bindings/findbar.xml::onFindAgainCommand
+    const $onFindAgainCommand = gFindBar.onFindAgainCommand;
 
-  gFindBar.onFindAgainCommand =
-  function ucjsFindAgainScroller_onFindAgainCommand(aFindPrevious) {
-    // terminate the active processing
-    if (mSmoothScroll) {
-      mSmoothScroll.cancel();
-    }
-
-    if (mFoundBlink) {
-      mFoundBlink.cancel();
-    }
-
-    // perform only the default behavior when a command is called in quick
-    // succession (e.g. holding a shortcut key down)
-    // because an observation of document and animations are useless when they
-    // are reset in a short time
-    // TODO: adjust the interval time
-    const kMaxIntervalToSkip = 500; // [millisecond]
-
-    if (TimeKeeper.countInterval() < kMaxIntervalToSkip) {
-      $onFindAgainCommand.apply(this, arguments);
-      return;
-    }
-
-    // take a snapshot of the state of scroll before finding
-    mScrollObserver.attach();
-
-    do {
-      $onFindAgainCommand.apply(this, arguments);
-    } while (mSkipInvisible && mSkipInvisible.test());
-
-    if (TextFinder.isResultFound) {
-      if (mHCentered) {
-        let scrollState = mScrollObserver.check();
-
-        if (scrollState) {
-          mHCentered.align(scrollState);
-        }
-      }
-
+    gFindBar.onFindAgainCommand =
+    function ucjsFindAgainScroller_onFindAgainCommand(aFindPrevious) {
+      // Terminate the active processing
       if (mSmoothScroll) {
-        let scrollState = mScrollObserver.check();
-
-        if (scrollState) {
-          mSmoothScroll.start(scrollState);
-        }
+        mSmoothScroll.cancel();
       }
 
       if (mFoundBlink) {
-        mFoundBlink.start();
+        mFoundBlink.cancel();
       }
-    }
 
-    mScrollObserver.detach();
+      // perform only the default behavior when a command is called in quick
+      // succession (e.g. holding a shortcut key down)
+      // because an observation of document and animations are useless when
+      // they are reset in a short time
+      // TODO: adjust the interval time
+      const kMaxIntervalToSkip = 500; // [millisecond]
+
+      if (TimeKeeper.countInterval() < kMaxIntervalToSkip) {
+        $onFindAgainCommand.apply(this, arguments);
+        return;
+      }
+
+      // Take a snapshot of the state of scroll before finding
+      mScrollObserver.attach();
+
+      do {
+        $onFindAgainCommand.apply(this, arguments);
+      } while (mSkipInvisible && mSkipInvisible.test());
+
+      if (TextFinder.isResultFound) {
+        if (mHCentered) {
+          let scrollState = mScrollObserver.check();
+
+          if (scrollState) {
+            mHCentered.align(scrollState);
+          }
+        }
+
+        if (mSmoothScroll) {
+          let scrollState = mScrollObserver.check();
+
+          if (scrollState) {
+            mSmoothScroll.start(scrollState);
+          }
+        }
+
+        if (mFoundBlink) {
+          mFoundBlink.start();
+        }
+      }
+
+      mScrollObserver.detach();
+    };
+  }
+
+  /**
+   * Expose
+   */
+  return {
+    init: init
   };
-}
+})();
 
 /**
  * Observer of the scrollable elements
@@ -995,6 +1007,12 @@ function FrameAnimator(aCallback, aOption) {
  * Entry point
  */
 FindAgainScroller_init();
+
+function FindAgainScroller_init() {
+  FindBar.register({
+    onCreate: FindAgainCommand.init
+  });
+}
 
 
 })(this);
