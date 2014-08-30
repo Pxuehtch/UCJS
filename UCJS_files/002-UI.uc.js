@@ -168,7 +168,7 @@ const PopupMenuHandler = (function() {
         addEvent(window, 'aftercustomization', create, false);
       }
 
-      // cleanup at shutdown of the main browser
+      // cleanup on shutdown of the main browser
       addEvent(window, 'unload', uninit, false);
     }
 
@@ -196,6 +196,20 @@ const PopupMenuHandler = (function() {
       });
     }
 
+    /**
+     * Creates the parameter of handler
+     *
+     * @param {hash}
+     *   @key target {Element} A target element.
+     * @return {Element} The target itself.
+     *
+     * XXX: Just passed a target itself for now. Should I write
+     * |handler(mTarget)| on each calling?
+     */
+    function HandlerParam({target}) {
+      return target;
+    }
+
     function manageHandlers({doCreate}) {
       let method = doCreate ? 'addEventListener' : 'removeEventListener';
 
@@ -206,7 +220,9 @@ const PopupMenuHandler = (function() {
       let handlers = doCreate ? mOnCreateHandlers : mOnDestroyHandlers;
 
       handlers.forEach((handler) => {
-        handler(mTarget);
+        handler(HandlerParam({
+          target: mTarget
+        }));
       });
     }
 
@@ -219,13 +235,14 @@ const PopupMenuHandler = (function() {
      *     @note The listeners are attached after the target popup menu element
      *     is initialized, and detached before the target is destroyed.
      *   @key onCreate {function}
-     *     A function called once when the target is initialized.
+     *     A function called when the target is initialized.
+     *     @note Also applied once when this registration is called.
      *     @param {Element} A target popup menu element.
-     *     @see |manageHandlers|
+     *     @see |HandlerParam|
      *   @key onDestroy {function}
-     *     A function called once when the target is about to be destroyed.
+     *     A function called when the target is about to be destroyed.
      *     @param {Element} A target popup menu element.
-     *     @see |manageHandlers|
+     *     @see |HandlerParam|
      *
      * @note The registered events to the target will be automatically detached
      * on destroy of the target. If you attach some events to the descendant
@@ -243,9 +260,12 @@ const PopupMenuHandler = (function() {
       }
 
       if (onCreate) {
-        mOnCreateHandlers.push(onCreate);
+        // Apply the init handler for the first time.
+        onCreate(HandlerParam({
+          target: mTarget
+        }));
 
-        onCreate(mTarget);
+        mOnCreateHandlers.push(onCreate);
       }
 
       if (onDestroy) {
@@ -319,36 +339,6 @@ const mFindBar = (function() {
   };
 
   /**
-   * Gets/Sets a text in the textbox
-   */
-  const FindText = {
-    get value() {
-      return UI.textBox.value;
-    },
-
-    set value(aValue) {
-      aValue =  aValue || '';
-
-      if (this.value !== aValue) {
-        UI.textBox.value = aValue;
-      }
-
-      if (!gFindBar.hidden) {
-        UI.textBox.focus();
-        UI.textBox.select();
-      }
-    },
-
-    clear: function() {
-      gFindBar.clear();
-
-      if (UI.highlightButton.checked) {
-        toggleHighlight(false);
-      }
-    }
-  };
-
-  /**
    * Manager of handlers on create/destroy the target findbar
    *
    * @return {hash}
@@ -383,14 +373,29 @@ const mFindBar = (function() {
       }
     }
 
+    /**
+     * Creates the parameter of handler
+     *
+     * @param {hash}
+     *   @key tab {Element} A tab element.
+     * @return {hash}
+     *   @key tab {Element}
+     *   @key findBar {Element} A findbar that is associated with the tab.
+     */
+    function HandlerParam({tab}) {
+      return {
+        tab: tab,
+        findBar: gBrowser.getFindBar(tab)
+      };
+    }
+
     function manageHandlers({doCreate, tab}) {
       let handlers = doCreate ? mOnCreateHandlers : mOnDestroyHandlers;
 
       handlers.forEach((handler) => {
-        handler({
-          tab: tab,
-          findBar: tab._findBar
-        });
+        handler(HandlerParam({
+          tab: tab
+        }));
       });
     }
 
@@ -399,13 +404,15 @@ const mFindBar = (function() {
      *
      * @param {hash}
      *   @key onCreate {function}
-     *     A function called once when a findbar is initialized.
+     *     A function called when the findbar of a tab is initialized.
+     *     @note Also applied to findbars that have been already initialized
+     *     on this registration is called.
      *     @param {hash}
      *       @key tab {Element} The tab that has the initialized findbar.
      *       @key findBar {Element} The initialized findbar.
-     *       @see |manageHandlers|
+     *       @see |HandlerParam|
      *   @key onDestroy {function}
-     *     A function called once when the findbar is about to be destroyed.
+     *     A function called when the findbar is about to be destroyed.
      *     @param {hash}
      *       @key tab {Element}
      *       @key findBar {Element}
@@ -417,6 +424,15 @@ const mFindBar = (function() {
       } = aParam;
 
       if (onCreate) {
+        // Apply the init handler to existing findbars.
+        Array.forEach(gBrowser.tabs, (tab) => {
+          if (gBrowser.isFindBarInitialized(tab)) {
+            onCreate(HandlerParam({
+              tab: tab
+            }));
+          }
+        });
+
         mOnCreateHandlers.push(onCreate);
       }
 
@@ -429,6 +445,36 @@ const mFindBar = (function() {
       register: register
     };
   })();
+
+  /**
+   * Gets/Sets a text in the textbox
+   */
+  const FindText = {
+    get value() {
+      return UI.textBox.value;
+    },
+
+    set value(aValue) {
+      aValue =  aValue || '';
+
+      if (this.value !== aValue) {
+        UI.textBox.value = aValue;
+      }
+
+      if (!gFindBar.hidden) {
+        UI.textBox.focus();
+        UI.textBox.select();
+      }
+    },
+
+    clear: function() {
+      gFindBar.clear();
+
+      if (UI.highlightButton.checked) {
+        toggleHighlight(false);
+      }
+    }
+  };
 
   function toggle() {
     if (gFindBar.hidden) {
