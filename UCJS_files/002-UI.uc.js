@@ -289,7 +289,7 @@ const PopupMenuHandler = (function() {
 /**
  * Content area
  */
-const mContentArea = (function() {
+const ContentArea = (function() {
   let getContextMenu = () => $ID('contentAreaContextMenu');
 
   let contextMenu = PopupMenuHandler.init(getContextMenu);
@@ -304,7 +304,7 @@ const mContentArea = (function() {
  *
  * @see chrome://browser/content/urlbarBindings.xml
  */
-const mURLBar = (function() {
+const URLBar = (function() {
   let getTextBox = () => $ANONID('textbox-input-box', gURLBar);
   let getContextMenu = () => $ANONID('input-box-contextmenu', getTextBox());
 
@@ -324,7 +324,7 @@ const mURLBar = (function() {
  *
  * @see chrome://global/content/bindings/findbar.xml
  */
-const mFindBar = (function() {
+const FindBar = (function() {
   /**
    * Fx native UI elements
    */
@@ -540,7 +540,7 @@ const mFindBar = (function() {
 /**
  * Status bar
  */
-const mStatusField = (function() {
+const StatusField = (function() {
   // @see chrome://browser/content/browser.js::XULBrowserWindow
   const {XULBrowserWindow} = window;
 
@@ -623,20 +623,20 @@ const mStatusField = (function() {
   /**
    * Handler of the state of a link under a cursor
    */
-  const OverLink = (function() {
-    let disableSetOverLink = false;
-    let lastOverLinkURL;
+  const OverLinkHandler = (function() {
+    let mDisableSetOverLink = false;
+    let mLastOverLinkURL;
 
     /**
-     * Toggle the showing
+     * Switches the over link state
      */
-    function toggle(aShouldShow) {
+    function setOverLink(aShouldShow) {
       if (!aShouldShow) {
         // clear the former state
         XULBrowserWindow.setOverLink('', null);
       }
 
-      disableSetOverLink = !aShouldShow;
+      mDisableSetOverLink = !aShouldShow;
     }
 
     /**
@@ -648,17 +648,17 @@ const mStatusField = (function() {
 
     XULBrowserWindow.setOverLink =
     function ucjsUI_StatusField_setOverLink(url, anchorElt) {
-      if (disableSetOverLink) {
+      if (mDisableSetOverLink) {
         return;
       }
 
       // WORKAROUND: sometimes |setOverLink| is called on mousemove event (e.g.
       // on history/bookmark sidebar), so we discard redundant callings
-      if (lastOverLinkURL === url) {
+      if (mLastOverLinkURL === url) {
         return;
       }
 
-      lastOverLinkURL = url;
+      mLastOverLinkURL = url;
 
       // clear the message to hide it after the cursor leaves
       MessageHandler.showMessage('');
@@ -669,7 +669,7 @@ const mStatusField = (function() {
 
         // this task is useless any more since it was not completed while over
         // link and a new task has raised on another over link
-        if (lastOverLinkURL !== url) {
+        if (mLastOverLinkURL !== url) {
           return;
         }
 
@@ -869,9 +869,11 @@ const mStatusField = (function() {
       setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
     }
 
-    // Expose
+    /**
+     * Expose
+     */
     return {
-      toggle: toggle
+      setOverLink: setOverLink
     };
   })();
 
@@ -880,7 +882,7 @@ const mStatusField = (function() {
    */
   return {
     showMessage: MessageHandler.showMessage,
-    setOverLink: OverLink.toggle
+    setOverLink: OverLinkHandler.setOverLink
   };
 })();
 
@@ -889,7 +891,7 @@ const mStatusField = (function() {
  *
  * @require TabEx.uc.js
  */
-const mMenuitem = {
+const Menuitem = {
   setStateForUnreadTab: function(aMenuitem, aTab) {
     const kATTR_UNREADTAB = 'ucjs_UI_Menuitem_unreadTab';
 
@@ -910,11 +912,11 @@ const mMenuitem = {
  * Exports
  */
 return {
-  ContentArea: mContentArea,
-  URLBar: mURLBar,
-  FindBar: mFindBar,
-  StatusField: mStatusField,
-  Menuitem: mMenuitem
+  ContentArea: ContentArea,
+  URLBar: URLBar,
+  FindBar: FindBar,
+  StatusField: StatusField,
+  Menuitem: Menuitem
 };
 
 
