@@ -478,6 +478,12 @@ const mFindBar = (function() {
     }
   };
 
+  function open() {
+    if (gFindBar.hidden) {
+      gFindBar.open(gFindBar.FIND_NORMAL);
+    }
+  }
+
   function toggle() {
     if (gFindBar.hidden) {
       gFindBar.onFindCommand();
@@ -523,6 +529,7 @@ const mFindBar = (function() {
 
     findText: FindText,
 
+    open: open,
     toggle: toggle,
     findWith: findWith
   };

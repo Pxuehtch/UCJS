@@ -873,7 +873,7 @@ function log(aMsg) {
 
       case 'TabSelect': {
         if (mIsLocked) {
-          gFindBar.open(gFindBar.FIND_NORMAL);
+          FindBar.open();
           FindBar.findText.value = mFindString;
         }
 
