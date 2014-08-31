@@ -447,7 +447,7 @@ const mFindBar = (function() {
   })();
 
   /**
-   * Gets/Sets a text in the textbox
+   * Handler of a find text string
    */
   const FindText = {
     get value() {
@@ -460,11 +460,6 @@ const mFindBar = (function() {
       if (this.value !== aValue) {
         UI.textBox.value = aValue;
       }
-
-      if (!gFindBar.hidden) {
-        UI.textBox.focus();
-        UI.textBox.select();
-      }
     },
 
     clear: function() {
@@ -472,6 +467,13 @@ const mFindBar = (function() {
 
       if (UI.highlightButton.checked) {
         toggleHighlight(false);
+      }
+    },
+
+    focus: function() {
+      if (!gFindBar.hidden) {
+        UI.textBox.focus();
+        UI.textBox.select();
       }
     }
   };
