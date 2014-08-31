@@ -553,7 +553,14 @@ const mStatusField = (function() {
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
   const kLinkFormat = '%url% [%time%]';
 
-  let getTextBox = () => XULBrowserWindow.statusTextField;
+  /**
+   * Fx native UI elements
+   */
+  const UI = {
+    get textBox() {
+      return XULBrowserWindow.statusTextField;
+    }
+  };
 
   /**
    * Show a message text
@@ -568,7 +575,7 @@ const mStatusField = (function() {
     }
 
     const {MESSAGE} = kStatusAttribute;
-    let textField = getTextBox();
+    let textField = UI.textBox;
 
     messageStatus = text;
 
@@ -647,7 +654,7 @@ const mStatusField = (function() {
         }
 
         const {LINKSTATE} = kStatusAttribute;
-        let textField = getTextBox();
+        let textField = UI.textBox;
 
         if (linkState) {
           if (textField.getAttribute(LINKSTATE) !== linkState) {
