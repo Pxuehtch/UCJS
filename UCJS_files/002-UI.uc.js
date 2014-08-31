@@ -520,6 +520,9 @@ const mFindBar = (function() {
    */
   return {
     register: HandlerManager.register,
+
+    findText: FindText,
+
     toggle: toggle,
     findWith: findWith
   };

@@ -847,6 +847,8 @@ function log(aMsg) {
   function handleEvent(aEvent) {
     aEvent.stopPropagation();
 
+    const {FindBar} = window.ucjsUI;
+
     switch (aEvent.type) {
       case 'command': {
         let button = aEvent.target;
@@ -855,7 +857,7 @@ function log(aMsg) {
 
         if (lockButton && button === lockButton) {
           mIsLocked = button.checked;
-          mFindString = mIsLocked ? gFindBar._findField.value : null;
+          mFindString = mIsLocked ? FindBar.findText.value : null;
         }
 
         break;
@@ -863,7 +865,7 @@ function log(aMsg) {
 
       case 'find': {
         if (mIsLocked) {
-          mFindString = gFindBar._findField.value;
+          mFindString = FindBar.findText.value;
         }
 
         break;
@@ -872,7 +874,7 @@ function log(aMsg) {
       case 'TabSelect': {
         if (mIsLocked) {
           gFindBar.open(gFindBar.FIND_NORMAL);
-          gFindBar._findField.value = mFindString;
+          FindBar.findText.value = mFindString;
         }
 
         let lockButton = getLockButton();
