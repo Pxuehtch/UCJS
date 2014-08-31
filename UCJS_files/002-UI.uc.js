@@ -502,11 +502,13 @@ const mFindBar = (function() {
       doHighlight
     } = aOption;
 
-    if (FindText.value) {
-      FindText.clear();
-    }
+    // reset all status
+    FindText.clear();
 
+    // open a findbar and ready for the first finding
     gFindBar.onFindCommand();
+
+    // do find with a text
     FindText.value = aText;
     gFindBar.onFindAgainCommand();
 
