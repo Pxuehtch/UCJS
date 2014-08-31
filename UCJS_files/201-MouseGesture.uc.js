@@ -52,7 +52,7 @@ const {
   },
   StatusField: {
     setOverLink,
-    message: updateStatusText
+    showMessage: updateStatusText
   }
 } = window.ucjsUI;
 

@@ -563,42 +563,62 @@ const mStatusField = (function() {
   };
 
   /**
-   * Show a message text
+   * Message text handler
    */
-  let messageStatus = '';
+  const MessageHandler = (function() {
+    let mMessageStatus = '';
 
-  function showMessage(aText) {
-    let text = aText || '';
-
-    if (text === messageStatus) {
-      return;
+    /**
+     * Determines if a message text exists
+     */
+    function hasMessage() {
+      return !!mMessageStatus;
     }
 
-    const {MESSAGE} = kStatusAttribute;
-    let textField = UI.textBox;
+    /**
+     * Show a message text
+     */
+    function showMessage(aText) {
+      let text = aText || '';
 
-    messageStatus = text;
+      if (text === mMessageStatus) {
+        return;
+      }
 
-    // overwrite the displayed status
-    textField.label = text;
+      const {MESSAGE} = kStatusAttribute;
+      let textField = UI.textBox;
 
-    // restore the hidden status
-    if (!text) {
-      XULBrowserWindow.statusText = '';
-      XULBrowserWindow.updateStatusField();
-    }
+      mMessageStatus = text;
 
-    if (text) {
-      if (!textField.hasAttribute(MESSAGE)) {
-        textField.setAttribute(MESSAGE, true);
+      // overwrite the displayed status
+      textField.label = text;
+
+      // restore the hidden status
+      if (!text) {
+        XULBrowserWindow.statusText = '';
+        XULBrowserWindow.updateStatusField();
+      }
+
+      if (text) {
+        if (!textField.hasAttribute(MESSAGE)) {
+          textField.setAttribute(MESSAGE, true);
+        }
+      }
+      else {
+        if (textField.hasAttribute(MESSAGE)) {
+          textField.removeAttribute(MESSAGE);
+        }
       }
     }
-    else {
-      if (textField.hasAttribute(MESSAGE)) {
-        textField.removeAttribute(MESSAGE);
-      }
-    }
-  }
+
+    /**
+     * Expose
+     */
+    return {
+      hasMessage: hasMessage,
+      showMessage: showMessage
+    };
+  })();
 
   /**
    * Handler of the state of a link under a cursor
@@ -641,7 +661,7 @@ const mStatusField = (function() {
       lastOverLinkURL = url;
 
       // clear the message to hide it after the cursor leaves
-      showMessage('');
+      MessageHandler.showMessage('');
 
       Task.spawn(function*() {
         // |newURL| can be updated with its visited date
@@ -808,7 +828,7 @@ const mStatusField = (function() {
     XULBrowserWindow.updateStatusField =
     function ucjsUI_StatusField_updateStatusField() {
       // suppress the others while a message is shown
-      if (messageStatus) {
+      if (MessageHandler.hasMessage()) {
         return;
       }
 
@@ -859,7 +879,7 @@ const mStatusField = (function() {
    * Expose
    */
   return {
-    message: showMessage,
+    showMessage: MessageHandler.showMessage,
     setOverLink: OverLink.toggle
   };
 })();

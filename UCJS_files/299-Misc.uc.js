@@ -348,7 +348,7 @@ function log(aMsg) {
     (function() {\
       var state = ucjsUtil.Prefs.get("%kPrefTabFocus%") !== 1 ? 1 : 7;\
       ucjsUtil.Prefs.set("%kPrefTabFocus%", state);\
-      ucjsUI.StatusField.message("TAB focus: " + (state === 1 ?\
+      ucjsUI.StatusField.showMessage("TAB focus: " + (state === 1 ?\
       "text fields only" : "text fields, form elements, and links"));\
     })();\
   ';
