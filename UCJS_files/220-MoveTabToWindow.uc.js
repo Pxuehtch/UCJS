@@ -92,8 +92,7 @@ function buildMenu() {
 
   popup.appendChild($E('menuitem', {
     id: kUI.newWindow.id,
-    label: kUI.newWindow.label,
-    oncommand: 'gBrowser.replaceTabWithWindow(TabContextMenu.contextTab);'
+    label: kUI.newWindow.label
   }));
 
   addEvent(popup, 'command', onCommand, false);
@@ -188,11 +187,12 @@ function onCommand(aEvent) {
 
   let item = aEvent.target;
 
-  if (!item.value) {
-    return;
+  if (item.id === kUI.newWindow.id) {
+    moveTabToWindow(TabContext.tab);
   }
-
-  moveTabToOtherWindow(TabContext.tab, getWindowAt(+(item.value)));
+  else if (item.value > -1) {
+    moveTabToWindow(TabContext.tab, getWindowAt(+(item.value)));
+  }
 }
 
 function getWindowsState(aTab) {
@@ -250,10 +250,31 @@ function getWindowAt(aIndex) {
   return null;
 }
 
-function moveTabToOtherWindow(aTab, aWindow) {
-  if (!aTab || !aWindow) {
+function moveTabToWindow(aTab, aWindow) {
+  if (aWindow) {
+    moveTabToOtherWindow(aTab, aWindow);
     return;
   }
+
+  // @see chrome://browser/content/browser.js::OpenBrowserWindow
+  let win = window.OpenBrowserWindow();
+
+  let onLoad = () => {
+    win.removeEventListener('load', onLoad, false);
+
+    // WORKAROUND: Wait for initialization of the new browser.
+    setTimeout(() => {
+      let newTab = moveTabToOtherWindow(aTab, win);
+
+      win.gBrowser.removeAllTabsBut(newTab);
+    }, 500);
+  };
+
+  win.addEventListener('load', onLoad, false);
+}
+
+function moveTabToOtherWindow(aTab, aWindow) {
+  aWindow.focus();
 
   let otherTabBrowser = aWindow.gBrowser;
 
@@ -277,7 +298,7 @@ function moveTabToOtherWindow(aTab, aWindow) {
   // select the moved tab
   otherTabBrowser.selectedTab = newTab;
 
-  aWindow.focus();
+  return newTab;
 }
 
 function getWindowEnumerator() {
