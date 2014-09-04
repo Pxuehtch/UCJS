@@ -5,6 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js
+// @require [optional] TabEx.uc.js
 // @usage creates a menu in the tab context menu
 
 
@@ -278,18 +279,25 @@ function moveTabToOtherWindow(aTab, aWindow) {
 
   let otherTabBrowser = aWindow.gBrowser;
 
-  // @see chrome://browser/content/tabbrowser.xml::
-  //   <binding id="tabbrowser-tabs">::
-  //   <handler event="drop">
-
   // create a new tab in the other window
   let newTab = otherTabBrowser.addTab('about:blank');
+
+  // Renew the state of the new tab.
+  // @require TabEx.uc.js
+  // TODO: make the interface to set the data in |ucjsTabEx|.
+  if (window.ucjsTabEx) {
+    newTab.setAttribute('ucjs_TabEx_openInfo',
+      aTab.getAttribute('ucjs_TabEx_openInfo'));
+
+    // Set a flag to load the document when the tab is selected.
+    if (aTab.hasAttribute('ucjs_TabEx_suspended')) {
+      newTab.setAttribute('ucjs_TabEx_suspended', true);
+    }
+  }
+
+  // Make sure the new browser has a docshell.
   let newBrowser = otherTabBrowser.getBrowserForTab(newTab);
-
-  // stop the about:blank load
   newBrowser.stop();
-
-  // make sure it has a docshell
   newBrowser.docShell;
 
   // swap the our tab with a new one, and then close it
