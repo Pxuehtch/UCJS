@@ -275,7 +275,7 @@ function moveTabToOtherWindow(aTab, aWindow) {
   let otherTabBrowser = aWindow.gBrowser;
 
   // create a new tab in the other window
-  let newTab = otherTabBrowser.addTab('about:blank');
+  let newTab = otherTabBrowser.addTab();
 
   // Renew the state of the new tab.
   // @require TabEx.uc.js
