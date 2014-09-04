@@ -77,19 +77,15 @@ function MoveTabToWindow_init() {
 }
 
 function buildMenu() {
-  let tabContextMenu = TabContext.menu;
-
-  addEvent(tabContextMenu, 'popupshowing', updateMenu, false);
-
   let menu = $E('menu', {
     id: kUI.menu.id,
     label: kUI.menu.label,
     accesskey: kUI.menu.accesskey
   });
 
-  let popup = $E('menupopup', {
+  let popup = menu.appendChild($E('menupopup', {
     onpopupshowing: 'event.stopPropagation();'
-  });
+  }));
 
   popup.appendChild($E('menuitem', {
     id: kUI.newWindow.id,
@@ -98,13 +94,14 @@ function buildMenu() {
 
   addEvent(popup, 'command', onCommand, false);
 
-  menu.appendChild(popup);
-
+  // Replace the default menuitem 'Move to New Window'.
   let defaultItem = $ID('context_openTabInWindow');
 
   defaultItem.style.display = 'none';
 
-  tabContextMenu.insertBefore(menu, defaultItem);
+  TabContext.menu.insertBefore(menu, defaultItem);
+
+  addEvent(TabContext.menu, 'popupshowing', updateMenu, false);
 }
 
 function updateMenu(aEvent) {
@@ -123,15 +120,13 @@ function updateMenu(aEvent) {
     return;
   }
 
-  let contextTab = TabContext.tab;
-
   // disable on a pinned tab
-  if (contextTab.pinned) {
+  if (TabContext.tab.pinned) {
     return;
   }
 
   let tabsNum = gBrowser.tabs.length;
-  let wins = getWindowsState(contextTab);
+  let wins = getWindowsState(TabContext.tab);
 
   // meaningless at one tab window and no other window
   if (tabsNum <= 1 && !wins.length) {
