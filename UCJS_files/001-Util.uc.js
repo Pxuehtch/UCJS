@@ -666,29 +666,6 @@ function resolveURL(aURL, aBaseURL) {
   return null;
 }
 
-function openNewWindow(aURL, aOption) {
-  let URL = resolveURL(aURL);
-
-  if (!URL) {
-    return;
-  }
-
-  let {
-    inBackground
-  } = aOption || {};
-
-  checkSecurity(URL);
-
-  // @see chrome://browser/content/utilityOverlay.js::openNewWindowWith()
-  let newWin = window.openNewWindowWith(URL, getFocusedDocument());
-
-  if (inBackground) {
-    setTimeout(window.focus, 0);
-  }
-
-  return newWin;
-}
-
 function openHomePages(aOption) {
   let {
     doReplace,
@@ -1291,7 +1268,6 @@ return {
   unescapeURLCharacters: unescapeURLCharacters,
   unescapeURLForUI: unescapeURLForUI,
   resolveURL: resolveURL,
-  openNewWindow: openNewWindow,
   openHomePages: openHomePages,
   openTabs: openTabs,
   openURL: openURL,
