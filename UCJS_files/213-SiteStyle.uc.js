@@ -554,7 +554,7 @@ const URLFilter = (function() {
 
       [
         ['||', /^https?:\/\/[\w-.]*?/],
-        ['|',  /^https?:\/\/(?:www\d*\.)?/],
+        ['|',  /^https?:\/\/(?:www\d*\.)?/]
       ].
       some(([symbol, re]) => {
         if (item.startsWith(symbol)) {

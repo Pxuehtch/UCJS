@@ -225,7 +225,7 @@ const kTypeAction = [
     actions: [
       'openFTP'
     ]
-  },
+  }
 ];
 
 /**

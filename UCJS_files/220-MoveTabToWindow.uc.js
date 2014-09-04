@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 // @require [optional] TabEx.uc.js
-// @usage creates a menu in the tab context menu
+// @usage Creates a menu in the tab context menu.
 
 
 (function(window, undefined) {
@@ -58,7 +58,7 @@ const kUI = {
 };
 
 /**
- * Utility for the tab context menu
+ * Fx native elements for the tab context menu
  */
 const TabContext = {
   get menu() {
@@ -115,12 +115,12 @@ function updateMenu(aEvent) {
     disabled: true
   });
 
-  // disable in private browsing
+  // Disable in private browsing.
   if (isWindowPrivate(window)) {
     return;
   }
 
-  // disable on a pinned tab
+  // Disable on a pinned tab.
   if (TabContext.tab.pinned) {
     return;
   }
@@ -128,7 +128,7 @@ function updateMenu(aEvent) {
   let tabsNum = gBrowser.tabs.length;
   let wins = getWindowsState(TabContext.tab);
 
-  // meaningless at one tab window and no other window
+  // Disable at a useless case of a one tab window and no other windows.
   if (tabsNum <= 1 && !wins.length) {
     return;
   }
@@ -137,9 +137,9 @@ function updateMenu(aEvent) {
     disabled: false
   });
 
-  // make a menuitem to move the tab to a new window
-  // it is useless when the window has only one tab
-  // @note this is used as the reference node to append menuitem elements
+  // A menuitem for moving the tab to a new opened window.
+  // @note Useless when the our window has only one tab.
+  // @note Also used as the reference node to append menuitem elements.
   let refItem = $E($ID(kUI.newWindow.id), {
     disabled: tabsNum <= 1
   });
@@ -207,7 +207,7 @@ function getWindowsState(aTab) {
 
     let win = enumerator.getNext();
 
-    // Skip window which is closed, current, not browser, and popup
+    // Skip window which is closed, current, not browser, and popup.
     if (win.closed ||
         win === window ||
         win.document.documentElement.getAttribute('windowtype') !== 
@@ -274,7 +274,7 @@ function moveTabToOtherWindow(aTab, aWindow) {
 
   let otherTabBrowser = aWindow.gBrowser;
 
-  // create a new tab in the other window
+  // Create a new blank tab in the other window.
   let newTab = otherTabBrowser.addTab();
 
   // Renew the state of the new tab.
@@ -295,17 +295,17 @@ function moveTabToOtherWindow(aTab, aWindow) {
   newBrowser.stop();
   newBrowser.docShell;
 
-  // swap the our tab with a new one, and then close it
+  // Swap the given tab with a new tab, and then close the original tab.
   otherTabBrowser.swapBrowsersAndCloseOther(newTab, aTab);
 
-  // select the moved tab
+  // Select the moved tab.
   otherTabBrowser.selectedTab = newTab;
 
   return newTab;
 }
 
 function getWindowEnumerator() {
-  // enumerator of all windows in order from front to back
+  // Enumerator of all windows in order from front to back.
   return Services.wm.getZOrderDOMWindowEnumerator(null, true);
 }
 

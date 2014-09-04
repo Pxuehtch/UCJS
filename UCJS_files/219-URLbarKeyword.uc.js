@@ -63,7 +63,7 @@ const kUI = {
   },
   openSearchEngineManager: {
     label: 'Open Search-engine Manager',
-    accesskey: 's',
+    accesskey: 's'
   }
 };
 

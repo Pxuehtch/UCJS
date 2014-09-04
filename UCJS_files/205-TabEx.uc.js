@@ -53,7 +53,7 @@ const kID = {
   OPENINFO: 'ucjs_TabEx_openInfo',
   SUSPENDED: 'ucjs_TabEx_suspended',
   READ: 'ucjs_TabEx_read',
-  RESTORING: 'ucjs_TabEx_restoring',
+  RESTORING: 'ucjs_TabEx_restoring'
 };
 
 /**

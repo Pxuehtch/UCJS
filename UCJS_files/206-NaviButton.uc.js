@@ -297,7 +297,7 @@ const Tooltip = {
       let label = $E('label', {
         value: value,
         crop: 'center',
-        style: style || null,
+        style: style || null
       });
 
       tooltip.appendChild(label);

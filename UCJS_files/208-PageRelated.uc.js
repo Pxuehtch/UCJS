@@ -18,7 +18,7 @@
  * Imports
  */
 const {
-  getNodeById: $ID,
+  getNodeById: $ID
 } = window.ucjsUtil;
 
 function $E(aTag, aAttribute) {

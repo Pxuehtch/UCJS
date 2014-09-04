@@ -23,7 +23,7 @@
  * Imports
  */
 const {
-  addEvent,
+  addEvent
 } = window.ucjsUtil;
 
 // for debug
