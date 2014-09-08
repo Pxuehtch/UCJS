@@ -5,7 +5,6 @@
 // ==/UserScript==
 
 // @require Util.uc.js
-// @require [optional] TabEx.uc.js
 // @usage Creates a menu in the tab context menu.
 
 
@@ -276,19 +275,6 @@ function moveTabToOtherWindow(aTab, aWindow) {
 
   // Create a new blank tab in the other window.
   let newTab = otherTabBrowser.addTab();
-
-  // Renew the state of the new tab.
-  // @require TabEx.uc.js
-  // TODO: make the interface to set the data in |ucjsTabEx|.
-  if (window.ucjsTabEx) {
-    newTab.setAttribute('ucjs_TabEx_openInfo',
-      aTab.getAttribute('ucjs_TabEx_openInfo'));
-
-    // Set a flag to load the document when the tab is selected.
-    if (aTab.hasAttribute('ucjs_TabEx_suspended')) {
-      newTab.setAttribute('ucjs_TabEx_suspended', true);
-    }
-  }
 
   // Make sure the new browser has a docshell.
   let newBrowser = otherTabBrowser.getBrowserForTab(newTab);

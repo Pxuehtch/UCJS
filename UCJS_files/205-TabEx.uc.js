@@ -975,6 +975,95 @@ const mStartup = {
 };
 
 /**
+ * Observer of moving tab between windows
+ */
+const mJumpTabObserver = {
+  init: function() {
+    // Watch a tab that moves to the other window.
+    // @see chrome://browser/content/tabbrowser.xml::_swapBrowserDocShells
+    addEvent(gBrowser, 'SwapDocShells', this, false);
+
+    // Watch a tab that moves to a newly opened window.
+    // @see chrome://browser/content/tabbrowser.xml::replaceTabWithWindow
+    addEvent(gBrowser.tabContainer, 'TabBecomingWindow', this, false);
+  },
+
+  handleEvent: function(aEvent) {
+    switch (aEvent.type) {
+      case 'SwapDocShells': {
+        let browser = aEvent.originalTarget;
+        let originalBrowser = aEvent.detail;
+
+        let originalTabbrowser =
+          originalBrowser.ownerDocument.defaultView.gBrowser;
+
+        if (!originalTabbrowser) {
+          return;
+        }
+
+        let tab = gBrowser._getTabForBrowser(browser);
+        let originalTab =
+          originalTabbrowser._getTabForBrowser(originalBrowser);
+
+        if (!originalTab) {
+          return;
+        }
+
+        this.TabState.renew(tab, originalTab);
+
+        break;
+      }
+
+      case 'TabBecomingWindow': {
+        let tab = aEvent.originalTarget;
+
+        // Save the tab state since this original tab will be removed by the
+        // native process after a new browser opens.
+        this.TabState.save(tab);
+
+        let topic = 'browser-delayed-startup-finished';
+
+        let onBrowserOpen = (aSubject) => {
+          Services.obs.removeObserver(onBrowserOpen, topic);
+
+          this.TabState.renew(aSubject.gBrowser.selectedTab);
+        };
+
+        Services.obs.addObserver(onBrowserOpen, topic, false)
+
+        break;
+      }
+    }
+  },
+
+  TabState: {
+    save: function(aTab) {
+      this.state = {
+        openInfo: mTab.data(aTab, 'openInfo'),
+        suspended: mTab.state.suspended(aTab)
+      };
+    },
+
+    renew: function(aTab, aOriginalTab) {
+      if (aOriginalTab) {
+        this.save(aOriginalTab);
+      }
+
+      // Copy the original open info.
+      // @note other states are created for a new tab.
+      mTab.data(aTab, 'openInfo', this.state.openInfo);
+
+      // Set a flag to load the suspended tab.
+      if (this.state.suspended) {
+        mTab.state.suspended(aTab, true);
+      }
+
+      delete this.state;
+    }
+  }
+};
+
+/**
  * Tab event handler
  */
 const mTabEvent = {
@@ -1738,6 +1827,7 @@ function TabEx_init() {
   mTabEvent.init();
   mSessionStore.init();
   mStartup.init();
+  mJumpTabObserver.init();
 }
 
 TabEx_init();
