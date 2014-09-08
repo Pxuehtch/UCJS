@@ -172,8 +172,7 @@ function log(aMsg) {
     if (title) {
       style += kUI.style.title
     }
-
-    if (URL) {
+    else if (URL) {
       style += kUI.style.URL
     }
 
