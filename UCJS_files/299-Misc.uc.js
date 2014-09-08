@@ -228,7 +228,7 @@ function log(aMsg) {
     }
 
     mTooltipTimer = setTimeout(() => {
-      mTooltip.label = this.value;
+      fillInTooltip(this.value);
       mTooltip.maxWidth = this.boxObject.width;
       mTooltip.openPopup(this, 'after_start', 0, 0, false, false);
     }, kTooltipShowDelay);
@@ -243,8 +243,50 @@ function log(aMsg) {
     }
 
     mTooltip.hidePopup();
-    mTooltip.label = '';
+    clearTooltip();
   };
+
+  function fillInTooltip(aURL) {
+    // @note |pattern| tests an HTML-escaped URL string.
+    const kAccent = [
+      {
+        // domain
+        pattern: /https?(?::|%(?:25)*3a)(?:\/|%(?:25)*2f){2}[\w-.]+/ig,
+        style: 'color:blue;'
+      }
+    ];
+
+    let $label = (aValue) =>
+      '<label>%value%</label>'.replace('%value%', htmlEscape(aValue));
+
+    // An inline element for styling of a text.
+    // TODO: Use a reliable element instead of <label>.
+    let $span = (aStyle) =>
+      '<label style="margin:0;%style%">$&</label>'.replace('%style%', aStyle);
+
+    let html = $label(aURL);
+
+    for (let {pattern, style} of kAccent) {
+      html = html.replace(pattern, $span(style));
+    }
+
+    mTooltip.insertAdjacentHTML('afterbegin', html);
+  }
+
+  function clearTooltip() {
+    while (mTooltip.hasChildNodes()) {
+      mTooltip.removeChild(mTooltip.firstChild);
+    }
+  }
+
+  function htmlEscape(aString) {
+    return aString.
+      replace(/&/g, '&amp;'). // Must escape at first.
+      replace(/>/g, '&gt;').
+      replace(/</g, '&lt;').
+      replace(/"/g, '&quot;').
+      replace(/'/g, '&apos;');
+  }
 
 })();
 
