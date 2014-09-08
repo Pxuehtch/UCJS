@@ -60,7 +60,8 @@ const kID = {
  * Custom event type
  */
 const kEventType = {
-  TabOpen: 'ucjs_TabEx_TabOpen'
+  TabOpen: 'ucjs_TabEx_TabOpen',
+  LoadedBrowserOpen: 'ucjs_TabEx_LoadedBrowserOpen'
 };
 
 /**
@@ -821,7 +822,7 @@ const mTabSuspender = {
  * Session store handler
  */
 const mSessionStore = {
-  // whether a tab is in restoring (duplicated/undo-closed tab)
+  // Whether a duplicated or undo-closed tab is in restoring.
   isRestoring: false,
 
   init: function() {
@@ -836,59 +837,6 @@ const mSessionStore = {
     addEvent(window, 'SSWindowStateReady', () => {
       this.isRestoring = false;
     }, false);
-
-    /**
-     * execute processing just after all tabs open at startup
-     *
-     * TODO: use a reliable observer
-     * WORKAROUND:
-     * 1.on boot startup, observes |DOMContentLoaded| that fires on the
-     * document first selected
-     * 2.on resume startup, observes |SSTabRestored| that fires on the tab
-     * first selected
-     */
-    let isResumeStartup =
-      Cc['@mozilla.org/browser/sessionstartup;1'].
-      getService(Ci.nsISessionStartup).
-      doRestore();
-
-    let eventTarget, eventType;
-
-    if (isResumeStartup) {
-      eventTarget = gBrowser.tabContainer;
-      eventType = 'SSTabRestored';
-    }
-    else {
-      eventTarget = window;
-      eventType = 'DOMContentLoaded';
-    }
-
-    let onLoad = () => {
-      eventTarget.removeEventListener(eventType, onLoad, false);
-
-      this.setStartupTabs();
-      this.persistTabAttribute();
-    };
-
-    eventTarget.addEventListener(eventType, onLoad, false);
-  },
-
-  setStartupTabs: function() {
-    Array.forEach(gBrowser.tabs, (tab) => {
-      // a boot startup tab (e.g. homepage)
-      if (!mTab.data(tab, 'open')) {
-        mTabOpener.set(tab, 'StartupTab');
-      }
-
-      if (tab.selected) {
-        // update |select|, and set |read| if first selected
-        mTabSelector.update(tab);
-      }
-      else {
-        // immediately stop the loading of a background tab
-        mTabSuspender.stop(tab);
-      }
-    });
   },
 
   persistTabAttribute: function() {
@@ -910,6 +858,119 @@ const mSessionStore = {
       return JSON.parse(this.SessionStore.getClosedTabData(window));
     }
     return null;
+  }
+};
+
+/**
+ * Startup handler
+ */
+const mStartup = {
+  init: function() {
+    /**
+     * Execute processing just after all tabs open at startup.
+     *
+     * TODO: Use a reliable observer.
+     * @note 'browser-delayed-startup-finished' was already fired on this
+     * timing.
+     *
+     * For the first window;
+     * 1.On boot startup: Observe |DOMContentLoaded| that fires on the document
+     * first selected.
+     * 2.On resume startup: Observe |SSTabRestored| that fires on the tab first
+     * selected.
+     *
+     * For sub windows that the current window opens;
+     * 3.With |DOMContentLoaded|: Catch in case 1.
+     * 4.Without any catchable event: Observe new window opened and dispatch
+     * a custom event for it. (e.g. a window by |window.openDialog| with a tab
+     * node in arguments has no loading tab.)
+     */
+    const LoadEvents = {
+      add: function(aTarget, aType) {
+        if (!this.events) {
+          this.events = new Map();
+        }
+
+        this.events.set(aTarget, aType);
+
+        aTarget.addEventListener(aType, this, false);
+      },
+
+      clear: function() {
+        for (let [target, type] of this.events) {
+          target.removeEventListener(type, this, false);
+        }
+
+        this.events.clear();
+        delete this.events;
+      },
+
+      handleEvent: function (aEvent) {
+        this.clear();
+
+        mStartup.setStartupTabs();
+        mSessionStore.persistTabAttribute();
+      }
+    };
+
+    let isResumeStartup =
+      Cc['@mozilla.org/browser/sessionstartup;1'].
+      getService(Ci.nsISessionStartup).
+      doRestore();
+
+    if (isResumeStartup) {
+      LoadEvents.add(gBrowser.tabContainer, 'SSTabRestored');
+    }
+    else {
+      LoadEvents.add(window, 'DOMContentLoaded');
+    }
+
+    // Observe new sub window without any loading.
+    LoadEvents.add(gBrowser, kEventType.LoadedBrowserOpen);
+
+    let onBrowserOpen = (aSubject) => {
+      if (!aSubject.gBrowser.mIsBusy) {
+        // Ensure that the new browser can catch the event at startup.
+        // TODO: Use a reliable observer instead of waiting.
+        setTimeout(() => {
+          let event = new CustomEvent(kEventType.LoadedBrowserOpen);
+
+          aSubject.gBrowser.dispatchEvent(event);
+
+          // Update some states for the selected tab, notify onLocationChange,
+          // correct the URL bar, etc.
+          // TODO: I don't know how to update properly, and worried about side
+          // effects by using this function.
+          aSubject.gBrowser.updateCurrentBrowser(true);
+        }, 500);
+      }
+    };
+
+    let topic = 'browser-delayed-startup-finished';
+
+    Services.obs.addObserver(onBrowserOpen, topic, false);
+
+    addEvent(window, 'unload', () => {
+      Services.obs.removeObserver(onBrowserOpen, topic);
+    }, false);
+  },
+
+  setStartupTabs: function() {
+    Array.forEach(gBrowser.tabs, (tab) => {
+      // A boot startup tab (e.g. homepage).
+      if (!mTab.data(tab, 'openInfo')) {
+        mTabOpener.set(tab, 'StartupTab');
+      }
+
+      if (tab.selected) {
+        // Update |select|, and set |read| if first selected.
+        mTabSelector.update(tab);
+      }
+      else {
+        // Immediately stop the loading of a background tab.
+        mTabSuspender.stop(tab);
+      }
+    });
   }
 };
 
@@ -1676,6 +1737,7 @@ function TabEx_init() {
   mTabOpener.init();
   mTabEvent.init();
   mSessionStore.init();
+  mStartup.init();
 }
 
 TabEx_init();
