@@ -213,10 +213,10 @@ function log(aMsg) {
   const kTooltipShowDelay = 500; // [ms]
   let mTooltipTimer = null;
 
-  // TODO: in Fx29, the URL tooltip shows even if the URL does not overflow at
-  // startup. I guess that the overflow event occurs at startup, and leave
-  // |gURLBar._contentIsCropped| to true until a long URL loads
-  // WORKAROUND: reset to false, but it may be wrong timing
+  // TODO: In Fx29, a URL tooltip shows even if the first URL does not overflow
+  // at startup. And leave |gURLBar._contentIsCropped| to true until a long URL
+  // newly loads.
+  // WORKAROUND: Reset to false here, but it may be wrong timing.
   gURLBar._contentIsCropped = false;
 
   // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip

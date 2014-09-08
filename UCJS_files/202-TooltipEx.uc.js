@@ -60,16 +60,17 @@ const kPref = {
  * Style setting
  *
  * @key item {CSS}
- *   styles for tip items
+ *   Styles for tip items.
  * @key accent {CSS}
- *   styles for accent portions
- *   @note applied to;
+ *   Styles for accent portions.
+ *   @note Applied to;
  *     '<tag>'
  *     'description-attribute='
  *     'URL-attribute=scheme:'
  * @key crop {CSS}
- *   styles for ellipsis mark of a cropped text
- *   @note a URL without 'javascript:' and 'data:' schemes is not cropped
+ *   Styles for ellipsis mark of a cropped text.
+ *   @note Only a long URL with 'javascript:' or 'data:' scheme will be
+ *   cropped.
  */
 const kStyle = {
   item: 'font:1em/1.2 monospace;letter-spacing:.1em;',
@@ -349,7 +350,7 @@ const TooltipPanel = (function() {
   }
 
   function collectTipData(aNode) {
-    // helper functions
+    // Helper functions.
     let $tag = (name) => kTipFormat.tag.replace('%tag%', name);
     let $attr = (name) => kTipFormat.attribute.replace('%name%', name);
 
@@ -381,7 +382,8 @@ const TooltipPanel = (function() {
         let URL = unescapeURLForUI(resolveURL(value, aNode.baseURI));
         let [scheme, rest] = splitURL(URL);
 
-        // long URL with 'javascript:' or 'data:' scheme will be cropped
+        // Only a long URL with 'javascript:' or 'data:' scheme will be
+        // cropped.
         let doCrop = /^(?:javascript|data):/.test(scheme);
 
         data.push(makeTipData($attr(name) + scheme, rest, doCrop));
@@ -392,7 +394,7 @@ const TooltipPanel = (function() {
     });
 
     for (let name in attributes) {
-      // <event> attribute
+      // <event> attributes.
       if (/^on/.test(name)) {
         data.push(makeTipData($attr(name), attributes[name], true));
       }
@@ -401,7 +403,7 @@ const TooltipPanel = (function() {
     if (data.length || isLinkNode(aNode)) {
       let rest = isLinkNode(aNode) ? aNode.textContent : '';
 
-      // add a tag name to the top of array
+      // Add a tag name to the top of array.
       data.unshift(makeTipData($tag(aNode.localName), rest, true));
     }
 
@@ -481,7 +483,7 @@ const TooltipPanel = (function() {
    * Create an element of tip info
    *
    * @param aTipData {hash}
-   *   @note the value is created by |makeTipData|
+   *   @note The value is created by |makeTipData|.
    * @return {Element}
    */
   function createTipItem(aTipData) {
@@ -489,8 +491,8 @@ const TooltipPanel = (function() {
 
     let $label = (attribute) => $E('label', attribute);
 
-    // an element for styling of a text
-    // TODO: use a reliable element instead of <label>
+    // An inline element for styling of a text.
+    // TODO: Use a reliable element instead of <label>.
     let $span = (attribute) => {
       attribute.style += 'margin:0;';
 
@@ -516,7 +518,7 @@ const TooltipPanel = (function() {
 
     if (uncroppedText) {
       let subTooltip = $E('tooltip', {
-        // TODO: consider more smart way to make a unique id
+        // TODO: Make a smart unique id.
         id: kID.subTooltip + mBox.childNodes.length,
         style: kStyle.item,
         onpopuphiding: 'event.stopPropagation();'
