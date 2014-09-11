@@ -124,7 +124,7 @@ function updateMenu(aEvent) {
     return;
   }
 
-  let tabsNum = gBrowser.tabs.length;
+  let tabsNum = gBrowser.visibleTabs.length;
   let wins = getWindowsState(TabContext.tab);
 
   // Disable at a useless case of a one tab window and no other windows.
