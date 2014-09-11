@@ -956,6 +956,7 @@ const mStartup = {
   },
 
   setStartupTabs: function() {
+    // Scan all tabs.
     Array.forEach(gBrowser.tabs, (tab) => {
       // A boot startup tab (e.g. homepage).
       if (!mTab.data(tab, 'openInfo')) {
@@ -1208,7 +1209,7 @@ const mTabEvent = {
 function getOriginalTabOfDuplicated(aTab) {
   let openTime = mTab.data(aTab, 'open');
 
-  let tabs = gBrowser.tabs;
+  let tabs = getTabs('active, pinned');
 
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
     tab = tabs[i];
@@ -1231,6 +1232,7 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
   // returns -1 for a pinned or closing tab
   let basePos = getTabPos(tabs, baseTab);
   let tabPos = getTabPos(tabs, aTab);
+
   let pos = -1;
 
   switch (aPosType) {
@@ -1270,7 +1272,10 @@ function moveTabTo(aTab, aPosType, aBaseTab) {
   }
 
   if (-1 < pos && pos !== tabPos) {
-    gBrowser.moveTabTo(aTab, getTabPos(gBrowser.tabs, tabs[pos]));
+    // |gBrowser.moveTabTo| expects the actual position in all tabs.
+    let actualPos = getTabPos(getTabs('all'), tabs[pos]);
+
+    gBrowser.moveTabTo(aTab, actualPos);
   }
 }
 
@@ -1655,25 +1660,31 @@ function closeReadTabs() {
 }
 
 /**
- * Gets an array of tabs
+ * Gets an array of tabs.
  *
- * @param aStatement {string} keywords divided by ',' to include
- *   'pinned': pinned tabs
- *   'active': tabs of the current active group (exclude pinned tabs)
- * @param aForcedTab {Element} [optional]
- *   forces to include this tab regardless of aStatement
- * @return {Array}
+ * @param aStatement {string}
+ *   Keywords divided by ',' to include;
+ *   'all': All tabs.
+ *   'pinned': Pinned tabs.
+ *   'active': Visible normal tabs (excluding pinned tabs).
+ * @param aEssentialTab {Element} [optional]
+ *   Forces to include this tab regardless of |aStatement|.
+ * @return {array}
  *
- * TODO: |aForcedTab| is used only for a closing tab on |TabClose| event. make
- * a smart handling
+ * @note |aEssentialTab| is used only for a closing tab on |TabClose| event.
  */
-function getTabs(aStatement, aForcedTab) {
+function getTabs(aStatement, aEssentialTab) {
   let statement = StatementParser(aStatement, ',');
-  let pinned = !!statement.matchKey(['pinned']),
+  let all =  !!statement.matchKey(['all']),
+      pinned = !!statement.matchKey(['pinned']),
       active = !!statement.matchKey(['active']);
 
+  if (all) {
+    return Array.from(gBrowser.tabs);
+  }
+
   return Array.filter(gBrowser.tabs, (tab) => {
-    if (tab === aForcedTab) {
+    if (aEssentialTab && tab === aEssentialTab) {
       return true;
     }
 
@@ -1687,7 +1698,7 @@ function getTabs(aStatement, aForcedTab) {
 }
 
 function getTabPos(aTabs, aTab) {
-  return Array.indexOf(aTabs, aTab);
+  return aTabs.indexOf(aTab);
 }
 
 function selectTab(aTab) {
