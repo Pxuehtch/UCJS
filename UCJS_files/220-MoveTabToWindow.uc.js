@@ -71,6 +71,51 @@ const TabContext = {
   }
 };
 
+/**
+ * Utility functions for browser windows.
+ */
+const WindowUtil = (function() {
+// @see @see resource://gre/modules/commonjs/sdk/window/utils.js
+  const utils = getModule('sdk/window/utils');
+
+  function getBrowserWindows() {
+    // Enumerator of all windows in order from front to back.
+    let winEnum = Services.wm.getZOrderDOMWindowEnumerator(null, true);
+
+    while (winEnum.hasMoreElements()) {
+      let win = winEnum.getNext().QueryInterface(Ci.nsIDOMWindow);
+
+      // Skip a closed, non-browser and popup window.
+      if (!win.closed && isBrowser(win) && win.toolbar.visible) {
+        yield win;
+      }
+    }
+  }
+
+  function isBrowser(aWindow) {
+    return utils.isBrowser(aWindow);
+  }
+
+  function isPrivate(aWindow) {
+    return utils.isWindowPrivate(aWindow);
+  }
+
+  function getIdFor(aWindow) {
+    return utils.getOuterId(aWindow);
+  }
+
+  function getWindowById(aId) {
+    return utils.getByOuterId(aId);
+  }
+
+  return {
+    getBrowserWindows: getBrowserWindows,
+    isPrivate: isPrivate,
+    getIdFor: getIdFor,
+    getWindowById: getWindowById
+  };
+})();
+
 function MoveTabToWindow_init() {
   buildMenu();
 }
@@ -115,7 +160,7 @@ function updateMenu(aEvent) {
   });
 
   // Disable in private browsing.
-  if (isWindowPrivate(window)) {
+  if (WindowUtil.isPrivate(window)) {
     return;
   }
 
@@ -125,10 +170,10 @@ function updateMenu(aEvent) {
   }
 
   let tabsNum = gBrowser.visibleTabs.length;
-  let wins = getWindowsState(TabContext.tab);
+  let windowsData = getWindowsData(TabContext.tab);
 
   // Disable at a useless case of a one tab window and no other windows.
-  if (tabsNum <= 1 && !wins.length) {
+  if (tabsNum <= 1 && !windowsData.length) {
     return;
   }
 
@@ -139,43 +184,47 @@ function updateMenu(aEvent) {
 
   // A menuitem for moving the tab to a new opened window.
   // @note Useless when the our window has only one tab.
-  // @note Also used as the reference node to append menuitem elements.
+  // @note Also used as the reference node to append menuitems.
   let refItem = $E($ID(kUI.newWindow.id), {
     disabled: tabsNum <= 1
   });
 
   let popup = menu.menupopup;
 
+  // Clean up the previous menuitems for windows.
   while (popup.firstChild && popup.firstChild !== refItem) {
     popup.removeChild(popup.firstChild);
   }
 
-  if (wins.length) {
-    wins.forEach((win) => {
-      let item = popup.insertBefore($E('menuitem', {
-        value: win.index,
-        label: kUI.otherWindow.label.
-          replace('%title%', win.title).
-          replace('%tabsNum%', win.tabsNum).
-          replace('%s%', win.tabsNum > 1 ? 's' : '')
-      }), refItem);
-
-      if (win.isPrivate) {
-        $E(item, {
-          disabled: true,
-          tooltiptext: kUI.isPrivate.tooltiptext
-        });
-      }
-      else if (win.hasSameURL) {
-        $E(item, {
-          style: kUI.hasSameURL.style,
-          tooltiptext: kUI.hasSameURL.tooltiptext
-        });
-      }
-    });
-
-    popup.insertBefore($E('menuseparator'), refItem);
+  // No other windows.
+  if (!windowsData.length) {
+    return;
   }
+
+  windowsData.forEach((win) => {
+    let item = popup.insertBefore($E('menuitem', {
+      value: win.id,
+      label: kUI.otherWindow.label.
+        replace('%title%', win.title).
+        replace('%tabsNum%', win.tabsNum).
+        replace('%s%', win.tabsNum > 1 ? 's' : '')
+    }), refItem);
+
+    if (win.isPrivate) {
+      $E(item, {
+        disabled: true,
+        tooltiptext: kUI.isPrivate.tooltiptext
+      });
+    }
+    else if (win.hasSameURL) {
+      $E(item, {
+        style: kUI.hasSameURL.style,
+        tooltiptext: kUI.hasSameURL.tooltiptext
+      });
+    }
+  });
+
+  popup.insertBefore($E('menuseparator'), refItem);
 }
 
 function onCommand(aEvent) {
@@ -187,63 +236,41 @@ function onCommand(aEvent) {
     moveTabToWindow(TabContext.tab);
   }
   else if (item.value) {
-    moveTabToWindow(TabContext.tab, getWindowAt(+(item.value)));
+    moveTabToWindow(TabContext.tab, WindowUtil.getWindowById(+item.value));
   }
 }
 
-function getWindowsState(aTab) {
+function getWindowsData(aTab) {
   if (!aTab) {
     return;
   }
 
-  let wins = [];
+  let {getBrowserWindows, isPrivate, getIdFor} = WindowUtil;
 
   let tabURL = aTab.linkedBrowser.currentURI.spec;
-  let enumerator = getWindowEnumerator();
-  let i = -1;
+  let hasSameURL = (aBrowsers) =>
+    aBrowsers.some((b) => b.currentURI.spec === tabURL);
 
-  while (enumerator.hasMoreElements()) {
-    i++;
+  let windowsData = [];
 
-    let win = enumerator.getNext();
-
-    // Skip window which is closed, current, not browser, and popup.
-    if (win.closed ||
-        win === window ||
-        win.document.documentElement.getAttribute('windowtype') !== 
-          'navigator:browser' ||
-        win.document.documentElement.getAttribute('chromehidden')) {
+  for (let win in getBrowserWindows()) {
+    // Skip the current window.
+    if (win === window) {
       continue;
     }
 
     let tabbrowser = win.gBrowser;
 
-    wins.push({
-      index: i,
-      hasSameURL:
-        tabbrowser.browsers.
-        some((browser) => browser.currentURI.spec === tabURL),
+    windowsData.push({
+      id: getIdFor(win),
+      hasSameURL: hasSameURL(tabbrowser.browsers),
       title: tabbrowser.selectedTab.label,
       tabsNum: tabbrowser.tabs.length,
-      isPrivate: isWindowPrivate(win)
+      isPrivate: isPrivate(win)
     });
   }
 
-  return wins;
-}
-
-function getWindowAt(aIndex) {
-  let enumerator = getWindowEnumerator();
-  let index = 0;
-
-  while (enumerator.hasMoreElements()) {
-    let win = enumerator.getNext();
-
-    if (index++ === aIndex) {
-      return win;
-    }
-  }
-  return null;
+  return windowsData;
 }
 
 function moveTabToWindow(aTab, aWindow) {
@@ -289,18 +316,6 @@ function moveTabToOtherWindow(aTab, aWindow) {
   otherTabBrowser.selectedTab = newTab;
 
   return newTab;
-}
-
-function getWindowEnumerator() {
-  // Enumerator of all windows in order from front to back.
-  return Services.wm.getZOrderDOMWindowEnumerator(null, true);
-}
-
-function isWindowPrivate(aWindow) {
-  const {PrivateBrowsingUtils} =
-    getModule('resource://gre/modules/PrivateBrowsingUtils.jsm');
-
-  return PrivateBrowsingUtils.isWindowPrivate(aWindow);
 }
 
 /**
