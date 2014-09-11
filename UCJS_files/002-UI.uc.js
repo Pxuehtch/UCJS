@@ -493,7 +493,7 @@ const FindBar = (function() {
     }
   }
 
-  function findWith(aText, aOption = {}) {
+  function find(aText, aOption = {}) {
     if (!aText) {
       return;
     }
@@ -534,7 +534,7 @@ const FindBar = (function() {
     reset: reset,
     open: open,
     toggle: toggle,
-    findWith: findWith
+    find: find
   };
 })();
 
