@@ -374,42 +374,62 @@ function trimText(aText, aMaxLength) {
 }
 
 /**
- * Creates an element with the attributes
+ * Creates an element with the attributes.
  *
  * @param aTagOrNode {string|Element}
- *   {string}: set a <tagname>
- *   {Element}: set an <element> for setting the attributes
+ *   {string}: Set a <tagname>.
+ *   {Element}: Set an existing <element> for handling its attributes.
  * @param aAttribute {hash} [optional]
- *   set list of <attribute name>: <attribute value>
- *   @note an attribute will be ignored if the value is |null| or |undefined|
+ *   Set list of '<attribute-name>: <attribute-value>'
+ *   @note An attribute isn't set if the value is |undefined| or |null| or an
+ *   empty string. In adding an existing attribute will be removed if the value
+ *   is |null|.
  * @param aAttributeHandler {function} [optional]
- *   a function for a custom handling of attributes
+ *   A function for a custom handling of attributes.
+ *   @note Can handle all values including such as |undefined| and |null|.
+ *   @param aNode {Element}
+ *   @param aName {string}
+ *   @param aValue {string}
+ *   @return {boolean}
+ *     true if an attribute is processed, false otherwise.
  * @return {Element}
+ *   An created or processed element.
  *
- * @note use only for XUL element
+ * @note Use only for XUL element.
  *
- * TODO: handle the namespace of a tag/attribute
+ * TODO: Manage the namespace of tag/attribute.
  */
 function createNode(aTagOrNode, aAttribute, aAttributeHandler) {
-  let node =
-    (typeof aTagOrNode === 'string') ?
-    window.document.createElement(aTagOrNode) :
-    aTagOrNode;
+  let node;
+
+  if (typeof aTagOrNode === 'string') {
+    node = window.document.createElement(aTagOrNode);
+  }
+  else {
+    node = aTagOrNode;
+  }
 
   if (!!aAttribute) {
     for (let [name, value] in Iterator(aAttribute)) {
-      if (value === null || value === undefined) {
-        continue;
-      }
-
       if (aAttributeHandler &&
           aAttributeHandler(node, name, value)) {
         continue;
       }
 
-      if (!node.hasAttribute(name) ||
-          node.getAttribute(name) !== value + '') {
-        node.setAttribute(name, value);
+      if (value === undefined || value === '') {
+        continue;
+      }
+
+      if (value === null) {
+        if (node.hasAttribute(name)) {
+          node.removeAttribute(name, value);
+        }
+      }
+      else {
+        if (!node.hasAttribute(name) ||
+            node.getAttribute(name) !== value + '') {
+          node.setAttribute(name, value);
+        }
       }
     }
   }

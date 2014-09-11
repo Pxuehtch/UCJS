@@ -1999,17 +1999,19 @@ function getBaseDomain(aURI) {
 
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
+    // Set the value to a property of the node.
     case 'open':
-    case 'submit':
-      aNode[kID.data] = {};
-      aNode[kID.data][aName] = aValue;
-      break;
+    case 'submit': {
+      if (aValue) {
+        aNode[kID.data] = {};
+        aNode[kID.data][aName] = aValue;
+      }
 
-    default:
-      return false;
+      return true;
+    }
   }
 
-  return true;
+  return false;
 }
 
 /**

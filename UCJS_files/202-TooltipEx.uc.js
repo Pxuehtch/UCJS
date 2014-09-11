@@ -503,7 +503,7 @@ const TooltipPanel = (function() {
 
     let item = $label({
       style: kStyle.item,
-      'tiptext': text
+      'tipText': text
     });
 
     let accent = $span({
@@ -549,7 +549,9 @@ const TooltipPanel = (function() {
     let info = [];
 
     Array.forEach(mBox.childNodes, (node) => {
-      info.push(node[kID.tipText]);
+      if (node[kID.tipText]) {
+        info.push(node[kID.tipText]);
+      }
     });
 
     copyToClipboard(info.join('\n'));
@@ -593,10 +595,14 @@ function copyToClipboard(aText) {
 }
 
 function handleAttribute(aNode, aName, aValue) {
-  if (aName === 'tiptext') {
-    aNode[kID.tipText] = aValue;
+  if (aName === 'tipText') {
+    if (aValue) {
+      aNode[kID.tipText] = aValue;
+    }
+
     return true;
   }
+
   return false;
 }
 

@@ -132,8 +132,9 @@ function updateMenu(aEvent) {
     return;
   }
 
+  // Remove disabled attribute.
   $E(menu, {
-    disabled: false
+    disabled: null
   });
 
   // A menuitem for moving the tab to a new opened window.
