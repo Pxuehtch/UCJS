@@ -462,14 +462,6 @@ const FindBar = (function() {
       }
     },
 
-    clear: function() {
-      gFindBar.clear();
-
-      if (UI.highlightButton.checked) {
-        toggleHighlight(false);
-      }
-    },
-
     focus: function() {
       if (!gFindBar.hidden) {
         UI.textBox.focus();
@@ -477,6 +469,14 @@ const FindBar = (function() {
       }
     }
   };
+
+  function reset() {
+    gFindBar.clear();
+
+    if (UI.highlightButton.checked) {
+      toggleHighlight(false);
+    }
+  }
 
   function open() {
     if (gFindBar.hidden) {
@@ -503,7 +503,7 @@ const FindBar = (function() {
     } = aOption;
 
     // reset all status
-    FindText.clear();
+    reset();
 
     // open a findbar and ready for the first finding
     gFindBar.onFindCommand();
@@ -531,6 +531,7 @@ const FindBar = (function() {
 
     findText: FindText,
 
+    reset: reset,
     open: open,
     toggle: toggle,
     findWith: findWith
