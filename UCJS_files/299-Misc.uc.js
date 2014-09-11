@@ -912,7 +912,13 @@ function log(aMsg) {
       case 'TabSelect': {
         if (mIsLocked) {
           FindBar.open();
-          FindBar.findText.value = mFindString;
+
+          if (FindBar.findText.value !== mFindString) {
+            FindBar.reset();
+
+            // Find the text in background.
+            FindBar.findText.value = mFindString;
+          }
         }
 
         let lockButton = getLockButton();
