@@ -186,7 +186,7 @@ function onCommand(aEvent) {
   if (item.id === kUI.newWindow.id) {
     moveTabToWindow(TabContext.tab);
   }
-  else if (item.value > -1) {
+  else if (item.value) {
     moveTabToWindow(TabContext.tab, getWindowAt(+(item.value)));
   }
 }
