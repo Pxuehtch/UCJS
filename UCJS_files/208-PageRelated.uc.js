@@ -350,22 +350,40 @@ function getSeparators() {
 
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'open') {
-    aNode.setAttribute('oncommand', commandForOpenURLs(aValue));
-    // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
-    aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
+    setAttributeForCommand(aNode, aValue);
+
     return true;
   }
+
   return false;
 }
 
-function commandForOpenURLs(aURLsArray) {
-  let URLs = JSON.stringify(aURLsArray);
-  let inBG = (aURLsArray.length > 1) ? 'true' : 'event.button===1';
+/**
+ * Set attributes of a menuitem for its command actions.
+ *
+ * For one URL;
+ * command: Open a tab.
+ * ctrl / middle-click: Open a tab in background.
+ *
+ * For all URLs;
+ * command: Open tabs in background.
+ * @note No modifiers.
+ *
+ * @require Util.uc.js
+ */
+function setAttributeForCommand(aNode, aURLs) {
+  let URLs = JSON.stringify(aURLs);
+  let inBG = (aURLs.length > 1) ? 'true' : 'event.ctrlKey||event.button===1';
 
-  let command = 'ucjsUtil.openTabs(' +
-    '%URLs%,{inBackground:%inBG%,relatedToCurrent:true});';
+  let command =
+    'ucjsUtil.openTabs(%URLs%,{inBackground:%inBG%,relatedToCurrent:true});';
 
-  return command.replace('%URLs%', URLs).replace('%inBG%', inBG);
+  command = command.replace('%URLs%', URLs).replace('%inBG%', inBG);
+
+  aNode.setAttribute('oncommand', command);
+
+  // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+  aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
 }
 
 /**

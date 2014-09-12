@@ -276,7 +276,7 @@ function makeMenuItems(aParseList) {
         // show a text in label and tooltip instead of URL
         label = tooltiptext =
           ui.empty.replace('%description%', description);
-        action = 'none';
+        action = 'none'; // Dummy value for now.
         disabled = true;
       }
     }
@@ -588,7 +588,7 @@ function createParseList(aPreset, aSourceURLType) {
 
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
-    case 'styles':
+    case 'styles': {
       aValue.join(';').split(/;+/).forEach((style) => {
         let [propName, propValue] = style.split(':').map((str) => str.trim());
 
@@ -596,50 +596,70 @@ function handleAttribute(aNode, aName, aValue) {
           aNode.style.setProperty(propName, propValue, '');
         }
       });
-      break;
 
-    case 'action': {
-      let command = makeActionCommand(aValue);
-
-      if (command) {
-        aNode.setAttribute('oncommand', command);
-        // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
-        aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
-      }
-      break;
+      return true;
     }
 
-    default:
-      return false;
+    case 'action': {
+      setAttributeForCommand(aNode, aValue);
+
+      return true;
+    }
   }
 
-  return true;
+  return false;
 }
 
-function makeActionCommand(aValue) {
-  let [action, URL] = aValue;
+/**
+ * Set attributes of a menuitem for its command actions.
+ *
+ * For 'open' action;
+ * command: Open a tab.
+ * ctrl / middle-click: Open a tab in background.
+ *
+ * For 'copy' action;
+ * command: Copy the URL string to clipboard.
+ * @note No modifiers.
+ *
+ * @require Util.uc.js
+ */
+function setAttributeForCommand(aNode, aActionData) {
+  let [action, URL] = aActionData;
 
   if (!URL) {
-    return '';
+    return;
   }
 
   let command;
 
   switch (action) {
-    case 'open':
-      command = 'ucjsUtil.openTab("%URL%",{inBackground:event.button===1});';
-      break;
+    case 'open': {
+      command =
+        'ucjsUtil.openTab("%URL%",' +
+        '{inBackground:event.ctrlKey||event.button===1});';
 
-    case 'copy':
-      command = 'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
+      break;
+    }
+
+    case 'copy': {
+      command =
+        'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
         'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
-      break;
 
-    default:
-      return '';
+      break;
+    }
   }
 
-  return command.replace('%URL%', URL);
+  if (!command) {
+    return;
+  }
+
+  command = command.replace('%URL%', URL);
+
+  aNode.setAttribute('oncommand', command);
+
+  // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+  aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
 }
 
 /**
