@@ -134,7 +134,7 @@ const Menu = (function() {
     if (aEvent.target.id === kUI.prettifySourcePage.id) {
       let contentDocument = gBrowser.contentDocument;
       let state = {
-        filename: contentDocument.URL,
+        filename: contentDocument.documentURI,
         type: getTextType(contentDocument),
         text: getTextContent(contentDocument),
         editorOptions: kEditorOptions,

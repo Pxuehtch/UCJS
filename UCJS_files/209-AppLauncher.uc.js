@@ -718,23 +718,23 @@ function doAction(aApp, aAction) {
       break;
 
     case 'openPage':
-      targetURL = gBrowser.contentDocument.location.href;
+      targetURL = gBrowser.contentDocument.documentURI;
       break;
 
     case 'viewPageSource':
       save = true;
       targetDocument = gBrowser.contentDocument;
-      targetURL = targetDocument.location.href;
+      targetURL = targetDocument.documentURI;
       break;
 
     case 'openFrame':
-      targetURL = sourceDocument.location.href;
+      targetURL = sourceDocument.documentURI;
       break;
 
     case 'viewFrameSource':
       save = true;
       targetDocument = sourceDocument;
-      targetURL = targetDocument.location.href;
+      targetURL = targetDocument.documentURI;
       break;
 
     case 'openLink':
@@ -768,7 +768,7 @@ function doAction(aApp, aAction) {
         targetURL = gContextMenu.target.toDataURL();
       }
       else {
-        targetURL = sourceDocument.location.href;
+        targetURL = sourceDocument.documentURI;
       }
       break;
 
