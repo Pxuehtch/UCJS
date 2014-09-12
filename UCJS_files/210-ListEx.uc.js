@@ -696,6 +696,43 @@ const mClosedList = (function() {
     };
   })();
 
+  /**
+   * Utility functions for session store.
+   */
+  const SessionStore = (function() {
+    const SS = Cc['@mozilla.org/browser/sessionstore;1'].
+      getService(Ci.nsISessionStore);
+
+    function getClosedTabs() {
+      try {
+        if (SS.getClosedTabCount(window) > 0) {
+          // Array of the data of closed tabs in thier closed date order from
+          // last to first.
+          return JSON.parse(SS.getClosedTabData(window));
+        }
+      } catch (ex) {}
+
+      return null;
+    }
+
+    function getClosedWindows() {
+      try {
+        if (SS.getClosedWindowCount() > 0) {
+          // Array of the data of closed windows in thier closed date order
+          // from last to first.
+          return JSON.parse(SS.getClosedWindowData());
+        }
+      } catch (ex) {}
+
+      return null;
+    }
+
+    return {
+      getClosedTabs: getClosedTabs,
+      getClosedWindows: getClosedWindows
+    };
+  })();
+
   function build(aPopup) {
     if (!buildClosedTabs(aPopup)) {
       makeDisabledMenuItem(aPopup, 'No closed tabs.');
@@ -709,15 +746,14 @@ const mClosedList = (function() {
   }
 
   function buildClosedTabs(aPopup) {
-    let closedTabs = getClosedTabsData();
+    let closedTabs = SessionStore.getClosedTabs();
 
     if (!closedTabs) {
       return false;
     }
 
-    for (let i = 0, il = closedTabs.length; i < il; i++) {
-      let closedTab = closedTabs[i];
-
+    // Scan closed tabs in thier closed date order from last to first.
+    closedTabs.forEach((closedTab, i) => {
       let entries = closedTab.state.entries;
       let history = [];
 
@@ -738,21 +774,20 @@ const mClosedList = (function() {
         class: 'menuitem-iconic',
         action: Action.undoCloseTab(i)
       }));
-    }
+    });
 
     return true;
   }
 
   function buildClosedWindows(aPopup) {
-    let closedWindows = getClosedWindowsData();
+    let closedWindows = SessionStore.getClosedWindows();
 
     if (!closedWindows) {
       return false;
     }
 
-    for (let i = 0, il = closedWindows.length; i < il; i++) {
-      let closedWindow = closedWindows[i];
-
+    // Scan closed windows in thier closed date order from last to first.
+    closedWindows.forEach((closedWindow, i) => {
       let tabs = closedWindow.tabs;
       let tabList = [];
 
@@ -780,38 +815,9 @@ const mClosedList = (function() {
         class: 'menuitem-iconic',
         action: Action.undoCloseWindow(i)
       }));
-    }
+    });
 
     return true;
-  }
-
-  function getSessionStore() {
-    return Cc['@mozilla.org/browser/sessionstore;1'].
-      getService(Ci.nsISessionStore);
-  }
-
-  function getClosedTabsData() {
-    let sessionStore = getSessionStore();
-
-    try {
-      if (sessionStore.getClosedTabCount(window) > 0) {
-        return JSON.parse(sessionStore.getClosedTabData(window));
-      }
-    } catch (ex) {}
-
-    return null;
-  }
-
-  function getClosedWindowsData() {
-    let sessionStore = getSessionStore();
-
-    try {
-      if (sessionStore.getClosedWindowCount() > 0) {
-        return JSON.parse(sessionStore.getClosedWindowData());
-      }
-    } catch (ex) {}
-
-    return null;
   }
 
   return {
