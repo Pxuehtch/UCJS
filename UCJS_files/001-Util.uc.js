@@ -903,41 +903,6 @@ function restartFx(aOption) {
     quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
 }
 
-function getWindowList(aType) {
-  if (aType !== null) {
-    aType = aType || 'navigator:browser';
-  }
-
-  return XPCOM.$S('wm').getEnumerator(aType);
-}
-
-function focusWindow(aWindow) {
-  let wins = getWindowList(null), win;
-
-  while (wins.hasMoreElements()) {
-    win = wins.getNext();
-
-    if (win === aWindow) {
-      win.focus();
-      return;
-    }
-  }
-}
-
-function focusWindowAtIndex(aIdx) {
-  let wins = getWindowList(null), win;
-  let idx = 0;
-
-  while (wins.hasMoreElements()) {
-    win = wins.getNext();
-
-    if (idx++ === aIdx) {
-      win.focus();
-      return;
-    }
-  }
-}
-
 function setGlobalStyleSheet(aCSS, aType) {
   return registerGlobalStyleSheet(aCSS, aType);
 }
@@ -1297,8 +1262,6 @@ return {
   removeAllTabsBut: removeAllTabsBut,
 
   restartFx: restartFx,
-  focusWindow: focusWindow,
-  focusWindowAtIndex: focusWindowAtIndex,
   setGlobalStyleSheet: setGlobalStyleSheet,
   removeGlobalStyleSheet: removeGlobalStyleSheet,
   setChromeStyleSheet: registerChromeStyleSheet,

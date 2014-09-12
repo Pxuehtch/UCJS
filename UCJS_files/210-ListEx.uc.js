@@ -68,7 +68,8 @@ const kID = {
   openedMenu: 'ucjs_ListEx_openedMenu',
   closedMenu: 'ucjs_ListEx_closedMenu',
   startSeparator: 'ucjs_ListEx_startSeparator',
-  endSeparator: 'ucjs_ListEx_endSeparator'
+  endSeparator: 'ucjs_ListEx_endSeparator',
+  commandData: 'ucjs_ListEx_commandData'
 };
 
 /**
@@ -78,13 +79,14 @@ const kID = {
  *   @key init {function}
  */
 const mMenu = (function() {
-
   function init() {
     contentAreaContextMenu.register({
       events: [
         ['popupshowing', onPopupShowing, false],
-        ['popuphiding', onPopupHiding, false]
+        ['popuphiding', onPopupHiding, false],
+        ['command', onCommand, false]
       ],
+
       onCreate: createMenu
     });
   }
@@ -177,10 +179,23 @@ const mMenu = (function() {
     }
   }
 
+  function onCommand(aEvent) {
+    aEvent.stopPropagation();
+
+    let menuitem = aEvent.target;
+
+    let commandData = menuitem[kID.commandData];
+
+    if (!commandData) {
+      return;
+    }
+
+    commandData.command(aEvent, commandData.params);
+  }
+
   return {
     init: init
   };
-
 })();
 
 /**
@@ -190,6 +205,58 @@ const mMenu = (function() {
  *   @key build {function}
  */
 const mHistoryList = (function() {
+  /**
+   * Action of command of menuitem.
+   */
+  const Action = (function() {
+    /**
+     * Command action for tab history.
+     *
+     * command: Load in current tab.
+     * ctrl / middle-click: Open a new tab.
+     * ctrl+shift / shift+middle-click: Open a new tab in background.
+     * shift: Open a new window.
+     *
+     * @see chrome://browser/content/browser.js::gotoHistoryIndex
+     * @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+     */
+    function openTabHistory(aIndex) {
+      return {
+        oncommand: 'gotoHistoryIndex(event);',
+        onclick: 'checkForMiddleClick(this,event);',
+        index: aIndex // Used in |gotoHistoryIndex|.
+      };
+    }
+
+    /**
+     * Command action for recent history.
+     *
+     * command: Load in current tab.
+     * ctrl / middle-click: Open a new tab.
+     * ctrl+shift / shift+middle-click: Open a new tab in background.
+     * shift: Open a new window.
+     *
+     * @see resource://app/modules/PlacesUIUtils.jsm::markPageAsTyped
+     * @see chrome://browser/content/utilityOverlay.js::openUILink
+     * @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
+     */
+    function openRecentHistory(aURL) {
+      let oncommand =
+        'PlacesUIUtils.markPageAsTyped("%URL%");' +
+        'openUILink("%URL%",event);';
+      oncommand = oncommand.replace(/%URL%/g, aURL);
+
+      return {
+        oncommand: oncommand,
+        onclick: 'checkForMiddleClick(this,event);'
+      };
+    }
+
+    return {
+      openTabHistory: openTabHistory,
+      openRecentHistory: openRecentHistory
+    };
+  })();
 
   // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
@@ -246,8 +313,7 @@ const mHistoryList = (function() {
       }
       else {
         direction = 'unified-nav-' + (i < currentIndex ? 'back' : 'forward');
-        // @see chrome://browser/content/browser.js::gotoHistoryIndex
-        action = 'gotoHistoryIndex(event);';
+        action = Action.openTabHistory(i);
       }
 
       className.push(direction);
@@ -256,8 +322,7 @@ const mHistoryList = (function() {
       let menuitem = aPopup.appendChild($E('menuitem', {
         tooltiptext: getTooltip(title, URL),
         class: className.join(' '),
-        index: i,
-        action: action || null
+        action: action
       }));
 
       asyncGetTimeAndIcon(URL, ({time, icon}) => {
@@ -301,11 +366,7 @@ const mHistoryList = (function() {
         className.push('unified-nav-current');
       }
       else {
-        // @see resource://app/modules/PlacesUIUtils.jsm::markPageAsTyped
-        // @see chrome://browser/content/utilityOverlay.js::openUILink
-        action = 'PlacesUIUtils.markPageAsTyped("%URL%");' +
-                 'openUILink("%URL%",event);';
-        action = action.replace(/%URL%/g, URL);
+        action = Action.openRecentHistory(URL);
       }
 
       popup.insertBefore($E('menuitem', {
@@ -316,7 +377,7 @@ const mHistoryList = (function() {
         tooltiptext: getTooltip(title, URL),
         icon: getFavicon(entry.icon),
         class: className.join(' '),
-        action: action || null
+        action: action
       }), aRefNode);
     });
   }
@@ -395,7 +456,6 @@ const mHistoryList = (function() {
   return {
     build: build
   };
-
 })();
 
 /**
@@ -405,6 +465,88 @@ const mHistoryList = (function() {
  *   @key build {function}
  */
 const mOpenedList = (function() {
+  /**
+   * Action of command of menuitem.
+   */
+  const Action = (function() {
+    /**
+     * Command action for opened tabs.
+     *
+     * command: Select a tab.
+     *
+     * @see chrome://browser/content/tabbrowser.xml::selectTabAtIndex
+     */
+    function selectTab(aIndex) {
+      return {
+        oncommand: 'gBrowser.selectTabAtIndex(' + aIndex + ');'
+      };
+    }
+
+    /**
+     * Command action for opened windows.
+     *
+     * command: Select a window.
+     */
+    function selectWindow(aIndex) {
+      return {
+        oncommand: {
+          command: (aEvent, aParams) => {
+            WindowUtil.getWindowById(aParams.index).focus();
+          },
+          params: {
+            index: aIndex
+          }
+        }
+      };
+    }
+
+    return {
+      selectTab: selectTab,
+      selectWindow: selectWindow
+    };
+  })();
+
+  /**
+   * Utility functions for windows.
+   */
+  const WindowUtil = (function() {
+    // @see resource://gre/modules/commonjs/sdk/window/utils.js
+    const utils = getModule('sdk/window/utils');
+
+    function getWindows() {
+      // Enumerator of all windows in thier Z-order from front to back.
+      let winEnum = Services.wm.getZOrderDOMWindowEnumerator(null, true);
+
+      while (winEnum.hasMoreElements()) {
+        let win = winEnum.getNext().QueryInterface(Ci.nsIDOMWindow);
+
+        // Skip a closed window.
+        if (!win.closed) {
+          yield win;
+        }
+      }
+    }
+
+    function isBrowser(aWindow) {
+      // Tests whether the window is a main browser that is not a popup.
+      return utils.isBrowser(aWindow) && aWindow.toolbar.visible;
+    }
+
+    function getIdFor(aWindow) {
+      return utils.getOuterId(aWindow);
+    }
+
+    function getWindowById(aId) {
+      return utils.getByOuterId(aId);
+    }
+
+    return {
+      getWindows: getWindows,
+      isBrowser: isBrowser,
+      getIdFor: getIdFor,
+      getWindowById: getWindowById
+    };
+  })();
 
   function build(aPopup) {
     buildOpenedTabs(aPopup);
@@ -424,8 +566,7 @@ const mOpenedList = (function() {
         className.push('unified-nav-current');
       }
       else {
-        // @see chrome://browser/content/tabbrowser.xml::selectTabAtIndex
-        action = 'gBrowser.selectTabAtIndex(' + i + ');';
+        action = Action.selectTab(i);
       }
 
       let menuitem = aPopup.appendChild($E('menuitem', {
@@ -433,7 +574,7 @@ const mOpenedList = (function() {
         tooltiptext: getTooltip(tab.label, tab.linkedBrowser.currentURI.spec),
         icon: getFavicon(gBrowser.getIcon(tab)),
         class: className.join(' '),
-        action: action || null
+        action: action
       }));
 
       // indicate the state of an unread tab
@@ -444,14 +585,13 @@ const mOpenedList = (function() {
   }
 
   function buildOpenedWindows(aPopup) {
-    let wins = getWindowEnumerator();
-    let winIndex = 0;
+    let {getWindows, isBrowser, getIdFor} = WindowUtil;
 
-    while (wins.hasMoreElements()) {
-      let win = wins.getNext();
+    // Scan windows in their Z-order from front to back.
+    for (let win in getWindows()) {
       let title, tip, icon, className, action;
 
-      if (isBrowserWindow(win)) {
+      if (isBrowser(win)) {
         let b = win.gBrowser;
 
         let tabs = [getPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])];
@@ -480,7 +620,7 @@ const mOpenedList = (function() {
         className.push('unified-nav-current');
       }
       else {
-        action = focusWindowAtIndex(winIndex);
+        action = Action.selectWindow(getIdFor(win));
       }
 
       aPopup.appendChild($E('menuitem', {
@@ -488,28 +628,14 @@ const mOpenedList = (function() {
         tooltiptext: getTooltip(title, tip),
         icon: getFavicon(icon),
         class: className.join(' '),
-        action: action || null
+        action: action
       }));
-
-      winIndex++
     }
-  }
-
-  function getWindowEnumerator() {
-    return Cc['@mozilla.org/appshell/window-mediator;1'].
-      getService(Ci.nsIWindowMediator).
-      getEnumerator(null);
-  }
-
-  function isBrowserWindow(aWindow) {
-    // @see chrome://browser/content/utilityOverlay.js::getBrowserURL
-    return aWindow.location.href === window.getBrowserURL();
   }
 
   return {
     build: build
   };
-
 })();
 
 /**
@@ -519,6 +645,41 @@ const mOpenedList = (function() {
  *   @key build {function}
  */
 const mClosedList = (function() {
+  /**
+   * Action of command of menuitem.
+   */
+  const Action = (function() {
+    /**
+     * Command action for closed tabs.
+     *
+     * command: Reopen a closed tab.
+     *
+     * @see chrome://browser/content/browser.js::undoCloseTab
+     */
+    function undoCloseTab(aIndex) {
+      return {
+        oncommand: 'undoCloseTab(' + aIndex + ');'
+      };
+    }
+
+    /**
+     * Command action for closed windows.
+     *
+     * command: Reopen a closed window.
+     *
+     * @see chrome://browser/content/browser.js::undoCloseWindow
+     */
+    function undoCloseWindow(aIndex) {
+      return {
+        oncommand: 'undoCloseWindow(' + aIndex + ');'
+      };
+    }
+
+    return {
+      undoCloseTab: undoCloseTab,
+      undoCloseWindow: undoCloseWindow
+    };
+  })();
 
   function build(aPopup) {
     if (!buildClosedTabs(aPopup)) {
@@ -560,8 +721,7 @@ const mClosedList = (function() {
         tooltiptext: getTooltip(closedTab.title, history.join('\n')),
         icon: getFavicon(closedTab.image),
         class: 'menuitem-iconic',
-        // @see chrome://browser/content/browser.js::undoCloseTab
-        action: 'undoCloseTab(' + i + ');'
+        action: Action.undoCloseTab(i)
       }));
     }
 
@@ -603,8 +763,7 @@ const mClosedList = (function() {
         tooltiptext: getTooltip(closedWindow.title, tabList.join('\n')),
         icon: getFavicon(icon),
         class: 'menuitem-iconic',
-        // @see chrome://browser/content/browser.js::undoCloseWindow
-        action: 'undoCloseWindow(' + i + ');'
+        action: Action.undoCloseWindow(i)
       }));
     }
 
@@ -643,26 +802,33 @@ const mClosedList = (function() {
   return {
     build: build
   };
-
 })();
 
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
-    case 'icon':
+    case 'icon': {
       aNode.style.listStyleImage = 'url(' + aValue + ')';
-      break;
 
-    case 'action':
-      aNode.setAttribute('oncommand', aValue);
-      // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
-      aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
-      break;
+      return true;
+    }
 
-    default:
-      return false;
+    case 'action': {
+      if (aValue) {
+        for (let [name, value] in Iterator(aValue)) {
+          if (name === 'oncommand' && typeof value !== 'string') {
+            aNode[kID.commandData] = value;
+          }
+          else {
+            aNode.setAttribute(name, value);
+          }
+        }
+      }
+
+      return true;
+    }
   }
 
-  return true;
+  return false;
 }
 
 function makeDisabledMenuItem(aPopup, aLabel) {
@@ -748,22 +914,6 @@ function getFavicon(aIconURL) {
   }
 
   return PlacesUtils.favicons.defaultFavicon.spec;
-}
-
-/**
- * Gets a command string to focus to a window
- *
- * @param aIndex {number}
- *   the window order index
- * @return {string}
- *   a string for <oncommand> attribute
- *
- * @note used in |mOpenedList::buildOpenedWindows|
- *
- * TODO: assemble only with built-in functions
- */
-function focusWindowAtIndex(aIndex) {
-  return 'ucjsUtil.focusWindowAtIndex(' + aIndex + ');';
 }
 
 /**
