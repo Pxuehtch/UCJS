@@ -350,7 +350,7 @@ const mHistoryList = (function() {
     }
 
     let currentIndex = sessionHistory.index;
-    let [start, end] = getListRange(currentIndex, sessionHistory.count);
+    let [start, end] = limitListRange(currentIndex, sessionHistory.count);
 
     // Scan history entries in thier visited date order from last to first.
     for (let i = end - 1; i >= start; i--) {
@@ -586,7 +586,7 @@ const mOpenedList = (function() {
       }
 
       let menuitem = aPopup.appendChild($E('menuitem', {
-        label: (i + 1) + '. ' + getTitle(tab.label),
+        label: assignNumber(i + 1, getTitle(tab.label)),
         tooltiptext: getTooltip(tab.label, tab.linkedBrowser.currentURI.spec),
         icon: getFavicon(gBrowser.getIcon(tab)),
         class: className.join(' '),
@@ -605,28 +605,28 @@ const mOpenedList = (function() {
 
     // Scan windows in their Z-order from front to back.
     for (let win in getWindows()) {
-      let title, tip, icon, className, action;
+      let title, icon, tabList, URL, className, action;
 
       if (isBrowser(win)) {
         let b = win.gBrowser;
 
-        let tabs = [getPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])];
-
-        let [start, end] = getListRange(b.mTabContainer.selectedIndex,
-          b.mTabs.length);
-
-        for (let j = start; j < end; j++) {
-          tabs.push((j + 1) + '. ' + b.mTabs[j].label);
-        }
-
-        tip = tabs.join('\n');
-
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
         icon = b.getIcon(b.selectedTab);
+
+        tabList = [
+          fixPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])
+        ];
+
+        let [start, end] =
+          limitListRange(b.mTabContainer.selectedIndex, b.mTabs.length);
+
+        for (let j = start; j < end; j++) {
+          tabList.push(assignNumber(j + 1, b.mTabs[j].label));
+        }
       }
       else {
         title = win.document.title;
-        tip = win.location.href;
+        URL = win.location.href;
         icon = 'moz-icon://.exe?size=16';
       }
 
@@ -641,7 +641,7 @@ const mOpenedList = (function() {
 
       aPopup.appendChild($E('menuitem', {
         label: getTitle(title),
-        tooltiptext: getTooltip(title, tip),
+        tooltiptext: getTooltip(title, tabList || URL),
         icon: getFavicon(icon),
         class: className.join(' '),
         action: action
@@ -756,21 +756,22 @@ const mClosedList = (function() {
     // Scan closed tabs in thier closed date order from last to first.
     closedTabs.forEach((closedTab, i) => {
       let entries = closedTab.state.entries;
-      let history = [];
 
-      history.push(getPluralForm('[#1 History #2]', entries.length,
-        ['entry', 'entries']));
+      let history = [
+        fixPluralForm('[#1 History #2]', entries.length, ['entry', 'entries'])
+      ];
 
-      let [start, end] = getListRange(closedTab.state.index, entries.length);
+      let [start, end] = limitListRange(closedTab.state.index, entries.length);
 
       for (let j = end - 1; j >= start; j--) {
-        history.push((j + 1) + '. ' +
-          getTitle(entries[j].title || entries[j].url));
+        let title = getTitle(entries[j].title || entries[j].url);
+
+        history.push(assignNumber(j + 1, title));
       }
 
       aPopup.appendChild($E('menuitem', {
         label: getTitle(closedTab.title),
-        tooltiptext: getTooltip(closedTab.title, history.join('\n')),
+        tooltiptext: getTooltip(closedTab.title, history),
         icon: getFavicon(closedTab.image),
         class: 'menuitem-iconic',
         action: Action.undoCloseTab(i)
@@ -790,24 +791,26 @@ const mClosedList = (function() {
     // Scan closed windows in thier closed date order from last to first.
     closedWindows.forEach((closedWindow, i) => {
       let tabs = closedWindow.tabs;
-      let tabList = [];
 
-      tabList.push(getPluralForm('[#1 #2]', tabs.length, ['Tab', 'Tabs']));
+      let tabList = [
+        fixPluralForm('[#1 #2]', tabs.length, ['Tab', 'Tabs'])
+      ];
 
-      let [start, end] = getListRange(closedWindow.selected - 1, tabs.length);
+      let [start, end] =
+        limitListRange(closedWindow.selected - 1, tabs.length);
 
       for (let j = start; j < end; j++) {
         let tab = tabs[j].index && tabs[j].entries[tabs[j].index - 1];
+        let title = getTitle(tab && (tab.title || tab.url));
 
-        tabList.push((j + 1) + '. ' +
-          getTitle(tab && (tab.title || tab.url)));
+        tabList.push(assignNumber(j + 1, title));
       }
 
       let icon = tabs[closedWindow.selected - 1].image;
 
       aPopup.appendChild($E('menuitem', {
         label: getTitle(closedWindow.title),
-        tooltiptext: getTooltip(closedWindow.title, tabList.join('\n')),
+        tooltiptext: getTooltip(closedWindow.title, tabList),
         icon: getFavicon(icon),
         class: 'menuitem-iconic',
         action: Action.undoCloseWindow(i)
@@ -867,13 +870,19 @@ function makeMenuSeparator(aPopup) {
   return aPopup.appendChild($E('menuseparator'));
 }
 
-function getPluralForm(aFormat, aCount, aLabels) {
+function assignNumber(aNumber, aValue) {
+	return '%number%. %value%'.
+	  replace('%number%', aNumber).
+	  replace('%value%', aValue);
+}
+
+function fixPluralForm(aFormat, aCount, aLabels) {
   return aFormat.
     replace('#1', aCount).
     replace('#2', aLabels[(aCount < 2) ? 0 : 1]);
 }
 
-function getListRange(aIndex, aCount) {
+function limitListRange(aIndex, aCount) {
   let maxNum = kPref.maxListItems;
 
   if (maxNum <= 0) {
@@ -913,11 +922,19 @@ function getTitle(aText) {
   return aText || PlacesUIUtils.getString('noTitle');
 }
 
+/**
+ * Makes a text for a tooltip.
+ *
+ * @param aTitle {string}
+ * @param aInfo {string|string[]}
+ * @return {string}
+ */
 function getTooltip(aTitle, aInfo) {
   if (aTitle === aInfo) {
     return aTitle;
   }
-  return [aTitle, aInfo].join('\n');
+
+  return [aTitle].concat(aInfo).join('\n');
 }
 
 function getFavicon(aIconURL) {
