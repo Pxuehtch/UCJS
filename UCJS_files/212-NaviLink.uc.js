@@ -318,13 +318,19 @@ const MenuUI = (function() {
       return;
     }
 
+    /**
+     * command: Load in current tab.
+     * ctrl / middle-click: Open a new tab.
+     * ctrl+shift / shift+middle-click: Open a new tab in background.
+     */
+    let {ctrlKey, shiftKey, button} = aEvent;
+    let [inTab, inBG] = [ctrlKey || button === 1,  shiftKey];
+
     if (data.open) {
       if (!/^(?:https?|ftp|file):/.test(data.open)) {
         log('invalid scheme to open:\n' + data.open);
         return;
       }
-
-      let [inTab, inBG] = [aEvent.button === 1,  aEvent.ctrlKey];
 
       openURL(data.open, {
         inTab: inTab,
@@ -333,7 +339,26 @@ const MenuUI = (function() {
       });
     }
     else if (data.submit) {
-      getDocument().forms[data.submit].submit();
+      if (inTab) {
+        let newTab = gBrowser.duplicateTab(gBrowser.selectedTab);
+
+        if (!inBG) {
+          gBrowser.selectedTab = newTab;
+        }
+
+        let browser = gBrowser.getBrowserForTab(newTab);
+
+        browser.addEventListener('load', function onLoad(event) {
+          if (event.target === browser.contentDocument) {
+            browser.removeEventListener('load', onLoad, true);
+
+            browser.contentDocument.forms[data.submit].submit();
+          }
+        }, true);
+      }
+      else {
+        getDocument().forms[data.submit].submit();
+      }
     }
   }
 
