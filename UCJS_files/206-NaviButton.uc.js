@@ -498,6 +498,7 @@ const History = {
     }
 
     let index = -1;
+
     if (!shiftKey && !ctrlKey) {
       index = this.data.neighbor.index;
     }
@@ -513,10 +514,14 @@ const History = {
     }
 
     if (button === 1) {
-      gBrowser.selectedTab = gBrowser.duplicateTab(gBrowser.selectedTab);
-    }
+      let delta = index - gBrowser.sessionHistory.index;
 
-    gBrowser.webNavigation.gotoIndex(index);
+      // @see chrome://browser/content/browser.js::duplicateTabIn
+      window.duplicateTabIn(gBrowser.selectedTab, 'tab', delta);
+    }
+    else {
+      gBrowser.gotoIndex(index);
+    }
   }
 };
 
