@@ -287,10 +287,14 @@ function getAvailableMenus() {
         return;
       }
 
-      let URL =
-        (typeof data.URL === 'function') ?
-        data.URL(pageInfo) :
-        data.URL;
+      let URL;
+
+      if (typeof data.URL === 'function') {
+        URL = data.URL(pageInfo);
+      }
+      else {
+        URL = data.URL;
+      }
 
       URL = AliasFixup.create(URL, pageInfo);
 

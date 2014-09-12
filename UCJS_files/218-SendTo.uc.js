@@ -320,10 +320,14 @@ function getAvailableItems() {
 }
 
 function makeItem(aType, aData, aService) {
-  let URL = 
-    (typeof aService.URL === 'function') ?
-    aService.URL(aData) :
-    aService.URL;
+  let URL;
+
+  if (typeof aService.URL === 'function') {
+    URL = aService.URL(aData);
+  }
+  else {
+    URL = aService.URL;
+  }
 
   URL = AliasFixup.create(URL, aData);
 
