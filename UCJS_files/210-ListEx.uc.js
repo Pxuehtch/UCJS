@@ -319,10 +319,6 @@ const mHistoryList = (function() {
     };
   })();
 
-  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
-  const kTimeFormat = '%Y/%m/%d %H:%M:%S';
-  const kTitleFormat = ['[%time%] %title%', '%title%'];
-
   function build(aPopup) {
     if (!buildTabHistory(aPopup)) {
       makeDisabledMenuItem(aPopup, 'Tab: No history.');
@@ -454,12 +450,17 @@ const mHistoryList = (function() {
   }
 
   function formatLabel(aValue) {
+    // Format to convert date and time.
+    // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
+    const kTimeFormat = '%Y/%m/%d %H:%M:%S';
+    const kTitleFormat = ['[%time%] %title%', '%title%'];
+
     let {time, title} = aValue;
 
     let form = time ? kTitleFormat[0] : kTitleFormat[1];
 
     if (time) {
-      // convert microseconds into milliseconds
+      // Convert microseconds into milliseconds.
       time = (new Date(time / 1000)).toLocaleFormat(kTimeFormat);
       form = form.replace('%time%', time);
     }
