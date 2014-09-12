@@ -802,11 +802,7 @@ const mClosedList = (function() {
           getTitle(tab && (tab.title || tab.url)));
       }
 
-      let icon;
-      try {
-        icon = tabs[closedWindow.selected - 1].attributes.image;
-      }
-      catch (ex) {}
+      let icon = tabs[closedWindow.selected - 1].image;
 
       aPopup.appendChild($E('menuitem', {
         label: getTitle(closedWindow.title),
