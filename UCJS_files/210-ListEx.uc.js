@@ -557,7 +557,8 @@ const mOpenedList = (function() {
   }
 
   function buildOpenedTabs(aPopup) {
-    Array.forEach(gBrowser.tabs, (tab, i) => {
+    // Scan the visible tabs in thier position order from first to last.
+    gBrowser.visibleTabs.forEach((tab, i) => {
       let className, action;
 
       className = ['menuitem-iconic'];
