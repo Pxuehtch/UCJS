@@ -219,7 +219,7 @@ function ScrollObserver() {
   let mScrollState = null;
 
   function attach() {
-    scanScrollables(window.content);
+    scanScrollables(gBrowser.contentWindow);
   }
 
   function scanScrollables(aWindow) {

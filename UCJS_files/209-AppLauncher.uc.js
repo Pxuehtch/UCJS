@@ -718,12 +718,12 @@ function doAction(aApp, aAction) {
       break;
 
     case 'openPage':
-      targetURL = window.content.document.location.href;
+      targetURL = gBrowser.contentDocument.location.href;
       break;
 
     case 'viewPageSource':
       save = true;
-      targetDocument = window.content.document;
+      targetDocument = gBrowser.contentDocument;
       targetURL = targetDocument.location.href;
       break;
 

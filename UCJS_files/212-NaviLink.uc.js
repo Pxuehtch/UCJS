@@ -1888,7 +1888,7 @@ const UpperNavi = (function() {
  * Gets the document object of the current content
  */
 function getDocument() {
-  return window.content.document;
+  return gBrowser.contentDocument;
 }
 
 /**
