@@ -454,11 +454,11 @@ const FindBar = (function() {
       return UI.textBox.value;
     },
 
-    set value(aValue) {
-      aValue =  aValue || '';
+    set value(aText) {
+      aText = aText || '';
 
-      if (this.value !== aValue) {
-        UI.textBox.value = aValue;
+      if (this.value !== aText) {
+        UI.textBox.value = aText;
       }
     },
 

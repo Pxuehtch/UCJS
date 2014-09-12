@@ -73,12 +73,12 @@ const kID = {
 };
 
 /**
- * Menu settings
+ * Main menu settings
  *
  * @return {hash}
  *   @key init {function}
  */
-const mMenu = (function() {
+const MainMenu = (function() {
   function init() {
     contentAreaContextMenu.register({
       events: [
@@ -145,9 +145,9 @@ const mMenu = (function() {
       let menu = menupopup.parentElement;
 
       [
-        [kID.historyMenu, mHistoryList],
-        [kID.openedMenu, mOpenedList],
-        [kID.closedMenu, mClosedList]
+        [kID.historyMenu, HistoryList],
+        [kID.openedMenu, OpenedList],
+        [kID.closedMenu, ClosedList]
       ].
       some(([id, handler]) => {
         if (menu.id === id && !menu.itemCount) {
@@ -199,12 +199,12 @@ const mMenu = (function() {
 })();
 
 /**
- * List of the tab/recent history
+ * List of the tab/recent history.
  *
  * @return {hash}
  *   @key build {function}
  */
-const mHistoryList = (function() {
+const HistoryList = (function() {
   /**
    * Action of command of menuitem.
    */
@@ -474,12 +474,12 @@ const mHistoryList = (function() {
 })();
 
 /**
- * List of the opened tabs/windows
+ * List of the opened tabs/windows.
  *
  * @return {hash}
  *   @key build {function}
  */
-const mOpenedList = (function() {
+const OpenedList = (function() {
   /**
    * Action of command of menuitem.
    */
@@ -655,12 +655,12 @@ const mOpenedList = (function() {
 })();
 
 /**
- * List of the closed tabs/windows
+ * List of the closed tabs/windows.
  *
  * @return {hash}
  *   @key build {function}
  */
-const mClosedList = (function() {
+const ClosedList = (function() {
   /**
    * Action of command of menuitem.
    */
@@ -955,7 +955,7 @@ function getFavicon(aIconURL) {
  * Entry point
  */
 function ListEx_init() {
-  mMenu.init();
+  MainMenu.init();
 }
 
 ListEx_init();

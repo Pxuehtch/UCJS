@@ -826,8 +826,7 @@ const mSessionStore = {
   isRestoring: false,
 
   init: function() {
-    this.SessionStore =
-      Cc['@mozilla.org/browser/sessionstore;1'].
+    this.SS = Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
 
     addEvent(window, 'SSWindowStateBusy', () => {
@@ -849,13 +848,13 @@ const mSessionStore = {
     ];
 
     savedAttributes.forEach((key) => {
-      this.SessionStore.persistTabAttribute(key);
+      this.SS.persistTabAttribute(key);
     });
   },
 
   getClosedTabList: function() {
-    if (this.SessionStore.getClosedTabCount(window) > 0) {
-      return JSON.parse(this.SessionStore.getClosedTabData(window));
+    if (this.SS.getClosedTabCount(window) > 0) {
+      return JSON.parse(this.SS.getClosedTabData(window));
     }
     return null;
   }
