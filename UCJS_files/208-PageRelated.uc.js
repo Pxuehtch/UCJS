@@ -37,19 +37,21 @@ const {
 } = window.ucjsUI;
 
 /**
- * Identifiers
+ * UI settings
  */
-const kID = {
-  startSeparator: 'ucjs_PageRelated_startSeparator',
-  endSeparator: 'ucjs_PageRelated_endSeparator'
-};
+const kUI = {
+  menu: {
+    warnParameter: '注意：パラメータ付 URL',
+    openAll: 'すべて開く'
+  },
 
-/**
- * UI strings
- */
-const kString = {
-  warnParameter: '注意：パラメータ付 URL',
-  openAll: 'すべて開く'
+  startSeparator: {
+    id: 'ucjs_PageRelated_startSeparator'
+  },
+
+  endSeparator: {
+    id: 'ucjs_PageRelated_endSeparator'
+  },
 };
 
 /**
@@ -267,7 +269,7 @@ function getAvailableMenus() {
   // security warning for a URL with parameters
   if (/[?#].*$/.test(pageInfo.URL)) {
     menus.push($E('menuitem', {
-      label: kString.warnParameter,
+      label: kUI.menu.warnParameter,
       style: 'font-weight:bold;',
       tooltiptext: pageInfo.URL.replace(/[?#]/, '\n$&'),
       disabled: true
@@ -310,7 +312,7 @@ function getAvailableMenus() {
     if (URLs.length > 1) {
       popup.appendChild($E('menuseparator'));
       popup.appendChild($E('menuitem', {
-        label: kString.openAll,
+        label: kUI.menu.openAll,
         open: URLs
       }));
     }
@@ -328,13 +330,13 @@ function setSeparators(aContextMenu, aReferenceNode) {
   }
 
   [
-    kID.startSeparator,
-    kID.endSeparator
+    kUI.startSeparator,
+    kUI.endSeparator
   ].
-  forEach((id) => {
+  forEach((aSeparatorName) => {
     aContextMenu.insertBefore(
       $E('menuseparator', {
-        id: id
+        id: aSeparatorName.id
       }),
       aReferenceNode
     );
@@ -343,8 +345,8 @@ function setSeparators(aContextMenu, aReferenceNode) {
 
 function getSeparators() {
   return [
-    $ID(kID.startSeparator),
-    $ID(kID.endSeparator)
+    $ID(kUI.startSeparator.id),
+    $ID(kUI.endSeparator.id)
   ];
 }
 

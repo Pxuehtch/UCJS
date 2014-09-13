@@ -38,21 +38,18 @@ function log(aMsg) {
 }
 
 /**
- * Identifiers
- */
-const kID = {
-  STYLESHEET: 'ucjs_SiteStyle_styleSheet',
-  PREFMENU: 'ucjs_SiteStyle_prefMenu'
-};
-
-/**
- * Settings for UI
+ * UI settings
  */
 const kUI = {
-  PREFMENU: {
+  pageStyleSheet: {
+    id: 'ucjs_SiteStyle_pageStyleSheet'
+  },
+
+  prefMenu: {
+    id: 'ucjs_SiteStyle_prefMenu',
     label: 'ucjsSiteStyle',
     accesskey: 'S',
-    disabledTip: '登録サイトなし'
+    noSiteRegistered: '登録サイトなし'
   }
 };
 
@@ -860,7 +857,7 @@ const PageCSS = (function() {
   function setCSS(aDocument, aCSS) {
     setContentStyleSheet(aCSS, {
       document: aDocument,
-      id: kID.STYLESHEET
+      id: kUI.pageStyleSheet.id
     });
   }
 
@@ -880,9 +877,9 @@ const PrefMenu = (function() {
     let menu = $ID('menu_ToolsPopup').
 
     appendChild($E('menu', {
-      id: kID.PREFMENU,
-      label: kUI.PREFMENU.label,
-      accesskey: kUI.PREFMENU.accesskey
+      id: kUI.prefMenu.id,
+      label: kUI.prefMenu.label,
+      accesskey: kUI.prefMenu.accesskey
     }));
 
     addEvent(menu, 'command', doCommand, false);
@@ -906,7 +903,7 @@ const PrefMenu = (function() {
     }
     else {
       $E(menu, {
-        tooltiptext: kUI.PREFMENU.disabledTip,
+        tooltiptext: kUI.prefMenu.noSiteRegistered,
         disabled: true
       });
     }

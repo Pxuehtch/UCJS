@@ -229,50 +229,6 @@ const kTypeAction = [
 ];
 
 /**
- * String bundle
- */
-const kString = {
-  appMenuItem: '%type%: %name%',
-
-  type: {
-    tool:     'Tool',
-    file:     'File(%1)',
-    browse:   'Browser',
-    text:     'Text Editor',
-    mail:     'Mail Client',
-    news:     'News Client',
-    media:    'Media Player',
-    image:    'Image Viewer',
-    download: 'Downloader',
-    ftp:      'FTP Client'
-  },
-
-  action: {
-    launchTool:      'Launch %1',
-    openFile:        'Open File in %1',
-    openPage:        'Open Page in %1',
-    openFrame:       'Open Frame in %1',
-    openLink:        'Open Link in %1',
-    viewPageSource:  'View Page Source with %1',
-    viewFrameSource: 'View Frame Source with %1',
-    viewLinkSource:  'View Link Source with %1',
-    sendMail:        'Send Email with %1',
-    readNews:        'Read News with %1',
-    openLinkMedia:   'Open Linked Media in %1',
-    viewLinkImage:   'View Linked Image with %1',
-    openMedia:       'Open Media in %1',
-    viewImage:       'View Image with %1',
-    viewBGImage:     'View BG-Image with %1',
-    downloadLink:    'Download Link with %1',
-    downloadMedia:   'Download Media with %1',
-    downloadImage:   'Download Image with %1',
-    downloadBGImage: 'Download BG-Image with %1',
-    openFTP:         'Open FTP in %1',
-    noActions:       'No actions'
-  }
-};
-
-/**
  * File extensions for the action on a link
  */
 const kLinkExtension = {
@@ -294,23 +250,74 @@ const kLinkExtension = {
 };
 
 /**
- * UI
+ * UI settings
  */
 const kUI = {
-  mainMenuLabel: 'AppLauncher',
-  mainMenuAccesskey: 'L',
-  appMenuLabel: 'Applications'
-};
+  mainMenu: {
+    id: 'ucjs_AppLauncher_menu',
+    label: 'AppLauncher',
+    accesskey: 'L'
+  },
 
-/**
- * Identifier
- */
-const kID = {
-  mainMenu: 'ucjs_AppLauncher_menu',
-  appIndexKey: 'ucjs_AppLauncher_appIndex',
-  actionKey: 'ucjs_AppLauncher_action',
-  startSeparator: 'ucjs_AppLauncher_startSeparator',
-  endSeparator: 'ucjs_AppLauncher_endSeparator'
+  appMenu: {
+    label: 'Applications'
+  },
+
+  appMenuItem: {
+    label: '%type%: %name%'
+  },
+
+  item: {
+    type: {
+      tool:     'Tool',
+      file:     'File(%1)',
+      browse:   'Browser',
+      text:     'Text Editor',
+      mail:     'Mail Client',
+      news:     'News Client',
+      media:    'Media Player',
+      image:    'Image Viewer',
+      download: 'Downloader',
+      ftp:      'FTP Client'
+    },
+
+    action: {
+      launchTool:      'Launch %1',
+      openFile:        'Open File in %1',
+      openPage:        'Open Page in %1',
+      openFrame:       'Open Frame in %1',
+      openLink:        'Open Link in %1',
+      viewPageSource:  'View Page Source with %1',
+      viewFrameSource: 'View Frame Source with %1',
+      viewLinkSource:  'View Link Source with %1',
+      sendMail:        'Send Email with %1',
+      readNews:        'Read News with %1',
+      openLinkMedia:   'Open Linked Media in %1',
+      viewLinkImage:   'View Linked Image with %1',
+      openMedia:       'Open Media in %1',
+      viewImage:       'View Image with %1',
+      viewBGImage:     'View BG-Image with %1',
+      downloadLink:    'Download Link with %1',
+      downloadMedia:   'Download Media with %1',
+      downloadImage:   'Download Image with %1',
+      downloadBGImage: 'Download BG-Image with %1',
+      openFTP:         'Open FTP in %1',
+      noActions:       'No actions'
+    }
+  },
+
+  attribute: {
+    appIndex: 'ucjs_AppLauncher_appIndex',
+    action: 'ucjs_AppLauncher_action'
+  },
+
+  startSeparator: {
+    id: 'ucjs_AppLauncher_startSeparator'
+  },
+
+  endSeparator: {
+    id: 'ucjs_AppLauncher_endSeparator'
+  }
 };
 
 /**
@@ -419,7 +426,7 @@ function onPopupShowing(aEvent) {
 
   let menupopup = aEvent.target;
 
-  if (menupopup.parentElement.id === kID.mainMenu) {
+  if (menupopup.parentElement.id === kUI.mainMenu.id) {
     doBrowse(menupopup);
   }
 }
@@ -429,24 +436,24 @@ function onCommand(aEvent, aAppList) {
 
   let element = aEvent.target;
 
-  if (!element.hasAttribute(kID.appIndexKey)) {
+  if (!element.hasAttribute(kUI.attribute.appIndex)) {
     return;
   }
 
-  let appIndex = +(element.getAttribute(kID.appIndexKey));
+  let appIndex = +(element.getAttribute(kUI.attribute.appIndex));
 
   if (appIndex < 0) {
     return;
   }
 
-  doAction(aAppList[appIndex], element.getAttribute(kID.actionKey));
+  doAction(aAppList[appIndex], element.getAttribute(kUI.attribute.action));
 }
 
 function makeMainMenu(aContextMenu, aAppList) {
   let menu = $E('menu', {
-    id: kID.mainMenu,
-    label: kUI.mainMenuLabel,
-    accesskey: kUI.mainMenuAccesskey
+    id: kUI.mainMenu.id,
+    label: kUI.mainMenu.label,
+    accesskey: kUI.mainMenu.accesskey
   });
 
   let popup = $E('menupopup');
@@ -456,14 +463,14 @@ function makeMainMenu(aContextMenu, aAppList) {
 
   menu.appendChild(popup);
 
-  addSeparator(aContextMenu, kID.startSeparator);
+  addSeparator(aContextMenu, kUI.startSeparator.id);
   aContextMenu.appendChild(menu);
-  addSeparator(aContextMenu, kID.endSeparator);
+  addSeparator(aContextMenu, kUI.endSeparator.id);
 }
 
 function makeAppMenu(aPopup, aAppList) {
   let appMenu = $E('menu', {
-    label: kUI.appMenuLabel
+    label: kUI.appMenu.label
   });
 
   let appMenuPopup = $E('menupopup');
@@ -535,11 +542,11 @@ function addMenuItem(aPopup, aParam) {
     disabled: appIndex < 0 || null,
     user: [
       {
-        key: kID.appIndexKey,
+        key: kUI.attribute.appIndex,
         value: appIndex
       },
       {
-        key: kID.actionKey,
+        key: kUI.attribute.action,
         value: action
       }
     ]
@@ -552,18 +559,18 @@ function makeMenuItemLabel({app, action, inAppMenu}) {
   let label;
 
   if (inAppMenu) {
-    let type = kString.type[app.type];
+    let type = kUI.item.type[app.type];
 
     if (app.type === 'file') {
       type = type.replace('%1', app.extensions.join(','));
     }
 
-    label = kString.appMenuItem.
+    label = kUI.appMenuItem.label.
       replace('%type%', type).
       replace('%name%', app.name);
   }
   else {
-    label = kString.action[FileExtUtil.getBaseAction(action)];
+    label = kUI.item.action[FileExtUtil.getBaseAction(action)];
 
     if (app) {
       label = label.replace('%1', app.name);
@@ -576,7 +583,7 @@ function makeMenuItemLabel({app, action, inAppMenu}) {
 function doBrowse(aPopup) {
   // XPath for a <menuitem> with avalable actions
   let availableItem = (actions) => {
-    let key = '@' + kID.actionKey + '="';
+    let key = '@' + kUI.attribute.action + '="';
 
     return 'xul:menuitem[' + key + actions.join('" or ' + key) + '"]';
   };

@@ -61,15 +61,50 @@ const kPref = {
 };
 
 /**
- * Identifiers
+ * UI settings
  */
-const kID = {
-  historyMenu: 'ucjs_ListEx_historyMenu',
-  openedMenu: 'ucjs_ListEx_openedMenu',
-  closedMenu: 'ucjs_ListEx_closedMenu',
-  startSeparator: 'ucjs_ListEx_startSeparator',
-  endSeparator: 'ucjs_ListEx_endSeparator',
-  commandData: 'ucjs_ListEx_commandData'
+const kUI = {
+  historyMenu: {
+    id: 'ucjs_ListEx_historyMenu',
+    label: 'History Tab/Recent',
+    accesskey: 'H',
+
+    tabEmpty: 'Tab: No history.',
+    recentEmpty: 'Recent: No history.'
+  },
+
+  historyManager: {
+    label: 'Open History Manager',
+    accesskey: 'H'
+  },
+
+  openedMenu: {
+    id: 'ucjs_ListEx_openedMenu',
+    label: 'Opened Tab/Window',
+    accesskey: 'O'
+  },
+
+  closedMenu: {
+    id: 'ucjs_ListEx_closedMenu',
+    label: 'Closed Tab/Window',
+    accesskey: 'C',
+
+    noTabs: 'No closed tabs.',
+    noWindows: 'No closed windows.'
+  },
+
+  startSeparator: {
+    id: 'ucjs_ListEx_startSeparator'
+  },
+
+  endSeparator: {
+    id: 'ucjs_ListEx_endSeparator'
+  },
+
+  property: {
+    // Extended property name of a menuitem for its custom command.
+    commandData: 'ucjs_ListEx_commandData'
+  }
 };
 
 /**
@@ -94,27 +129,27 @@ const MainMenu = (function() {
   function createMenu(aContextMenu) {
     let refItem = aContextMenu.firstChild;
 
-    function addSeparator(aId) {
+    function addSeparator(aSeparatorName) {
       aContextMenu.insertBefore($E('menuseparator', {
-        id: aId
+        id: aSeparatorName.id
       }), refItem);
     }
 
-    function addMenu(aId, aLabel, aAccesskey) {
+    function addMenu(aMenuName) {
       let menu = aContextMenu.insertBefore($E('menu', {
-        id: aId,
-        label: aLabel,
-        accesskey: aAccesskey
+        id: aMenuName.id,
+        label: aMenuName.label,
+        accesskey: aMenuName.accesskey
       }), refItem);
 
       menu.appendChild($E('menupopup'));
     }
 
-    addSeparator(kID.startSeparator);
-    addMenu(kID.historyMenu, 'History Tab/Recent', 'H');
-    addMenu(kID.openedMenu, 'Opened Tab/Window', 'O');
-    addMenu(kID.closedMenu, 'Closed Tab/Window', 'C');
-    addSeparator(kID.endSeparator);
+    addSeparator(kUI.startSeparator);
+    addMenu(kUI.historyMenu);
+    addMenu(kUI.openedMenu);
+    addMenu(kUI.closedMenu);
+    addSeparator(kUI.endSeparator);
   }
 
   function onPopupShowing(aEvent) {
@@ -133,25 +168,25 @@ const MainMenu = (function() {
         gContextMenu.isTextSelected;
 
       [
-        kID.historyMenu,
-        kID.openedMenu,
-        kID.closedMenu
+        kUI.historyMenu,
+        kUI.openedMenu,
+        kUI.closedMenu
       ].
-      forEach((id) => {
-        gContextMenu.showItem(id, !hidden);
+      forEach((aMenuName) => {
+        gContextMenu.showItem(aMenuName.id, !hidden);
       });
     }
     else {
       let menu = menupopup.parentElement;
 
       [
-        [kID.historyMenu, HistoryList],
-        [kID.openedMenu, OpenedList],
-        [kID.closedMenu, ClosedList]
+        [kUI.historyMenu, HistoryList],
+        [kUI.openedMenu, OpenedList],
+        [kUI.closedMenu, ClosedList]
       ].
-      some(([id, handler]) => {
-        if (menu.id === id && !menu.itemCount) {
-          handler.build(menupopup);
+      some(([menuName, menuHandler]) => {
+        if (menu.id === menuName.id && !menu.itemCount) {
+          menuHandler.build(menupopup);
         }
       });
     }
@@ -165,12 +200,12 @@ const MainMenu = (function() {
 
     if (menupopup === contextMenu) {
       [
-        kID.historyMenu,
-        kID.openedMenu,
-        kID.closedMenu
+        kUI.historyMenu,
+        kUI.openedMenu,
+        kUI.closedMenu
       ].
-      forEach((id) => {
-        let menu = $ID(id);
+      forEach((aMenuName) => {
+        let menu = $ID(aMenuName.id);
 
         while (menu.itemCount) {
           menu.removeItemAt(0);
@@ -184,7 +219,7 @@ const MainMenu = (function() {
 
     let menuitem = aEvent.target;
 
-    let commandData = menuitem[kID.commandData];
+    let commandData = menuitem[kUI.property.commandData];
 
     if (!commandData) {
       return;
@@ -321,23 +356,23 @@ const HistoryList = (function() {
 
   function build(aPopup) {
     if (!buildTabHistory(aPopup)) {
-      makeDisabledMenuItem(aPopup, 'Tab: No history.');
+      makeDisabledMenuItem(aPopup, kUI.historyMenu.tabEmpty);
     }
 
     makeMenuSeparator(aPopup);
 
-    // recent history items will be async-appended before this separator
+    // Recent history items will be async-appended before this separator.
     let recentHistorySep = makeMenuSeparator(aPopup);
 
     asyncBuildRecentHistory(recentHistorySep, (aBuilt) => {
       if (!aBuilt) {
-        makeDisabledMenuItem(recentHistorySep, 'Recent: No history.');
+        makeDisabledMenuItem(recentHistorySep, kUI.historyMenu.recentEmpty);
       }
     });
 
     aPopup.appendChild($E('menuitem', {
-      label: 'Open History Manager',
-      accesskey: 'H',
+      label: kUI.historyManager.label,
+      accesskey: kUI.historyManager.accesskey,
       command: 'Browser:ShowAllHistory'
     }));
   }
@@ -736,13 +771,13 @@ const ClosedList = (function() {
 
   function build(aPopup) {
     if (!buildClosedTabs(aPopup)) {
-      makeDisabledMenuItem(aPopup, 'No closed tabs.');
+      makeDisabledMenuItem(aPopup, kUI.closedMenu.noTabs);
     }
 
     makeMenuSeparator(aPopup);
 
     if (!buildClosedWindows(aPopup)) {
-      makeDisabledMenuItem(aPopup, 'No closed windows.');
+      makeDisabledMenuItem(aPopup, kUI.closedMenu.noWindows);
     }
   }
 
@@ -837,7 +872,7 @@ function handleAttribute(aNode, aName, aValue) {
       if (aValue) {
         for (let [name, value] in Iterator(aValue)) {
           if (name === 'oncommand' && typeof value !== 'string') {
-            aNode[kID.commandData] = value;
+            aNode[kUI.property.commandData] = value;
           }
           else {
             aNode.setAttribute(name, value);

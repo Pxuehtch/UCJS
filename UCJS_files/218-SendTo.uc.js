@@ -39,36 +39,37 @@ const {
 } = window.ucjsUI;
 
 /**
- * Identifiers
+ * UI settings
  */
-const kID = {
-  startSeparator: 'ucjs_SendTo_startSeparator',
-  endSeparator: 'ucjs_SendTo_endSeparator'
-};
+const kUI = {
+  item: {
+    /**
+     * Types for the label text.
+     *
+     * @see |kPreset.types|
+     */
+    types: {
+      'PAGE': 'ページ',
+      'LINK': 'リンク',
+      'IMAGE': '画像',
+      'TEXT': 'テキスト'
+    },
 
-/**
- * UI strings
- */
-const kString = {
-  /**
-   * for the label text of a menuitem
-   *
-   * @note keep in sync with |kPreset[item].types|
-   */
-  types: {
-    'PAGE': 'ページ',
-    'LINK': 'リンク',
-    'IMAGE': '画像',
-    'TEXT': 'テキスト'
+    /**
+     * Format for a tooltip text.
+     *
+     * %DATA%: The data being passed to a web service.
+     * %URL%: The URL that is opened actually.
+     */
+    tooltip: '%DATA%\n\n%URL%'
   },
 
-  /**
-   * the tooltip text of a menuitem
-   *
-   * %DATA% : the passed data
-   * %URL% : the opened URL
-   */
-  tooltip: '%DATA%\n\n%URL%'
+  startSeparator: {
+    id: 'ucjs_SendTo_startSeparator'
+  },
+
+  endSeparator: {
+    id: 'ucjs_SendTo_endSeparator'
 };
 
 /**
@@ -76,14 +77,14 @@ const kString = {
  *
  * @key label {string}
  *   a display name for menuitem
- *   @note %TYPE% is replaced into |kString.types|
+ *   @note %TYPE% is replaced into |kUI.item.types|
  * @key types {string[]}
  *   available value - case of showing the menuitem;
  *   'PAGE' - the page URL not on the following cases
  *   'LINK' - the link URL on a link
  *   'IMAGE' - the image URL on an image
  *   'TEXT' - the selected text on a selection
- *   @note keep in sync with |kString.types|
+ *   @note keep in sync with |kUI.item.types|
  *
  * @key URL {string}
  *   URL string of a web service
@@ -332,9 +333,9 @@ function makeItem(aType, aData, aService) {
   URL = AliasFixup.create(URL, aData);
 
   let label = aService.label.
-    replace('%TYPE%', kString.types[aType]);
+    replace('%TYPE%', kUI.item.types[aType]);
 
-  let tooltip = kString.tooltip.
+  let tooltip = kUI.item.tooltip.
     replace('%URL%', URL).
     replace('%DATA%', aData);
 
@@ -374,13 +375,13 @@ function setSeparators(aContextMenu, aReferenceNode) {
   }
 
   [
-    kID.startSeparator,
-    kID.endSeparator
+    kUI.startSeparator,
+    kUI.endSeparator
   ].
-  forEach((id) => {
+  forEach((aSeparatorName) => {
     aContextMenu.insertBefore(
       $E('menuseparator', {
-        id: id
+        id: aSeparatorName.id
       }),
       aReferenceNode
     );
