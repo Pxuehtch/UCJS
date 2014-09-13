@@ -1,10 +1,8 @@
 // ==UserScript==
 // @name SortList.uc.js
-// @description Sorting function of a listview of the Page Info window
+// @description Customizes sorting of a listview of the Page Info window.
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
-
-// @note disables the default sorting function
 
 
 (function(window, undefined) {

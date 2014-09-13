@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name        WebService.uc.js
-// @description Helper handler for using the web services
-// @include     main
+// @name WebService.uc.js
+// @description Helper handler for using the web services.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage access to functions through the global scope;
-// |window.ucjsWebService.XXX|
+
+// @usage Access to functions through the global scope
+// (window.ucjsWebService.XXX).
 
 
 const ucjsWebService = (function(window, undefined) {

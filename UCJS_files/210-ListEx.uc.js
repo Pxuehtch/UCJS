@@ -1,11 +1,12 @@
 // ==UserScript==
-// @name        ListEx.uc.js
-// @description Makes lists of tabs, windows and history
-// @include     main
+// @name ListEx.uc.js
+// @description Makes lists of tabs, windows and history.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage creates items in the main context menu
+
+// @usage Creates items in the main context menu.
 
 
 (function(window, undefined) {
@@ -48,14 +49,16 @@ const {
  */
 const kPref = {
   /**
-   * Numbers of the listed items
+   * Numbers of the listed items.
    *
    * @value {integer} [>0]
+   * !!! WARNING !!!
+   * *ALL* items will be listed if set to 0. It can cause performance problems.
+   * !!! WARNING !!!
    *
-   * !!! WARNING !!!
-   * *ALL* items will be listed if set to 0
-   * It can cause performance problems
-   * !!! WARNING !!!
+   * @note Applied to;
+   * - List of Tab history and Recent history.
+   * - List of tabs in a tooltip of Opened window and Closed tab/window.
    */
   maxListItems: 10
 };
@@ -108,7 +111,7 @@ const kUI = {
 };
 
 /**
- * Main menu settings
+ * Main menu handler.
  *
  * @return {hash}
  *   @key init {function}
@@ -298,7 +301,7 @@ const HistoryList = (function() {
    */
   const PlacesDB = (function() {
     function promiseRecentHistory() {
-      // Query history entries in thier visited date order from newest
+      // Query history entries in thier visited date order from newest.
       let SQLExp = [
         "SELECT p.title, p.url, h.visit_date time, f.url icon",
         "FROM moz_places p",
@@ -354,6 +357,9 @@ const HistoryList = (function() {
     };
   })();
 
+  /**
+   * Build menu items.
+   */
   function build(aPopup) {
     if (!buildTabHistory(aPopup)) {
       makeDisabledMenuItem(aPopup, kUI.historyMenu.tabEmpty);
@@ -411,7 +417,7 @@ const HistoryList = (function() {
 
       className.push(direction);
 
-      // @note |label| and |icon| will be set asynchronously
+      // @note |label| and |icon| will be set asynchronously.
       let menuitem = aPopup.appendChild($E('menuitem', {
         tooltiptext: getTooltip(title, URL),
         class: className.join(' '),
@@ -598,6 +604,9 @@ const OpenedList = (function() {
     };
   })();
 
+  /**
+   * Build menu items.
+   */
   function build(aPopup) {
     buildOpenedTabs(aPopup);
 
@@ -628,7 +637,8 @@ const OpenedList = (function() {
         action: action
       }));
 
-      // indicate the state of an unread tab
+      // Set a state to indicate that the tab is unread.
+      // @note Setting for unread tabs handled by TabEx.uc.js
       if (!tab.selected) {
         setStateForUnreadTab(menuitem, tab);
       }
@@ -769,6 +779,9 @@ const ClosedList = (function() {
     };
   })();
 
+  /**
+   * Build menu items.
+   */
   function build(aPopup) {
     if (!buildClosedTabs(aPopup)) {
       makeDisabledMenuItem(aPopup, kUI.closedMenu.noTabs);

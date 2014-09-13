@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name MoveTabToWindow.uc.js
-// @description Moves a tab to the other window
+// @description Moves a tab to the other window.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
+
 // @usage Creates a menu in the tab context menu.
 
 
@@ -57,7 +58,7 @@ const kUI = {
 };
 
 /**
- * Fx native elements for the tab context menu
+ * Fx native elements for the tab context menu.
  */
 const TabContext = {
   get menu() {

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <!--
-// @note need to escape special characters through |encodeURIComponent|
+// @note Need to escape special characters through |encodeURIComponent|.
 <?xml-stylesheet href="data:text/css,
 @namespace url('http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul');
 @namespace html url('http://www.w3.org/1999/xhtml');
@@ -19,7 +19,7 @@
 <!--
 // ==UserScript==
 // @name LinkInfo.uc.xul
-// @description Builds the UI of link information in the Page Info window
+// @description Builds the UI of link information in the Page Info window.
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
 

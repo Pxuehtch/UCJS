@@ -1,13 +1,16 @@
 // ==UserScript==
 // @name NaviLink.uc.js
-// @description Detects the links for navigation
+// @description Detects the links for navigation.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage creates items in the URLbar context menu
-// @note some functions are exposed to the global scope;
-// |window.ucjsNaviLink.XXX|
+
+// @usage Creates items in the URLbar context menu.
+
+// @note Some functions are exposed (window.ucjsNaviLink.XXX).
+
+// @note This script scans only top content document, does not traverse frames.
 
 
 const ucjsNaviLink = (function(window, undefined) {
@@ -281,6 +284,7 @@ const MenuUI = (function() {
         ['popupshowing', onPopupShowing, false],
         ['popuphiding', onPopupHiding, false]
       ],
+
       onCreate: createMenu
     });
   }

@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name        Misc.uc.js
-// @description Miscellaneous customizations
-// @include     main
+// @name Misc.uc.js
+// @description Miscellaneous customizations.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js, TabEx.uc.js
-// @note some about:config preferences are changed. see @pref
-// @note some default functions are modified. see @modified
+
+// @note Some about:config preferences are changed (see @pref).
+// @note Some native functions are modified (see @modified).
 
 
 (function(window, undefined) {
@@ -787,9 +788,9 @@ function log(aMsg) {
   }, false);
 
   /**
-   * Update the state of a menuitem for an unread tab
+   * Update the state of a menuitem for an unread tab.
    *
-   * @note workaround for an unread tab by TabEx.uc.js
+   * @note Workaround for an unread tab handled by TabEx.uc.js
    */
   addEvent(alltabsPopup, 'popupshowing', (aEvent) => {
     aEvent.stopPropagation();

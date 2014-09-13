@@ -1,19 +1,17 @@
 // ==UserScript==
 // @name TextLink.uc.js
-// @description Detects the unlinked URL-like text
+// @description Detects the unlinked URL-like text.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 
 /**
- * @usage when 'double-click' on a URL-like text, a new tab will open
- * in the detected URL
- * @note a text will only be selected (by the Fx default behavior) if
- * 'Shift' or 'Ctrl' keys are being pressed
+ * @usage A new tab will open in the detected URL when 'double-click' on a
+ * URL-like text.
+ * @note A text will be only selected (by the Fx default behavior) if
+ * 'Shift' or 'Ctrl' keys are being pressed.
  */
-
-// @see https://github.com/piroor/textlink
 
 
 (function(window, undefined) {

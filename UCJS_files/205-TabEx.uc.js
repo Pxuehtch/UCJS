@@ -1,14 +1,18 @@
 // ==UserScript==
-// @name        TabEx.uc.js
-// @description Extends the tab functions
-// @include     main
+// @name TabEx.uc.js
+// @description Extends tabs function.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note some about:config preferences are changed. see @pref
-// @note a default function is modified. see @modified
-// @note some properties are exposed to the global scope;
-// |window.ucjsTabEx.XXX|
+
+// @note Some functions are exported (window.ucjsTabEx.XXX).
+
+// @note Some about:config preferences are changed (see @pref). 
+// @note A native function |gBrowser.addTab| is modified (see @modified).
+
+// @note The custom attributes of tabs are saved in the session store file.
+// @see |mSessionStore.persistTabAttribute|
 
 
 const ucjsTabEx = (function(window, undefined) {
@@ -938,8 +942,8 @@ const mStartup = {
 
           // Update some states for the selected tab, notify onLocationChange,
           // correct the URL bar, etc.
-          // TODO: I don't know how to update properly, and worried about side
-          // effects by using this function.
+          // TODO: I don't know how to update them properly. Watch side effects
+          // by using this function.
           aSubject.gBrowser.updateCurrentBrowser(true);
         }, 500);
       }
@@ -979,11 +983,11 @@ const mStartup = {
  */
 const mJumpTabObserver = {
   init: function() {
-    // Watch a tab that moves to the other window.
+    // Observe a tab that moves to the other window.
     // @see chrome://browser/content/tabbrowser.xml::_swapBrowserDocShells
     addEvent(gBrowser, 'SwapDocShells', this, false);
 
-    // Watch a tab that moves to a newly opened window.
+    // Observe a tab that moves to a newly opened window.
     // @see chrome://browser/content/tabbrowser.xml::replaceTabWithWindow
     addEvent(gBrowser.tabContainer, 'TabBecomingWindow', this, false);
   },
@@ -1050,7 +1054,7 @@ const mJumpTabObserver = {
       }
 
       // Copy the original open info.
-      // @note other states are created for a new tab.
+      // @note Other states are created for a new tab.
       mTab.data(aTab, 'openInfo', this.state.openInfo);
 
       // Set a flag to load the suspended tab.
@@ -1203,7 +1207,7 @@ const mTabEvent = {
 };
 
 /**
- * Tab handling functions
+ * Utility functions for handle tabs.
  */
 function getOriginalTabOfDuplicated(aTab) {
   let openTime = mTab.data(aTab, 'open');
@@ -1712,6 +1716,9 @@ function selectTab(aTab) {
   return null;
 }
 
+/**
+ * Helper functions
+ */
 function htmlEscape(aString) {
   return aString.
     replace(/&/g, '&amp;'). // must escape at first

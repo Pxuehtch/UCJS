@@ -1,26 +1,26 @@
 // ==UserScript==
-// @name        MouseGesture.uc.js
-// @description Mouse gesture functions
-// @include     main
+// @name MouseGesture.uc.js
+// @description Mouse gesture functions.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @require [optional][for commands] Util.uc.js, UI.uc.js, NaviLink.uc.js,
+// @require [optional for commands] Util.uc.js, UI.uc.js, NaviLink.uc.js,
 // TabEx.uc.js, WebService.uc.js
 
 /**
  * @usage
- * -Normal mode: gestures or wheel rotations holding down the right mouse
- *  button
- * -Drag&Drop mode: gestures dragging a selected text or a link or an image
- * -'Shift' key and 'Ctrl' key are supported
+ * - Normal mode: Gestures or wheel rotations holding down the right mouse
+ *   button.
+ * - Drag&Drop mode: Gestures dragging a selected text or a link or an image
+ * - 'Shift' and 'Ctrl' keys are supported.
  *
  * @note
- * -The gestures is only available within the inner frame of the content area,
- *  and the default width of the frame is 16px
- *  @see |inGestureArea()|
- * -The max number of signs(directions and wheel rotations) per gesture is 10
- *  @see |GestureManager()|
+ * - The gestures is only available within the inner frame of the content area,
+ *   and the default width of the frame is 16px.
+ *   @see |inGestureArea()|
+ * - The max number of signs(directions and wheel rotations) per gesture is 10.
+ *   @see |GestureManager()|
  */
 
 

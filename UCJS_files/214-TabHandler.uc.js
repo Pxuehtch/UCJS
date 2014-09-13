@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name TabHandler.uc.js
-// @description Custom handling on the tab bar
+// @description Custom handling on the tab bar.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @require [for action] Util.uc.js, TabEx.uc.js
+// @require [optional for action] Util.uc.js, TabEx.uc.js
 
 
 (function(window, undefined) {

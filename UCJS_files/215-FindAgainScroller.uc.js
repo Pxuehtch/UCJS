@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name        FindAgainScroller.uc.js
-// @description Customizes the scroll style on "Find again" command
-// @include     main
+// @name FindAgainScroller.uc.js
+// @description Customizes the scroll style on "Find again" command.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @note A native function |gFindBar.onFindAgainCommand| is modified.
-// see @modified
+
+// @note A native function |gFindBar.onFindAgainCommand| is modified (see
+// @modified).
 
 
 (function(window, undefined) {

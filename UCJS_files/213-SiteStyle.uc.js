@@ -1,11 +1,12 @@
 // ==UserScript==
-// @name        SiteStyle.uc.js
-// @description Customizes the style of web sites
-// @include     main
+// @name SiteStyle.uc.js
+// @description Customizes the style of web sites.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @note creates a preference menu in 'tools' of the menu bar
+
+// @note Creates a preference menu in 'tools' of the menu bar.
 
 
 (function(window, undefined) {

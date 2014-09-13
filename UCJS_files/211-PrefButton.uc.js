@@ -1,17 +1,19 @@
 // ==UserScript==
-// @name        PrefButton.uc.js
-// @description Adds buttons for setting the preferences
-// @include     main
+// @name PrefButton.uc.js
+// @description Adds buttons for setting the preferences.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage creates items on the navigation toolbar
-// @note some about:config preferences are changed. see @pref
 
-// @note the styles are adjusted to the themes of my Fx and OS
+// @usage Creates items on the navigation toolbar.
+
+// @note Some about:config preferences are changed (see @pref).
+
+// @note The button styles are adjusted to the themes of my Fx and OS.
 // @see |setStyleSheet()|
 
-// TODO: apply the customizable UI
+// TODO: Support the customizable UI.
 
 
 (function(window, undefined) {
@@ -43,11 +45,11 @@ function log(aMsg) {
  * Identifiers
  */
 const kID = {
-  // native UI
+  // Native
   NAVIGATION_TOOLBAR: 'nav-bar',
   PANELUI_BUTTON: 'PanelUI-button',
 
-  // custom UI
+  // Custom
   CONTAINER: 'ucjs_PrefButton_container',
   ITEM: 'ucjs_PrefButton_item'
 };

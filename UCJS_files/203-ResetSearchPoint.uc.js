@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name ResetSearchPoint.uc.js
-// @description Resets the start point to "Find again" between frames/textboxes
+// @description Resets the start point to "Find again" between frames or textboxes.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 
 /**
- * @usage the next find again will start from the point with "double-click"
- * @note in the same frame/textbox, the point is reset with "single-click" by
- * default behavior
+ * @usage The next find again will start from the point with "double-click".
+ * @note In the same frame/textbox, the point is reset with "single-click" by
+ * Fx default behavior.
  */
 
 

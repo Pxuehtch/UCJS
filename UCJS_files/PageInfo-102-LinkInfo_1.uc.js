@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name LinkInfo.uc.js
-// @description Adds the information of links to the Page Info window
+// @description Adds the information of links to the Page Info window.
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // ==/UserScript==
 
 // @require LinkInfo.uc.xul
-// @note some functions are exported;
-// |window.ucjsLinkInfo.XXX|
+
+// @note Some functions are exported (window.ucjsLinkInfo.XXX).
 
 
 const ucjsLinkInfo = (function(window, undefined) {

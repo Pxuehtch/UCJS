@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name PageRelated.uc.js
-// @description Makes related links about a current page
+// @description Makes related links about a current page.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage creates items in the URLbar context menu
+
+// @usage Creates items in the URLbar context menu.
 
 
 (function(window, undefined) {
@@ -223,6 +224,7 @@ function PageRelated_init() {
     events: [
       ['popupshowing', onPopupShowing, false]
     ],
+
     onCreate: createMenu
   });
 }

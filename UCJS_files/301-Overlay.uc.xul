@@ -4,9 +4,9 @@
 
 <!--
 // ==UserScript==
-// @name        Overlay.uc.xul
-// @description Overlay on the main browser window
-// @include     main
+// @name Overlay.uc.xul
+// @description Overlay on the main browser window.
+// @include main
 // ==/UserScript==
 
 // @require [for command] Util.uc.js, UI.uc.js

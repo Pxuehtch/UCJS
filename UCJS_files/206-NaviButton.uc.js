@@ -1,24 +1,27 @@
 // ==UserScript==
-// @name        NaviButton.uc.js
-// @description Customizes the navigation buttons with an enhanced tooltip
-// @include     main
+// @name NaviButton.uc.js
+// @description Customizes the navigation buttons with an enhanced tooltip.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js
-// @require [optional][for referrer] TabEx.uc.js
-// @note some default functions are modified. see @modified
+// @require [optional for referrer] TabEx.uc.js
+
+// @note Some native functions are modified (see @modified).
 
 /**
  * @usage
- * Click: go back or forward a step if the history exists
- * Shift+Click: go to the border of the same domain of the current page
- * Ctrl+Click: go to the stop of history
- * @note a new tab will open in *fore*ground with 'middle button click'
+ * Click: Go back or forward a step if the history exists.
+ * Shift+Click: Go to the border of the same domain of the current page.
+ * Ctrl+Click: Go to the first or end stop of history.
+ * @note A new tab will open in *foreground* by middle-button-click.
  *
- * special usage for the *back* button with a referrer
- * Shift+Ctrl+Click: select or open a tab in the referrer URL
- * @note does the same action with 'Click' if no backward and disabled
- * @note a new tab will open in *back*ground with 'middle button click'
+ * Special usage for the back-button with a referrer.
+ * Shift+Ctrl+Click: Select a tab with the referrer URL if exists, open a tab
+ * otherwise.
+ * @note Does the same action by 'Click' for the back-button without backward
+ * history.
+ * @note The referrer's tab will be in *background* by middle-button-click.
  *
  * @see |History.jump()|
  */
@@ -51,11 +54,11 @@ function log(aMsg) {
  * Identifiers
  */
 const kID = {
-  // default
+  // Native
   BACK_BUTTON: 'back-button',
   FORWARD_BUTTON: 'forward-button',
 
-  // custom
+  // Custom
   TOOLTIP: 'ucjs_NaviButton_tooltip',
   REFERRER: 'ucjs_NaviButton_referrer'
 };

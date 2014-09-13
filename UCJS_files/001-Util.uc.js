@@ -1,20 +1,17 @@
 // ==UserScript==
 // @name Util.uc.js
-// @description Common utilities
+// @description Common utilities.
 // @include main
 // @include chrome://browser/content/devtools/webconsole.xul
 // ==/UserScript==
 
+// Chrome window examples;
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // @include chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @include chrome://browser/content/history/history-panel.xul
 // @include chrome://global/content/console.xul
 
-// @usage access to functions through the global scope;
-// |window.ucjsUtil.XXX|
-
-// @note note the global property only in the main window (e.g. |gBrowser|)
-// when being included in the other window
+// @usage Access to functions through the global scope (window.ucjsUtil.XXX).
 
 
 const ucjsUtil = (function(window, undefined) {

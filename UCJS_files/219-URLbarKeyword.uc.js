@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name        URLbarKeyword.uc.js
+// @name URLbarKeyword.uc.js
 // @description Inserts keywords to the input in the URL bar
-// @include     main
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
 // @require [optional] Overlay.uc.xul
-// @usage creates a menu in the URL bar context menu
+
+// @usage Creates a menu in the URL bar context menu.
 
 // @see https://addons.mozilla.org/en-US/firefox/addon/location-bar-characters/
 
@@ -74,6 +75,7 @@ function URLbarKeyword_init() {
       ['popuphiding', handleEvent, false],
       ['command', handleEvent, false]
     ],
+
     onCreate: createMenu
   });
 }

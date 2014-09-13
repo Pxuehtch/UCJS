@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name SendTo.uc.js
-// @description Opens (page, link, image, selected text) with the web service
+// @description Opens (page, link, image, selected text) with a web service.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @require [optional][for preset] WebService.uc.js
-// @usage creates items in the main context menu
+// @require [optional for preset] WebService.uc.js
+
+// @usage Creates items in the main context menu.
 
 
 (function(window, undefined) {
@@ -70,37 +71,39 @@ const kUI = {
 
   endSeparator: {
     id: 'ucjs_SendTo_endSeparator'
+  }
 };
 
 /**
  * Preset list
  *
  * @key label {string}
- *   a display name for menuitem
- *   @note %TYPE% is replaced into |kUI.item.types|
+ *   A display name for menuitem.
+ *   @note A specifier %TYPE% is replaced with |kUI.item.types|.
  * @key types {string[]}
- *   available value - case of showing the menuitem;
- *   'PAGE' - the page URL not on the following cases
- *   'LINK' - the link URL on a link
- *   'IMAGE' - the image URL on an image
- *   'TEXT' - the selected text on a selection
- *   @note keep in sync with |kUI.item.types|
+ *   Kind of type - Passed data - Case of showing the menuitem.
+ *   'PAGE' - Page URL - not on the following cases.
+ *   'LINK' - Link URL - on a link.
+ *   'IMAGE' - Image URL - on an image.
+ *   'TEXT' - Selected text - on a selection.
+ *   @see |kUI.item.types|
  *
  * @key URL {string}
- *   URL string of a web service
- *   @note pass the data with alias
+ *   A URL string of a web service with data.
+ *   @note Specify alias for the passed data.
  *   @see |AliasFixup|
- * @key URL {function} for the custom formatting
+ * @key URL {function} [optional for custom formatting]
  *   @param aData {string}
  *   @return {string}
  *
  * @key extensions {string[]} [optional]
- *   specify the file extensions for 'LINK' type
+ *   Specify the file extensions for 'LINK' type.
  * @key command {function} [optional]
- *   a command that is executed at showing the menuitem
+ *   A command that is executed at showing the menuitem.
  *   @param aParams {hash}
  *     @key menuitem {Element}
  *     @key data {string}
+ *
  * @key disabled {boolean} [optional]
  */
 const kPreset = [
@@ -245,6 +248,7 @@ function SendTo_init() {
     events: [
       ['popupshowing', onPopupShowing, false]
     ],
+
     onCreate: createMenu
   });
 }

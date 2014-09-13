@@ -1,11 +1,13 @@
 // ==UserScript==
-// @name        PrettyPrint.uc.js
-// @description Prettify a code text (JS/CSS) in the Scratchpad
-// @include     main
+// @name PrettyPrint.uc.js
+// @description Prettify a code text (JS/CSS) in the Scratchpad.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage creates a menuitem in the context menu of a plain text page of JS/CSS
+
+// @usage Creates a menuitem in the context menu of a plain text page of
+// JS/CSS.
 
 
 (function(window, undefined) {
@@ -98,6 +100,7 @@ const Menu = (function() {
         ['popupshowing', onPopupShowing, false],
         ['command', onCommand, false]
       ],
+
       onCreate: createMenu
     });
   }

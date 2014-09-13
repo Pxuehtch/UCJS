@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        IMEState.uc.js
-// @description Shows a state of IME on an editable field
-// @include     main
+// @name IMEState.uc.js
+// @description Shows a state of IME on an editable field.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js

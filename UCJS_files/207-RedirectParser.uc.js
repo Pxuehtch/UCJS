@@ -1,11 +1,13 @@
 // ==UserScript==
-// @name        RedirectParser.uc.js
-// @description Parses a link URL by the inner URLs
-// @include     main
+// @name RedirectParser.uc.js
+// @description Parses a link URL by the inner URLs.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
-// @usage creates a menu in the main context menu
+
+// @usage Creates a menu in the main context menu on a link that has inner
+// URLs.
 
 
 (function(window, undefined) {
@@ -163,6 +165,7 @@ function RedirectParser_init() {
       ['popupshowing', onPopupShowing, false],
       ['popuphiding', onPopupHiding, false]
     ],
+
     onCreate: createMenu
   });
 }

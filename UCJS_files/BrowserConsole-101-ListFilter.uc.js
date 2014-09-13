@@ -1,11 +1,12 @@
 // ==UserScript==
-// @name        ListFilter.uc.js
-// @description Filters messages by category in the Browser Console window
-// @include     chrome://browser/content/devtools/webconsole.xul
+// @name ListFilter.uc.js
+// @description Filters messages by category in the Browser Console window.
+// @include chrome://browser/content/devtools/webconsole.xul
 // ==/UserScript==
 
 // @require Util.uc.js
-// @usage adds toggle buttons on the toolbar
+
+// @usage Adds toggle buttons on the toolbar.
 
 // @see resource://app/modules/devtools/webconsole/webconsole.js
 

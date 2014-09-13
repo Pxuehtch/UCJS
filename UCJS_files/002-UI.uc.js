@@ -1,14 +1,15 @@
 // ==UserScript==
-// @name        UI.uc.js
-// @description Helpers for user interface of the main browser
-// @include     main
+// @name UI.uc.js
+// @description Helper modules for UI of the main browser.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 // @require [optional] TabEx.uc.js
-// @note some default functions are modified. see @modified
-// @usage access to items through the global property;
-// |window.ucjsUI.XXX|
+
+// @usage Access to items through the global property (window.ucjsUI.XXX).
+
+// @note Some native functions are modified (see @modified).
 
 
 const ucjsUI = (function(window, undefined) {
@@ -424,7 +425,7 @@ const FindBar = (function() {
       } = aParam;
 
       if (onCreate) {
-        // Apply the init handler to existing findbars.
+        // Apply the init handler to existing findbars (including hidden tabs).
         Array.forEach(gBrowser.tabs, (tab) => {
           if (gBrowser.isFindBarInitialized(tab)) {
             onCreate(HandlerParam({
@@ -458,6 +459,7 @@ const FindBar = (function() {
       aText = aText || '';
 
       if (this.value !== aText) {
+        // @note Starts finding the text in background.
         UI.textBox.value = aText;
       }
     },
@@ -480,12 +482,14 @@ const FindBar = (function() {
 
   function open() {
     if (gFindBar.hidden) {
+      // Open a findbar but not focus on it.
       gFindBar.open(gFindBar.FIND_NORMAL);
     }
   }
 
   function toggle() {
     if (gFindBar.hidden) {
+      // Open a findbar and focus on it.
       gFindBar.onFindCommand();
     }
     else {
@@ -502,13 +506,13 @@ const FindBar = (function() {
       doHighlight
     } = aOption;
 
-    // reset all status
+    // Reset all status.
     reset();
 
-    // open a findbar and ready for the first finding
+    // Open a findbar and ready for the first finding.
     gFindBar.onFindCommand();
 
-    // do find with a text
+    // Find the text.
     FindText.value = aText;
     gFindBar.onFindAgainCommand();
 
@@ -888,17 +892,22 @@ const StatusField = (function() {
 })();
 
 /**
- * Menuitems of a popup menu
- *
- * @require TabEx.uc.js
+ * Menuitems of a popup menu.
  */
 const Menuitem = {
+  /**
+   * Set a state for an unread tab.
+   *
+   * @note Based on handling for unread tabs by TabEx.uc.js but not the native
+   * function.
+   * @require TabEx.uc.js
+   */
   setStateForUnreadTab: function(aMenuitem, aTab) {
     const kATTR_UNREADTAB = 'ucjs_UI_Menuitem_unreadTab';
 
     if (window.ucjsTabEx) {
-      // @note we check the *read* state of a tab and then set the *unread*
-      // attribute of a menuitem
+      // @note Check the *read* state of a tab and then set the *unread*
+      // attribute of a menuitem.
       if (window.ucjsTabEx.tabState.isRead(aTab)) {
         aMenuitem.classList.remove(kATTR_UNREADTAB);
       }

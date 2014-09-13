@@ -1,17 +1,17 @@
 // ==UserScript==
-// @name        AppLauncher.uc.js
+// @name AppLauncher.uc.js
 // @description Application launcher
-// @include     main
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
 
-// @usage creates a menu in the main context menu
-// @note available menu items will vary depending on where the menu opens
+// @usage Creates a menu in the main context menu.
+// @note Available menu items will vary depending on where the menu opens.
 // @see |getAvailableActions()|
 
-// @note a resource file that is passed to an application will be saved in
-// your temporary folder if download needed
+// @note A resource file that is passed to an application will be saved in
+// your temporary folder if download needed.
 // @see |doAction()|, |Util::getSaveFilePath()|
 
 
@@ -415,6 +415,7 @@ function initMenu(aAppList) {
         onCommand(aEvent, aAppList);
       }, false]
     ],
+
     onCreate: (aContextMenu) => {
       makeMainMenu(aContextMenu, aAppList);
     }
@@ -578,6 +579,12 @@ function makeMenuItemLabel({app, action, inAppMenu}) {
   }
 
   return label;
+}
+
+function addSeparator(aPopup, aID) {
+  return aPopup.appendChild($E('menuseparator', {
+    id: aID
+  }));
 }
 
 function doBrowse(aPopup) {
@@ -815,12 +822,6 @@ function isTextDocument(aDocument) {
   return window.mimeTypeIsTextBased(aDocument.contentType);
 }
 
-function addSeparator(aPopup, aID) {
-  return aPopup.appendChild($E('menuseparator', {
-    id: aID
-  }));
-}
-
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'user') {
     aValue.forEach(({key, value}) => {
@@ -828,8 +829,10 @@ function handleAttribute(aNode, aName, aValue) {
         aNode.setAttribute(key, value);
       }
     });
+
     return true;
   }
+
   return false;
 }
 

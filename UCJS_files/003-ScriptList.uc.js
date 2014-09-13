@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name ScriptList.uc.js
-// @description List viewer of user scripts for userChromeJS extension
+// @description List viewer of user scripts for userChromeJS extension.
 // @include main
 // ==/UserScript==
 
-// @require userChrome.js with |window.ucjsScriptLoader|
+// @require My userChrome.js with |window.ucjsScriptLoader|
+// https://github.com/Pxuehtch/UCJS/blob/master/userChrome.js
+
 // @require Util.uc.js
-// @usage creates a menuitem in 'tools' of the main menu
+
+// @usage Creates a menuitem in 'tools' of the main menu.
 
 
 (function(window, undefined) {

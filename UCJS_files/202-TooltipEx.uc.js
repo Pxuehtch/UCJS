@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name        TooltipEx.uc.js
-// @description A tooltip of an element with the informations
-// @include     main
+// @name TooltipEx.uc.js
+// @description A tooltip of an element with the informations.
+// @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 
-// @usage opens a tooltip panel with 'Alt + Ctrl + MouseMove' on an element
-// with the attribute for description or URL or event including the ancestor
-// elements
+// @usage Opens a tooltip panel with 'Alt + Ctrl + MouseMove' on an element
+// with the attribute for description or URL or event-handler including the
+// ancestor elements.
 
 
 (function(window, undefined) {
