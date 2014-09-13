@@ -172,8 +172,8 @@ function ScriptListPanel(aScripts) {
 
     treeCols.appendChild($E('treecol', {
       label: '#',
-      fixed: true,
-      style: 'width:auto;text-align:right;'
+      flex: 1,
+      style: 'max-width:4em;text-align:right;'
     }));
 
     treeCols.appendChild($E('splitter', {
@@ -193,8 +193,8 @@ function ScriptListPanel(aScripts) {
 
     treeCols.appendChild($E('treecol', {
       label: 'Ext.',
-      fixed: true,
-      style: 'width:auto;'
+      flex: 1,
+      style: 'max-width:4em;'
     }));
 
     treeCols.appendChild($E('splitter', {
