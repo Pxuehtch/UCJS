@@ -280,7 +280,7 @@ function ScriptListPanel(aScripts) {
       'COUNT': aScripts.count
     });
 
-    getScriptInfoBox().value = aScripts.data(index).getMetaList();
+    getScriptInfoBox().value = aScripts.data(index).formatMetaData();
   }
 
   function open() {

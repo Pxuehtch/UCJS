@@ -432,22 +432,23 @@ function ScriptList() {
 }
 
 /**
- * UserScript constructor
+ * UserScript constructor.
  *
  * @return {hash}
  *   @member uninit {function}
- *   @member getURL {function}
+ *   @member getMetaData {function}
+ *   @member formatMetaData {function}
  *   @member testTarget {function}
- *   @member getMetaList {function}
+ *   @member getURL {function}
  *
- * @note this creates multiple instances so some functions are cached outside
- * for performance
- * TODO: I prefer this module pattern to the prototype one. but the prototypal
- * may be better for a constructor
+ * @note This creates multiple instances so some functions are cached outside
+ * for performance.
+ * TODO: I prefer this module pattern to the prototype one. But the prototypal
+ * may be better for a constructor.
  */
 function UserScript(aFile) {
   let mFile = aFile;
-  let mMetaData = UserScript_getMetaData(aFile);
+  let mMetaData = UserScript_scanMetaData(aFile);
 
   function uninit() {
     if (mFile) {
@@ -461,13 +462,14 @@ function UserScript(aFile) {
 
   return {
     uninit: uninit,
-    getURL: UserScript_getURL.bind(null, mFile),
+    getMetaData: UserScript_getMetaData.bind(null, mMetaData),
+    formatMetaData: UserScript_formatMetaData.bind(null, mMetaData),
     testTarget: UserScript_testTarget.bind(null, mMetaData),
-    getMetaList: UserScript_getMetaList.bind(null, mMetaData)
+    getURL: UserScript_getURL.bind(null, mFile)
   };
 }
 
-function UserScript_getMetaData(aFile) {
+function UserScript_scanMetaData(aFile) {
   const {readFile} = Util;
 
   const META_DATA_RE =
@@ -475,9 +477,14 @@ function UserScript_getMetaData(aFile) {
   const META_ENTRY_RE =
     /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
 
+  /**
+   * Supported mata data;
+   * {string}: Only the first line is retrieved.
+   * {array}: All lines are retrieved.
+   */
   let data = {
-    'name': [],
-    'description': [],
+    'name': '',
+    'description': '',
     'include': [],
     'exclude': []
   };
@@ -489,46 +496,40 @@ function UserScript_getMetaData(aFile) {
     [, key, value] = matches;
 
     if (key in data) {
-      data[key].push(value);
+      if (data[key] === '') {
+        data[key] = value;
+      }
+      else if (Array.isArray(data[key])) {
+        data[key].push(value);
+      }
     }
   }
 
   return data;
 }
 
-function UserScript_getURL(aFile, aType) {
-  const {getURLSpecFromFile, getChromeDirectory, getLastModifiedTime} = Util;
-  const D = window.decodeURIComponent;
+function UserScript_getMetaData(aMetaData, aKey) {
+  return aKey ? aMetaData[aKey] : aMetaData;
+}
 
-  let path = () => getURLSpecFromFile(aFile);
-  let chrome = () => getURLSpecFromFile(getChromeDirectory());
+function UserScript_formatMetaData(aMetaData) {
+  const kForm = '@%key%: %value%';
+  const kNoMetaData = '[No meta data]';
 
-  switch (aType) {
-    // a file name
-    case 'FILENAME':
-      return aFile.leafName;
+  let list = [];
 
-    // a path of folders under the chrome folder
-    case 'FOLDER':
-      return D(path()).slice(D(chrome()).length, -(aFile.leafName.length));
+  for (let [key, value] in Iterator(aMetaData)) {
+    if (!Array.isArray(value)) {
+      value = [value];
+    }
 
-    // a path under the chrome folder
-    case 'IN_CHROME':
-      return D(path().slice(chrome().length));
-
-    // a full path with the modified time to run a script
-    // @note requesting a filename with the unique identifier can update the
-    // script cache
-    case 'RUN':
-      return path() + '?' +
-        (kSystem.checkCacheAtRun ?
-         getLastModifiedTime(aFile) :
-         aFile.lastModifiedTime);
+    list = list.concat(value.map((value) =>
+      kForm.replace('%key%', key).replace('%value%', value)
+    ));
   }
 
-  // a full path
-  return D(path());
-}
+  return list.length ? list.join('\n') : kNoMetaData;
+};
 
 function UserScript_testTarget(aMetaData, aURL) {
   const {getBrowserURL, testURL} = Util;
@@ -552,21 +553,38 @@ function UserScript_testTarget(aMetaData, aURL) {
   return include.some(test);
 }
 
-function UserScript_getMetaList(aMetaData) {
-  const kForm = '@%key%: %value%';
-  const kNoMetaData = '[No meta data]';
+function UserScript_getURL(aFile, aType) {
+  const {getURLSpecFromFile, getChromeDirectory, getLastModifiedTime} = Util;
+  const D = window.decodeURIComponent;
 
-  let list = [];
+  let path = () => getURLSpecFromFile(aFile);
+  let chrome = () => getURLSpecFromFile(getChromeDirectory());
 
-  for (let [key, values] in Iterator(aMetaData)) {
-    list = list.concat(values.map((value) =>
-      kForm.
-      replace('%key%', key).
-      replace('%value%', value)
-    ));
+  switch (aType) {
+    // A file name.
+    case 'FILENAME':
+      return aFile.leafName;
+
+    // A path of folders under the chrome folder.
+    case 'FOLDER':
+      return D(path()).slice(D(chrome()).length, -(aFile.leafName.length));
+
+    // A path under the chrome folder.
+    case 'IN_CHROME':
+      return D(path().slice(chrome().length));
+
+    // A full path with the modified time to run a script.
+    // @note Requesting a filename with the unique identifier can update the
+    // script cache.
+    case 'RUN':
+      return path() + '?' +
+        (kSystem.checkCacheAtRun ?
+         getLastModifiedTime(aFile) :
+         aFile.lastModifiedTime);
   }
 
-  return list.length ? list.join('\n') : kNoMetaData;
+  // A full path.
+  return D(path());
 }
 
 /**
