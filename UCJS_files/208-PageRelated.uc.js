@@ -324,22 +324,15 @@ function getAvailableMenus() {
   return menus;
 }
 
-function setSeparators(aContextMenu, aReferenceNode) {
-  if (aReferenceNode === undefined) {
-    aReferenceNode = null;
-  }
-
+function setSeparators(aContextMenu) {
   [
     kUI.startSeparator,
     kUI.endSeparator
   ].
   forEach((aSeparatorName) => {
-    aContextMenu.insertBefore(
-      $E('menuseparator', {
-        id: aSeparatorName.id
-      }),
-      aReferenceNode
-    );
+    aContextMenu.appendChild($E('menuseparator', {
+      id: aSeparatorName.id
+    }));
   });
 }
 

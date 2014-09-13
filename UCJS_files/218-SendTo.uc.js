@@ -369,29 +369,22 @@ function testExtension(aExtensions, aURL) {
   return targets.some((item) => aExtensions.indexOf(item) > -1);
 }
 
-function setSeparators(aContextMenu, aReferenceNode) {
-  if (aReferenceNode === undefined) {
-    aReferenceNode = null;
-  }
-
+function setSeparators(aContextMenu, aReferenceNode = null) {
   [
     kUI.startSeparator,
     kUI.endSeparator
   ].
   forEach((aSeparatorName) => {
-    aContextMenu.insertBefore(
-      $E('menuseparator', {
-        id: aSeparatorName.id
-      }),
-      aReferenceNode
-    );
+    aContextMenu.insertBefore($E('menuseparator', {
+      id: aSeparatorName.id
+    }), aReferenceNode);
   });
 }
 
 function getSeparators() {
   return [
-    $ID(kID.startSeparator),
-    $ID(kID.endSeparator)
+    $ID(kUI.startSeparator.id),
+    $ID(kUI.endSeparator.id)
   ];
 }
 

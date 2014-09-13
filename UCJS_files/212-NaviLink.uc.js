@@ -412,22 +412,15 @@ const MenuUI = (function() {
     }
   }
 
-  function setSeparators(aContextMenu, aReferenceNode) {
-    if (aReferenceNode === undefined) {
-      aReferenceNode = null;
-    }
-
+  function setSeparators(aContextMenu) {
     [
       kID.startSeparator,
       kID.endSeparator
     ].
     forEach((id) => {
-      aContextMenu.insertBefore(
-        $E('menuseparator', {
-          id: id
-        }),
-        aReferenceNode
-      );
+      aContextMenu.appendChild($E('menuseparator', {
+        id: id
+      }));
     });
   }
 
