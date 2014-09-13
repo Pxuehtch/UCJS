@@ -659,14 +659,14 @@ const OpenedList = (function() {
         icon = b.getIcon(b.selectedTab);
 
         tabList = [
-          fixPluralForm('[#1 #2]', b.mTabs.length, ['Tab', 'Tabs'])
+          fixPluralForm('[#1 #2]', b.visibleTabs.length, ['Tab', 'Tabs'])
         ];
 
         let [start, end] =
-          limitListRange(b.mTabContainer.selectedIndex, b.mTabs.length);
+          limitListRange(b.tabContainer.selectedIndex, b.visibleTabs.length);
 
         for (let j = start; j < end; j++) {
-          tabList.push(assignNumber(j + 1, b.mTabs[j].label));
+          tabList.push(assignNumber(j + 1, b.visibleTabs[j].label));
         }
       }
       else {
