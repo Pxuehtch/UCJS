@@ -58,7 +58,9 @@ const kPref = {
    *
    * @note Applied to;
    * - List of Tab history and Recent history.
-   * - List of tabs in a tooltip of Opened window and Closed tab/window.
+   * - List of tabs in a tooltip of Opened window.
+   * - List of history in a tooltip of Closed tab.
+   * - List of tabs in a tooltip of Closed window.
    */
   maxListItems: 10
 };

@@ -29,7 +29,10 @@
 .tabbrowser-tab[ucjs_TabEx_suspended] {
   font-style: italic !important;
 }
-/* WORKAROUND: Pseudo italic for 'Meiryo UI' that has no italic for zenkaku. */
+/**
+ * WORKAROUND: Pseudo italic for a font that has no italic for zenkaku
+ * characters such as 'Meiryo UI'. Use this style for such font instead above.
+ */
 .tabbrowser-tab[ucjs_TabEx_suspended] > .tab-stack > .tab-content > .tab-text {
   transform: skewX(-15deg);
 }
