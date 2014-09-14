@@ -666,8 +666,8 @@ const OpenedList = (function() {
           fixPluralForm('[#1 #2]', b.visibleTabs.length, ['Tab', 'Tabs'])
         ];
 
-        let [start, end] =
-          limitListRange(b.tabContainer.selectedIndex, b.visibleTabs.length);
+        let selectedIndex = b.visibleTabs.indexOf(b.selectedTab);
+        let [start, end] = limitListRange(selectedIndex, b.visibleTabs.length);
 
         for (let j = start; j < end; j++) {
           tabList.push(assignNumber(j + 1, b.visibleTabs[j].label));
