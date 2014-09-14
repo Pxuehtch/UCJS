@@ -266,7 +266,7 @@ function getWindowsData(aTab) {
       id: getIdFor(win),
       hasSameURL: hasSameURL(tabbrowser.browsers),
       title: tabbrowser.selectedTab.label,
-      tabsNum: tabbrowser.tabs.length,
+      tabsNum: tabbrowser.visibleTabs.length,
       isPrivate: isPrivate(win)
     });
   }
