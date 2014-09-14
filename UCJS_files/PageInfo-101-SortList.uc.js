@@ -18,19 +18,19 @@ const kSortDirections = ['ascending', 'descending', 'natural'];
  * Cache of the custom properties of a tree view.
  */
 const SortState = (function() {
-  let mMap = new WeakMap();
+  let mState = new WeakMap();
 
   function clear() {
-    mMap.clear();
-    mMap = null;
+    mState.clear();
+    mState = null;
   }
 
   function get(aTreeView) {
-    if (!mMap.has(aTreeView)) {
-      mMap.set(aTreeView, {});
+    if (!mState.has(aTreeView)) {
+      mState.set(aTreeView, {});
     }
 
-    return mMap.get(aTreeView);
+    return mState.get(aTreeView);
   }
 
   return {

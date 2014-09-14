@@ -12,7 +12,7 @@
 // @note A native function |gBrowser.addTab| is modified (see @modified).
 
 // @note The custom attributes of tabs are saved in the session store file.
-// @see |mSessionStore.persistTabAttribute|
+// @see |SessionStore.persistTabAttribute|
 
 
 const ucjsTabEx = (function(window, undefined) {
@@ -206,7 +206,7 @@ const getTime = (function() {
 /**
  * Tab data manager.
  */
-const mTab = (function () {
+const TabData = (function () {
   /**
    * Prepares information for handling a tab data.
    *
@@ -408,7 +408,7 @@ const mTab = (function () {
 /**
  * Tab opening handler
  */
-const mTabOpener = {
+const TabOpener = {
   init: function() {
     // @modified chrome://browser/content/tabbrowser.xml::addTab
     const $addTab = gBrowser.addTab;
@@ -424,8 +424,8 @@ const mTabOpener = {
       let newTab = $addTab.apply(this, arguments);
 
       // the data of duplicated/undo-closed tab will be restored
-      if (mSessionStore.isRestoring) {
-        mTab.set(newTab, 'restoring', true);
+      if (SessionStore.isRestoring) {
+        TabData.set(newTab, 'restoring', true);
 
         return newTab;
       }
@@ -470,7 +470,7 @@ const mTabOpener = {
           else {
             // TODO: I want to make asynchronous |getFromVisit|. but I don't
             // know how to handle it in this modified native function |addTab|
-            fromVisit = testHTTP(aURI) && mReferrer.getFromVisit(aURI);
+            fromVisit = testHTTP(aURI) && Referrer.getFromVisit(aURI);
           }
         }
 
@@ -502,7 +502,7 @@ const mTabOpener = {
         };
       }
 
-      mTab.set(newTab, 'openInfo', openInfo);
+      TabData.set(newTab, 'openInfo', openInfo);
 
       let event = document.createEvent('Events');
 
@@ -525,42 +525,42 @@ const mTabOpener = {
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
 
-        mTab.set(aTab, 'openInfo', openInfo);
+        TabData.set(aTab, 'openInfo', openInfo);
         break;
       }
 
       case 'NewTab':
-        if (mReferrer.isRelatedToCurrent(aTab)) {
+        if (Referrer.isRelatedToCurrent(aTab)) {
           // inherit the ancestors so that the opener tab becomes the parent
           let parent = gBrowser.selectedTab;
-          let open = mTab.get(parent, 'openTime');
-          let ancs = mTab.get(parent, 'ancestors') || [];
+          let open = TabData.get(parent, 'openTime');
+          let ancs = TabData.get(parent, 'ancestors') || [];
 
-          mTab.set(aTab, 'ancestors', [open].concat(ancs));
+          TabData.set(aTab, 'ancestors', [open].concat(ancs));
         }
         break;
 
       case 'DuplicatedTab': {
         // this duplicated tab has the same data of its original tab
         // renew the ancestors so that the original tab becomes the parent
-        let open = mTab.get(aTab, 'openTime');
-        let ancs = mTab.get(aTab, 'ancestors') || [];
+        let open = TabData.get(aTab, 'openTime');
+        let ancs = TabData.get(aTab, 'ancestors') || [];
 
-        mTab.set(aTab, 'ancestors', [open].concat(ancs));
+        TabData.set(aTab, 'ancestors', [open].concat(ancs));
         break;
       }
     }
 
-    mTab.set(aTab, 'openTime', getTime());
+    TabData.set(aTab, 'openTime', getTime());
   }
 };
 
 /**
  * Tab referrer handler
  */
-const mReferrer = {
+const Referrer = {
   getURL: function(aTab) {
-    let openInfo = mTab.get(aTab, 'openInfo');
+    let openInfo = TabData.get(aTab, 'openInfo');
 
     if (!openInfo) {
       return null;
@@ -588,7 +588,7 @@ const mReferrer = {
   },
 
   isRelatedToCurrent: function(aTab) {
-    let openInfo = mTab.get(aTab, 'openInfo');
+    let openInfo = TabData.get(aTab, 'openInfo');
 
     if (!openInfo) {
       return null;
@@ -634,7 +634,7 @@ const mReferrer = {
 /**
  * Tab selecting handler
  */
-const mTabSelector = {
+const TabSelector = {
   prevSelectedTime: 0,
   currentSelectedTime: 0,
 
@@ -680,19 +680,19 @@ const mTabSelector = {
     let {reset, read} = aOption || {};
 
     if (reset) {
-      mTab.set(aTab, 'selectTime', null);
-      mTab.set(aTab, 'readTime', null);
-      mTab.set(aTab, 'read', null);
+      TabData.set(aTab, 'selectTime', null);
+      TabData.set(aTab, 'readTime', null);
+      TabData.set(aTab, 'read', null);
       return;
     }
 
     let time = getTime();
 
-    mTab.set(aTab, 'selectTime', time);
+    TabData.set(aTab, 'selectTime', time);
 
-    if (read || !mTab.get(aTab, 'read')) {
-      mTab.set(aTab, 'readTime', time);
-      mTab.set(aTab, 'read', true);
+    if (read || !TabData.get(aTab, 'read')) {
+      TabData.set(aTab, 'readTime', time);
+      TabData.set(aTab, 'read', true);
     }
 
     this.prevSelectedTime = this.currentSelectedTime;
@@ -703,7 +703,7 @@ const mTabSelector = {
 /**
  * Handler of suspending the loading of a tab
  */
-const mTabSuspender = {
+const TabSuspender = {
   timers: {},
 
   set: function(aTab, aDelay) {
@@ -712,11 +712,11 @@ const mTabSuspender = {
     }, aDelay, aTab);
 
     // the opened time of a tab is a unique value
-    this.timers[mTab.get(aTab, 'openTime')] = timer;
+    this.timers[TabData.get(aTab, 'openTime')] = timer;
   },
 
   clear: function(aTab) {
-    let id = aTab && mTab.get(aTab, 'openTime');
+    let id = aTab && TabData.get(aTab, 'openTime');
     let timer = id && this.timers[id];
 
     if (timer) {
@@ -749,7 +749,7 @@ const mTabSuspender = {
 
 
       if (isBusy || isBlank) {
-        mTab.set(aTab, 'suspended', true);
+        TabData.set(aTab, 'suspended', true);
       }
 
       if (isBusy) {
@@ -770,11 +770,11 @@ const mTabSuspender = {
 
     // pass only the visible and suspended tab
     if (!aTab || aTab.hidden || aTab.closing ||
-        !mTab.get(aTab, 'suspended')) {
+        !TabData.get(aTab, 'suspended')) {
       return;
     }
 
-    mTab.set(aTab, 'suspended', null);
+    TabData.set(aTab, 'suspended', null);
 
     let [browser, loadingURL, openInfo] = this.getBrowserForTab(aTab);
 
@@ -809,7 +809,7 @@ const mTabSuspender = {
     let isNewTab = !browser.canGoBack;
 
     if (isNewTab) {
-      openInfo = mTab.get(aTab, 'openInfo');
+      openInfo = TabData.get(aTab, 'openInfo');
     }
 
     // 1.a new tab has no |openInfo| when it bypassed our hooked
@@ -830,7 +830,7 @@ const mTabSuspender = {
 /**
  * Session store handler
  */
-const mSessionStore = {
+const SessionStore = {
   // Whether a duplicated or undo-closed tab is in restoring.
   isRestoring: false,
 
@@ -872,14 +872,14 @@ const mSessionStore = {
 /**
  * Startup handler
  */
-const mStartup = {
+const Startup = {
   init: function() {
     /**
      * Execute processing just after all tabs open at startup.
      *
      * TODO: Use a reliable observer.
      * @note 'browser-delayed-startup-finished' was already fired on this
-     * timing.
+     * timing so that we can't catch it.
      *
      * For the first window;
      * 1.On boot startup: Observe |DOMContentLoaded| that fires on the document
@@ -916,8 +916,8 @@ const mStartup = {
       handleEvent: function (aEvent) {
         this.clear();
 
-        mStartup.setStartupTabs();
-        mSessionStore.persistTabAttribute();
+        Startup.setStartupTabs();
+        SessionStore.persistTabAttribute();
       }
     };
 
@@ -967,17 +967,17 @@ const mStartup = {
     // Scan all tabs.
     Array.forEach(gBrowser.tabs, (tab) => {
       // A boot startup tab (e.g. homepage).
-      if (!mTab.get(tab, 'openInfo')) {
-        mTabOpener.set(tab, 'StartupTab');
+      if (!TabData.get(tab, 'openInfo')) {
+        TabOpener.set(tab, 'StartupTab');
       }
 
       if (tab.selected) {
         // Update |select|, and set |read| if first selected.
-        mTabSelector.update(tab);
+        TabSelector.update(tab);
       }
       else {
         // Immediately stop the loading of a background tab.
-        mTabSuspender.stop(tab);
+        TabSuspender.stop(tab);
       }
     });
   }
@@ -986,7 +986,7 @@ const mStartup = {
 /**
  * Observer of moving tab between windows
  */
-const mJumpTabObserver = {
+const JumpTabObserver = {
   init: function() {
     // Observe a tab that moves to the other window.
     // @see chrome://browser/content/tabbrowser.xml::_swapBrowserDocShells
@@ -1048,8 +1048,8 @@ const mJumpTabObserver = {
   TabState: {
     save: function(aTab) {
       this.state = {
-        openInfo: mTab.get(aTab, 'openInfo'),
-        suspended: mTab.get(aTab, 'suspended')
+        openInfo: TabData.get(aTab, 'openInfo'),
+        suspended: TabData.get(aTab, 'suspended')
       };
     },
 
@@ -1060,11 +1060,11 @@ const mJumpTabObserver = {
 
       // Copy the original open info.
       // @note Other states are created for a new tab.
-      mTab.set(aTab, 'openInfo', this.state.openInfo);
+      TabData.set(aTab, 'openInfo', this.state.openInfo);
 
       // Set a flag to load the suspended tab.
       if (this.state.suspended) {
-        mTab.set(aTab, 'suspended', true);
+        TabData.set(aTab, 'suspended', true);
       }
 
       delete this.state;
@@ -1075,7 +1075,7 @@ const mJumpTabObserver = {
 /**
  * Tab event handler
  */
-const mTabEvent = {
+const TabEvent = {
   init: function() {
     let tc = gBrowser.tabContainer;
 
@@ -1108,14 +1108,14 @@ const mTabEvent = {
   },
 
   onTabOpen: function(aTab) {
-    mTabOpener.set(aTab, 'NewTab');
+    TabOpener.set(aTab, 'NewTab');
 
     if (kPref.SUSPEND_LOADING) {
-      mTabSuspender.set(aTab, kPref.SUSPEND_DELAY);
+      TabSuspender.set(aTab, kPref.SUSPEND_DELAY);
     }
 
     let openPos =
-      mReferrer.isRelatedToCurrent(aTab) ?
+      Referrer.isRelatedToCurrent(aTab) ?
       kPref.OPENPOS_LINKED :
       kPref.OPENPOS_UNLINKED;
 
@@ -1126,28 +1126,28 @@ const mTabEvent = {
     // 1.do not pass a duplicated/undo-closed tab. handle it in
     // |onSSTabRestored|
     // 2.pass a startup restored tab
-    if (mTab.get(aTab, 'restoring')) {
+    if (TabData.get(aTab, 'restoring')) {
       return;
     }
 
-    mTabSelector.set(aTab);
+    TabSelector.set(aTab);
 
     if (kPref.SUSPEND_LOADING) {
-      mTabSuspender.reload(aTab);
+      TabSuspender.reload(aTab);
     }
 
     if (kPref.SUSPEND_NEXTTAB_RELOAD) {
       let nextTab = getAdjacentTab(aTab, +1);
 
       if (nextTab) {
-        mTabSuspender.reload(nextTab);
+        TabSuspender.reload(nextTab);
       }
     }
   },
 
   onTabClose: function(aTab) {
     if (kPref.SUSPEND_LOADING) {
-      mTabSuspender.clear(aTab);
+      TabSuspender.clear(aTab);
     }
 
     if (aTab.selected) {
@@ -1163,11 +1163,11 @@ const mTabEvent = {
   onSSTabRestored: function(aTab) {
     // 1.pass a duplicated/undo-closed tab
     // 2.do not pass a startup restored tab. no relocation needed
-    if (!mTab.get(aTab, 'restoring')) {
+    if (!TabData.get(aTab, 'restoring')) {
       return;
     }
 
-    mTab.set(aTab, 'restoring', null);
+    TabData.set(aTab, 'restoring', null);
 
     let openPos, baseTab;
 
@@ -1178,15 +1178,15 @@ const mTabEvent = {
       // update some data to be as a new opened tab
 
       // update |open| and |ancestors|
-      mTabOpener.set(aTab, 'DuplicatedTab');
+      TabOpener.set(aTab, 'DuplicatedTab');
 
       if (aTab.selected) {
         // force to update |read|
-        mTabSelector.update(aTab, {read: true});
+        TabSelector.update(aTab, {read: true});
       }
       else {
         // remove |select| and |read|
-        mTabSelector.update(aTab, {reset: true});
+        TabSelector.update(aTab, {reset: true});
       }
 
       openPos = kPref.OPENPOS_DUPLICATE;
@@ -1197,7 +1197,7 @@ const mTabEvent = {
       // @note |window.undoCloseTab| opens a tab and forcibly selects it
 
       // update |select|, and set |read| if first selected
-      mTabSelector.update(aTab);
+      TabSelector.update(aTab);
 
       openPos = kPref.OPENPOS_UNDOCLOSE;
 
@@ -1215,7 +1215,7 @@ const mTabEvent = {
  * Utility functions for handle tabs.
  */
 function getOriginalTabOfDuplicated(aTab) {
-  let openTime = mTab.get(aTab, 'openTime');
+  let openTime = TabData.get(aTab, 'openTime');
 
   let tabs = getTabs('active, pinned');
 
@@ -1223,7 +1223,7 @@ function getOriginalTabOfDuplicated(aTab) {
     tab = tabs[i];
 
     if (tab !== aTab &&
-        mTab.get(tab, 'openTime') === openTime) {
+        TabData.get(tab, 'openTime') === openTime) {
       return tab;
     }
   }
@@ -1379,8 +1379,8 @@ function getFamilyTab(aBaseTab, aStatement) {
   /**
    * Sets the comparator function
    */
-  baseId = mTab.get(aBaseTab, 'openTime');
-  baseAncs = mTab.get(aBaseTab, 'ancestors');
+  baseId = TabData.get(aBaseTab, 'openTime');
+  baseAncs = TabData.get(aBaseTab, 'ancestors');
 
   if (family === 'ancestor') {
     // useless when no ancestors is examined
@@ -1389,14 +1389,14 @@ function getFamilyTab(aBaseTab, aStatement) {
     }
 
     isRelated = function(tab) {
-      let id = mTab.get(tab, 'openTime');
+      let id = TabData.get(tab, 'openTime');
       // 1.this tab is an ancestor of the base tab
       return baseAncs.indexOf(id) > -1;
     };
   }
   else /* family === 'descendant' */ {
     isRelated = function(tab) {
-      let ancs = mTab.get(tab, 'ancestors');
+      let ancs = TabData.get(tab, 'ancestors');
 
       // this tab that has no ancestors does not related with the base tab
       if (!ancs) {
@@ -1449,7 +1449,7 @@ function getOpenerTab(aBaseTab, aOption) {
 
   let baseTab = aBaseTab || gBrowser.selectedTab;
 
-  let ancs = mTab.get(baseTab, 'ancestors');
+  let ancs = TabData.get(baseTab, 'ancestors');
 
   // no ancestor then no parent
   if (!ancs) {
@@ -1457,7 +1457,7 @@ function getOpenerTab(aBaseTab, aOption) {
       // has referrer (e.g. opened from bookmark)
       // @note a tab that has no opener tab is independent. so its referred URL
       // should be newly opened even if it exists in the current tabs
-      let referrerURL = mReferrer.getURL(baseTab);
+      let referrerURL = Referrer.getURL(baseTab);
 
       if (referrerURL) {
         // TODO: opens in foreground or background?
@@ -1475,18 +1475,18 @@ function getOpenerTab(aBaseTab, aOption) {
 
   // search in the current tabs
   for (let i = 0, l = tabs.length; i < l; i++) {
-    if (mTab.get(tabs[i], 'openTime') === parent) {
+    if (TabData.get(tabs[i], 'openTime') === parent) {
       return tabs[i];
     }
   }
 
   // search in the closed tabs
   if (undoClose) {
-    let undoList = mSessionStore.getClosedTabList();
+    let undoList = SessionStore.getClosedTabList();
 
     if (undoList) {
       for (let i = 0, l = undoList.length; i < l; i++) {
-        if (mTab.getSS(undoList[i], 'openTime') === parent) {
+        if (TabData.getSS(undoList[i], 'openTime') === parent) {
           // @see chrome://browser/content/browser.js::undoCloseTab
           // @note |undoCloseTab| opens a tab and forcibly selects it
           return window.undoCloseTab(i);
@@ -1512,7 +1512,7 @@ function getPrevSelectedTab(aBaseTab, aOption) {
   let tabs = getTabs('active, pinned', baseTab);
 
   let time, recentTime = 0;
-  let prevSelectedTime = mTabSelector.prevSelectedTime;
+  let prevSelectedTime = TabSelector.prevSelectedTime;
   let pos = -1;
 
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
@@ -1522,7 +1522,7 @@ function getPrevSelectedTab(aBaseTab, aOption) {
       continue;
     }
 
-    time = mTab.get(tab, 'selectTime');
+    time = TabData.get(tab, 'selectTime');
 
     if (time && time > recentTime) {
       recentTime = time;
@@ -1540,11 +1540,11 @@ function getPrevSelectedTab(aBaseTab, aOption) {
 
   // reopen a previous selected tab
   if (undoClose) {
-    let undoList = mSessionStore.getClosedTabList();
+    let undoList = SessionStore.getClosedTabList();
 
     if (undoList) {
       for (let i = 0, l = undoList.length; i < l; i++) {
-        if (mTab.getSS(undoList[i], 'selectTime') === prevSelectedTime) {
+        if (TabData.getSS(undoList[i], 'selectTime') === prevSelectedTime) {
           // @see chrome://browser/content/browser.js::undoCloseTab
           // @note |undoCloseTab| opens a tab and forcibly selects it
           return window.undoCloseTab(i);
@@ -1572,11 +1572,11 @@ function getOldestUnreadTab(aOption) {
   for (let i = 0, l = tabs.length, tab; i < l; i++) {
     tab = tabs[i];
 
-    if (mTab.get(tab, 'read')) {
+    if (TabData.get(tab, 'read')) {
       continue;
     }
 
-    time = mTab.get(tab, 'openTime');
+    time = TabData.get(tab, 'openTime');
 
     if (time && time < oldTime) {
       oldTime = time;
@@ -1661,7 +1661,7 @@ function closeReadTabs() {
   for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
     tab = tabs[i];
 
-    if (mTab.get(tab, 'read')) {
+    if (TabData.get(tab, 'read')) {
       removeTab(tab, {safeBlock: true});
     }
   }
@@ -1845,11 +1845,11 @@ function modifySystemSetting() {
 function TabEx_init() {
   modifySystemSetting();
 
-  mTabOpener.init();
-  mTabEvent.init();
-  mSessionStore.init();
-  mStartup.init();
-  mJumpTabObserver.init();
+  TabOpener.init();
+  TabEvent.init();
+  SessionStore.init();
+  Startup.init();
+  JumpTabObserver.init();
 }
 
 TabEx_init();
@@ -1858,8 +1858,8 @@ TabEx_init();
  * Export
  */
 return {
-  tabState: mTab.state,
-  referrer: mReferrer,
+  tabState: TabData.state,
+  referrer: Referrer,
   selectOpenerTab: selectOpenerTab,
   selectPrevSelectedTab: selectPrevSelectedTab,
   closeLeftTabs: closeLeftTabs,

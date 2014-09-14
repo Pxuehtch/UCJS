@@ -67,7 +67,7 @@ const kPref = {
 /**
  * Handler of the click event on the tab bar
  */
-const mTabBarClickEvent = {
+const TabBarClickEvent = {
   clearState: function() {
     this.state.target   = null;
     this.state.button   = 0;
@@ -304,7 +304,7 @@ function switchTabsOnMouseWheel() {
  * Entry point
  */
 function TabHandler_init() {
-  mTabBarClickEvent.init();
+  TabBarClickEvent.init();
   switchTabsOnMouseWheel();
 }
 
