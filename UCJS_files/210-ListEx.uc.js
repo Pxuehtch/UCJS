@@ -631,9 +631,11 @@ const OpenedList = (function() {
         action = Action.selectTab(i);
       }
 
+      let URL = gBrowser.getBrowserForTab(tab).currentURI.spec;
+
       let menuitem = aPopup.appendChild($E('menuitem', {
         label: assignNumber(i + 1, getTitle(tab.label)),
-        tooltiptext: getTooltip(tab.label, tab.linkedBrowser.currentURI.spec),
+        tooltiptext: getTooltip(tab.label, URL),
         icon: getFavicon(gBrowser.getIcon(tab)),
         class: className.join(' '),
         action: action

@@ -654,7 +654,7 @@ const PageObserver = (function() {
   const mProgressListener = {
     init: function() {
       addEvent(gBrowser.tabContainer, 'TabClose', (aEvent) => {
-        let browser = aEvent.target.linkedBrowser;
+        let browser = gBrowser.getBrowserForTab(aEvent.target);
 
         mBrowserState.delete(browser);
       }, false);

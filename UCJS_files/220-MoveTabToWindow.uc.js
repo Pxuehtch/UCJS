@@ -248,7 +248,7 @@ function getWindowsData(aTab) {
 
   let {getBrowserWindows, isPrivate, getIdFor} = WindowUtil;
 
-  let tabURL = aTab.linkedBrowser.currentURI.spec;
+  let tabURL = gBrowser.getBrowserForTab(aTab).currentURI.spec;
   let hasSameURL = (aBrowsers) =>
     aBrowsers.some((b) => b.currentURI.spec === tabURL);
 
