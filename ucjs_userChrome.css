@@ -4,7 +4,7 @@
 
 
 /**
- * [NaviButton.uc.js] backward button with a referrer
+ * [NaviButton.uc.js] Backward button with a referrer.
  */
 #back-button[ucjs_NaviButton_referrer] {
   background-image: linear-gradient(to right, hsl(215, 60%, 88%), hsl(215, 58%, 84%)) !important;
@@ -15,7 +15,7 @@
 }
 
 /**
- * [TabEx.uc.js] unread tab
+ * [TabEx.uc.js] Unread tab.
  */
 .tabbrowser-tab:not([ucjs_TabEx_read]),
 /* menuitem */
@@ -24,8 +24,12 @@
 }
 
 /**
- * [TabEx.uc.js] suspended loading tab
+ * [TabEx.uc.js] Suspended loading tab.
  */
 .tabbrowser-tab[ucjs_TabEx_suspended] {
   font-style: italic !important;
+}
+/* WORKAROUND: Pseudo italic for 'Meiryo UI' that has no italic for zenkaku. */
+.tabbrowser-tab[ucjs_TabEx_suspended] > .tab-stack > .tab-content > .tab-text {
+  transform: skewX(-15deg);
 }
