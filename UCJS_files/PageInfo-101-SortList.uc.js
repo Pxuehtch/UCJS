@@ -15,7 +15,7 @@ const kSORT_DIRECTION_ATTRIBUTE = 'sortDirection';
 const kSortDirections = ['ascending', 'descending', 'natural'];
 
 /**
- * Cache of the custom properties of a tree view
+ * Cache of the custom properties of a tree view.
  */
 const SortState = (function() {
   let mMap = new WeakMap();
@@ -40,13 +40,13 @@ const SortState = (function() {
 })();
 
 /**
- * Implements the click handler of a header
+ * Implements the click handler of a header.
  *
  * @see chrome://browser/content/pageinfo/pageInfo.js
  */
 window.pageInfoTreeView.prototype.cycleHeader =
   function ucjsSortList_cycleHeader(aColumn) {
-  // ignore a sorting for a single row
+  // Don't sort a single row.
   if (this.rowCount < 2) {
     return;
   }
@@ -61,14 +61,14 @@ window.pageInfoTreeView.prototype.cycleHeader =
 
   if (state.sortColumn !== aColumn) {
     if (state.sortColumn) {
-      // remove the previous sorting mark of a header
+      // Remove the previous sorting mark of a header.
       state.sortColumn.element.removeAttribute(kSORT_DIRECTION_ATTRIBUTE);
     }
 
     state.sortColumn = aColumn;
   }
 
-  // store the natural order at the first time
+  // Store the natural order at the first time.
   if (!state.naturalData) {
     state.naturalData = this.data.concat();
   }
@@ -80,7 +80,7 @@ window.pageInfoTreeView.prototype.cycleHeader =
     sort(this.data, aColumn.index, direction === 'ascending');
   }
 
-  // give focus on the first row
+  // Give focus on the first row.
   this.selection.clearSelection();
   this.selection.select(0);
   this.invalidate();
@@ -101,7 +101,7 @@ function sort(aData, aColumnIndex, aAscending) {
 }
 
 /**
- * Disables the default sort functions
+ * Disables the default sort functions.
  *
  * @modified chrome://browser/content/pageinfo/pageInfo.js::onPageMediaSort
  */
@@ -112,7 +112,7 @@ window.gImageView.onPageMediaSort =
   function ucjsSortList_ImageView_onPageMediaSort() {};
 
 /**
- * Clean up when the Page Info window is closed
+ * Clean up when the Page Info window is closed.
  *
  * @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
  */

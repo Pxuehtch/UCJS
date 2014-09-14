@@ -15,11 +15,17 @@ const ucjsLinkInfo = (function(window, undefined) {
 "use strict";
 
 
+/**
+ * Identifiers
+ */
 const kID = {
   linkTree: 'linktree',
   addressColumn: 'linktree-address'
 };
 
+/**
+ * Type of link node.
+ */
 const kType = {
   a: '<A>',
   area: '<AREA>',
@@ -33,6 +39,9 @@ const kType = {
   del: '<DEL>'
 };
 
+/**
+ * Notes
+ */
 const kNote = {
   error: '[N/A]',
   image: '[IMG]'
@@ -50,7 +59,7 @@ function init() {
     mLinkView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
     tree.view = mLinkView;
 
-    // clean up when the Page Info window is closed
+    // Clean up when the Page Info window is closed.
     // @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
     window.onUnloadRegistry.push(() => {
       mLinkView = null;
@@ -70,8 +79,8 @@ function build() {
     }
     catch (ex) {
       // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]
-      // gWindow.frames.length is undefined after closing the target page
-      // which has frames
+      // |gWindow.frames.length| is undefined after closing the target page
+      // which has frames.
       return;
     }
 
@@ -224,7 +233,7 @@ function addLink(aValueArray) {
 }
 
 /**
- * Opens URL of a row being double-clicked
+ * Opens URL of a row being double-clicked.
  */
 function openLink(aEvent) {
   if (aEvent.button !== 0) {
@@ -237,7 +246,7 @@ function openLink(aEvent) {
 
   let tree = window.document.getElementById(kID.linkTree);
 
-  // chrome://browser/content/pageinfo/pageInfo.js::getSelectedRow()
+  // @see chrome://browser/content/pageinfo/pageInfo.js::getSelectedRow()
   let row = window.getSelectedRow(tree);
 
   if (row === -1) {
