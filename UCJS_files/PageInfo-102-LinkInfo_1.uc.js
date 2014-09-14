@@ -47,46 +47,97 @@ const kNote = {
   image: '[IMG]'
 };
 
-let mLinkView = null;
-let mLinkInfoBuilt = false;
+/**
+ * Link view handler.
+ */
+const LinkInfoView = (function() {
+  let mView = null;
+  let mIsBuilt = false;
 
-function init() {
-  if (!mLinkView) {
-    let tree = window.document.getElementById(kID.linkTree);
-    let copyColumnIndex = tree.columns.getNamedColumn(kID.addressColumn).index;
+  function init() {
+    if (!mView) {
+      let tree = window.document.getElementById(kID.linkTree);
+      let copyColumnIndex =
+        tree.columns.getNamedColumn(kID.addressColumn).index;
 
-    // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
-    mLinkView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
-    tree.view = mLinkView;
+      // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
+      mView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
+      tree.view = mView;
 
-    // Clean up when the Page Info window is closed.
-    // @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
-    window.onUnloadRegistry.push(() => {
-      mLinkView = null;
-    });
+      // Clean up when the Page Info window is closed.
+      // @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
+      window.onUnloadRegistry.push(() => {
+        mView = null;
+        mIsBuilt = null;
+      });
+    }
+
+    build();
   }
 
-  build();
-}
-
-function build() {
-  if (!mLinkInfoBuilt) {
-    mLinkInfoBuilt = true;
-
-    try {
-      // @see chrome://browser/content/pageinfo/pageInfo.js::goThroughFrames()
-      window.goThroughFrames(window.gDocument, window.gWindow);
+  function build() {
+    if (!mIsBuilt) {
+      mIsBuilt = true;
+  
+      try {
+        // @see chrome://browser/content/pageinfo/pageInfo.js::goThroughFrames()
+        window.goThroughFrames(window.gDocument, window.gWindow);
+      }
+      catch (ex) {
+        // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]
+        // |gWindow.frames.length| is undefined after closing the target page
+        // which has frames.
+        return;
+      }
+  
+      LI_processFrames();
     }
-    catch (ex) {
-      // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]
-      // |gWindow.frames.length| is undefined after closing the target page
-      // which has frames.
+  }
+
+  function addLink(aValueArray) {
+    mView.addRow([mView.rowCount + 1].concat(aValueArray));
+  }
+
+  /**
+   * Opens URL of a row being double-clicked.
+   */
+  function openLink(aEvent) {
+    if (aEvent.button !== 0) {
       return;
     }
 
-    LI_processFrames();
+    if (aEvent.originalTarget.localName !== 'treechildren') {
+      return;
+    }
+
+    let tree = window.document.getElementById(kID.linkTree);
+
+    // @see chrome://browser/content/pageinfo/pageInfo.js::getSelectedRow()
+    let row = window.getSelectedRow(tree);
+
+    if (row === -1) {
+      return;
+    }
+
+    let column = tree.columns.getNamedColumn(kID.addressColumn);
+    let URL = mView.data[row][column.index];
+
+    let opener = window.opener;
+
+    if (opener && 'gBrowser' in opener) {
+      opener.gBrowser.addTab(URL);
+    }
+    else {
+      window.open(URL, '_blank', 'chrome');
+    }
   }
-}
+
+  return {
+    init: init,
+    addLink: addLink,
+    openLink: openLink
+  };
+})();
 
 function LI_processFrames() {
   // @see chrome://browser/content/pageinfo/pageInfo.js::gFrameList
@@ -115,6 +166,8 @@ function LI_doGrab(aIterator) {
 }
 
 function grabLink(aNode) {
+  let {addLink} = LinkInfoView;
+
   if (aNode instanceof HTMLAnchorElement && aNode.href) {
     let imgs = aNode.getElementsByTagName('img');
     let note = (imgs && imgs.length) ? kNote.image : '';
@@ -228,50 +281,12 @@ function getText(aNode, aDefault) {
   return text.substr(0, 50);
 }
 
-function addLink(aValueArray) {
-  mLinkView.addRow([mLinkView.rowCount + 1].concat(aValueArray));
-}
-
-/**
- * Opens URL of a row being double-clicked.
- */
-function openLink(aEvent) {
-  if (aEvent.button !== 0) {
-    return;
-  }
-
-  if (aEvent.originalTarget.localName !== 'treechildren') {
-    return;
-  }
-
-  let tree = window.document.getElementById(kID.linkTree);
-
-  // @see chrome://browser/content/pageinfo/pageInfo.js::getSelectedRow()
-  let row = window.getSelectedRow(tree);
-
-  if (row === -1) {
-    return;
-  }
-
-  let column = tree.columns.getNamedColumn(kID.addressColumn);
-  let URL = mLinkView.data[row][column.index];
-
-  let opener = window.opener;
-
-  if (opener && 'gBrowser' in opener) {
-    opener.gBrowser.addTab(URL);
-  }
-  else {
-    window.open(URL, '_blank', 'chrome');
-  }
-}
-
 /**
  * Exports
  */
 return {
-  init: init,
-  openLink: openLink
+  init: LinkInfoView.init,
+  openLink: LinkInfoView.openLink
 };
 
 
