@@ -49,20 +49,37 @@ const {
  */
 const kPref = {
   /**
-   * Numbers of the listed items.
+   * Max numbers of listed items.
    *
    * @value {integer} [>0]
+   * @note A list is not created if set to 0.
    * !!! WARNING !!!
-   * *ALL* items will be listed if set to 0. It can cause performance problems.
+   * @note All items is listed if set to -1.
+   * It can cause performance problems for too many items.
    * !!! WARNING !!!
    *
-   * @note Applied to;
-   * - List of Tab history and Recent history.
-   * - List of tabs in a tooltip of Opened window.
-   * - List of history in a tooltip of Closed tab.
-   * - List of tabs in a tooltip of Closed window.
+   * Order of list items;
+   * tabHistory: From new to old around current page.
+   * recentHistory: From recent to old.
+   * openedTabs: From start to end around current tab in visible tabs.
+   * openedWindows: From front(current window) to back.
+   * closedTabs: From the last closed tab to old.
+   * closedWindows: From the last closed window to old.
+   *
+   * tooltip:
+   * List of tabs of Opened window: From start to end around selected tab.
+   * List of history of Closed tab: From new to old around selected page.
+   * List of tabs of Closed window: From start to end around selected tab.
    */
-  maxListItems: 10
+  maxNumListItems: {
+    tabHistory:    10,
+    recentHistory: 10,
+    openedTabs:    20,
+    openedWindows: -1,
+    closedTabs:    10,
+    closedWindows: 10,
+    tooltip: 10
+  }
 };
 
 /**
@@ -150,10 +167,37 @@ const MainMenu = (function() {
       menu.appendChild($E('menupopup'));
     }
 
+    /**
+     * List of items of menus.
+     *
+     * @key A menu name in |kUI|.
+     * @value A items name in |kPref.maxNumListItems|.
+     *
+     * TODO: Make a smart way to avoid managing constant names.
+     */
+    let menuItems = {
+      'historyMenu': [
+        'tabHistory',
+        'recentHistory'
+      ],
+      'openedMenu': [
+        'openedTabs',
+        'openedWindows'
+      ],
+      'closedMenu': [
+        'closedTabs',
+        'closedWindows'
+      ]
+    };
+
     addSeparator(kUI.startSeparator);
-    addMenu(kUI.historyMenu);
-    addMenu(kUI.openedMenu);
-    addMenu(kUI.closedMenu);
+
+    for (let [menu, items] in Iterator(menuItems)) {
+      if (items.some((item) => !!kPref.maxNumListItems[item])) {
+        addMenu(kUI[menu]);
+      }
+    }
+
     addSeparator(kUI.endSeparator);
   }
 
@@ -192,7 +236,11 @@ const MainMenu = (function() {
       some(([menuName, menuHandler]) => {
         if (menu.id === menuName.id && !menu.itemCount) {
           menuHandler.build(menupopup);
+
+          return true;
         }
+
+        return false;
       });
     }
   }
@@ -212,8 +260,10 @@ const MainMenu = (function() {
       forEach((aMenuName) => {
         let menu = $ID(aMenuName.id);
 
-        while (menu.itemCount) {
-          menu.removeItemAt(0);
+        if (menu) {
+          while (menu.itemCount) {
+            menu.removeItemAt(0);
+          }
         }
       });
     }
@@ -315,9 +365,10 @@ const HistoryList = (function() {
         "LIMIT :limit"
       ].join(' ');
 
+      let maxNumItems = kPref.maxNumListItems.recentHistory;
+
       // -1: All results will be returned.
-      const maxNum = kPref.maxListItems;
-      let limit = (maxNum > 0) ? maxNum : -1;
+      let limit = (maxNumItems > 0) ? maxNumItems : -1;
 
       return promisePlacesDBResult({
         expression: SQLExp,
@@ -363,20 +414,24 @@ const HistoryList = (function() {
    * Build menu items.
    */
   function build(aPopup) {
-    if (!buildTabHistory(aPopup)) {
-      makeDisabledMenuItem(aPopup, kUI.historyMenu.tabEmpty);
+    if (!!kPref.maxNumListItems.tabHistory) {
+      if (!buildTabHistory(aPopup)) {
+        makeDisabledMenuItem(aPopup, kUI.historyMenu.tabEmpty);
+      }
+
+      makeMenuSeparator(aPopup);
     }
 
-    makeMenuSeparator(aPopup);
+    if (!!kPref.maxNumListItems.recentHistory) {
+      // Recent history items will be async-appended before this separator.
+      let recentHistorySep = makeMenuSeparator(aPopup);
 
-    // Recent history items will be async-appended before this separator.
-    let recentHistorySep = makeMenuSeparator(aPopup);
-
-    asyncBuildRecentHistory(recentHistorySep, (aBuilt) => {
-      if (!aBuilt) {
-        makeDisabledMenuItem(recentHistorySep, kUI.historyMenu.recentEmpty);
-      }
-    });
+      asyncBuildRecentHistory(recentHistorySep, (aBuilt) => {
+        if (!aBuilt) {
+          makeDisabledMenuItem(recentHistorySep, kUI.historyMenu.recentEmpty);
+        }
+      });
+    }
 
     aPopup.appendChild($E('menuitem', {
       label: kUI.historyManager.label,
@@ -393,10 +448,16 @@ const HistoryList = (function() {
     }
 
     let currentIndex = sessionHistory.index;
-    let [start, end] = limitListRange(currentIndex, sessionHistory.count);
 
-    // Scan history entries in thier visited date order from last to first.
-    for (let i = end - 1; i >= start; i--) {
+    // Scan history entries in thier visited date order from new to old around
+    // the current page.
+    let [start, end] = limitListRange({
+      index: currentIndex,
+      length: sessionHistory.count,
+      maxNumItems: kPref.maxNumListItems.tabHistory
+    });
+
+    for (let i = end; i >= start; i--) {
       let entry = sessionHistory.getEntryAtIndex(i, false);
 
       if (!entry) {
@@ -456,7 +517,7 @@ const HistoryList = (function() {
     let popup = aRefNode.parentNode;
     let currentURL = gBrowser.currentURI.spec;
 
-    // Scan history entries in thier visited date order from last to first.
+    // Scan history entries in thier visited date order from recent to old.
     aRecentHistory.forEach((entry) => {
       let URL, title, className, action;
 
@@ -575,8 +636,21 @@ const OpenedList = (function() {
       // Enumerator of all windows in thier Z-order from front to back.
       let winEnum = Services.wm.getZOrderDOMWindowEnumerator(null, true);
 
+      let isLimitOver = (() => {
+        let maxNumItems = kPref.maxNumListItems.openedWindows;
+        let limited = maxNumItems > 0;
+        let count = 0;
+
+        return () => limited && ++count > maxNumItems;
+      })();
+
       while (winEnum.hasMoreElements()) {
         let win = winEnum.getNext().QueryInterface(Ci.nsIDOMWindow);
+
+        // Bail out if the number of items reaches the limit.
+        if (isLimitOver()) {
+          break;
+        }
 
         // Skip a closed window.
         if (!win.closed) {
@@ -610,16 +684,31 @@ const OpenedList = (function() {
    * Build menu items.
    */
   function build(aPopup) {
-    buildOpenedTabs(aPopup);
+    if (!!kPref.maxNumListItems.openedTabs) {
+      buildOpenedTabs(aPopup);
 
-    makeMenuSeparator(aPopup);
+      makeMenuSeparator(aPopup);
+    }
 
-    buildOpenedWindows(aPopup);
+    if (!!kPref.maxNumListItems.openedWindows) {
+      buildOpenedWindows(aPopup);
+    }
   }
 
   function buildOpenedTabs(aPopup) {
-    // Scan the visible tabs in thier position order from first to last.
-    gBrowser.visibleTabs.forEach((tab, i) => {
+    // Scan the visible tabs in thier position order from start to end around
+    // the current tab.
+    let tabs = gBrowser.visibleTabs;
+
+    let [start, end] = limitListRange({
+      index: tabs.indexOf(gBrowser.selectedTab),
+      length: tabs.length,
+      maxNumItems: kPref.maxNumListItems.openedTabs
+    });
+
+    for (let i = start; i <= end; i++) {
+      let tab = tabs[i];
+
       let className, action;
 
       className = ['menuitem-iconic'];
@@ -646,13 +735,13 @@ const OpenedList = (function() {
       if (!tab.selected) {
         setStateForUnreadTab(menuitem, tab);
       }
-    });
+    }
   }
 
   function buildOpenedWindows(aPopup) {
     let {getWindows, isBrowser, getIdFor} = WindowUtil;
 
-    // Scan windows in their Z-order from front to back.
+    // Scan windows in their Z-order from front(the current window) to back.
     for (let win in getWindows()) {
       let title, icon, tabList, URL, className, action;
 
@@ -662,14 +751,19 @@ const OpenedList = (function() {
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
         icon = b.getIcon(b.selectedTab);
 
+        // Scan visible tabs in their position order from start to end around
+        // the selected tab in this window.
         tabList = [
           fixPluralForm('[#1 #2]', b.visibleTabs.length, ['Tab', 'Tabs'])
         ];
 
-        let selectedIndex = b.visibleTabs.indexOf(b.selectedTab);
-        let [start, end] = limitListRange(selectedIndex, b.visibleTabs.length);
+        let [start, end] = limitListRange({
+          index: b.visibleTabs.indexOf(b.selectedTab),
+          length: b.visibleTabs.length,
+          maxNumItems: kPref.maxNumListItems.tooltip
+        });
 
-        for (let j = start; j < end; j++) {
+        for (let j = start; j <= end; j++) {
           tabList.push(assignNumber(j + 1, b.visibleTabs[j].label));
         }
       }
@@ -758,7 +852,11 @@ const ClosedList = (function() {
         if (SS.getClosedTabCount(window) > 0) {
           // Array of the data of closed tabs in thier closed date order from
           // last to first.
-          return JSON.parse(SS.getClosedTabData(window));
+          let data = JSON.parse(SS.getClosedTabData(window));
+
+          let maxNumItems = kPref.maxNumListItems.closedTabs;
+
+          return limitData(data, maxNumItems);
         }
       } catch (ex) {}
 
@@ -770,11 +868,19 @@ const ClosedList = (function() {
         if (SS.getClosedWindowCount() > 0) {
           // Array of the data of closed windows in thier closed date order
           // from last to first.
-          return JSON.parse(SS.getClosedWindowData());
+          let data = JSON.parse(SS.getClosedWindowData());
+
+          let maxNumItems = kPref.maxNumListItems.closedWindows;
+
+          return limitData(data, maxNumItems);
         }
       } catch (ex) {}
 
       return null;
+    }
+
+    function limitData(aData, aMaxNumItems) {
+      return (aMaxNumItems > 0) ? aData.slice(0, aMaxNumItems + 1) : aData;
     }
 
     return {
@@ -787,14 +893,18 @@ const ClosedList = (function() {
    * Build menu items.
    */
   function build(aPopup) {
-    if (!buildClosedTabs(aPopup)) {
-      makeDisabledMenuItem(aPopup, kUI.closedMenu.noTabs);
+    if (!!kPref.maxNumListItems.closedTabs) {
+      if (!buildClosedTabs(aPopup)) {
+        makeDisabledMenuItem(aPopup, kUI.closedMenu.noTabs);
+      }
+
+      makeMenuSeparator(aPopup);
     }
 
-    makeMenuSeparator(aPopup);
-
-    if (!buildClosedWindows(aPopup)) {
-      makeDisabledMenuItem(aPopup, kUI.closedMenu.noWindows);
+    if (!!kPref.maxNumListItems.closedWindows) {
+      if (!buildClosedWindows(aPopup)) {
+        makeDisabledMenuItem(aPopup, kUI.closedMenu.noWindows);
+      }
     }
   }
 
@@ -809,13 +919,19 @@ const ClosedList = (function() {
     closedTabs.forEach((closedTab, i) => {
       let entries = closedTab.state.entries;
 
+      // Scan tab history in their visited date order from new to old around
+      // the selected page in this closed tab.
       let history = [
         fixPluralForm('[#1 History #2]', entries.length, ['entry', 'entries'])
       ];
 
-      let [start, end] = limitListRange(closedTab.state.index, entries.length);
+      let [start, end] = limitListRange({
+        index: closedTab.state.index - 1,
+        length: entries.length,
+        maxNumItems: kPref.maxNumListItems.tooltip
+      });
 
-      for (let j = end - 1; j >= start; j--) {
+      for (let j = end; j >= start; j--) {
         let title = getTitle(entries[j].title || entries[j].url);
 
         history.push(assignNumber(j + 1, title));
@@ -844,14 +960,19 @@ const ClosedList = (function() {
     closedWindows.forEach((closedWindow, i) => {
       let tabs = closedWindow.tabs;
 
+      // Scan visible tabs in their position order from start to end around
+      // the selected tab in this closed window.
       let tabList = [
         fixPluralForm('[#1 #2]', tabs.length, ['Tab', 'Tabs'])
       ];
 
-      let [start, end] =
-        limitListRange(closedWindow.selected - 1, tabs.length);
+      let [start, end] = limitListRange({
+        index: closedWindow.selected - 1,
+        length: tabs.length,
+        maxNumItems: kPref.maxNumListItems.tooltip
+      });
 
-      for (let j = start; j < end; j++) {
+      for (let j = start; j <= end; j++) {
         let tab = tabs[j].index && tabs[j].entries[tabs[j].index - 1];
         let title = getTitle(tab && (tab.title || tab.url));
 
@@ -934,19 +1055,26 @@ function fixPluralForm(aFormat, aCount, aLabels) {
     replace('#2', aLabels[(aCount < 2) ? 0 : 1]);
 }
 
-function limitListRange(aIndex, aCount) {
-  let maxNum = kPref.maxListItems;
-
-  if (maxNum <= 0) {
-    return [0, aCount];
+function limitListRange({index, length, maxNumItems}) {
+  if (!maxNumItems || maxNumItems < 0) {
+    return [0, length - 1];
   }
 
-  let half = Math.floor(maxNum / 2);
-  let start = Math.max(aIndex - half, 0),
-      end = Math.min((start > 0) ? aIndex + half + 1 : maxNum, aCount);
+  if (index === 0) {
+    return [0, Math.min(maxNumItems, length) - 1];
+  }
 
-  if (end === aCount) {
-    start = Math.max(aCount - maxNum, 0);
+  let start, end;
+
+  let half = Math.floor(maxNumItems / 2);
+
+  start = Math.max(index - half, 0);
+
+  end = (start > 0) ? index + half : maxNumItems - 1;
+  end = Math.min(end, length - 1);
+
+  if (end === length - 1) {
+    start = Math.max(length - maxNumItems, 0);
   }
 
   return [start, end];
