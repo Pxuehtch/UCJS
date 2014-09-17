@@ -47,7 +47,13 @@ function log(aMsg) {
  */
 (function() {
 
-  const kMaxWidth = 40; // [em]
+	const kPref = {
+    // Max numbers of characters in a line.
+    maxWidth: 40,
+
+    // Max numbers of wrap lines of a long text.
+    maxNumWrapLines: 4
+  };
 
   const kUI = {
     tooltip: {
@@ -69,7 +75,7 @@ function log(aMsg) {
     $E('tooltip', {
       id: kUI.tooltip.id,
       style:
-        'max-width:' + kMaxWidth + 'em;' +
+        'max-width:none;padding:auto 0;' +
         'word-break:break-all;word-wrap:break-word;'
     })
   );
@@ -166,9 +172,8 @@ function log(aMsg) {
   function setLabel({title, URL, referrer}) {
     let value = title || URL;
 
-    let $text = (text) => window.document.createTextNode(text);
-
-    let style = '';
+    let style = 'max-width:' + kPref.maxWidth + 'em;' +
+      'margin:auto 0;padding:auto 0;';
 
     if (title) {
       style += kUI.style.title
@@ -182,7 +187,7 @@ function log(aMsg) {
       style += kUI.style.referrer
     }
 
-    let maxLength = kMaxWidth * 4;
+    let maxLength = kPref.maxWidth * kPref.maxNumWrapLines;
 
     if (value.length > maxLength) {
       let half = Math.floor(maxLength / 2);
@@ -191,10 +196,11 @@ function log(aMsg) {
     }
 
     let label = $E('label', {
-      style: style || null
+      style: style
     });
 
-    mTooltip.appendChild(label).appendChild($text(value));
+    mTooltip.appendChild(label).
+      appendChild(window.document.createTextNode(value));
   }
 
 })();
