@@ -23,6 +23,7 @@ const {
     getModule
   },
   getNodeById: $ID,
+  addEvent,
   promisePlacesDBResult
 } = window.ucjsUtil;
 
@@ -79,6 +80,17 @@ const kPref = {
     closedTabs:    10,
     closedWindows: 10,
     tooltip: 10
+  },
+
+  /**
+   * Tooltip settings.
+   *
+   * maxWidth: Max numbers of characters in a line.
+   * maxNumWrapLines: Max numbers of wrap lines of a long text.
+   */
+  tooltip: {
+    maxWidth: 40,
+    maxNumWrapLines: 4
   }
 };
 
@@ -115,6 +127,10 @@ const kUI = {
     noWindows: 'No closed windows.'
   },
 
+  tooltip: {
+    id: 'ucjs_ListEx_tooltip'
+  },
+
   startSeparator: {
     id: 'ucjs_ListEx_startSeparator'
   },
@@ -123,9 +139,10 @@ const kUI = {
     id: 'ucjs_ListEx_endSeparator'
   },
 
+  // Extended property name of a menuitem.
   property: {
-    // Extended property name of a menuitem for its custom command.
-    commandData: 'ucjs_ListEx_commandData'
+    commandData: 'ucjs_ListEx_commandData',
+    tooltipData: 'ucjs_ListEx_tooltipData'
   }
 };
 
@@ -146,6 +163,8 @@ const MainMenu = (function() {
 
       onCreate: createMenu
     });
+
+    Tooltip.init();
   }
 
   function createMenu(aContextMenu) {
@@ -482,18 +501,21 @@ const HistoryList = (function() {
 
       // @note |label| and |icon| will be set asynchronously.
       let menuitem = aPopup.appendChild($E('menuitem', {
-        tooltiptext: getTooltip(title, URL),
+        tooltip: {
+          title: title,
+          URL: URL
+        },
         class: className.join(' '),
         action: action
       }));
 
       asyncGetTimeAndIcon(URL, ({time, icon}) => {
         $E(menuitem, {
-          label: formatLabel({
-            time: time,
-            title: getTitle(title)
-          }),
-          icon: getFavicon(icon)
+          label: {
+            prefix: formatTime(time),
+            value: title
+          },
+          icon: icon
         });
       });
     }
@@ -533,12 +555,15 @@ const HistoryList = (function() {
       }
 
       popup.insertBefore($E('menuitem', {
-        label: formatLabel({
-          time: entry.time,
-          title: getTitle(title)
-        }),
-        tooltiptext: getTooltip(title, URL),
-        icon: getFavicon(entry.icon),
+        label: {
+          prefix: formatTime(entry.time),
+          value: title
+        },
+        tooltip: {
+          title: title,
+          URL: URL
+        },
+        icon: entry.icon,
         class: className.join(' '),
         action: action
       }), aRefNode);
@@ -551,25 +576,6 @@ const HistoryList = (function() {
         aCallback(aResult);
       }
     ).then(null, Cu.reportError);
-  }
-
-  function formatLabel(aValue) {
-    // Format to convert date and time.
-    // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
-    const kTimeFormat = '%Y/%m/%d %H:%M:%S';
-    const kTitleFormat = ['[%time%] %title%', '%title%'];
-
-    let {time, title} = aValue;
-
-    let form = time ? kTitleFormat[0] : kTitleFormat[1];
-
-    if (time) {
-      // Convert microseconds into milliseconds.
-      time = (new Date(time / 1000)).toLocaleFormat(kTimeFormat);
-      form = form.replace('%time%', time);
-    }
-
-    return form.replace('%title%', title);
   }
 
   return {
@@ -720,12 +726,16 @@ const OpenedList = (function() {
         action = Action.selectTab(i);
       }
 
-      let URL = gBrowser.getBrowserForTab(tab).currentURI.spec;
-
       let menuitem = aPopup.appendChild($E('menuitem', {
-        label: assignNumber(i + 1, getTitle(tab.label)),
-        tooltiptext: getTooltip(tab.label, URL),
-        icon: getFavicon(gBrowser.getIcon(tab)),
+        label: {
+          prefix: formatOrderNumber(i + 1),
+          value: tab.label
+        },
+        tooltip: {
+          title: tab.label,
+          URL: gBrowser.getBrowserForTab(tab).currentURI.spec
+        },
+        icon: gBrowser.getIcon(tab),
         class: className.join(' '),
         action: action
       }));
@@ -747,24 +757,45 @@ const OpenedList = (function() {
 
       if (isBrowser(win)) {
         let b = win.gBrowser;
+        let tabs = b.visibleTabs;
 
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
         icon = b.getIcon(b.selectedTab);
 
         // Scan visible tabs in their position order from start to end around
         // the selected tab in this window.
-        tabList = [
-          fixPluralForm('[#1 #2]', b.visibleTabs.length, ['Tab', 'Tabs'])
-        ];
+        tabList = [{
+          label: {
+            value: fixPluralForm({
+              format: '[#1 #2]',
+              count: tabs.length,
+              labels: ['Tab', 'Tabs']
+            })
+          },
+          header: true
+        }];
+
+        let selectedIndex = tabs.indexOf(b.selectedTab);
 
         let [start, end] = limitListRange({
-          index: b.visibleTabs.indexOf(b.selectedTab),
-          length: b.visibleTabs.length,
+          index: selectedIndex,
+          length: tabs.length,
           maxNumItems: kPref.maxNumListItems.tooltip
         });
 
         for (let j = start; j <= end; j++) {
-          tabList.push(assignNumber(j + 1, b.visibleTabs[j].label));
+          let item = {
+            label: {
+              prefix: formatOrderNumber(j + 1),
+              value: tabs[j].label
+            }
+          };
+
+          if (j === selectedIndex) {
+            item.selected = true;
+          }
+
+          tabList.push(item);
         }
       }
       else {
@@ -783,9 +814,15 @@ const OpenedList = (function() {
       }
 
       aPopup.appendChild($E('menuitem', {
-        label: getTitle(title),
-        tooltiptext: getTooltip(title, tabList || URL),
-        icon: getFavicon(icon),
+        label: {
+          value: title
+        },
+        tooltip: {
+          title: title,
+          URL: URL,
+          list: tabList
+        },
+        icon: icon,
         class: className.join(' '),
         action: action
       }));
@@ -921,26 +958,49 @@ const ClosedList = (function() {
 
       // Scan tab history in their visited date order from new to old around
       // the selected page in this closed tab.
-      let history = [
-        fixPluralForm('[#1 History #2]', entries.length, ['entry', 'entries'])
-      ];
+      let history = [{
+        label: {
+          value: fixPluralForm({
+            format: '[#1 History #2]',
+            count: entries.length,
+            labels: ['entry', 'entries']
+          })
+        },
+        header: true
+      }];
+
+      let selectedIndex = closedTab.state.index - 1;
 
       let [start, end] = limitListRange({
-        index: closedTab.state.index - 1,
+        index: selectedIndex,
         length: entries.length,
         maxNumItems: kPref.maxNumListItems.tooltip
       });
 
       for (let j = end; j >= start; j--) {
-        let title = getTitle(entries[j].title || entries[j].url);
+        let item = {
+          label: {
+            prefix: formatOrderNumber(j + 1),
+            value: entries[j].title || entries[j].url
+          }
+        };
 
-        history.push(assignNumber(j + 1, title));
+        if (j === selectedIndex) {
+          item.selected = true;
+        }
+
+        history.push(item);
       }
 
       aPopup.appendChild($E('menuitem', {
-        label: getTitle(closedTab.title),
-        tooltiptext: getTooltip(closedTab.title, history),
-        icon: getFavicon(closedTab.image),
+        label: {
+          value: closedTab.title
+        },
+        tooltip: {
+          title: closedTab.title,
+          list: history
+        },
+        icon: closedTab.image,
         class: 'menuitem-iconic',
         action: Action.undoCloseTab(i)
       }));
@@ -962,29 +1022,51 @@ const ClosedList = (function() {
 
       // Scan visible tabs in their position order from start to end around
       // the selected tab in this closed window.
-      let tabList = [
-        fixPluralForm('[#1 #2]', tabs.length, ['Tab', 'Tabs'])
-      ];
+      let tabList = [{
+        label: {
+          value: fixPluralForm({
+            format: '[#1 #2]',
+            count: tabs.length,
+            labels: ['Tab', 'Tabs']
+          })
+        },
+        header: true
+      }];
+
+      let selectedIndex = closedWindow.selected - 1;
 
       let [start, end] = limitListRange({
-        index: closedWindow.selected - 1,
+        index: selectedIndex,
         length: tabs.length,
         maxNumItems: kPref.maxNumListItems.tooltip
       });
 
       for (let j = start; j <= end; j++) {
         let tab = tabs[j].index && tabs[j].entries[tabs[j].index - 1];
-        let title = getTitle(tab && (tab.title || tab.url));
 
-        tabList.push(assignNumber(j + 1, title));
+        let item = {
+          label: {
+            prefix: formatOrderNumber(j + 1),
+            value: tab && (tab.title || tab.url)
+          }
+        };
+
+        if (j === selectedIndex) {
+          item.selected = true;
+        }
+
+        tabList.push(item);
       }
 
-      let icon = tabs[closedWindow.selected - 1].image;
-
       aPopup.appendChild($E('menuitem', {
-        label: getTitle(closedWindow.title),
-        tooltiptext: getTooltip(closedWindow.title, tabList),
-        icon: getFavicon(icon),
+        label: {
+          value: closedWindow.title
+        },
+        tooltip: {
+          title: closedWindow.title,
+          list: tabList
+        },
+        icon: tabs[closedWindow.selected - 1].image,
         class: 'menuitem-iconic',
         action: Action.undoCloseWindow(i)
       }));
@@ -998,10 +1080,141 @@ const ClosedList = (function() {
   };
 })();
 
+/**
+ * Tooltip of a menuitem.
+ */
+const Tooltip = (function() {
+  function init() {
+    let tooltip = $ID('mainPopupSet').appendChild(
+      $E('tooltip', {
+        id: kUI.tooltip.id,
+        style:
+          //'max-width:' + maxWidth + 'em;padding:auto 0;' +
+          'max-width:none;padding:auto 0;' +
+          'word-break:break-all;word-wrap:break-word;'
+      })
+    );
+
+    addEvent(tooltip, 'popupshowing', onPopupShowing, false);
+    addEvent(tooltip, 'popuphiding', onPopupHiding, false);
+  }
+
+  function onPopupHiding(aEvent) {
+    aEvent.stopPropagation();
+
+    let tooltip = aEvent.currentTarget;
+
+    while (tooltip.hasChildNodes()) {
+      tooltip.removeChild(tooltip.firstChild);
+    }
+  }
+
+  function onPopupShowing(aEvent) {
+    aEvent.stopPropagation();
+
+    let menuitem = window.document.tooltipNode;
+
+    let data = menuitem[kUI.property.tooltipData];
+
+    fillInTooltip(data);
+  }
+
+  function fillInTooltip({title, URL, list}) {
+    let tooltip = $ID(kUI.tooltip.id);
+
+    let {maxWidth, maxNumWrapLines} = kPref.tooltip;
+    let maxTextLength = maxWidth * maxNumWrapLines;
+
+    let add = (aValue) => {
+      let label;
+      let style = 'max-width:' + maxWidth + 'em;margin:auto 0;padding:auto 0;';
+
+      // A text of a header or URL shows without being cropped as possible and
+      // may be line-wrapped.
+      if (typeof aValue === 'string') {
+        label = {
+          value: aValue,
+          wrapping: {
+            maxTextLength: maxTextLength
+          }
+        };
+      }
+
+      // A text of a list item shows in one line and may be cropped.
+      else {
+        let {header, selected} = aValue;
+
+        label = aValue.label
+
+        if (header) {
+          style += 'color:dimgray;';
+        }
+        else if (selected) {
+          style += 'font-weight:bold;';
+        }
+      }
+
+      tooltip.appendChild($E('label', {
+        label: label,
+        style: style
+      }));
+    };
+
+    add(title);
+
+    if (URL) {
+      if (URL !== title) {
+        add(URL);
+      }
+    }
+    else if (list) {
+      list.forEach(add);
+    }
+  }
+
+  return {
+    init: init
+  };
+})();
+
+/**
+ * Helper functions.
+ */
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
+    case 'label': {
+      // Handle a label of list items in a menuitem and a tooltip.
+      if (aValue.value === undefined) {
+        return false;
+      }
+
+      // <label> in a tooltip.
+      if (aNode.localName === 'label') {
+        aName = 'value';
+      }
+
+      let {value, crop} = fitIntoLabel(aValue.value, aValue.wrapping);
+
+      if (aValue.prefix) {
+        value = [aValue.prefix, value].join(' ');
+      }
+
+      if (aValue.wrapping) {
+        aNode.appendChild(window.document.createTextNode(value));
+      }
+      else {
+        if (crop) {
+          aNode.setAttribute('crop', crop);
+        }
+
+        aNode.setAttribute(aName, value);
+      }
+
+      return true;
+    }
+
     case 'icon': {
-      aNode.style.listStyleImage = 'url(' + aValue + ')';
+      aNode.style.listStyleImage = 'url(' + fixFaviconURL(aValue) + ')';
 
       return true;
     }
@@ -1017,6 +1230,13 @@ function handleAttribute(aNode, aName, aValue) {
           }
         }
       }
+
+      return true;
+    }
+
+    case 'tooltip': {
+      aNode[kUI.property.tooltipData] = aValue;
+      aNode.tooltip = kUI.tooltip.id;
 
       return true;
     }
@@ -1043,16 +1263,10 @@ function makeMenuSeparator(aPopup) {
   return aPopup.appendChild($E('menuseparator'));
 }
 
-function assignNumber(aNumber, aValue) {
-	return '%number%. %value%'.
-	  replace('%number%', aNumber).
-	  replace('%value%', aValue);
-}
-
-function fixPluralForm(aFormat, aCount, aLabels) {
-  return aFormat.
-    replace('#1', aCount).
-    replace('#2', aLabels[(aCount < 2) ? 0 : 1]);
+function fixPluralForm({format, count, labels}) {
+  return format.
+    replace('#1', count).
+    replace('#2', labels[(count < 2) ? 0 : 1]);
 }
 
 function limitListRange({index, length, maxNumItems}) {
@@ -1080,44 +1294,41 @@ function limitListRange({index, length, maxNumItems}) {
   return [start, end];
 }
 
-function getTitle(aText) {
-  const kMaxTextLen = 40;
-
+function fitIntoLabel(aText, aWrapping) {
   const {PlacesUIUtils} =
     getModule('resource://app/modules/PlacesUIUtils.jsm');
 
-  if (aText && aText.length > kMaxTextLen) {
-    const {ellipsis} = PlacesUIUtils;
+  let crop;
 
-    if (/^(?:https?|ftp|file):/i.test(aText)) {
-      let half = Math.floor(kMaxTextLen / 2);
+  // Show the filename of a URL.
+  if (/^(?:https?|ftp|file):/i.test(aText)) {
+    crop = 'center';
+  }
 
-      aText = [aText.substr(0, half), aText.substr(-half)].join(ellipsis);
-    }
-    else {
-      aText = aText.substr(0, kMaxTextLen) + ellipsis;
+  if (aWrapping) {
+    let maxLength = aWrapping.maxTextLength;
+
+    if (aText.length > maxLength) {
+      let {ellipsis} = PlacesUIUtils;
+
+      if (crop === 'center') {
+        let half = Math.floor(maxLength / 2);
+
+        aText = [aText.substr(0, half), aText.substr(-half)].join(ellipsis);
+      }
+      else {
+        aText = aText.substr(0, maxLength) + ellipsis;
+      }
     }
   }
 
-  return aText || PlacesUIUtils.getString('noTitle');
+  return {
+    value: aText || PlacesUIUtils.getString('noTitle'),
+    crop: crop
+  };
 }
 
-/**
- * Makes a text for a tooltip.
- *
- * @param aTitle {string}
- * @param aInfo {string|string[]}
- * @return {string}
- */
-function getTooltip(aTitle, aInfo) {
-  if (aTitle === aInfo) {
-    return aTitle;
-  }
-
-  return [aTitle].concat(aInfo).join('\n');
-}
-
-function getFavicon(aIconURL) {
+function fixFaviconURL(aIconURL) {
   const {PlacesUtils} = getModule('resource://gre/modules/PlacesUtils.jsm');
 
   if (aIconURL) {
@@ -1129,6 +1340,22 @@ function getFavicon(aIconURL) {
   }
 
   return PlacesUtils.favicons.defaultFavicon.spec;
+}
+
+function formatTime(aMicroSeconds) {
+  // Format to convert date and time.
+  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
+  const kTimeFormat = '%Y/%m/%d %H:%M:%S';
+  const kTextFormat = '[%time%]';
+
+  // Convert microseconds into milliseconds.
+  let time = (new Date(aMicroSeconds / 1000)).toLocaleFormat(kTimeFormat);
+
+  return kTextFormat.replace('%time%', time);
+}
+
+function formatOrderNumber(aNumber) {
+  return aNumber + '.';
 }
 
 /**
