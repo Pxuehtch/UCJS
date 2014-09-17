@@ -47,7 +47,7 @@ function log(aMsg) {
  */
 (function() {
 
-	const kPref = {
+  const kPref = {
     // Max numbers of characters in a line.
     maxWidth: 40,
 

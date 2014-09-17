@@ -52,8 +52,8 @@ function log(aMsg) {
 const kID = {
   OPENINFO: 'ucjs_TabEx_openInfo',
   OPENTIME: 'ucjs_TabEx_openTime',
-  READTIME: 'ucjs_TabEx_readTime',
   SELECTTIME: 'ucjs_TabEx_selectTime',
+  READTIME: 'ucjs_TabEx_readTime',
   ANCESTORS: 'ucjs_TabEx_ancestors',
   SUSPENDED: 'ucjs_TabEx_suspended',
   READ: 'ucjs_TabEx_read',
@@ -849,11 +849,11 @@ const SessionStore = {
 
   persistTabAttribute: function() {
     let savedAttributes = [
+      kID.OPENINFO,
       kID.OPENTIME,
-      kID.READTIME,
       kID.SELECTTIME,
-      kID.ANCESTORS,
-      kID.OPENINFO
+      kID.READTIME,
+      kID.ANCESTORS
     ];
 
     savedAttributes.forEach((key) => {
@@ -964,7 +964,7 @@ const Startup = {
   },
 
   setStartupTabs: function() {
-    // Scan all tabs.
+    // Scan all tabs (including hidden tabs).
     Array.forEach(gBrowser.tabs, (tab) => {
       // A boot startup tab (e.g. homepage).
       if (!TabData.get(tab, 'openInfo')) {

@@ -1089,7 +1089,6 @@ const Tooltip = (function() {
       $E('tooltip', {
         id: kUI.tooltip.id,
         style:
-          //'max-width:' + maxWidth + 'em;padding:auto 0;' +
           'max-width:none;padding:auto 0;' +
           'word-break:break-all;word-wrap:break-word;'
       })
