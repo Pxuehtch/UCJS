@@ -760,6 +760,7 @@ const OpenedList = (function() {
         let tabs = b.visibleTabs;
 
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
+        URL = b.currentURI.spec;
         icon = b.getIcon(b.selectedTab);
 
         // Scan visible tabs in their position order from start to end around
@@ -956,6 +957,8 @@ const ClosedList = (function() {
     closedTabs.forEach((closedTab, i) => {
       let entries = closedTab.state.entries;
 
+      let URL;
+
       // Scan tab history in their visited date order from new to old around
       // the selected page in this closed tab.
       let history = [{
@@ -986,6 +989,7 @@ const ClosedList = (function() {
         };
 
         if (j === selectedIndex) {
+          URL = entry.url;
           item.selected = true;
         }
 
@@ -998,6 +1002,7 @@ const ClosedList = (function() {
         },
         tooltip: {
           title: closedTab.title,
+          URL: URL,
           list: history
         },
         icon: closedTab.image,
@@ -1019,6 +1024,8 @@ const ClosedList = (function() {
     // Scan closed windows in thier closed date order from last to first.
     closedWindows.forEach((closedWindow, i) => {
       let tabs = closedWindow.tabs;
+
+      let URL;
 
       // Scan visible tabs in their position order from start to end around
       // the selected tab in this closed window.
@@ -1052,6 +1059,7 @@ const ClosedList = (function() {
         };
 
         if (j === selectedIndex) {
+          URL = tab.url;
           item.selected = true;
         }
 
@@ -1064,6 +1072,7 @@ const ClosedList = (function() {
         },
         tooltip: {
           title: closedWindow.title,
+          URL: URL,
           list: tabList
         },
         icon: tabs[closedWindow.selected - 1].image,
@@ -1166,7 +1175,8 @@ const Tooltip = (function() {
         add(URL);
       }
     }
-    else if (list) {
+
+    if (list) {
       list.forEach(add);
     }
   }
