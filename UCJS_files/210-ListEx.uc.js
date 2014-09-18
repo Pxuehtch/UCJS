@@ -1176,48 +1176,54 @@ const Tooltip = (function() {
     let maxTextLength = maxWidth * maxNumWrapLines;
 
     let add = (aValue) => {
-      let label;
       let style = 'max-width:' + maxWidth + 'em;margin:auto 0;padding:auto 0;';
 
-      // A text of a header or URL shows without being cropped as possible and
-      // may be line-wrapped.
-      if (typeof aValue === 'string') {
-        label = {
-          value: aValue,
-          wrapping: {
-            maxTextLength: maxTextLength
-          }
+      if (aValue.title) {
+        style += 'font-weight:bold;background-color:lightgray;';
+      }
+      else if (aValue.URL) {
+        style += '';
+      }
+      else if (aValue.header) {
+        style += 'color:dimgray;';
+      }
+      else if (aValue.selected) {
+        style += 'font-weight:bold;';
+      }
+
+      if (aValue.wrapping) {
+        aValue.label.wrapping = {
+          maxTextLength: maxTextLength
         };
       }
 
-      // A text of a list item shows in one line and may be cropped.
-      else {
-        let {header, selected} = aValue;
-
-        label = aValue.label
-
-        if (header) {
-          style += 'color:dimgray;';
-        }
-        else if (selected) {
-          style += 'font-weight:bold;';
-        }
-      }
-
       tooltip.appendChild($E('label', {
-        label: label,
+        label: aValue.label,
         style: style
       }));
     };
 
-    add(title);
+    // A text of a title or URL shows without being cropped as possible and may
+    // be line-wrapped.
+    add({
+      label: {
+        value: title
+      },
+      title: true,
+      wrapping: true
+    });
 
-    if (URL) {
-      if (URL !== title) {
-        add(URL);
-      }
+    if (URL && URL !== title) {
+      add({
+        label: {
+          value: URL
+        },
+        URL: true,
+        wrapping: true
+      });
     }
 
+    // A text of a list item shows in one line and may be cropped.
     if (list) {
       list.forEach(add);
     }
