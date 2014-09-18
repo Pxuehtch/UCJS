@@ -460,18 +460,18 @@ const HistoryList = (function() {
 
   function buildTabHistory(aPopup) {
     let sessionHistory = gBrowser.sessionHistory;
+    let historyLength = sessionHistory.count;
+    let selectedIndex = sessionHistory.index;
 
-    if (sessionHistory.count < 1) {
+    if (historyLength < 1) {
       return false;
     }
-
-    let currentIndex = sessionHistory.index;
 
     // Scan history entries in thier visited date order from new to old around
     // the current page.
     let [start, end] = limitListRange({
-      index: currentIndex,
-      length: sessionHistory.count,
+      index: selectedIndex,
+      length: historyLength,
       maxNumItems: kPref.maxNumListItems.tabHistory
     });
 
@@ -482,21 +482,22 @@ const HistoryList = (function() {
         continue;
       }
 
-      let URL, title, className, direction, action;
+      let URL, title, className, action;
 
       URL = entry.URI.spec;
       title = entry.title || URL;
       className = ['menuitem-iconic'];
 
-      if (i === currentIndex) {
-        direction = 'unified-nav-current';
+      if (i === selectedIndex) {
+        className.push('unified-nav-current');
       }
       else {
-        direction = 'unified-nav-' + (i < currentIndex ? 'back' : 'forward');
+        let direction = (i < selectedIndex) ? 'back' : 'forward';
+
+        className.push('unified-nav-' + direction);
+
         action = Action.openTabHistory(i);
       }
-
-      className.push(direction);
 
       // @note |label| and |icon| will be set asynchronously.
       let menuitem = aPopup.appendChild($E('menuitem', {
@@ -794,11 +795,13 @@ const OpenedList = (function() {
 
     // Scan windows in their Z-order from front(the current window) to back.
     for (let win in getWindows()) {
-      let title, icon, tabList, URL, className, action;
+      let title, URL, icon, tabList;
 
       if (isBrowser(win)) {
         let b = win.gBrowser;
         let tabs = b.visibleTabs;
+        let tabsLength = tabs.length;
+        let selectedIndex = tabs.indexOf(b.selectedTab);
 
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
         URL = b.currentURI.spec;
@@ -810,18 +813,16 @@ const OpenedList = (function() {
           label: {
             value: fixPluralForm({
               format: '[#1 #2]',
-              count: tabs.length,
-              labels: ['Tab', 'Tabs']
+              count: tabsLength,
+              labels: ['tab', 'tabs']
             })
           },
           header: true
         }];
 
-        let selectedIndex = tabs.indexOf(b.selectedTab);
-
         let [start, end] = limitListRange({
           index: selectedIndex,
-          length: tabs.length,
+          length: tabsLength,
           maxNumItems: kPref.maxNumListItems.tooltip
         });
 
@@ -846,7 +847,7 @@ const OpenedList = (function() {
         icon = 'moz-icon://.exe?size=16';
       }
 
-      className = ['menuitem-iconic'];
+      let className = ['menuitem-iconic'], action;
 
       if (win === window) {
         className.push('unified-nav-current');
@@ -996,7 +997,9 @@ const ClosedList = (function() {
 
     // Scan closed tabs in thier closed date order from last to first.
     closedTabs.forEach((closedTab, i) => {
-      let entries = closedTab.state.entries;
+      let tabHistory = closedTab.state.entries;
+      let historyLength = tabHistory.length;
+      let selectedIndex = closedTab.state.index - 1;
 
       let URL;
 
@@ -1005,27 +1008,27 @@ const ClosedList = (function() {
       let history = [{
         label: {
           value: fixPluralForm({
-            format: '[#1 History #2]',
-            count: entries.length,
+            format: '[#1 history #2]',
+            count: historyLength,
             labels: ['entry', 'entries']
           })
         },
         header: true
       }];
 
-      let selectedIndex = closedTab.state.index - 1;
-
       let [start, end] = limitListRange({
         index: selectedIndex,
-        length: entries.length,
+        length: historyLength,
         maxNumItems: kPref.maxNumListItems.tooltip
       });
 
       for (let j = end; j >= start; j--) {
+        let entry = tabHistory[j];
+
         let item = {
           label: {
             prefix: formatOrderNumber(j + 1),
-            value: entries[j].title || entries[j].url
+            value: entry.title || entry.url
           }
         };
 
@@ -1065,6 +1068,8 @@ const ClosedList = (function() {
     // Scan closed windows in thier closed date order from last to first.
     closedWindows.forEach((closedWindow, i) => {
       let tabs = closedWindow.tabs;
+      let tabsLength = tabs.length;
+      let selectedIndex = closedWindow.selected - 1;
 
       let URL;
 
@@ -1074,18 +1079,16 @@ const ClosedList = (function() {
         label: {
           value: fixPluralForm({
             format: '[#1 #2]',
-            count: tabs.length,
-            labels: ['Tab', 'Tabs']
+            count: tabsLength,
+            labels: ['tab', 'tabs']
           })
         },
         header: true
       }];
 
-      let selectedIndex = closedWindow.selected - 1;
-
       let [start, end] = limitListRange({
         index: selectedIndex,
-        length: tabs.length,
+        length: tabsLength,
         maxNumItems: kPref.maxNumListItems.tooltip
       });
 
