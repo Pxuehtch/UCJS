@@ -41,15 +41,16 @@ function log(aMsg) {
  */
 const kPref = {
   /**
-   * Max width of the tooltip panel
+   * Max numbers of characters in a line.
    *
    * @value {integer} [>0]
-   *   number of characters
+   *
+   * @note 'max-width' of a text container is set by 'em'.
    */
   maxLineLength: 40,
 
   /**
-   * Number of lines in the visible portion of a long text being cropped
+   * Number of lines in the visible portion of a long text being cropped.
    *
    * @value {integer} [>0]
    */

@@ -49,6 +49,7 @@ function log(aMsg) {
 
   const kPref = {
     // Max numbers of characters in a line.
+    // @note 'max-width' of a text container is set by 'em'.
     maxWidth: 40,
 
     // Max numbers of wrap lines of a long text.

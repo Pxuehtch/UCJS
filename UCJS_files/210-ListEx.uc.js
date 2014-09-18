@@ -86,6 +86,8 @@ const kPref = {
    * Tooltip settings.
    *
    * maxWidth: Max numbers of characters in a line.
+   * @note 'max-width' of a text container is set by 'em'.
+   *
    * maxNumWrapLines: Max numbers of wrap lines of a long text.
    */
   tooltip: {
