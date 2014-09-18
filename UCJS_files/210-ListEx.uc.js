@@ -397,8 +397,7 @@ const HistoryList = (function() {
     }
 
     function promiseTimeAndIcon(aURL) {
-      // Don't query a URL which cannot be recorded about its time and favicon
-      // in the places DB.
+      // Don't query schemes which are excluded from history in Places DB.
       if (!/^(?:https?|ftp|file):/.test(aURL)) {
         return Promise.resolve({});
       }
@@ -1404,6 +1403,11 @@ function formatTime(aMicroSeconds) {
   // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
   const kTextFormat = '[%time%]';
+  const kNotAvailable = '[N/A]';
+
+  if (!aMicroSeconds) {
+    return kNotAvailable;
+  }
 
   // Convert microseconds into milliseconds.
   let time = (new Date(aMicroSeconds / 1000)).toLocaleFormat(kTimeFormat);
