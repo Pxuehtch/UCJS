@@ -714,10 +714,51 @@ const OpenedList = (function() {
 
     for (let i = start; i <= end; i++) {
       let tab = tabs[i];
+      let b = gBrowser.getBrowserForTab(tab);
 
-      let className, action;
+      let URL = b.currentURI.spec;
 
-      className = ['menuitem-iconic'];
+      // Scan tab history in their visited date order from new to old around
+      // the selected page in this tab.
+      let sessionHistory = b.sessionHistory;
+      let historyLength = sessionHistory.count;
+      let selectedIndex = sessionHistory.index;
+
+      let history = [{
+        label: {
+          value: fixPluralForm({
+            format: '[#1 history #2]',
+            count: historyLength,
+            labels: ['entry', 'entries']
+          })
+        },
+        header: true
+      }];
+
+      let [start, end] = limitListRange({
+        index: selectedIndex,
+        length: historyLength,
+        maxNumItems: kPref.maxNumListItems.tooltip
+      });
+
+      for (let j = end; j >= start; j--) {
+        let entry = sessionHistory.getEntryAtIndex(j, false);
+
+        let item = {
+          label: {
+            prefix: formatOrderNumber(j + 1),
+            value: entry ? entry.title || entry.URI.spec : '[Error entry]'
+          }
+        };
+
+        if (j === selectedIndex) {
+          item.selected = true;
+        }
+
+        history.push(item);
+      }
+
+      let className = ['menuitem-iconic'], action;
 
       if (tab.selected) {
         className.push('unified-nav-current');
@@ -733,7 +774,8 @@ const OpenedList = (function() {
         },
         tooltip: {
           title: tab.label,
-          URL: gBrowser.getBrowserForTab(tab).currentURI.spec
+          URL: URL,
+          list: history
         },
         icon: gBrowser.getIcon(tab),
         class: className.join(' '),
