@@ -1336,10 +1336,6 @@ function limitListRange({index, length, maxNumItems}) {
     return [0, length - 1];
   }
 
-  if (index === 0) {
-    return [0, Math.min(maxNumItems, length) - 1];
-  }
-
   let start, end;
 
   let half = Math.floor(maxNumItems / 2);
