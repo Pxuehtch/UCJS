@@ -141,13 +141,17 @@ const kUI = {
 
   endSeparator: {
     id: 'ucjs_ListEx_endSeparator'
-  },
-
-  // Extended property name of a menuitem.
-  property: {
-    commandData: 'ucjs_ListEx_commandData',
-    tooltipData: 'ucjs_ListEx_tooltipData'
   }
+};
+
+/**
+ * Key names for storing data.
+ *
+ * @note Extended property name of a menuitem.
+ */
+const kDataKey = {
+  commandData: 'ucjs_ListEx_commandData',
+  tooltipData: 'ucjs_ListEx_tooltipData'
 };
 
 /**
@@ -297,7 +301,7 @@ const MainMenu = (function() {
 
     let menuitem = aEvent.target;
 
-    let commandData = menuitem[kUI.property.commandData];
+    let commandData = menuitem[kDataKey.commandData];
 
     if (!commandData) {
       return;
@@ -1185,7 +1189,7 @@ const Tooltip = (function() {
 
     let menuitem = window.document.tooltipNode;
 
-    let data = menuitem[kUI.property.tooltipData];
+    let data = menuitem[kDataKey.tooltipData];
 
     fillInTooltip(data);
   }
@@ -1301,7 +1305,7 @@ function handleAttribute(aNode, aName, aValue) {
       if (aValue) {
         for (let [name, value] in Iterator(aValue)) {
           if (name === 'oncommand' && typeof value !== 'string') {
-            aNode[kUI.property.commandData] = value;
+            aNode[kDataKey.commandData] = value;
           }
           else {
             aNode.setAttribute(name, value);
@@ -1313,7 +1317,7 @@ function handleAttribute(aNode, aName, aValue) {
     }
 
     case 'tooltip': {
-      aNode[kUI.property.tooltipData] = aValue;
+      aNode[kDataKey.tooltipData] = aValue;
       aNode.tooltip = kUI.tooltip.id;
 
       return true;

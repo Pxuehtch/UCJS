@@ -306,11 +306,6 @@ const kUI = {
     }
   },
 
-  attribute: {
-    appIndex: 'ucjs_AppLauncher_appIndex',
-    action: 'ucjs_AppLauncher_action'
-  },
-
   startSeparator: {
     id: 'ucjs_AppLauncher_startSeparator'
   },
@@ -318,6 +313,16 @@ const kUI = {
   endSeparator: {
     id: 'ucjs_AppLauncher_endSeparator'
   }
+};
+
+/**
+ * Key names for storing data.
+ *
+ * @note Extended attribute name of a menuitem.
+ */
+const kDataKey = {
+  appIndex: 'ucjs_AppLauncher_appIndex',
+  action: 'ucjs_AppLauncher_action'
 };
 
 /**
@@ -437,17 +442,17 @@ function onCommand(aEvent, aAppList) {
 
   let element = aEvent.target;
 
-  if (!element.hasAttribute(kUI.attribute.appIndex)) {
+  if (!element.hasAttribute(kDataKey.appIndex)) {
     return;
   }
 
-  let appIndex = +(element.getAttribute(kUI.attribute.appIndex));
+  let appIndex = +(element.getAttribute(kDataKey.appIndex));
 
   if (appIndex < 0) {
     return;
   }
 
-  doAction(aAppList[appIndex], element.getAttribute(kUI.attribute.action));
+  doAction(aAppList[appIndex], element.getAttribute(kDataKey.action));
 }
 
 function makeMainMenu(aContextMenu, aAppList) {
@@ -543,11 +548,11 @@ function addMenuItem(aPopup, aParam) {
     disabled: appIndex < 0 || null,
     user: [
       {
-        key: kUI.attribute.appIndex,
+        key: kDataKey.appIndex,
         value: appIndex
       },
       {
-        key: kUI.attribute.action,
+        key: kDataKey.action,
         value: action
       }
     ]
@@ -590,7 +595,7 @@ function addSeparator(aPopup, aID) {
 function doBrowse(aPopup) {
   // XPath for a <menuitem> with avalable actions
   let availableItem = (actions) => {
-    let key = '@' + kUI.attribute.action + '="';
+    let key = '@' + kDataKey.action + '="';
 
     return 'xul:menuitem[' + key + actions.join('" or ' + key) + '"]';
   };
