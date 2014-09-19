@@ -5,6 +5,7 @@
 // ==/UserScript==
 
 // @require Util.uc.js, UI.uc.js
+// @require [optional for the extended info of tabs] TabEx.uc.js
 
 // @usage Creates items in the main context menu.
 
@@ -738,6 +739,20 @@ const OpenedList = (function() {
         header: true
       }];
 
+      // [optional]
+      // Show that a tab is suspended from loading in background.
+      // @note A suspended tab has no history.
+      // @require TabEx.uc.js
+      if (window.ucjsTabEx) {
+        if (window.ucjsTabEx.tabState.isSuspended(tab)) {
+          history.push({
+            label: {
+              value: 'This tab is suspended from loading.'
+            }
+          });
+        }
+      }
+
       let [start, end] = limitListRange({
         index: selectedIndex,
         length: historyLength,
@@ -785,8 +800,9 @@ const OpenedList = (function() {
         action: action
       }));
 
+      // [optional]
       // Set a state to indicate that the tab is unread.
-      // @note Setting for unread tabs handled by TabEx.uc.js
+      // @require TabEx.uc.js in |ucjsUI.setStateForUnreadTab|.
       if (!tab.selected) {
         setStateForUnreadTab(menuitem, tab);
       }
