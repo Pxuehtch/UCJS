@@ -68,9 +68,10 @@ const kPref = {
    * closedWindows: From the last closed window to old.
    *
    * tooltip:
-   * List of tabs of Opened window: From start to end around selected tab.
-   * List of history of Closed tab: From new to old around selected page.
-   * List of tabs of Closed window: From start to end around selected tab.
+   * List of history of an opened tab: From new to old around selected page.
+   * List of tabs of an opened window: From start to end around selected tab.
+   * List of history of a closed tab: From new to old around selected page.
+   * List of tabs of a closed window: From start to end around selected tab.
    */
   maxNumListItems: {
     tabHistory:    10,
