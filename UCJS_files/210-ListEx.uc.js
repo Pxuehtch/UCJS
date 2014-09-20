@@ -745,7 +745,8 @@ const OpenedList = (function() {
 
       // [optional]
       // Show that a tab is suspended from loading in background.
-      // @note A suspended tab has no history.
+      // @note A suspended tab has no history since the initialization is
+      // interrupted.
       // @require TabEx.uc.js
       if (window.ucjsTabEx) {
         if (window.ucjsTabEx.tabState.isSuspended(tab)) {

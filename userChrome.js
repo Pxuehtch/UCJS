@@ -21,26 +21,26 @@
 
 
 /**
- * User preferences
+ * User preferences.
  */
 const kPref = {
-  // Script subfolders under your chrome folder
+  // Script subfolders under your chrome folder.
   //
-  // @note required to register at least one subfolder
-  // @note adding '/' at the end, scripts are scanned in the descendant
-  // directories
+  // @note Required to register at least one subfolder.
+  // @note Adding '/' at the end, scripts are scanned in the descendant
+  // directories.
   scriptFolders: ['UCJS_files', 'UCJS_tmp/'],
 
   // File extensions to select which of java-script or xul-overlay a script
-  // runs as
+  // runs as.
   //
-  // @note tests exact match from the first dot(.) of a file name
+  // @note Tests exact match from the first dot(.) of a file name.
   jscriptExts: ['.uc.js'],
   overlayExts: ['.uc.xul', '.xul'],
 
-  // URL list of chrome XUL files which is blocked to load scripts
+  // URL list of chrome XUL files which is blocked to load scripts.
   //
-  // @note wildcard '*' is available
+  // @note Wildcard '*' is available.
   blockXULs: [
     'chrome://global/content/commonDialog.xul',
     'chrome://browser/content/preferences/*',
@@ -51,36 +51,36 @@ const kPref = {
 };
 
 /**
- * System preferences
+ * System preferences.
  */
 const kSystem = {
-  // Log the activity of this script to the error console
+  // Log the activity of this script to the error console.
   logging: false,
 
-  // Exposed property name in the global scope |window|
+  // Exposed property name in the global scope |window|.
   loaderName: 'ucjsScriptLoader',
 
-  // ID of <overlay> for overlayed scripts
+  // ID of <overlay> for overlayed scripts.
   overlayContainerID: 'userChrome_js_overlay',
 
-  // Check the cache of a script whenever the script runs on sub-windows
-  // set true for debug, and a script that is modified will be applied on the
-  // new opened sub-windows without restart
+  // Check the cache of a script whenever the script runs on sub-windows.
+  // Set true and a script that is modified will be applied on the new opened
+  // sub-windows without restart.
   //
-  // @note this loader checks the cache when the startup browser window opens,
-  // and usually the cached script runs on sub-windows thereafter
+  // @note This loader checks the cache when the startup browser window opens,
+  // and usually the cached script runs on sub-windows thereafter.
   checkCacheAtRun: false
 };
 
 /**
- * Common utilities
+ * Common utilities.
  */
 let Util = Util();
-// console logger
+// Console logger.
 let Log = Log(kSystem.logging);
 
 /**
- * Main function
+ * Main function.
  */
 ucjsScriptLoader_init();
 
@@ -91,7 +91,7 @@ function ucjsScriptLoader_init() {
     let scriptList = scriptLoader.getScriptList();
 
     if (scriptList) {
-      // exposes new property in |window|
+      // Exposes new property in |window|.
       window[kSystem.loaderName] = {scriptList: scriptList};
     }
 
@@ -106,12 +106,12 @@ function ucjsScriptLoader_init() {
 }
 
 /**
- * ScriptLoader handler
+ * ScriptLoader handler.
  *
  * @return {hash}
- *   @member init {function}
- *   @member uninit {function}
- *   @member getScriptList {function}
+ *   @key init {function}
+ *   @key uninit {function}
+ *   @key getScriptList {function}
  */
 function ScriptLoader() {
   let mScriptList;
@@ -161,7 +161,8 @@ function ScriptLoader() {
       let target = aEvent.originalTarget;
 
       if (!(target instanceof XULDocument)) {
-        /* noisy, comment out
+        // WORKAROUND: Comment out since too noisy logs.
+        /*
         Log.list('Not init sidebar', {
           'Loaded node': target.nodeName
         });
@@ -208,7 +209,7 @@ function ScriptLoader() {
   }
 
   /**
-   * exports
+   * Exports
    */
   return {
     init: init,
@@ -218,13 +219,13 @@ function ScriptLoader() {
 }
 
 /**
- * ScriptList handler
+ * ScriptList handler.
  *
  * @return {hash}
- *   @member init {function}
- *   @member uninit {function}
- *   @member get {function}
- *   @member run {function}
+ *   @key init {function}
+ *   @key uninit {function}
+ *   @key get {function}
+ *   @key run {function}
  */
 function ScriptList() {
   let mJscripts, mOverlays;
@@ -272,7 +273,7 @@ function ScriptList() {
   }
 
   function copyData(aData) {
-    // reference copy
+    // @note Reference copy.
     mJscripts = aData.jscripts;
     mOverlays = aData.overlays;
   }
@@ -367,7 +368,8 @@ function ScriptList() {
   }
 
   function runData(aDocument) {
-    // ensure that scripts will run at the end of loader
+    // WORKAROUND: I want to ensure that scripts will run at the end of this
+    // loader.
     setTimeout((doc) => {
       setTimeout(runJscripts, 0, doc);
       setTimeout(runOverlays, 0, doc);
@@ -421,7 +423,7 @@ function ScriptList() {
   }
 
   /**
-   * exports
+   * Exports
    */
   return {
     init: init,
@@ -435,11 +437,11 @@ function ScriptList() {
  * UserScript constructor.
  *
  * @return {hash}
- *   @member uninit {function}
- *   @member getMetaData {function}
- *   @member formatMetaData {function}
- *   @member testTarget {function}
- *   @member getURL {function}
+ *   @key uninit {function}
+ *   @key getMetaData {function}
+ *   @key formatMetaData {function}
+ *   @key testTarget {function}
+ *   @key getURL {function}
  *
  * @note This creates multiple instances so some functions are cached outside
  * for performance.
@@ -578,8 +580,7 @@ function UserScript_getURL(aFile, aType) {
     // script cache.
     case 'RUN':
       return path() + '?' +
-        (kSystem.checkCacheAtRun ?
-         getLastModifiedTime(aFile) :
+        (kSystem.checkCacheAtRun ? getLastModifiedTime(aFile) :
          aFile.lastModifiedTime);
   }
 
@@ -588,7 +589,7 @@ function UserScript_getURL(aFile, aType) {
 }
 
 /**
- * Common utility function
+ * Common utility function.
  *
  * @return {hash}
  */
@@ -630,11 +631,11 @@ function Util() {
       fileIS.close();
     }
 
-    // set line-breaks in LF
+    // Set line-breaks in LF.
     return data.value.replace(/\r\n?/g, '\n');
   }
 
-  // your chrome directory
+  // Your chrome directory.
   function getChromeDirectory() {
     return $S('@mozilla.org/file/directory_service;1', 'nsIProperties').
       get('UChrm', Ci['nsIFile']);
@@ -674,8 +675,8 @@ function Util() {
   }
 
   function testURL(aSource, aURL) {
-    // 1.escape the special character so that it is treated literally
-    // 2.convert the wildcard character '*' to '.*' that matches any string
+    // 1.Escape the special character so that it is treated literally.
+    // 2.Convert the wildcard character '*' to '.*' that matches any string.
     let pattern =
       '^' +
       aSource.trim().
@@ -698,7 +699,7 @@ function Util() {
   }
 
   /**
-   * exports
+   * Exports
    */
   return {
     getLastModifiedTime: getLastModifiedTime,
@@ -717,9 +718,9 @@ function Util() {
 }
 
 /**
- * Logger to the error console
+ * Logger to the error console.
  *
- * @param aEnabled {boolean} whether output or not
+ * @param aEnabled {boolean} Whether output or not.
  * @return {hash}
  */
 function Log(aEnabled) {
@@ -727,7 +728,7 @@ function Log(aEnabled) {
     return function(){};
   }
 
-  // @note define valid members of the same name
+  // @note Overwrite with valid functions in the 'Exports' section below.
   let exports = {
     list: noop,
     counter: noop
@@ -769,12 +770,12 @@ function Log(aEnabled) {
         break;
 
       case (Array.isArray(aValue)):
-        // TODO: format
+        // TODO: Make a readable string.
         data = aValue.toSource();
         break;
 
       case (aValue.constructor === Object):
-        // TODO: handle nested objects
+        // TODO: Handle nested objects.
         data = Object.keys(aValue).map((key) => key + ': ' + aValue[key]);
         break;
 
@@ -789,7 +790,11 @@ function Log(aEnabled) {
   };
 
   /**
-   * exports
+   * Exports
+   *
+   * @note Overwrite the functions that are defined in |exports| above.
+   * TODO: Prevent overwrapped management of function names. It can cause
+   * errors.
    */
   exports.list = (aCaption, ...aValues) => {
     aValues.unshift(format('%caption% ----------', {
