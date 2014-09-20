@@ -1347,7 +1347,7 @@ function makeMenuSeparator(aPopup) {
 
 function fixPluralForm({format, count, labels}) {
   return format.
-    replace('#1', count).
+    replace('#1', count || 'No').
     replace('#2', labels[(count < 2) ? 0 : 1]);
 }
 
