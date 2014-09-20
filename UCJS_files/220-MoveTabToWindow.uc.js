@@ -242,10 +242,6 @@ function onCommand(aEvent) {
 }
 
 function getWindowsData(aTab) {
-  if (!aTab) {
-    return;
-  }
-
   let {getBrowserWindows, isPrivate, getIdFor} = WindowUtil;
 
   let tabURL = gBrowser.getBrowserForTab(aTab).currentURI.spec;
