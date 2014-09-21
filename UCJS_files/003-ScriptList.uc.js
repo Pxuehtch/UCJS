@@ -11,6 +11,8 @@
 
 // @usage Creates a menuitem in 'tools' of the main menu.
 
+// !!! This script is not supported anymore. !!!
+
 
 (function(window, undefined) {
 
