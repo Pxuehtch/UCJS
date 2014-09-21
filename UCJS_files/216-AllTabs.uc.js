@@ -8,9 +8,7 @@
 // @usage creates items in the context menu of the tab view button
 // @note some default functions are modified. see @modified
 
-/**
- * @note I don't use this script and will not update in the future
- */
+// !!! This script is not supported anymore. !!!
 
 
 (function(window, undefined) {
