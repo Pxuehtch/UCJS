@@ -1896,11 +1896,9 @@ function getURI(aFlag) {
 }
 
 /**
- * URI object wrapper
+ * URI object wrapper.
  */
 function createURI(aURI, aFlag) {
-  // assuming nsIURI object is valid
-  // TODO: should do an error handling?
   aURI = makeURI(aURI);
 
   let {scheme, prePath, path, spec} = aURI;
@@ -1912,7 +1910,7 @@ function createURI(aURI, aFlag) {
     case 'NO_QUERY':
       path = removeQuery(path);
       spec = removeQuery(spec);
-      // fall through
+      // Fall through.
 
     case 'NO_REF':
       path = removeRef(path);
@@ -1972,7 +1970,7 @@ function getHost(aURI) {
   }
 
   try {
-    // @note returns an empty string for the host of 'file:///C:/...'
+    // @note Returns an empty string for the host of 'file:///C:/...'.
     return aURI.host;
   }
   catch (ex) {}
@@ -1988,10 +1986,9 @@ function getBaseDomain(aURI) {
 
   /**
    * WORKAROUND: |nsIEffectiveTLDService::getBaseDomain| returns a wrong value
-   * for a specific host
+   * for a specific host.
    *
-   * I have found only 'github.io' for now
-   * e.g. for http://gitbookio.github.io/javascript/
+   * For http://gitbookio.github.io/javascript/
    * Expected:
    * base domain = github.io
    * public suffix = io

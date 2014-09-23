@@ -601,9 +601,12 @@ const URLFilter = (function() {
   }
 
   /**
-   * TODO: fix a wrong return value for a specific host
-   * @note I have found only 'github.io' for now. So, no 'github.io' in URL
-   * filters and no workaround for fixing it
+   * Get a URL being converted its TLD with a string 'tld'.
+   *
+   * TODO: Fix a wrong detection of the TLD for a specific host.
+   * @note |getPublicSuffix| returns a wrong value for '*.github.io'.
+   * But for now, there is no 'github.io' in URL filters and no workaround for
+   * fixing it.
    * @see NaviLink.uc.js::getBaseDomain
    */
   function getTLDURL(aURL) {
