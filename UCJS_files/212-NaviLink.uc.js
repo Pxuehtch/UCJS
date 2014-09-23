@@ -2009,7 +2009,12 @@ function getBaseDomain(aURI) {
   }
 
   try {
-    return Services.eTLD.getBaseDomain(aURI);
+    // @note |getBaseDomain| returns a value in ACE format for IDN.
+    let baseDomain = Services.eTLD.getBaseDomain(aURI);
+    let IDNService = Cc['@mozilla.org/network/idn-service;1'].
+      getService(Ci.nsIIDNService);
+
+    return IDNService.convertACEtoUTF8(baseDomain);
   }
   catch (ex) {}
 
