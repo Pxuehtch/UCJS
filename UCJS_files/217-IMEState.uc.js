@@ -65,14 +65,15 @@ function handleEvent(aEvent) {
     case 'click':
     case 'pageshow':
     case 'select':
-      // show a sign if focused on an editable field, otherwise clear
+      // Show a sign if focused on an editable field, otherwise clear.
       SignPanel.update();
+
       break;
 
     case 'keyup': {
-      // update a sign if IME toggled, otherwise clear
-      // TODO: detect a 'Caps Lock' key for opening IME. but the key can be
-      // found for closing IME ('Hiragana' in my case)
+      // Update a sign if IME toggled, otherwise clear forcibly.
+      // TODO: Detect a 'Caps Lock' key for opening IME. But the key can be
+      // found for closing IME ('Hiragana' in my case).
       let IMEkeys = [
         'HalfWidth',
         'FullWidth',
@@ -90,18 +91,20 @@ function handleEvent(aEvent) {
 
     case 'unload':
       SignPanel.uninit();
+
       break;
   }
 }
 
 /**
- * Sign panel handler
+ * Sign panel handler.
  */
 const SignPanel = (function() {
   /**
-   * Debounced showing manager
-   * guarantees that a callback function |show()| is executed only once at the
-   * very end of a series of calls until the delay period expires
+   * Debounced showing manager.
+   *
+   * Guarantees that a callback function |show()| is executed only once at the
+   * very end of a series of calls until the delay period expires.
    */
   const ShowingManager = {
     set: function() {
@@ -134,7 +137,7 @@ const SignPanel = (function() {
   }
 
   function update(aDoClear) {
-    // hide existing panel
+    // Hide an existing panel.
     hide();
 
     if (aDoClear) {
@@ -168,8 +171,8 @@ const SignPanel = (function() {
       return null;
     }
 
-    // a content document in design mode
-    // TODO: test the read only attribute
+    // A content document in design mode.
+    // TODO: Test the read only attribute.
     if (focusedWindow.document instanceof HTMLDocument) {
       if (focusedElement && focusedElement.isContentEditable) {
         return focusedElement;
@@ -180,8 +183,8 @@ const SignPanel = (function() {
       }
     }
 
-    // a writable plain-text input field
-    // @note including inputs in the chrome area (e.g. URLbar)
+    // A writable plain-text input field.
+    // @note Including inputs in the chrome area (e.g. URLbar).
     if (focusedElement instanceof HTMLInputElement ||
         focusedElement instanceof HTMLTextAreaElement) {
       if (/^(?:text|search|textarea)$/.test(focusedElement.type) &&
@@ -194,7 +197,7 @@ const SignPanel = (function() {
   }
 
   /**
-   * test whether the IME is active or not
+   * Tests whether the IME is active or not.
    *
    * @param aNode {Node}
    * @return {boolean}
@@ -224,7 +227,7 @@ const SignPanel = (function() {
 })();
 
 /**
- * Entry point
+ * Entry point.
  */
 IMEState_init();
 
