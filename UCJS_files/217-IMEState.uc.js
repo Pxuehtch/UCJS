@@ -32,23 +32,19 @@ function log(aMsg) {
 }
 
 /**
- * Sign with IME state
+ * UI setting.
  */
-const kIMESign = {
-  'ON': 'あ',
-  'OFF': 'A'
+const kUI = {
+  signPanel: {
+    id: 'ucjs_IMEState_panel'
+  },
+
+  IMESign: {
+    'ON': 'あ',
+    'OFF': 'A'
+  }
 };
 
-/**
- * Identifier
- */
-const kID = {
-  panel: 'ucjs_IMEState_panel'
-};
-
-/**
- * Main
- */
 function IMEState_init() {
   addEvent(window, 'click', handleEvent, false);
   addEvent(window, 'keyup', handleEvent, false);
@@ -121,14 +117,14 @@ const SignPanel = (function() {
   };
 
   function getPanel() {
-    let panel = $ID(kID.panel);
+    let panel = $ID(kUI.signPanel.id);
 
     if (panel) {
       return panel;
     }
 
     return $ID('mainPopupSet').appendChild($E('tooltip', {
-      id: kID.panel
+      id: kUI.signPanel.id
     }));
   }
 
@@ -154,7 +150,7 @@ const SignPanel = (function() {
     if (target) {
       let panel = getPanel();
 
-      panel.label = kIMESign[isIMEActive(target) ? 'ON' : 'OFF'];
+      panel.label = kUI.IMESign[isIMEActive(target) ? 'ON' : 'OFF'];
 
       panel.openPopup(target, 'before_start');
     }
