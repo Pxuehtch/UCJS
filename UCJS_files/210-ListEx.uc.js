@@ -486,10 +486,6 @@ const HistoryList = (function() {
     for (let i = end; i >= start; i--) {
       let entry = sessionHistory.getEntryAtIndex(i, false);
 
-      if (!entry) {
-        continue;
-      }
-
       let URL, title, className, action;
 
       URL = entry.URI.spec;
@@ -770,7 +766,7 @@ const OpenedList = (function() {
         let item = {
           label: {
             prefix: formatOrderNumber(j + 1),
-            value: entry ? entry.title || entry.URI.spec : '[Error entry]'
+            value: entry.title || entry.URI.spec
           }
         };
 
