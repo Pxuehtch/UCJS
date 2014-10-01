@@ -175,11 +175,13 @@ function buildGroup(aRefItem, aData) {
     return false;
   }
 
-  let label = kUI.item.label;
+  let $label = (aName, aKeyword) =>
+    kUI.item.label.replace('%name%', aName).replace('%keyword%', aKeyword);
 
-  aData.forEach(({name, keyword}) => {
+  aData.forEach(({name, keyword, URL}) => {
     insertElement(aRefItem, $E('menuitem', {
-      label: label.replace('%name%', name).replace('%keyword%', keyword),
+      label: $label(name, keyword),
+      tooltiptext: URL,
       value: keyword
     }));
   });
@@ -261,6 +263,7 @@ function getBookmarkKeywordData() {
     aRows.forEach((aItem) => {
       data.push({
         name: aItem.title || getPrePath(aItem.url),
+        URL: aItem.url,
         keyword: aItem.keyword
       });
     });
