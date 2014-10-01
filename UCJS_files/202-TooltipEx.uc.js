@@ -317,7 +317,7 @@ const TooltipPanel = (function() {
   function build(aNode) {
     let tips = [];
 
-    // @note the initial node may be a text node
+    // @note The initial node may be a text node.
     let node = aNode;
 
     while (node) {
@@ -332,12 +332,16 @@ const TooltipPanel = (function() {
       return false;
     }
 
-    // @note use the initial |aNode|
+    // @note Use the initial |aNode|.
     TargetNode.init(aNode);
 
+    let fragment = window.document.createDocumentFragment();
+
     tips.forEach((tip) => {
-      mBox.appendChild(createTipItem(tip));
+      fragment.appendChild(createTipItem(tip));
     });
+
+    mBox.appendChild(fragment);
 
     return true;
   }

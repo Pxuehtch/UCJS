@@ -178,13 +178,17 @@ function buildGroup(aRefItem, aData) {
   let $label = (aName, aKeyword) =>
     kUI.item.label.replace('%name%', aName).replace('%keyword%', aKeyword);
 
+  let fragment = window.document.createDocumentFragment();
+
   aData.forEach(({name, keyword, URL}) => {
-    insertElement(aRefItem, $E('menuitem', {
+    fragment.appendChild($E('menuitem', {
       label: $label(name, keyword),
       tooltiptext: URL,
       value: keyword
     }));
   });
+
+  insertElement(aRefItem, fragment);
 
   return true;
 }

@@ -245,19 +245,23 @@ function onPopupShowing(aEvent) {
 
   let [sSep, eSep] = getSeparators();
 
-  // remove existing menus
+  // Remove existing menus.
   for (let menu; (menu = sSep.nextSibling) !== eSep; /**/) {
     contextMenu.removeChild(menu);
   }
 
-  // allow only HTTP page
+  // Allow only HTTP page.
   if (!/^https?$/.test(gBrowser.currentURI.scheme)) {
     return;
   }
 
+  let fragment = window.document.createDocumentFragment();
+
   getAvailableMenus().forEach((menu) => {
-    contextMenu.insertBefore(menu, eSep);
+    fragment.appendChild(menu);
   });
+
+  contextMenu.insertBefore(fragment, eSep);
 }
 
 function getAvailableMenus() {

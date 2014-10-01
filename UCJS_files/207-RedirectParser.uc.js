@@ -238,7 +238,7 @@ function buildParsedURLs(aParam) {
 }
 
 function makeMenuItems(aParseList) {
-  let popup = $ID(kUI.menu.id).menupopup;
+  let fragment = window.document.createDocumentFragment();
 
   if (aParseList.preset) {
     let {preset, sourceURLType} = aParseList;
@@ -247,16 +247,16 @@ function makeMenuItems(aParseList) {
       replace('%type%', ui.type[sourceURLType]).
       replace('%name%', preset.name);
 
-    popup.appendChild($E('menuitem', {
+    fragment.appendChild($E('menuitem', {
       label: title,
       disabled: true
     }));
   }
 
   aParseList.URLs.forEach((URL, i) => {
-    // @note a separator is not necessary before the first item
+    // @note A separator is not necessary before the first item.
     if (i > 0 && aParseList.checkNewURLStart(i)) {
-      popup.appendChild($E('menuseparator'));
+      fragment.appendChild($E('menuseparator'));
     }
 
     let ui;
@@ -276,7 +276,7 @@ function makeMenuItems(aParseList) {
       }
       else {
         ui = kUI.item.preset;
-        // show a text in label and tooltip instead of URL
+        // Show a text in label and tooltip instead of URL.
         label = tooltiptext =
           ui.empty.replace('%description%', description);
         action = 'none'; // Dummy value for now.
@@ -302,7 +302,7 @@ function makeMenuItems(aParseList) {
       }
     }
 
-    // make the URL of a label readable
+    // Make the URL of a label readable.
     if (!label) {
       label = unescURLforUI(URL);
     }
@@ -313,7 +313,7 @@ function makeMenuItems(aParseList) {
       label = accesskey + ': ' + label;
     }
 
-    // keep the URL of a tooltip as it is to confirm the raw one
+    // Keep the URL of a tooltip as it is to confirm the raw one.
     if (!tooltiptext) {
       tooltiptext = URL;
     }
@@ -322,7 +322,7 @@ function makeMenuItems(aParseList) {
       tooltiptext = tips.concat(tooltiptext).join('\n');
     }
 
-    popup.appendChild($E('menuitem', {
+    fragment.appendChild($E('menuitem', {
       label: label,
       crop: 'center',
       accesskey: accesskey,
@@ -332,6 +332,8 @@ function makeMenuItems(aParseList) {
       disabled: disabled
     }));
   });
+
+  $ID(kUI.menu.id).menupopup.appendChild(fragment);
 }
 
 function testGeneralScheme(aURL) {

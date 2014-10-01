@@ -269,14 +269,18 @@ function onPopupShowing(aEvent) {
 
   let [sSep, eSep] = getSeparators();
 
-  // remove existing items
+  // Remove existing items.
   for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
     contextMenu.removeChild(item);
   }
 
+  let fragment = window.document.createDocumentFragment();
+
   getAvailableItems().forEach((item) => {
-    contextMenu.insertBefore(item, eSep);
+    fragment.appendChild(item);
   });
+
+  contextMenu.insertBefore(fragment, eSep);
 }
 
 function getAvailableItems() {

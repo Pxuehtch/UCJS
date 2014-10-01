@@ -475,6 +475,8 @@ const HistoryList = (function() {
       return false;
     }
 
+    let fragment = createDocumentFragment();
+
     // Scan history entries in thier visited date order from new to old around
     // the current page.
     let [start, end] = limitListRange({
@@ -504,7 +506,7 @@ const HistoryList = (function() {
       }
 
       // @note |label| and |icon| will be set asynchronously.
-      let menuitem = aPopup.appendChild($E('menuitem', {
+      let menuitem = fragment.appendChild($E('menuitem', {
         tooltip: {
           title: title,
           URL: URL
@@ -524,6 +526,8 @@ const HistoryList = (function() {
       });
     }
 
+    aPopup.appendChild(fragment);
+
     return true;
   }
 
@@ -540,7 +544,8 @@ const HistoryList = (function() {
   }
 
   function buildRecentHistory(aRefNode, aRecentHistory) {
-    let popup = aRefNode.parentNode;
+    let fragment = createDocumentFragment();
+
     let currentURL = gBrowser.currentURI.spec;
 
     // Scan history entries in thier visited date order from recent to old.
@@ -558,7 +563,7 @@ const HistoryList = (function() {
         action = Action.openRecentHistory(URL);
       }
 
-      popup.insertBefore($E('menuitem', {
+      fragment.appendChild($E('menuitem', {
         label: {
           prefix: formatTime(entry.time),
           value: title
@@ -570,8 +575,10 @@ const HistoryList = (function() {
         icon: entry.icon,
         class: className.join(' '),
         action: action
-      }), aRefNode);
+      }));
     });
+
+    aRefNode.parentNode.insertBefore(fragment, aRefNode);
   }
 
   function asyncGetTimeAndIcon(aURL, aCallback) {
@@ -706,6 +713,8 @@ const OpenedList = (function() {
   }
 
   function buildOpenedTabs(aPopup) {
+    let fragment = createDocumentFragment();
+
     // Scan the visible tabs in thier position order from start to end around
     // the current tab.
     let tabs = gBrowser.visibleTabs;
@@ -786,7 +795,7 @@ const OpenedList = (function() {
         action = Action.selectTab(i);
       }
 
-      let menuitem = aPopup.appendChild($E('menuitem', {
+      let menuitem = fragment.appendChild($E('menuitem', {
         label: {
           prefix: formatOrderNumber(i + 1),
           value: tab.label
@@ -808,10 +817,14 @@ const OpenedList = (function() {
         setStateForUnreadTab(menuitem, tab);
       }
     }
+
+    aPopup.appendChild(fragment);
   }
 
   function buildOpenedWindows(aPopup) {
     let {getWindows, isBrowser, getIdFor} = WindowUtil;
+
+    let fragment = createDocumentFragment();
 
     // Scan windows in their Z-order from front(the current window) to back.
     for (let win in getWindows()) {
@@ -876,7 +889,7 @@ const OpenedList = (function() {
         action = Action.selectWindow(getIdFor(win));
       }
 
-      aPopup.appendChild($E('menuitem', {
+      fragment.appendChild($E('menuitem', {
         label: {
           value: title
         },
@@ -890,6 +903,8 @@ const OpenedList = (function() {
         action: action
       }));
     }
+
+    aPopup.appendChild(fragment);
   }
 
   return {
@@ -1015,6 +1030,8 @@ const ClosedList = (function() {
       return false;
     }
 
+    let fragment = createDocumentFragment();
+
     // Scan closed tabs in thier closed date order from last to first.
     closedTabs.forEach((closedTab, i) => {
       let tabHistory = closedTab.state.entries;
@@ -1060,7 +1077,7 @@ const ClosedList = (function() {
         history.push(item);
       }
 
-      aPopup.appendChild($E('menuitem', {
+      fragment.appendChild($E('menuitem', {
         label: {
           value: closedTab.title
         },
@@ -1075,6 +1092,8 @@ const ClosedList = (function() {
       }));
     });
 
+    aPopup.appendChild(fragment);
+
     return true;
   }
 
@@ -1084,6 +1103,8 @@ const ClosedList = (function() {
     if (!closedWindows) {
       return false;
     }
+
+    let fragment = createDocumentFragment();
 
     // Scan closed windows in thier closed date order from last to first.
     closedWindows.forEach((closedWindow, i) => {
@@ -1130,7 +1151,7 @@ const ClosedList = (function() {
         tabList.push(item);
       }
 
-      aPopup.appendChild($E('menuitem', {
+      fragment.appendChild($E('menuitem', {
         label: {
           value: closedWindow.title
         },
@@ -1144,6 +1165,8 @@ const ClosedList = (function() {
         action: Action.undoCloseWindow(i)
       }));
     });
+
+    aPopup.appendChild(fragment);
 
     return true;
   }
@@ -1192,10 +1215,10 @@ const Tooltip = (function() {
   }
 
   function fillInTooltip({title, URL, list}) {
-    let tooltip = $ID(kUI.tooltip.id);
-
     let {maxWidth, maxNumWrapLines} = kPref.tooltip;
     let maxTextLength = maxWidth * maxNumWrapLines;
+
+    let fragment = createDocumentFragment();
 
     let add = (aValue) => {
       let style = 'max-width:' + maxWidth + 'em;margin:auto 0;padding:auto 0;';
@@ -1219,7 +1242,7 @@ const Tooltip = (function() {
         };
       }
 
-      tooltip.appendChild($E('label', {
+      fragment.appendChild($E('label', {
         label: aValue.label,
         style: style
       }));
@@ -1249,6 +1272,8 @@ const Tooltip = (function() {
     if (list) {
       list.forEach(add);
     }
+
+    $ID(kUI.tooltip.id).appendChild(fragment);
   }
 
   return {
@@ -1257,7 +1282,7 @@ const Tooltip = (function() {
 })();
 
 /**
- * Helper functions.
+ * Helper functions for DOM.
  */
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
@@ -1324,6 +1349,10 @@ function handleAttribute(aNode, aName, aValue) {
   return false;
 }
 
+function createDocumentFragment() {
+  return window.document.createDocumentFragment();
+}
+
 function makeDisabledMenuItem(aPopup, aLabel) {
   let refItem = null;
 
@@ -1342,6 +1371,9 @@ function makeMenuSeparator(aPopup) {
   return aPopup.appendChild($E('menuseparator'));
 }
 
+/**
+ * Helper functions.
+ */
 function fixPluralForm({format, count, labels}) {
   return format.
     replace('#1', count || 'No').
