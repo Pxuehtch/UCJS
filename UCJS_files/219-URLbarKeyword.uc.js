@@ -42,7 +42,7 @@ const {
 } = window.ucjsUI;
 
 /**
- * UI constants
+ * UI settings.
  */
 const kUI = {
   menu: {
@@ -115,7 +115,7 @@ function handleEvent(aEvent) {
       if (item.value) {
         gURLBar.value = item.value + ' ' + gURLBar.value.trim();
 
-        // trigger the auto-complete popup
+        // Trigger the auto-complete popup.
         gURLBar.editor.deleteSelection(0, 0);
       }
 
@@ -147,7 +147,7 @@ function buildMenuItems(aPopup) {
 
   addSeparator(aPopup);
 
-  // bookmark keywords will be async-appended before this separator
+  // Bookmark keywords will be async-appended before this separator.
   let bkSeparator = addSeparator(aPopup);
 
   asyncBuildGroup(bkSeparator, getBookmarkKeywordData(), (aBuilt) => {
@@ -164,8 +164,8 @@ function buildMenuItems(aPopup) {
     label: kUI.openSearchEngineManager.label,
     accesskey: kUI.openSearchEngineManager.accesskey,
     // @require [optional] Overlay.uc.xul
-    // @note you can set <oncommand> with a code to open the manager instead
-    // of <command>
+    // @note You can set <oncommand> with a code string to open the manager
+    // dialog instead of <command>.
     command: 'ucjs_cmd_openSearchEngineManager'
   }));
 }
@@ -195,36 +195,8 @@ function asyncBuildGroup(aRefItem, aPromise, aCallback) {
   ).then(null, Cu.reportError);
 }
 
-function addSeparator(aRefItem, aId) {
-  return insertElement(aRefItem, $E('menuseparator', {
-    id: aId
-  }));
-}
-
-function makeDisabledMenuItem(aRefItem, aLabel) {
-  return insertElement(aRefItem, $E('menuitem', {
-    label: aLabel,
-    disabled: true
-  }));
-}
-
-function insertElement(aRefItem, aElement) {
-  let popup, refItem;
-
-  if (aRefItem.localName === 'menupopup') {
-    popup = aRefItem;
-    refItem = null;
-  }
-  else {
-    popup = aRefItem.parentNode;
-    refItem = aRefItem;
-  }
-
-  return popup.insertBefore(aElement, refItem);
-}
-
 function getRestrictKeywordData() {
-  // @note displayed in the declared order
+  // @note Displayed in the declared order.
   // @see http://kb.mozillazine.org/Location_Bar_search
   const kRestrictKeys = {
     'browser.urlbar.restrict.history': 'History',
@@ -310,7 +282,38 @@ function getPrePath(aURL) {
 }
 
 /**
- * Entry point
+ * Helper functions for DOM.
+ */
+function addSeparator(aRefItem, aId) {
+  return insertElement(aRefItem, $E('menuseparator', {
+    id: aId
+  }));
+}
+
+function makeDisabledMenuItem(aRefItem, aLabel) {
+  return insertElement(aRefItem, $E('menuitem', {
+    label: aLabel,
+    disabled: true
+  }));
+}
+
+function insertElement(aRefItem, aElement) {
+  let popup, refItem;
+
+  if (aRefItem.localName === 'menupopup') {
+    popup = aRefItem;
+    refItem = null;
+  }
+  else {
+    popup = aRefItem.parentNode;
+    refItem = aRefItem;
+  }
+
+  return popup.insertBefore(aElement, refItem);
+}
+
+/**
+ * Entry point.
  */
 URLbarKeyword_init();
 

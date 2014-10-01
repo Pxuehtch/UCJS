@@ -41,7 +41,7 @@ function log(aMsg) {
 }
 
 /**
- * Customizes the tooltip of a tab
+ * Customizes the tooltip of a tab.
  *
  * @require TabEx.uc.js
  */
@@ -84,7 +84,7 @@ function log(aMsg) {
   addEvent(mTooltip, 'popupshowing', onPopupShowing, false);
   addEvent(mTooltip, 'popuphiding', onPopupHiding, false);
 
-  // replace the default tooltip 'tabbrowser-tab-tooltip'
+  // Replace the default tooltip 'tabbrowser-tab-tooltip'.
   $ID('tabbrowser-tabs').tooltip = kUI.tooltip.id;
 
   function onPopupHiding(aEvent) {
@@ -112,9 +112,9 @@ function log(aMsg) {
 
     let browser = gBrowser.getBrowserForTab(tab);
 
-    // WORKAROUND: hide a useless tooltip that is delayed-shown after a tab
+    // WORKAROUND: Hide a useless tooltip that is delayed-shown after a tab
     // under a cursor is removed (e.g. by clicking the mouse middle button on
-    // the tab before tooltip shows)
+    // the tab before tooltip shows).
     if (!browser) {
       return;
     }
@@ -128,10 +128,10 @@ function log(aMsg) {
 
     let loadingURL;
 
-    // 1.retrieve the loading URL from the tab data by |ucjsTabEx| for a new
-    // tab that is suspended to load a document
+    // 1.Retrieve the loading URL from the tab data by |ucjsTabEx| for a new
+    // tab that is suspended to load a document.
     // 2.|userTypedValue| holds the URL of a document till it successfully
-    // loads
+    // loads.
     if (tabState.isSuspended(tab)) {
       let openInfo = tabState.getData(tab, 'openInfo');
 
@@ -145,7 +145,7 @@ function log(aMsg) {
       URL: loadingURL || browser.currentURI.spec
     });
 
-    // add the referrer information to a tab without backward history
+    // Add the referrer information to a tab without backward history.
     if (!browser.canGoBack && referrer.exists(tab)) {
       referrer.fetchInfo(tab, (aInfo) => {
         buildData({
@@ -207,7 +207,7 @@ function log(aMsg) {
 })();
 
 /**
- * Shows a long URL text without cropped in a tooltip of the URL bar
+ * Shows a long URL text without cropped in a tooltip of the URL bar.
  */
 (function() {
 
@@ -298,7 +298,7 @@ function log(aMsg) {
 })();
 
 /**
- * Ensure that a popup menu is detected
+ * Ensure that a popup menu is detected.
  */
 (function() {
 
@@ -311,11 +311,11 @@ function log(aMsg) {
 })();
 
 /**
- * Relocates the scroll-buttons when tabs overflowed on the tab bar
+ * Relocates the scroll-buttons when tabs overflowed on the tab bar.
  */
 (function relocateTabbarScrollButtons() {
 
-  // @note the margin of a pinned tab is 3px
+  // @note The margin of a pinned tab is set to 3px.
   setChromeCSS('\
     .tabbrowser-arrowscrollbox>.arrowscrollbox-scrollbox{\
       -moz-box-ordinal-group:1;\
@@ -342,18 +342,18 @@ function log(aMsg) {
       'let scrollButtonWidth = 0;'
     ).replace(
       'width += tab.getBoundingClientRect().width;',
-      // add the margin of a pinned tab
+      // Add the margin of a pinned tab.
       'width += tab.getBoundingClientRect().width + 3;'
     )
   )();
 
-  // recalc the positions
+  // Recalc the positions.
   gBrowser.tabContainer._positionPinnedTabs();
 
 })();
 
 /**
- * Suppress continuous focusing with holding the TAB-key down
+ * Suppress continuous focusing with holding the TAB-key down.
  */
 (function() {
 
@@ -370,17 +370,18 @@ function log(aMsg) {
 })();
 
 /**
- * TAB-key focusing handler
+ * TAB-key focusing handler.
  *
  * @require UI.uc.js
  */
 (function() {
 
-  // Toggles TAB-key focusing behavior
-
+  /**
+   * Toggles TAB-key focusing behavior.
+   */
   // @pref
-  // 1: Give focus to text fields only
-  // 7: Give focus to focusable text fields, form elements, and links[default]
+  // 1: Give focus to text fields only.
+  // 7: Give focus to focusable text fields, form elements, and links.
   // @see http://kb.mozillazine.org/Accessibility.tabfocus
   const kPrefTabFocus = 'accessibility.tabfocus';
 
@@ -410,7 +411,9 @@ function log(aMsg) {
     oncommand: command
   }));
 
-  // gives focus on the content area
+  /**
+   * Gives focus on the content area.
+   */
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_focusInContentArea',
     key: 'f',
@@ -421,12 +424,12 @@ function log(aMsg) {
 })();
 
 /**
- * Prevent new page opening by the target attribute on link click
+ * Prevent new page opening by the target attribute on link click.
  *
- * @note follows the action by clicking with modifier keys
- * @note follows the valid target in <frame> windows
+ * @note Follows the action by clicking with modifier keys.
+ * @note Follows the valid target in <frame> windows.
  *
- * TODO: handling for <iframe>
+ * TODO: Handle <iframe>.
  */
 (function() {
 
@@ -485,7 +488,7 @@ function log(aMsg) {
   function getLink(aNode) {
     const XLinkNS = 'http://www.w3.org/1999/xlink';
 
-    // @note the initial node may be a text node
+    // @note The initial node may be a text node.
     let node = aNode;
 
     while (node) {
@@ -507,7 +510,7 @@ function log(aMsg) {
 })();
 
 /**
- * Add 'Open new tab' menu in the tab-context-menu
+ * Add 'Open new tab' menu in the tab-context-menu.
  */
 (function() {
 
@@ -546,11 +549,12 @@ function log(aMsg) {
 })();
 
 /**
- * Show a status text in the URL bar
+ * Show a status text in the URL bar.
  *
- * @note the default status panel is used when the fullscreen mode
+ * @note The default status panel is used when the fullscreen mode.
  *
- * TODO: fix the position gap of status panel (often in page loading)
+ * TODO: Fix too long status panel to fit in the URL bar (often in page
+ * loading).
  */
 (function() {
 
@@ -559,7 +563,7 @@ function log(aMsg) {
   };
 
   /**
-   * Fx native UI elements
+   * Fx native UI elements.
    */
    const UI = {
     get statusInput() {
@@ -609,7 +613,7 @@ function log(aMsg) {
   function ucjsMisc_showStatusToURLBar_updateStatusField() {
     $updateStatusField.apply(this, arguments);
 
-    // TODO: should I change the timing of updating the size in order to just
+    // TODO: Should I change the timing of updating the size in order to just
     // fit the position?
     updateStatusInputRect();
   };
@@ -674,13 +678,13 @@ function log(aMsg) {
 })();
 
 /**
- * Style for anonymous elements
+ * Style for anonymous elements.
  *
- * @note AGENT-STYLE-SHEETS can apply styles to native anonymous elements
+ * @note AGENT-STYLE-SHEETS can apply styles to native anonymous elements.
  * @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
  */
 (function() {
-  /* clear scrollbar */
+  /* Clear scrollbar. */
   setGlobalAgentCSS('\
     scrollbar {\
       -moz-appearance:none!important;\
@@ -704,7 +708,7 @@ function log(aMsg) {
     }\
   ');
 
-  /* tooltip text with tight line-wrapping */
+  /* Tooltip text with tight line-wrapping. */
   setGlobalAgentCSS('\
     .tooltip-label {\
       word-break:break-all!important;\
@@ -715,7 +719,7 @@ function log(aMsg) {
 })();
 
 /**
- * Patch the alltabs menu
+ * Patch the alltabs menu.
  *
  * @require UI.uc.js, TabEx.uc.js
  */
@@ -729,7 +733,7 @@ function log(aMsg) {
 
   /**
    * Ensure that the target tab is visible by the command of a menuitem in
-   * the alltabs popup
+   * the alltabs popup.
    *
    * @note An *unselected* tab will be selected and visible by the command,
    * but nothing happens for a *selected* tab. It is inconvenient that a
@@ -755,9 +759,9 @@ function log(aMsg) {
 
   /**
    * Show the URL of a suspended tab to the status field when a menuitem is
-   * on active
+   * on active.
    *
-   * @note workaround for a suspended tab by TabEx.uc.js
+   * @note This is a workaround for a suspended tab by TabEx.uc.js.
    */
   addEvent(alltabsPopup, 'DOMMenuItemActive', (aEvent) => {
     aEvent.stopPropagation();
@@ -779,10 +783,10 @@ function log(aMsg) {
     if (tabState.isSuspended(tab)) {
       let loadingURL;
 
-      // 1.retrieve the loading URL from the tab data by |ucjsTabEx| for a new
-      // tab that is suspended to load a document
+      // 1.Retrieve the loading URL from the tab data by |ucjsTabEx| for a new
+      // tab that is suspended to load a document.
       // 2.|userTypedValue| holds the URL of a document till it successfully
-      // loads
+      // loads.
       let openInfo = tabState.getData(tab, 'openInfo');
 
       loadingURL =
@@ -797,7 +801,7 @@ function log(aMsg) {
   /**
    * Update the state of a menuitem for an unread tab.
    *
-   * @note Workaround for an unread tab handled by TabEx.uc.js
+   * @note This is a workaround for an unread tab handled by TabEx.uc.js.
    */
   addEvent(alltabsPopup, 'popupshowing', (aEvent) => {
     aEvent.stopPropagation();
@@ -846,7 +850,7 @@ function log(aMsg) {
 })();
 
 /**
- * Common findbar
+ * Global findbar in all tabs.
  *
  * @require UI.uc.js
  */

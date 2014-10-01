@@ -61,7 +61,7 @@ const kID = {
 };
 
 /**
- * Custom event type
+ * Custom event type.
  */
 const kEventType = {
   TabOpen: 'ucjs_TabEx_TabOpen',
@@ -69,59 +69,61 @@ const kEventType = {
 };
 
 /**
- * Position for OPENPOS/SELECTPOS
+ * Positions for a new tab or tab selection.
+ *
+ * @note Set to |kPref.OPENPOS_*| and |kPref.SELECTPOS_*|.
  */
 const kPosType = {
-  // Firefox default
+  // Follows Firefox default behavior.
   DEFAULT: 1,
 
-  // at the first
+  // At the first position.
   FIRST_END: 2,
 
-  // at the last
+  // At the last position.
   LAST_END: 3,
 
-  // at the previous adjacent
-  // @note SELECTPOS: no match if no previous tab
+  // At the previous adjacent.
+  // @note No match if no previous tab for |SELECTPOS|.
   PREV_ADJACENT: 4,
 
-  // at the next adjacent
-  // @note SELECTPOS: no match if no next tab
+  // At the next adjacent.
+  // @note No match if no next tab for |SELECTPOS|.
   NEXT_ADJACENT: 5,
 
   /**
-   * only for OPENPOS
+   * Only for |OPENPOS|.
    */
 
-  // after the far end tab of the sequential followings that are descendants of
-  // the base tab from its next adjacent, or at the next adjacent
-  // @note the family relation is kept even if the base tab changes its
-  // location
+  // After the far end tab of the sequential followings that are descendants of
+  // the base tab from its next adjacent, or at the next adjacent.
+  // @note The family relation is kept even if the base tab changes its
+  // location.
   NEXT_INCREMENT_DESCENDANT: 6,
 
   /**
-   * only for SELECTPOS
+   * Only for |SELECTPOS|.
    */
 
-  // the previous adjacent tab that is an ancestor of the closed tab
-  // @note may be no match
+  // The previous adjacent tab that is an ancestor of the closed tab.
+  // @note May be no match.
   PREV_ADJACENT_ANCESTOR: 7,
 
-  // the next adjacent tab that is a descendant of the closed tab or is a
-  // sibling(has the same parent of the closed tab) or his descendant
-  // @note may be no match
+  // The next adjacent tab that is a descendant of the closed tab or is a
+  // sibling (has the same parent of the closed tab) or his descendant.
+  // @note May be no match.
   NEXT_ADJACENT_EXTENDED_DESCENDANT: 8,
 
-  // the parent tab of the closed tab
-  // @note may be no match
+  // The parent tab of the closed tab.
+  // @note May be no match.
   ANYWHERE_OPENER: 9,
 
-  // tab that has been selected most recently before the closed tab
-  // @note may be no match
+  // Tab that has been selected most recently before the closed tab.
+  // @note May be no match.
   ANYWHERE_PREV_SELECTED: 10,
 
-  // the oldest opened tab of unread tabs
-  // @note may be no match
+  // The oldest opened tab of unread tabs.
+  // @note May be no match
   ANYWHERE_OLDEST_UNREAD: 11
 };
 
@@ -129,24 +131,25 @@ const kPosType = {
  * Preference
  */
 const kPref = {
-  // where a new tab is opened to
+  // Where a new tab is opened to.
   //
   // @value {kPosType}
-  // @note the count of positioning starts from the first *un*pinned tab
-  // @note |OPENPOS_LINKED| works when the tab is opened by a link in the
-  // content area or |addTab| with |relatedToCurrent| option, otherwise
-  // |OPENPOS_UNLINKED|
+  // @note The count of positioning starts from the first *unpinned* tab.
+  // @note |OPENPOS_LINKED| works when the tab is opened by a link or |addTab|
+  // with |relatedToCurrent| option, otherwise |OPENPOS_UNLINKED| works.
   OPENPOS_LINKED:    kPosType.NEXT_INCREMENT_DESCENDANT,
   OPENPOS_UNLINKED:  kPosType.LAST_END,
+
+  // @note |DEFAULT| opens a tab at the last position.
   OPENPOS_DUPLICATE: kPosType.NEXT_ADJACENT,
-  // DEFAULT: a tab reopens at the same position where it closed
+  // @note |DEFAULT| reopens a tab at the same position where it closed.
   OPENPOS_UNDOCLOSE: kPosType.DEFAULT,
 
-  // which tab is selected after the *selected* tab is closed
+  // Which tab is selected after the *selected* tab is closed.
   //
   // @value {kPosType[]}
-  // @note the default selection works if no matches (may be the same as
-  // |PREV_ADJACENT|)
+  // @note The Firefox default selection works if no matches (may be the same
+  // as |PREV_ADJACENT|).
   SELECTPOS_TABCLOSE: [
     kPosType.NEXT_ADJACENT_EXTENDED_DESCENDANT,
     kPosType.PREV_ADJACENT_ANCESTOR,
@@ -154,42 +157,42 @@ const kPref = {
     kPosType.ANYWHERE_PREV_SELECTED,
     kPosType.FIRST_END
   ],
-  // for closing a selected pinned tab
+  // For closing of a selected pinned tab.
   SELECTPOS_PINNEDTABCLOSE: [
     kPosType.PREV_ADJACENT
   ],
 
-  // delayed-stops the loading of a tab that is opened in background
+  // Delayed-stops the loading of a tab that is opened in background.
   //
   // @value {boolean}
-  //   false: the same as the default 'tabs on demand' behavior
-  //   true: stops the loading of the tab after |SUSPEND_DELAY| passes
+  //   true: Stops the loading of the tab after |SUSPEND_DELAY| passes.
+  //   false: The same as the native behavior for a background tab.
   SUSPEND_LOADING: true,
 
-  // the delay time until the loading is suspended
+  // The delay time until the loading is suspended.
   //
-  // @value {integer} millisecond
-  //   0: try to stop loading immediately
-  // @note it may take time because our process works after the Fx default one
-  // for a background tab
+  // @value {integer} [millisecond]
+  //   0: Try to stop loading immediately.
+  //   @note It may take time because our processing works after the native
+  //   process for a background tab.
   SUSPEND_DELAY: 0,
 
-  // auto-reloads the suspended tab that is next adjacent of a selected tab
+  // Auto-reloads the suspended tab in the next adjacent of a selected tab.
   //
   // @value {boolean}
   SUSPEND_NEXTTAB_RELOAD: false,
 
-  // the delay time until it considers that "a user has read it" after the tab
-  // is selected and loaded completely
+  // The delay time until it considers that "a user has read it" after the tab
+  // is selected and loaded completely.
   //
-  // @value {integer} millisecond
-  // @note the marking is canceled when the other tab is selected in a short
-  // time (e.g. while flipping tabs with a shortcut key or mouse wheeling)
+  // @value {integer} [millisecond]
+  // @note The marking is canceled when the other tab is selected in a short
+  // time (e.g. while flipping tabs with a shortcut key or mouse wheeling).
   SELECTED_DELAY: 1000
 };
 
 /**
- * Makes a unique value with the current time
+ * Makes a unique value with the current time.
  *
  * @return {integer}
  */
