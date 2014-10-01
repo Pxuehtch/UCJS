@@ -270,15 +270,7 @@ function getBookmarkKeywordData() {
 }
 
 function getPrePath(aURL) {
-  const kMaxLen = 40;
-
-  let prePath = aURL.replace(/^(\w+:[/]*[^/]+).*$/, '$1');
-
-  if (prePath.length > kMaxLen) {
-    prePath = prePath.substr(0, kMaxLen) + '...';
-  }
-
-  return prePath;
+  return aURL.replace(/^(\w+:[/]*[^/]+).*$/, '$1');
 }
 
 /**
