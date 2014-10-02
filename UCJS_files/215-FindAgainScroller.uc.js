@@ -844,7 +844,7 @@ function FoundBlink() {
 
     uninit:  function() {
       this.selectionController = null;
-      this.animator = null;
+      this.frameAnimator = null;
       this.param = null;
       this.initialized = null;
     }
