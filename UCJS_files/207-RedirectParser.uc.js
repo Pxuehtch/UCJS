@@ -83,20 +83,10 @@ const kPref = {
 const kPreset = [
   {
     name: '2ch リダイレクト',
-    link: /^http:\/\/ime\.(?:nu|st)\/(.+)$/,
+    link: /^http:\/\/(?:ime\.nu\/|jump\.2ch\.net\/\?|2ch\.io\/)(.+)$/,
     items: [
       {
         replacement: 'http://$1',
-        description: 'リダイレクト先 URL'
-      }
-    ]
-  },
-  {
-    name: 'はてなアンテナ リダイレクト',
-    link: /^http:\/\/a\.st\-hatena\.com\/go\?(.+)$/,
-    items: [
-      {
-        replacement: '$1',
         description: 'リダイレクト先 URL'
       }
     ]
@@ -112,16 +102,6 @@ const kPreset = [
       {
         replacement: '$2',
         description: 'ページ URL'
-      }
-    ]
-  },
-  {
-    name: 'My Opera Photo albums サムネイル',
-    image: /^(https?):\/\/(?:files|thumbs)\.myopera\.com\/(?:.+\/)??([^\/]+\/albums\/\d+)\/(?:thumbs\/)?(.+?\.[a-z]+)(?:_thumb\.[a-z]+)?$/,
-    items: [
-      {
-        replacement: '$1://files.myopera.com/$2/$3',
-        description: '画像 URL'
       }
     ]
   }
