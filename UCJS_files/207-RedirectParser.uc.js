@@ -44,11 +44,13 @@ const {
 } = window.ucjsUI;
 
 /**
- * Whether the access key of a menu item is expressed with underline
+ * Whether the access key of a menu item is expressed with underline.
  *
- * @note valid values are string 'true' or 'false', and missing key or empty
- * value equals 'false'
- * @see http://mxr.mozilla.org/mozilla-release/source/toolkit/locales/en-US/chrome/global/intl.properties#63
+ * @note Used for labeling of menuitems.
+ *
+ * @note Valid values are string 'true' or 'false', and missing key or empty
+ * value equals 'false'.
+ * @see chrome://global/locale/intl.properties
  */
 const kUnderlinedAccesskey =
   getPref('intl.menuitems.alwaysappendaccesskeys', 'false') === 'false';
@@ -57,21 +59,22 @@ const kUnderlinedAccesskey =
  * Preference
  */
 const kPref = {
-  // schemes of URL that can be opened with menu-command
-  // @note the other scheme URL can't be opened but will be copied to
-  // clipboard as an unknown URL
+  // URL schemes that can be opened with a command.
+  // @note The URL with other schemes can't be opened but will be copied to
+  // clipboard.
   generalSchemes: 'http|https|ftp'
 };
 
 /**
- * User preset settings
+ * User preset settings.
  *
- * @key name {string} display name
- * @key link {regexp} link URL
- * @key image {regexp} linked image URL
- *   @note |link| will be valid on a linked image if both keys are defined
- *   @note capturing parentheses are required. they replace |$n| in
- *   |items.replacement|
+ * @key name {string}
+ *   A display name.
+ * @key link {regexp}
+ * @key image {regexp}
+ *   The link URL or image source URL.
+ *   @note |link| will be valid on a linked image if both keys are defined.
+ *   @note Capturing parentheses replace |$n| in |items.replacement|.
  * @key items {hash[]}
  *   @key replacement {string}
  *   @key description {string}
@@ -126,7 +129,7 @@ const kPreset = [
 ];
 
 /**
- * UI constants
+ * UI settings.
  */
 const kUI = {
   menu: {
@@ -428,9 +431,9 @@ function getParseListByScan(aSourceURL) {
 }
 
 function splitIntoSchemes(aURL) {
-  // splits a URL by '://'
-  // e.g. ['http', '://', 'abc.com/...http', '://', ..., '://', 'abc.com/...']
-  // [0][1][2] are surely not empty
+  // Split a URL by '://'.
+  // e.g. ['http', '://', 'foo.com/...http', '://', ..., '://', 'bar.com/...']
+  // [0][1][2] are surely not empty.
   const delimiter = /((?:\:|%(?:25)?3A)(?:\/|%(?:25)?2F){2})/i;
 
   let splits = aURL.split(delimiter);
@@ -443,9 +446,9 @@ function splitIntoSchemes(aURL) {
   let slices, scheme = splits.shift() + splits.shift();
 
   while (splits.length > 1) {
-    // 'abc.com/...http' -> ['abc.com/...', 'http']
+    // 'foo.com/...http' -> ['foo.com/...', 'http']
     slices = sliceScheme(splits.shift());
-    // 'http://' + 'abc.com/...'
+    // 'http://' + 'foo.com/...'
     URLs.push(scheme + slices[0]);
     // 'http' + '://'
     scheme = slices[1] + splits.shift();
@@ -457,12 +460,12 @@ function splitIntoSchemes(aURL) {
     let segments = b.split(delimiter);
 
     if (!segments[0] || !segments[2]) {
-      // an incomplete URL ('://...' or 'http://') is combined with a previous
-      // string as a part of it
+      // An incomplete URL ('://...' or 'http://') is combined with a previous
+      // string as a part of it.
       a[a.length - 1] += b;
     }
     else {
-      // 'http://...' is a complete URL string
+      // 'http://...' is a complete URL string.
       a[a.length] = b;
     }
 
@@ -475,17 +478,17 @@ function sliceScheme(aString) {
     return ['', ''];
   }
 
-  // allowable characters for scheme
+  // Allowable characters for scheme;
   // scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
   // @see http://tools.ietf.org/html/rfc3986#section-3.1
   const schemeCharRE = /[a-z0-9+-.]/i;
-  // two hexadecimal digits part of the escape code for [+-.]
+  // The two hexadecimal digits part of the escape code for [+-.].
   const escapeCodeRE = /2B|2D|2E/i;
-  // leading marks are invalid for scheme
+  // The leading marks are invalid for scheme.
   const leadingMarksRE = /^(?:[0-9+-.]|%(?:25)?(?:2B|2D|2E))+/i;
 
-  // be care for changing the value of a loop index for using it outside of
-  // loop
+  // @note  Be care for changing the value of a loop index for using it
+  // outside of loop.
   let index = aString.length - 1;
 
   while (true) {
@@ -498,7 +501,7 @@ function sliceScheme(aString) {
     else {
       let code, codeLength;
 
-      // '%' may be escaped to '%25'
+      // '%' may be escaped to '%25'.
       if (aString.substr(index, 3) === '%25') {
         code = aString.substr(index + 3, 2);
         codeLength = 5;
@@ -514,12 +517,12 @@ function sliceScheme(aString) {
       }
     }
 
-    // no more characters
+    // No more characters.
     if (index === 0) {
       break;
     }
 
-    // decrement the loop index here, at the bottom of loop
+    // @note Decrement the loop index here, at the bottom of loop.
     index--;
   }
 
@@ -543,7 +546,7 @@ function removeFragment(aURL) {
 }
 
 /*
- * Creates a handler of the list of the parsed URLs
+ * Creates a list handler of parsed URLs.
  */
 function createParseList(aPreset, aSourceURLType) {
   let mPreset = aPreset || null;
@@ -556,14 +559,14 @@ function createParseList(aPreset, aSourceURLType) {
   }
 
   function validate() {
-    // invalid: no item except a source URL
-    // @note URLs[0] is always a source URL itself
+    // Invalid: No item except a source URL.
+    // @note URLs[0] is always a source URL itself.
     if (mURLs.length <= 1) {
       return false;
     }
 
-    // invalid: no inner URL by scanning
-    // @note the first item is always marked
+    // Invalid: No inner URL by scanning.
+    // @note The first item is always marked.
     if (!mPreset && mNewURLIndexes.length <= 1) {
       return false;
     }
@@ -572,7 +575,7 @@ function createParseList(aPreset, aSourceURLType) {
   }
 
   function markAsNewURL() {
-    // @note the first item is always marked
+    // @note The first item is always marked.
     mNewURLIndexes.push(mURLs.length);
   }
 
@@ -668,7 +671,7 @@ function setAttributeForCommand(aNode, aActionData) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 RedirectParser_init();
 

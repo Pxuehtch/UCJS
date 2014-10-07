@@ -40,10 +40,10 @@ const {
 } = window.ucjsUI;
 
 /**
- * Text type constants
+ * Text type constants.
  *
- * @note used to set a prettifier method and the syntax highlight mode for
- * the Scratchpad editor
+ * @note Used to set a prettifier method and the syntax highlight mode for
+ * the Scratchpad editor.
  */
 const kTextType = (function() {
   // @see resource://app/modules/devtools/sourceeditor/editor.js
@@ -56,16 +56,16 @@ const kTextType = (function() {
 })();
 
 /**
- * Optional settings for the CodeMirror editor
+ * Optional settings for the CodeMirror editor.
  *
- * the initial settings;
+ * Initial settings;
  * @see resource://app/modules/devtools/sourceeditor/editor.js::Editor
  * @see chrome://browser/content/devtools/scratchpad.js::Scratchpad::onLoad
  *
- * the available options in the built-in version;
+ * Available options in the built-in version;
  * @see chrome://browser/content/devtools/codemirror/codemirror.js::OPTION DEFAULTS
  *
- * the options in the recent version;
+ * Available options in the recent version;
  * @see http://codemirror.net/doc/manual.html#config
  */
 const kEditorOptions = {
@@ -73,15 +73,15 @@ const kEditorOptions = {
 };
 
 /**
- * Optional settings for the prettifier
+ * Optional settings for the prettifier.
  *
- * @note the default values are used if absent
+ * @note The default values are used if absent.
  * @see |Prettifier::kOptionList|
  */
 const kPrettifierOptions = {};
 
 /**
- * Menu handler
+ * Menu handler.
  */
 const Menu = (function() {
   const kUI = {
@@ -157,11 +157,11 @@ const Menu = (function() {
 })();
 
 /**
- * Scratchpad handler
+ * Scratchpad handler.
  */
 const Scratchpad = (function() {
   /**
-   * Show a prettified text in the Scratchpad
+   * Show a prettified text in the Scratchpad.
    *
    * @param {hash} aState
    *   filename {string}
@@ -170,7 +170,7 @@ const Scratchpad = (function() {
    *   editorOptions {kEditorOptions} [optional]
    *   prettifierOptions {kPrettifierOptions} [optional]
    *
-   * TODO: a better check of parameters
+   * TODO: Do better check of parameters.
    */
   function prettify(aState) {
     let {
@@ -215,7 +215,7 @@ const Scratchpad = (function() {
   }
 
   /**
-   * Open the Scratchpad window with an initial state
+   * Open the Scratchpad window with an initial state.
    *
    * @param {hash} aState
    *   filename {string}
@@ -223,7 +223,7 @@ const Scratchpad = (function() {
    *   text {string}
    *   options {kEditorOptions}
    * @return {DOMWindow}
-   *   the new window object that holds Scratchpad
+   *   The new window object that holds Scratchpad.
    */
   function open(aState) {
     const {ScratchpadManager} =
@@ -267,15 +267,15 @@ const Scratchpad = (function() {
 })();
 
 /**
- * Prettifier handler
+ * Prettifier handler.
  */
 const Prettifier = (function() {
   /**
-   * Optional value setting
+   * Optional value setting.
    */
   const kOptionList = {
     /**
-     * Indentation size
+     * Indentation size.
      */
     indentSize: {
       type: 'number',
@@ -286,7 +286,7 @@ const Prettifier = (function() {
     },
 
     /**
-     * Indentation character [one character]
+     * Indentation character [one character].
      */
     indentChar: {
       type: 'string',
@@ -297,7 +297,7 @@ const Prettifier = (function() {
     },
 
     /**
-     * Add an extra line after a block end
+     * Add an extra line after a block end.
      *
      * @see |addExtraLine()|
      */
@@ -307,7 +307,7 @@ const Prettifier = (function() {
     },
 
     /**
-     * Complement a semicolon after the last statement in a block
+     * Complement a semicolon after the last statement in a block.
      *
      * @see |complementLastSemicolon()|
      */
@@ -318,7 +318,7 @@ const Prettifier = (function() {
   };
 
   /**
-   * Fix up options
+   * Fix up options.
    *
    * @param aOptions {hash}
    *   @see |kOptionList|
@@ -366,7 +366,7 @@ const Prettifier = (function() {
   }
 
   /**
-   * Prettify a code text
+   * Prettify a code text.
    *
    * @param aTextType {kTextType}
    * @param aText {string}
@@ -407,7 +407,7 @@ const Prettifier = (function() {
 
   /**
    * Add an extra line after '}' or '},' or '};' being not the last one in a
-   * nesting block or in a block comment
+   * nesting block or in a block comment.
    *
    * @param aText {string}
    * return {string}
@@ -417,7 +417,7 @@ const Prettifier = (function() {
   }
 
   /**
-   * Complement a semicolon after the last statement before '}' of a block end
+   * Complement a semicolon after the last statement before '}' of a block end.
    *
    * @param aText {string}
    * return {string}
@@ -427,11 +427,11 @@ const Prettifier = (function() {
   }
 
   /**
-   * JS Prettifier
+   * JS Prettifier.
    *
-   * @note calls the built-in function 'js_beautify'
+   * @note Calls the built-in function 'js_beautify'.
    * @see resource://app/modules/devtools/Jsbeautify.jsm
-   * @note this is based on 'JS Beautifier'
+   * @note Based on 'JS Beautifier'.
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify.js
    */
   function prettifyJS(aText, aOptions) {
@@ -439,7 +439,7 @@ const Prettifier = (function() {
       indent_size: aOptions.indentSize,
       indent_char: aOptions.indentChar//,
 
-      // internal options
+      // Internal options;
       //preserve_newlines: true, // [default: true]
       //max_preserve_newlines: false, // [default: false]
       //jslint_happy: false, // [default: false]
@@ -457,33 +457,33 @@ const Prettifier = (function() {
   }
 
   /**
-   * CSS Prettifier
+   * CSS Prettifier.
    *
-   * @note calls 'JS Beautifier beautify-css.js'
+   * @note Calls 'JS Beautifier beautify-css.js'.
    */
   function prettifyCSS(aText, aOptions) {
     let options = {
       indent_size: aOptions.indentSize,
       indent_char: aOptions.indentChar//,
 
-      // no internal options for now
+      // No internal options for now.
     };
 
     return patch(css_beautify(aText, options));
 
     function patch(aText) {
-      // trim a leading space of a top-level declaration after the comment
-      // line
-      // @note patch for beautify-css.js [Apr 28, 2013]
+      // Trim a leading space of a top-level declaration after the comment
+      // line.
+      // @note Workaround for beautify-css.js [Apr 28, 2013].
       return aText.replace(/(\*\/\n) (?! )/g, '$1');
     }
   }
 
   /**
-   * JS Beautifier beautify-css.js [Apr 28, 2013]
+   * JS Beautifier beautify-css.js [Apr 28, 2013].
    *
-   * TODO: the newer version [Nov 22, 2013] seems to be incompatible with this
-   * user script, so, stop updating until I find what wrong
+   * TODO: The newer version [Nov 22, 2013] seems to be incompatible with this
+   * user script, so, stop updating until I find what wrong.
    *
    * @see https://github.com/einars/js-beautify/blob/master/js/lib/beautify-css.js
    */
@@ -524,7 +524,7 @@ const Prettifier = (function() {
 })();
 
 /**
- * Get the text content in a plain text document
+ * Get the text content in a plain text document.
  *
  * @param {HTMLDocument} aDocument
  * @return {string|null}
@@ -536,7 +536,7 @@ function getTextContent(aDocument) {
 }
 
 /**
- * Get a <PRE> element that contains the text content in a plain text document
+ * Get a <PRE> element that contains the text content in a plain text document.
  *
  * @param {HTMLDocument} aDocument
  * @return {HTMLPreElement|null}
@@ -560,7 +560,7 @@ function getTextContainer(aDocument) {
 }
 
 /**
- * Get a text type for the document
+ * Get a text type for the document.
  *
  * @param {HTMLDocument} aDocument
  * @return {kTextType|null}
@@ -592,7 +592,7 @@ function prompt(aMessage, aOption) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 function PrettyPrint_init() {
   Menu.init();
