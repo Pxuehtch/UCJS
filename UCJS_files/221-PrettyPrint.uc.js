@@ -47,11 +47,11 @@ const {
  */
 const kTextType = (function() {
   // @see resource://app/modules/devtools/sourceeditor/editor.js
-  const Editor = getModule('devtools/sourceeditor/editor');
+  const {modes} = getModule('devtools/sourceeditor/editor');
 
   return {
-    js:  Editor.modes.js,
-    css: Editor.modes.css
+    js:  modes.js,
+    css: modes.css
   };
 })();
 
