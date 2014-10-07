@@ -73,7 +73,22 @@ const kEditorOptions = {
 };
 
 /**
- * Optional settings for the prettifier.
+ * Menuitem for editor options.
+ *
+ * @key An available option name in |kEditorOptions|.
+ * @value {string} The menuitem's ID.
+ *
+ * @note Adjusts the check state of a menuitem corresponding to an option.
+ * @see |Scratchpad::open|
+ */
+const kEditorOptionsMenuitemID = {
+  lineNumbers: 'sp-menu-line-numbers',
+  lineWrapping: 'sp-menu-word-wrap',
+  showTrailingSpace: 'sp-menu-highlight-trailing-space'
+};
+
+/**
+ * Optional settings for prettifier.
  *
  * @note The default values are used if absent.
  * @see |Prettifier::kOptionList|
@@ -252,6 +267,14 @@ const Scratchpad = (function() {
 
           for (let [key, value] in Iterator(aState.options)) {
             aScratchpad.editor.setOption(key, value);
+
+            if (kEditorOptionsMenuitemID[key]) {
+              let menuitem = scratchpadWindow.document.
+                getElementById(kEditorOptionsMenuitemID[key]);
+
+              // Adjust the check state of the menuitem.
+              menuitem.setAttribute('checked', value);
+            }
           }
         }
       });
