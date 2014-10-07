@@ -68,11 +68,18 @@ function handleEvent(aEvent) {
 
     case 'keyup': {
       // Update a sign if IME toggled, otherwise clear forcibly.
+      //
       // TODO: Detect a 'Caps Lock' key for opening IME. But the key can be
       // found for closing IME ('Hiragana' in my case).
+      //
+      // TODO: In Fx33, some key values are considered deprecated and warned
+      // in the web console. They will be changed in Fx34 to comply with the
+      // latest DOM3 spec.
+      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1024864
+      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=900372
       let IMEkeys = [
-        'HalfWidth',
-        'FullWidth',
+        'HalfWidth', // will be 'Hankaku'
+        'FullWidth', // will be 'Zenkaku'
         'Alphanumeric',
         'Convert',
         'Hiragana'
