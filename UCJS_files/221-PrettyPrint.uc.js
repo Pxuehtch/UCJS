@@ -85,14 +85,18 @@ const kPrettifierOptions = {};
  */
 const Menu = (function() {
   const kUI = {
-    prettifySourcePage: {
-      id: 'ucjs_PrettyPrint_prettifySourcePage_menuitem',
+    // Native menuitem.
+    viewSource: {
+      id: 'context-viewsource'
+    },
+
+    // Custom menuitem.
+    prettifyPage: {
+      id: 'ucjs_PrettyPrint_prettifyPage_menuitem',
       label: '表示コードを整形',
       accesskey: 'P'
     }
   };
-
-  let getViewSourceItem = () => $ID('context-viewsource');
 
   function init() {
     contentAreaContextMenu.register({
@@ -107,10 +111,10 @@ const Menu = (function() {
 
   function createMenu(aContextMenu) {
     aContextMenu.insertBefore($E('menuitem', {
-      id: kUI.prettifySourcePage.id,
-      label: kUI.prettifySourcePage.label,
-      accesskey: kUI.prettifySourcePage.accesskey
-    }), getViewSourceItem());
+      id: kUI.prettifyPage.id,
+      label: kUI.prettifyPage.label,
+      accesskey: kUI.prettifyPage.accesskey
+    }), $ID(kUI.viewSource.id));
   }
 
   function onPopupShowing(aEvent) {
@@ -122,19 +126,19 @@ const Menu = (function() {
     if (menupopup === contextMenu) {
       let contentDocument = gBrowser.contentDocument;
       let shouldShow =
-        !getViewSourceItem().hidden &&
+        !$ID(kUI.viewSource.id).hidden &&
         getTextType(contentDocument) &&
         getTextContainer(contentDocument);
 
       // @see chrome://browser/content/nsContextMenu.js::showItem
-      window.gContextMenu.showItem(kUI.prettifySourcePage.id, shouldShow);
+      window.gContextMenu.showItem(kUI.prettifyPage.id, shouldShow);
     }
   }
 
   function onCommand(aEvent) {
     aEvent.stopPropagation();
 
-    if (aEvent.target.id === kUI.prettifySourcePage.id) {
+    if (aEvent.target.id === kUI.prettifyPage.id) {
       let contentDocument = gBrowser.contentDocument;
       let state = {
         filename: contentDocument.documentURI,
