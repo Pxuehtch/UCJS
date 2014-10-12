@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name ResetSearchPoint.uc.js
-// @description Resets the start point to "Find again" between frames or textboxes.
+// @description Resets the start point for <Find Again> command between frames or textboxes.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 
 /**
- * @usage The next find again will start from the point with "double-click".
- * @note In the same frame/textbox, the point is reset with "single-click" by
- * Fx default behavior.
+ * @usage The next find again will start from the point with "double-clicking".
+ * @note In the same frame/textbox, the point is reset with "single-clicking"
+ * by Fx default behavior.
  */
 
 
@@ -93,7 +93,7 @@ function setSelection(aElement, aWindow) {
   }
 
   range.selectNode(aElement);
-  // collapses to its start
+  // Collapses to its start.
   range.collapse(true);
 }
 
@@ -108,7 +108,7 @@ function setFastFindFor(aWindow) {
 }
 
 /**
- * Filters the useful state from a clicked element
+ * Filters the useful state from a clicked element.
  *
  * @param {Element}
  * @return {hash|null}
@@ -137,7 +137,7 @@ function getClickManager(aNode) {
   let isLinked = (function() {
     const XLinkNS = 'http://www.w3.org/1999/xlink';
 
-    // @note the initial node may be a text node
+    // @note The initial node may be a text node.
     let node = aNode;
 
     while (node) {
@@ -158,21 +158,21 @@ function getClickManager(aNode) {
 
   return {
     clickedWindow: aNode.ownerDocument.defaultView,
-    // we also handle an image element since the start point of finding is not
-    // reset by clicking it
+    // @note We also handle an image element since the start point of finding
+    // is not reset by clicking it.
     clickedElement: (isEditable || isImage) && !isLinked ? aNode : null
   };
 }
 
 /**
- * Gets the finder of the current browser
+ * Gets the finder of the current browser.
  */
 function getFinder() {
   return gBrowser.finder;
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 ResetSearchPoint_init();
 

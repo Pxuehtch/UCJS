@@ -38,7 +38,7 @@ const {
 } = window.ucjsUI;
 
 /**
- * UI settings
+ * UI settings.
  */
 const kUI = {
   menu: {
@@ -56,22 +56,26 @@ const kUI = {
 };
 
 /**
- * Preset list
+ * Preset list.
  *
- * @key category {string} a display name for menu
+ * @key category {string}
+ *   A display name for menu.
  * @key items {hash[]}
  *   @key disabled {boolean} [optional]
- *   @key name {string} a display name for menuitem
- *   @key URL {string} URL string of a related page
- *     pass the current page information with alias
+ *   @key name {string}
+ *     A display name for menuitem.
+ *   @key URL {string}
+ *     A URL string of a related page.
+ *     @note Pass the current page information with alias.
  *     @see |AliasFixup|
- *   @key URL {function} for the custom formatting
+ *   @key URL {function} [optional for the custom formatting]
  *     @param aPageInfo {hash}
- *       @key URL {string} a page URL
- *       @key title {string} a page title
- *     @return {string} a URL string
+ *       @key URL {string}
+ *       @key title {string}
+ *     @return {string}
+ *       a URL string
  *
- * @note displayed in the declared order
+ * @note Displayed in the declared order.
  */
 const kPreset = [
   {
@@ -145,25 +149,25 @@ const kPreset = [
 ];
 
 /**
- * Handler of fixing up an alias with the page information
+ * Handler of fixing up an alias with the page information.
  *
  * @return {hash}
  *   @key create {function}
  *
  * [aliases]
- * %URL%, %u% : a page URL
- * %TITLE%, %t% : a page title
+ * %URL%, %u% : A page URL.
+ * %TITLE%, %t% : A page title.
  *
  * The modifiers can be combined by '|';
- * SCHEMELESS, sl : without the URL scheme
- * PARAMLESS, pl : without the URL parameter
- * ENCODE, en : with URI encoded
+ * SCHEMELESS, sl : Without the URL scheme.
+ * PARAMLESS, pl : Without the URL parameter.
+ * ENCODE, en : With URI encoded.
  *
  * e.g.
- * %URL|ENCODE%, %u|en% : a page URL with URI encoded
- * %URL|SCHEMELESS|ENCODE%, %u|sl|en% : a page URL that is trimmed the scheme
+ * %URL|ENCODE%, %u|en% : A page URL with URI encoded.
+ * %URL|SCHEMELESS|ENCODE%, %u|sl|en% : A page URL, which is trimmed the scheme
  * and then URI encoded (the multiple modifiers is applied in the order of
- * settings)
+ * settings).
  */
 const AliasFixup = (function() {
   const kAliasSplitter = '|';
@@ -272,7 +276,7 @@ function getAvailableMenus() {
     URL: gBrowser.currentURI.spec
   };
 
-  // security warning for a URL with parameters
+  // Security warning for a URL with parameters.
   if (/[?#].*$/.test(pageInfo.URL)) {
     menus.push($E('menuitem', {
       label: kUI.menu.warnParameter,
@@ -388,7 +392,7 @@ function setAttributeForCommand(aNode, aURLs) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 PageRelated_init();
 

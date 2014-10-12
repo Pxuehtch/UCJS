@@ -40,14 +40,14 @@ function log(aMsg) {
 }
 
 /**
- * Popup menu handler
+ * Popup menu handler.
  *
  * @return {hash}
  *   @key init {function}
  */
 const PopupMenuHandler = (function() {
   /**
-   * Creates a new handler
+   * Creates a new handler.
    *
    * @param aPopupMenuGetter {function}
    *   A function to get the <popupmenu> element.
@@ -76,11 +76,11 @@ const PopupMenuHandler = (function() {
   }
 
   /**
-   * Manages the visibility of menu separators in a popup menu
+   * Manages the visibility of menu separators in a popup menu.
    *
    * @param aEvent {Event}
    *
-   * @note 'popupshowing' event should be attached to the <menupopup> element.
+   * @note Triggered by the 'popupshowing' event of a <menupopup> element.
    */
   function manageMenuSeparators(aEvent) {
     let popupMenu = aEvent.currentTarget;
@@ -132,7 +132,7 @@ const PopupMenuHandler = (function() {
   }
 
   /**
-   * Manager of handlers on create/destroy the target popup menu
+   * Manager of handlers on create/destroy the target popup menu.
    *
    * @param aTargetGetter {function}
    *   A function to get the target popup menu element.
@@ -163,13 +163,13 @@ const PopupMenuHandler = (function() {
     function init() {
       create();
 
-      // restore user settings after UI customization
+      // Restore user settings after UI customization.
       if (observeUICustomization) {
         addEvent(window, 'beforecustomization', destroy, false);
         addEvent(window, 'aftercustomization', create, false);
       }
 
-      // cleanup on shutdown of the main browser
+      // Clean up on shutdown of the main browser.
       addEvent(window, 'unload', uninit, false);
     }
 
@@ -183,7 +183,7 @@ const PopupMenuHandler = (function() {
     }
 
     function create() {
-      // update the reference of popup menu
+      // Update the reference of the popup menu.
       mTarget = setTarget();
 
       manageHandlers({
@@ -198,11 +198,13 @@ const PopupMenuHandler = (function() {
     }
 
     /**
-     * Creates the parameter of handler
+     * Creates the parameter of handler.
      *
      * @param {hash}
-     *   @key target {Element} A target element.
-     * @return {Element} The target itself.
+     *   @key target {Element}
+     *     A target element.
+     * @return {Element}
+     *   The target itself.
      *
      * XXX: Just passed a target itself for now. Should I write
      * |handler(mTarget)| on each calling?
@@ -288,7 +290,7 @@ const PopupMenuHandler = (function() {
 })();
 
 /**
- * Content area
+ * Content area handler.
  */
 const ContentArea = (function() {
   let getContextMenu = () => $ID('contentAreaContextMenu');
@@ -301,7 +303,7 @@ const ContentArea = (function() {
 })();
 
 /**
- * URL bar
+ * URL bar handler.
  *
  * @see chrome://browser/content/urlbarBindings.xml
  */
@@ -309,8 +311,8 @@ const URLBar = (function() {
   let getTextBox = () => $ANONID('textbox-input-box', gURLBar);
   let getContextMenu = () => $ANONID('input-box-contextmenu', getTextBox());
 
-  // UI customization resets the context menu of the URL bar to Fx default
-  // value. so, observe it to fix user settings for the context menu
+  // The UI customization resets the context menu of the URL bar to Fx default
+  // value. So, observe it to fix user settings for the context menu.
   let contextMenu = PopupMenuHandler.init(getContextMenu, {
     observeUICustomization: true
   });
@@ -321,13 +323,13 @@ const URLBar = (function() {
 })();
 
 /**
- * Find bar
+ * Find bar handler.
  *
  * @see chrome://global/content/bindings/findbar.xml
  */
 const FindBar = (function() {
   /**
-   * Fx native UI elements
+   * Fx native UI elements.
    */
   const UI = {
     get textBox() {
@@ -340,7 +342,7 @@ const FindBar = (function() {
   };
 
   /**
-   * Manager of handlers on create/destroy the target findbar
+   * Manager of handlers on create/destroy the target findbar.
    *
    * @return {hash}
    *   @key register {function}
@@ -375,13 +377,15 @@ const FindBar = (function() {
     }
 
     /**
-     * Creates the parameter of handler
+     * Creates the parameter of handler.
      *
      * @param {hash}
-     *   @key tab {Element} A tab element.
+     *   @key tab {Element}
+     *     A tab element.
      * @return {hash}
      *   @key tab {Element}
-     *   @key findBar {Element} A findbar that is associated with the tab.
+     *   @key findBar {Element}
+     *     A findbar that is associated with the tab.
      */
     function HandlerParam({tab}) {
       return {
@@ -401,7 +405,7 @@ const FindBar = (function() {
     }
 
     /**
-     * Registers the handlers
+     * Registers the handlers.
      *
      * @param {hash}
      *   @key onCreate {function}
@@ -448,7 +452,7 @@ const FindBar = (function() {
   })();
 
   /**
-   * Handler of a find text string
+   * Handler of a find text string.
    */
   const FindText = {
     get value() {
@@ -532,9 +536,7 @@ const FindBar = (function() {
    */
   return {
     register: HandlerManager.register,
-
     findText: FindText,
-
     reset: reset,
     open: open,
     toggle: toggle,
@@ -543,7 +545,7 @@ const FindBar = (function() {
 })();
 
 /**
- * Status bar
+ * Status bar handler.
  */
 const StatusField = (function() {
   // @see chrome://browser/content/browser.js::XULBrowserWindow
@@ -559,7 +561,7 @@ const StatusField = (function() {
   const kLinkFormat = '%url% [%time%]';
 
   /**
-   * Fx native UI elements
+   * Fx native UI elements.
    */
   const UI = {
     get textBox() {
@@ -568,20 +570,20 @@ const StatusField = (function() {
   };
 
   /**
-   * Message text handler
+   * Message text handler.
    */
   const MessageHandler = (function() {
     let mMessageStatus = '';
 
     /**
-     * Determines if a message text exists
+     * Determines if a message text exists.
      */
     function hasMessage() {
       return !!mMessageStatus;
     }
 
     /**
-     * Show a message text
+     * Show a message text.
      */
     function showMessage(aText) {
       let text = aText || '';
@@ -595,10 +597,10 @@ const StatusField = (function() {
 
       mMessageStatus = text;
 
-      // overwrite the displayed status
+      // Overwrite the displayed status.
       textField.label = text;
 
-      // restore the hidden status
+      // Restore the hidden status.
       if (!text) {
         XULBrowserWindow.statusText = '';
         XULBrowserWindow.updateStatusField();
@@ -626,18 +628,18 @@ const StatusField = (function() {
   })();
 
   /**
-   * Handler of the state of a link under a cursor
+   * Handler of the state of a link under a cursor.
    */
   const OverLinkHandler = (function() {
     let mDisableSetOverLink = false;
     let mLastOverLinkURL;
 
     /**
-     * Switches the over link state
+     * Switches the over link state.
      */
     function setOverLink(aShouldShow) {
       if (!aShouldShow) {
-        // clear the former state
+        // Clear the former state.
         XULBrowserWindow.setOverLink('', null);
       }
 
@@ -645,7 +647,7 @@ const StatusField = (function() {
     }
 
     /**
-     * Patches the native function
+     * Patches the native function.
      *
      * @modified chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
      */
@@ -657,23 +659,23 @@ const StatusField = (function() {
         return;
       }
 
-      // WORKAROUND: sometimes |setOverLink| is called on mousemove event (e.g.
-      // on history/bookmark sidebar), so we discard redundant callings
+      // WORKAROUND: Sometimes |setOverLink| is called on mousemove event (e.g.
+      // on history/bookmark sidebar), so we discard redundant callings.
       if (mLastOverLinkURL === url) {
         return;
       }
 
       mLastOverLinkURL = url;
 
-      // clear the message to hide it after the cursor leaves
+      // Clear the message to hide it after the cursor leaves.
       MessageHandler.showMessage('');
 
       Task.spawn(function*() {
-        // |newURL| can be updated with its visited date
+        // |newURL| can be updated with its visited date.
         let {linkState, newURL} = yield examineLinkURL(url, anchorElt);
 
-        // this task is useless any more since it was not completed while over
-        // link and a new task has raised on another over link
+        // This task is useless any more since it was not completed while over
+        // link and a new task has raised on another over link.
         if (mLastOverLinkURL !== url) {
           return;
         }
@@ -692,23 +694,23 @@ const StatusField = (function() {
           }
         }
 
-        // disable the delayed showing while over link
+        // Disable the delayed showing while over link.
         this.hideOverLinkImmediately = true;
 
-        // @note use |call| for the updated |newURL|
+        // @note Use |call| for the updated |newURL|.
         $setOverLink.call(this, newURL, anchorElt);
 
-        // restore the delayed showing
+        // Restore the delayed showing.
         this.hideOverLinkImmediately = false;
 
-      // make |this| to refer to |window.XULBrowserWindow|
+      // Make |this| to refer to |window.XULBrowserWindow|.
       }.bind(this)).
       then(null, Cu.reportError);
     };
 
     /**
      * Gets the bookmarked or visited state of a link URL, and update the URL
-     * with the visited date
+     * with the visited date.
      *
      * @param aURL {string}
      * @param aAnchorElt {Element}
@@ -717,7 +719,7 @@ const StatusField = (function() {
      *     newURL: {string}
      *     linkState: {string}
      *
-     * @note called from a task in |ucjsUI_StatusField_setOverLink|
+     * @note Called from a task in |ucjsUI_StatusField_setOverLink|.
      */
     function examineLinkURL(aURL, aAnchorElt) {
       return Task.spawn(function*() {
@@ -730,19 +732,19 @@ const StatusField = (function() {
 
         // |aURL| that is passed to the native function |setOverLink| may be
         // a processed URL for UI, so we query the Places DB with the raw URL
-        // of an anchor element to fetch the proper result
-        // @note |Element.href| will always return the absolute path
+        // of an anchor element to fetch the proper result.
+        // @note |Element.href| will always return the absolute path.
         let rawURL = aAnchorElt && aAnchorElt.href;
 
-        // get a URL sring of an SVGAElement
+        // Get a URL sring of an SVGAElement.
         if (rawURL && rawURL.baseVal) {
-          // @note |baseVal| may be a relative path
+          // @note |baseVal| may be a relative path.
           rawURL = resolveURL(rawURL.baseVal, aAnchorElt.baseURI);
         }
 
-        // use the cooked URL if a raw URL cannot be retrieved
-        // TODO: ensure an absolute |aURL|. I'm not sure whether an absolute
-        // URL is always passed to |setOverLink| in Fx native processing
+        // Use the cooked URL if a raw URL cannot be retrieved.
+        // TODO: Ensure an absolute |aURL|. I'm not sure whether an absolute
+        // URL is always passed to |setOverLink| in Fx native processing.
         if (!rawURL) {
           rawURL = aURL;
         }
@@ -750,22 +752,22 @@ const StatusField = (function() {
         let newURL = aURL;
         let linkState = 'unknown';
 
-        // visited check
+        // Visited check.
         let visitedDate = yield getVisitedDate(rawURL);
 
         if (visitedDate) {
-          // convert microseconds into milliseconds
+          // Convert microseconds into milliseconds.
           let time = (new Date(visitedDate / 1000)).
             toLocaleFormat(kTimeFormat);
 
-          // update the URL with the visited date
+          // Update the URL with the visited date.
           newURL = kLinkFormat.
             replace('%url%', newURL).replace('%time%', time);
 
           linkState = 'visited';
         }
 
-        // bookmarked check
+        // Bookmarked check.
         let bookmarked = yield checkBookmarked(rawURL);
 
         if (bookmarked) {
@@ -780,8 +782,8 @@ const StatusField = (function() {
     }
 
     function getVisitedDate(aURL) {
-      // don't query a URL which cannot be recorded about its visit date in the
-      // places DB
+      // Don't query a URL which cannot be recorded about its visit date in the
+      // places DB.
       if (!/^(?:https?|ftp|file):/.test(aURL)) {
         return Promise.resolve(null);
       }
@@ -800,7 +802,7 @@ const StatusField = (function() {
         params: {'url': aURL},
         columns: ['visit_date']
       }).
-      // resolved with the date or null
+      // Resolved with the date or null.
       // @note we ordered a single row
       then((aRows) => aRows ? aRows[0].visit_date : null);
     }
@@ -819,12 +821,12 @@ const StatusField = (function() {
         params: {'url': aURL},
         columns: ['id']
       }).
-      // resolved with bookmarked or not
+      // Resolved with bookmarked or not
       then((aRows) => !!aRows);
     }
 
     /**
-     * Patches the native function
+     * Patches the native function.
      *
      * @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
      */
@@ -832,7 +834,7 @@ const StatusField = (function() {
 
     XULBrowserWindow.updateStatusField =
     function ucjsUI_StatusField_updateStatusField() {
-      // suppress the others while a message is shown
+      // Suppress the others while a message is shown.
       if (MessageHandler.hasMessage()) {
         return;
       }
@@ -841,7 +843,7 @@ const StatusField = (function() {
     };
 
     /**
-     * Register the appearance
+     * Register the appearance.
      */
     registerCSS();
 

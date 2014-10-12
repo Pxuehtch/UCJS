@@ -75,7 +75,7 @@ const kUI = {
 };
 
 /**
- * Preset list
+ * Preset list.
  *
  * @key label {string}
  *   A display name for menuitem.
@@ -128,8 +128,8 @@ const kPreset = [
 
       function updateLabel(text) {
         if (menuitem) {
-          // @note we can't touch the 'label' property since |command| is
-          // called before |menuitem| is appended to the DOM tree
+          // @note We can't touch the 'label' property since |command| is
+          // called before |menuitem| is appended to the DOM tree.
           let label = menuitem.getAttribute('label');
 
           $E(menuitem, {
@@ -138,7 +138,7 @@ const kPreset = [
         }
       }
 
-      // do not request a URL with parameters for security
+      // Do not request a URL with parameters for security.
       if (/[?#].*$/.test(data)) {
         updateLabel('注意：パラメータ付 URL');
         return;
@@ -187,20 +187,20 @@ const kPreset = [
 ];
 
 /**
- * Handler of fixing up an alias with the data
+ * Handler of fixing up an alias with the data.
  *
  * @return {hash}
  *   @key create {function}
  *
  * [aliases]
- * %RAW% : data itself
- * %ENC% : with URI encoded
- * %SCHEMELESS%, %sl% : without the URL scheme
- * %PARAMLESS%, %pl% : without the URL parameter
+ * %RAW% : The data itself.
+ * %ENC% : With URI encoded.
+ * %SCHEMELESS%, %sl% : Without the URL scheme.
+ * %PARAMLESS%, %pl% : Without the URL parameter.
  *
- * @note aliases can be combined by '|';
- * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
- * encoded (the multiple aliases is applied in the order of settings)
+ * @note Aliases can be combined by '|';
+ * e.g. %SCHEMELESS|ENC% : A data, which is trimmed the scheme and then URI
+ * encoded (the multiple aliases is applied in the order of settings).
  */
 const AliasFixup = (function() {
   const kAliasSplitter = '|';
@@ -373,7 +373,7 @@ function testExtension(aExtensions, aURL) {
   }
 
   // Case: http://www.example.com/path/file1.ext?key=file2.ext
-  // Examines file2.ext, and then file1.ext
+  // Examines 'file2.ext', and then 'file1.ext'.
   return targets.some((item) => aExtensions.indexOf(item) > -1);
 }
 
@@ -428,7 +428,7 @@ function setAttributeForCommand(aNode, aURL) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 SendTo_init();
 

@@ -39,17 +39,18 @@ function log(aMsg) {
 }
 
 /**
- * List of items
+ * List of items.
  *
  * @param category {string}
- *   @note set a unique string to distinguish from other items for internal
- *   using
- *   @note used as the label of a button
+ *   A category name.
+ *   @note Set a unique string to distinguish from other items for internal
+ *   using.
+ *   @note Used as the label of a button.
  * @param description {string}
- *   @note used as the tooltip of a button
+ *   @note Used as the tooltip of a button.
  * @param condition {string}
- *   XPath condition for filtering
- *   @note applied to items of listview; |div.message|
+ *   XPath condition for filtering.
+ *   @note applied to items of listview |div.message|.
  */
 const kItemList = [
   {
@@ -68,7 +69,7 @@ const kID = {
 };
 
 /**
- * Fx native UI elements
+ * Fx native UI elements.
  */
 const UI = {
   get outputContainer() {
@@ -81,9 +82,9 @@ const UI = {
 };
 
 /**
- * List of the categories being filtered
+ * List of the categories being filtered.
  *
- * @note initialized in |onCommand()|
+ * @note Initialized in |onCommand()|.
  */
 let FilteredCategory = {};
 
@@ -94,10 +95,10 @@ function ListFilter_init() {
 }
 
 function setStyleSheet() {
-  // CSS for hiding of rows for each category
+  // CSS for hiding of rows for each category.
   let css =
-    kItemList.map(({category}) => '.' + kID.filteredBy + category).
-    join(',') + '{display:none;}';
+    kItemList.map(({category}) => '.' + kID.filteredBy + category).join(',') + 
+    '{display:none;}';
 
   setCSS(css);
 }
@@ -105,10 +106,10 @@ function setStyleSheet() {
 function makeUI() {
   let clearButton = UI.clearButton;
 
-  // insert tab indexes of our buttons before the clear button
-  // TODO: the clear button has the last index in the console window on the
-  // current version of Fx. so, if a new index has been appended after the
-  // clear button in the future, we would need to re-index it
+  // Insert tab indexes of our buttons before the clear button.
+  // TODO: The clear button has the last index in the console window on the
+  // current version of Fx. So if a new index has been appended after the
+  // clear button in the future, we would need to re-index it.
   // @see chrome://browser/content/devtools/webconsole.xul::tabindex
   let lastTabIndex = clearButton.tabIndex;
 
@@ -159,7 +160,7 @@ function setObserver() {
 }
 
 /**
- * Event listener of a button command
+ * Event listener of a button command.
  */
 function onCommand(aEvent) {
   aEvent.stopPropagation();
@@ -193,10 +194,11 @@ function onCommand(aEvent) {
 }
 
 /**
- * Observer of new messages added
+ * Observer of new messages added.
  *
  * !!! WARNING !!!
- * use |logOnMessageAdded| to log in this observer
+ * Use |logOnMessageAdded| to log in this observer for avoiding recursive
+ * outputs.
  * !!! WARNING !!!
  */
 function onMessageAdded(aEvent, aMessageNodes) {
@@ -220,10 +222,10 @@ function onMessageAdded(aEvent, aMessageNodes) {
 }
 
 function logOnMessageAdded(aMessageNode, aOutput) {
-  // TODO: ensure a unique id
+  // TODO: Ensure making a unique id.
   const kLogMark = '(log in onMessageAdded)';
 
-  // prevent recursion with the browser console
+  // Prevent recursion with the browser console.
   if (aMessageNode.textContent.contains(kLogMark)) {
     return;
   }
@@ -232,7 +234,7 @@ function logOnMessageAdded(aMessageNode, aOutput) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 ListFilter_init();
 

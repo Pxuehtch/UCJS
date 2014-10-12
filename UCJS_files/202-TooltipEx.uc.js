@@ -45,7 +45,7 @@ const kPref = {
    *
    * @value {integer} [>0]
    *
-   * @note 'max-width' of a text container is set by 'em'.
+   * @note 'max-width' of a text container is set to this value by 'em'.
    */
   maxLineLength: 40,
 
@@ -53,6 +53,8 @@ const kPref = {
    * Number of lines in the visible portion of a long text being cropped.
    *
    * @value {integer} [>0]
+   *
+   * @note Applied to a long URL with 'javascript:' or 'data:' scheme.
    */
   visibleLinesWhenCropped: 2
 };
@@ -65,13 +67,12 @@ const kPref = {
  * @key accent {CSS}
  *   Styles for accent portions.
  *   @note Applied to;
- *     '<tag>'
- *     'description-attribute='
- *     'URL-attribute=scheme:'
+ *   - '<tag>'
+ *   - 'description-attribute='
+ *   - 'URL-attribute=scheme:'
  * @key crop {CSS}
  *   Styles for ellipsis mark of a cropped text.
- *   @note Only a long URL with 'javascript:' or 'data:' scheme will be
- *   cropped.
+ *   @note Applied to a long URL with 'javascript:' or 'data:' scheme.
  */
 const kStyle = {
   item: 'font:1em/1.2 monospace;letter-spacing:.1em;',
@@ -80,7 +81,7 @@ const kStyle = {
 };
 
 /**
- * Format in tip items
+ * Format in tip items.
  */
 const kTipFormat = {
   tag: '<%tag%>',
@@ -89,7 +90,7 @@ const kTipFormat = {
 };
 
 /**
- * Attribute names for the informations of an element
+ * Attribute names for the informations of an element.
  *
  * @key descriptions {string[]}
  * @key URLs {string[]}
@@ -114,14 +115,14 @@ const kID = {
 };
 
 /**
- * Target node handler
+ * Target node handler.
  *
- * TODO: ensure to uninitialize the handler
- * WORKAROUND: makes many opportunity of uninitializing; when switching the
- * current page for now
+ * TODO: Ensure uninitializing of the handler.
+ * WORKAROUND: Makes many opportunity of uninitializing; when switching the
+ * current page for now.
  * @see |TooltipPanel::init()|
  *
- * XXX: I don't want to store a reference to the DOM element
+ * XXX: I don't want to store a reference to the DOM element.
  */
 const TargetNode = (function() {
   let mTargetNode;
@@ -131,13 +132,13 @@ const TargetNode = (function() {
     mTargetNode = aNode;
     mTitleStore = new Map();
 
-    // disable the default tooltip
+    // Disable the default tooltip.
     storeTitles();
   }
 
   function uninit() {
-    // enable the default tooltip
-    // WORKAROUND: don't access to objects being unloaded unexpectedly
+    // Enable the default tooltip.
+    // WORKAROUND: Don't access to objects being unloaded unexpectedly.
     if (checkAlive(mTargetNode)) {
       restoreTitles();
     }
@@ -151,7 +152,7 @@ const TargetNode = (function() {
   }
 
   function storeTitles() {
-    // @note the initial node may be a text node
+    // @note The initial node may be a text node.
     let node = mTargetNode;
 
     while (node) {
@@ -176,13 +177,13 @@ const TargetNode = (function() {
   }
 
   /**
-   * Checks whether a node is alive or not
+   * Checks whether a node is alive or not.
    *
    * @param aNode {Node}
    * @return {boolean}
    *
-   * TODO: this is a workaround for checking a dead object. consider a reliable
-   * method instead
+   * TODO: This is a workaround for checking a dead object. Make a reliable
+   * method instead.
    */
   function checkAlive(aNode) {
     try {
@@ -201,30 +202,30 @@ const TargetNode = (function() {
 })();
 
 /**
- * Tooltip panel handler
+ * Tooltip panel handler.
  */
 const TooltipPanel = (function() {
-  // tooltip <panel>
+  // Tooltip <panel>.
   let mPanel;
 
-  // container <box> for tip items data
+  // Container <box> for tip items data.
   let mBox;
 
   function init() {
-    // create the tooltip base and observe its closing
+    // Create the tooltip base and observe its closing.
     addEvent(create(), 'popuphiding', handleEvent, false);
 
-    // observe the mouse moving to show the tooltip
+    // Observe the mouse moving to show the tooltip.
     addEvent(gBrowser.mPanelContainer, 'mousemove', handleEvent, false);
 
-    // hide the tooltip when the current page is switched
+    // Hide the tooltip when the page is switched.
     addEvent(gBrowser, 'select', handleEvent, false);
     addEvent(gBrowser, 'pagehide', handleEvent, false);
   }
 
   function handleEvent(aEvent) {
     switch (aEvent.type) {
-      // display the tooltip
+      // Display the tooltip.
       case 'mousemove':
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
@@ -233,18 +234,19 @@ const TooltipPanel = (function() {
         }
         break;
 
-      // cleanup when the current page is switched
+      // Clean up when the page is switched.
       case 'select':
       case 'pagehide':
+        // @note |popuphiding| will be dispatched.
         hide();
         break;
 
-      // cleanup when a tooltip closes
+      // Clean up when a tooltip closes.
       case 'popuphiding':
         clear();
         break;
 
-      // command of the context menu of a tooltip
+      // Command of the context menu of a tooltip.
       case 'command':
         copyTipInfo();
         break;
@@ -252,8 +254,8 @@ const TooltipPanel = (function() {
   }
 
   function create() {
-    // @note set 'white-space:pre;' that suppresses text wrapping for our own
-    // control of it
+    // @note Set 'white-space:pre;' that suppresses text wrapping for our own
+    // control of it.
     let panel = $E('panel', {
       id: kID.panel,
       style: '-moz-appearance:tooltip;white-space:pre;',
@@ -262,7 +264,7 @@ const TooltipPanel = (function() {
 
     panel.style.maxWidth = kPref.maxLineLength + 'em';
 
-    // context menu
+    // Make the context menu.
     let copymenu = $E('menuitem', {
       label: 'Copy'
     });
@@ -288,12 +290,12 @@ const TooltipPanel = (function() {
     let target = aEvent.target;
 
     if (mPanel.state === 'open') {
-      // leave the tooltip of the same target
+      // Leave the tooltip of the same target.
       if (TargetNode.equals(target)) {
         return;
       }
 
-      // close an existing tooltip of the different target and open a new one
+      // Close the existing tooltip of the different target.
       hide();
     }
     else if (mPanel.state !== 'closed') {
@@ -310,7 +312,7 @@ const TooltipPanel = (function() {
       return;
     }
 
-    // |popuphiding| will be dispatched
+    // @note |popuphiding| will be dispatched.
     mPanel.hidePopup();
   }
 
@@ -387,8 +389,7 @@ const TooltipPanel = (function() {
         let URL = unescapeURLForUI(resolveURL(value, aNode.baseURI));
         let [scheme, rest] = splitURL(URL);
 
-        // Only a long URL with 'javascript:' or 'data:' scheme will be
-        // cropped.
+        // Truncate only a long URL with 'javascript:' or 'data:' scheme.
         let doCrop = /^(?:javascript|data):/.test(scheme);
 
         data.push(makeTipData($attr(name) + scheme, rest, doCrop));
@@ -416,13 +417,13 @@ const TooltipPanel = (function() {
   }
 
   /**
-   * Make a formatted data for creating an element of tip info
+   * Make a formatted data for creating an element of tip info.
    *
    * @param aHead {string}
    * @param aRest {string}
    * @param aDoCrop {boolean}
    * @return {hash}
-   *   @note the value is passed to |createTipItem|
+   *   @note The value is passed to |createTipItem|.
    */
   function makeTipData(aHead, aRest, aDoCrop) {
     if (!aRest) {
@@ -451,8 +452,8 @@ const TooltipPanel = (function() {
     let count = 0, last = 0;
 
     for (let i = 0, l = aText.length; i < l; i++) {
-      // count characters based on width
-      // WORKAROUND: regards only printable ASCII character as one letter
+      // Count characters based on width.
+      // WORKAROUND: Regards only printable ASCII character as one letter.
       count += /[ -~]/.test(aText[i]) ? 1 : 2;
 
       if (count > maxLineLength) {
@@ -468,7 +469,7 @@ const TooltipPanel = (function() {
       };
     }
 
-    // add the last fragment of text
+    // Add the last fragment of text.
     lines.push(aText.substring(last).trim());
 
     let wrappedText = lines.join('\n');
@@ -485,7 +486,7 @@ const TooltipPanel = (function() {
   }
 
   /**
-   * Create an element of tip info
+   * Create an element of tip info.
    *
    * @param aTipData {hash}
    *   @note The value is created by |makeTipData|.
@@ -612,7 +613,7 @@ function handleAttribute(aNode, aName, aValue) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 function TooltipEx_init() {
   TooltipPanel.init();

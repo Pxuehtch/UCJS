@@ -161,7 +161,7 @@ function ScriptLoader() {
       let target = aEvent.originalTarget;
 
       if (!(target instanceof XULDocument)) {
-        // WORKAROUND: Comment out since too noisy logs.
+        // WORKAROUND: Comment out too noisy logs.
         /*
         Log.list('Not init sidebar', {
           'Loaded node': target.nodeName
@@ -328,7 +328,7 @@ function ScriptList() {
         }
 
         if (aDeeper && entry.isDirectory()) {
-          // recursively
+          // Recursively check into the descendant directory.
           scanDirectory(entry, aDeeper);
         }
         else if (entry.isFile()) {
@@ -368,8 +368,7 @@ function ScriptList() {
   }
 
   function runData(aDocument) {
-    // WORKAROUND: I want to ensure that scripts will run at the end of this
-    // loader.
+    // TODO: I want to ensure that scripts run at the end of this loader.
     setTimeout((doc) => {
       setTimeout(runJscripts, 0, doc);
       setTimeout(runOverlays, 0, doc);

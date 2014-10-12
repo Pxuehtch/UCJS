@@ -69,8 +69,8 @@ function handleEvent(aEvent) {
     case 'keyup': {
       // Update a sign if IME toggled, otherwise clear forcibly.
       //
-      // TODO: Detect a 'Caps Lock' key for opening IME. But the key can be
-      // found for closing IME ('Hiragana' in my case).
+      // TODO: Detect the <Caps Lock> key for opening IME. But the key can be
+      // found for closing IME in my case ('Hiragana' is detected).
       //
       // TODO: In Fx33, some key values are considered deprecated and warned
       // in the web console. They will be changed in Fx34 to comply with the

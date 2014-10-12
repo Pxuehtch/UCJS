@@ -16,7 +16,7 @@
  * Ctrl+Click: Go to the first or end stop of history.
  * @note A new tab will open in *foreground* by middle-button-click.
  *
- * Special usage for the back-button with a referrer.
+ * [Special usage for the back-button with a referrer.]
  * Shift+Ctrl+Click: Select a tab with the referrer URL if exists, open a tab
  * otherwise.
  * @note Does the same action by 'Click' for the back-button without backward
@@ -64,7 +64,7 @@ const kID = {
 };
 
 /**
- * UI settings
+ * UI settings.
  */
 const kUI = {
   title: {
@@ -96,7 +96,7 @@ const kUI = {
 };
 
 /**
- * Handler of a navigation button
+ * Handler of a navigation button.
  */
 const Button = {
   init: function(aButton) {
@@ -165,7 +165,7 @@ const Button = {
 };
 
 /**
- * Progress listener
+ * Progress listener.
  * @see |NaviButton_init()|
  */
 const BrowserProgressListener = {
@@ -187,12 +187,12 @@ const BrowserProgressListener = {
 };
 
 /**
- * Handler of referrer
+ * Referrer handler.
  * @require TabEx.uc.js
  */
 const Referrer = {
   get referrer() {
-    // lazy definition
+    // Lazy definition.
     delete this.referrer;
     return this.referrer =
       window.ucjsTabEx &&
@@ -212,7 +212,7 @@ const Referrer = {
 };
 
 /**
- * Handler of a tooltip panel
+ * Tooltip panel handler.
  */
 const Tooltip = {
   init: function() {
@@ -359,7 +359,7 @@ const Tooltip = {
 };
 
 /**
- * Handler of history
+ * Session history handler.
  */
 const History = {
   scan: function(aParam, aCallback) {
@@ -381,7 +381,7 @@ const History = {
 
     let {backward, referrer} = aParam;
 
-    // make a new property
+    // Make a new property.
     this.data = {
       backward: backward,
       neighbor: Entry(),
@@ -532,7 +532,8 @@ function selectOrOpen(aURL, aOption) {
   function getURL(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
 
-    // |userTypedValue| holds the URL of a document till it successfully loads
+    // @note |userTypedValue| holds the URL of a document till it successfully
+    // loads.
     return browser.userTypedValue || browser.currentURI.spec;
   }
 
@@ -553,7 +554,7 @@ function selectOrOpen(aURL, aOption) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 function NaviButton_init() {
   let back = $ID(kID.BACK_BUTTON),

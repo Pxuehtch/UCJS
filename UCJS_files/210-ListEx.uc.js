@@ -88,7 +88,7 @@ const kPref = {
    * Tooltip settings.
    *
    * maxWidth: Max numbers of characters in a line.
-   * @note 'max-width' of a text container is set by 'em'.
+   * @note 'max-width' of a text container is set to this value by 'em'.
    *
    * maxNumWrapLines: Max numbers of wrap lines of a long text.
    */
@@ -1471,7 +1471,7 @@ function formatOrderNumber(aNumber) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 function ListEx_init() {
   MainMenu.init();

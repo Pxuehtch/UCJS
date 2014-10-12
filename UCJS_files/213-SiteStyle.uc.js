@@ -39,7 +39,7 @@ function log(aMsg) {
 }
 
 /**
- * UI settings
+ * UI settings.
  */
 const kUI = {
   pageStyleSheet: {
@@ -55,10 +55,10 @@ const kUI = {
 };
 
 /**
- * List of noisy URLs in the search results of the web search engine
+ * List of noisy URLs in the search results of the web search engine.
  *
  * @value {string|regexp}
- *   @see |URLFilter| for filter rules
+ *   @see |URLFilter| for filter rules.
  *
  * @see http://d.hatena.ne.jp/edvakf/20090723/1248365807
  */
@@ -151,33 +151,33 @@ const kNoiseList = [
 ];
 
 /**
- * List of sites
+ * List of sites.
  *
  * @key name {string}
- *   displayed in the preference menu
+ *   A display name in the preference menu.
  * @key include {regexp|string}|{regexp[]|string[]}
- *   describe the URL where the commands should run
- *   @see |URLFilter| for filter rules
+ *   URL where the commands should run.
+ *   @see |URLFilter| for filter rules.
  *
- * define one or more commands;
+ * Define one or more commands;
  * ----------
  * @key quickScript {function} [optional]
- *   run the script as soon as a location changes
+ *   A function that runs as soon as a location changes.
  *   @param aDocument {Document}
  *   @return {boolean}
- *     whether |script| is applied or not after |quickScript|
+ *     Whether |script| is applied or not after |quickScript|.
  * @key script {function} [optional]
- *   run the script after the document loaded
+ *   A function that runs after the document loaded.
  *   @param aDocument {Document}
  * @key style {function} [optional]
- *   make CSS to apply to the document
+ *   A function that makes CSS to apply to the document.
  *   @param aDocument {Document}
  *   @return {CSS}
  * ----------
  *
  * @key disabled {boolean} [optional]
  *
- * @note don't add a key '_includeFilter' that is reserved for internal use
+ * @note Don't add a key '_includeFilter' that is reserved for internal use.
  * @see |PageObserver::testURL()|
  */
 const kSiteList = [
@@ -185,7 +185,7 @@ const kSiteList = [
     name: 'Google Result',
     include: '||google.tld/*q=',
     script: function(aDocument) {
-      // sanitize links
+      // Sanitize links.
       Array.forEach($S('li.g a', aDocument), (link) => {
         link.removeAttribute('onmousedown');
 
@@ -208,12 +208,12 @@ const kSiteList = [
           return;
         }
 
-        // weaken noisy item
+        // Weaken noisy item.
         if (NoisyURLFilter.test(link.href)) {
           item.classList.add('ucjs_SiteStyle_weaken');
         }
 
-        // emphasize the same host item
+        // Emphasize the same host item.
         let host = link.hostname;
 
         if (host === lastHost) {
@@ -234,19 +234,19 @@ const kSiteList = [
             return mode && RegExp('^(' + aModeList + ')$').test(mode);
           }
 
-          // the main result page or not
+          // The main result page or not.
           return !mode;
         };
       })();
 
-      // common styles
+      // Common styles.
       let css = '\
-        /* block items */\
+        /* Block items. */\
         .nrgt>tbody>tr>td,.ts>tbody>tr>td{\
           float:left!important;\
           width:auto!important;\
         }\
-        /* sub contents items */\
+        /* Sub contents items. */\
         .nrgt,.nrgt *,.r~div{\
           width:auto!important;\
           margin-top:0!important;\
@@ -257,25 +257,25 @@ const kSiteList = [
         .nrgt .l{\
           font-size:small!important;\
         }\
-        /* footer navi */\
+        /* Footer navi. */\
         #foot{\
           width:auto!important;\
           margin:0!important;\
         }';
 
-      // workaround for broken styles
-      // except for images, shopping
+      // Workaround for broken styles.
+      // Except for images, shopping.
       if (!testMode('isch|shop')) {
         css += '\
-          /* content area container */\
+          /* Content area container */\
           .col{\
             float:none!important;\
             width:auto!important;\
           }';
       }
 
-      // each item styles
-      // except for images, shopping, application, books
+      // Each item styles.
+      // Except for images, shopping, application, books.
       if (!testMode('isch|shop|app|bks')) {
         css += '\
           .ucjs_SiteStyle_sameHost cite::before{\
@@ -296,8 +296,8 @@ const kSiteList = [
           }';
       }
 
-      // multi-column
-      // except for images, shopping
+      // Multi column.
+      // Except for images, shopping.
       if (!testMode('isch|shop')) {
         css += '\
           /* hide right pane */\
@@ -330,7 +330,7 @@ const kSiteList = [
     name: 'Yahoo!JAPAN Result',
     include: '|search.yahoo.co.jp/search',
     script: function(aDocument) {
-      // sanitize links
+      // Sanitize links.
       Array.forEach($S('#contents a'), (link) => {
         link.removeAttribute('onmousedown');
 
@@ -344,7 +344,7 @@ const kSiteList = [
         }
       });
 
-      // process items
+      // Process items.
       Array.forEach($S('.w,.cmm'), (item) => {
         let link = $S1('.hd>h3>a', item);
 
@@ -352,7 +352,7 @@ const kSiteList = [
           return;
         }
 
-        // weaken a noisy item
+        // Weaken a noisy item.
         if (NoisyURLFilter.test(link.href)) {
           item.classList.add('ucjs_SiteStyle_weaken');
         }
@@ -360,7 +360,7 @@ const kSiteList = [
     },
     style: function(aDocument) {
       let css = '\
-        /* custom class */\
+        /* Custom class. */\
         .ucjs_SiteStyle_weaken h3{\
           font-size:small!important;\
         }\
@@ -382,7 +382,7 @@ const kSiteList = [
     include: '||wikipedia.org/wiki/',
     style: function(aDocument) {
       let css = '\
-        /* popup reference */\
+        /* Popup reference. */\
         .references li{\
           list-style-type:none;\
         }\
@@ -404,9 +404,9 @@ const kSiteList = [
     quickScript: function(aDocument) {
       let location = aDocument.location;
 
-      // WORKAROUND: changes a parameter key for the start time of a video page
+      // WORKAROUND: Changes a parameter key for the start time of a video page
       // that comes from 'Play in Youtube.com' of an embedded player so that we
-      // can pause at that time
+      // can pause at that time.
       if (/#at=\d+/.test(location.href)) {
         location.replace(location.href.replace('#at=', '#t='));
         return false;
@@ -414,7 +414,7 @@ const kSiteList = [
       return true;
     },
     script: function(aDocument) {
-      // exclude the playlist mode
+      // Excluding the playlist mode.
       if (!/[?&]list=/.test(aDocument.location.search)) {
         preventAutoplay(aDocument);
       }
@@ -445,22 +445,22 @@ const kSiteList = [
         }, intervalTime);
 
         /**
-         * Pauses a video in an embedded player
+         * Pauses a video in an embedded player.
          *
          * @param aDocument {HTMLDocument}
          * @return {boolean}
-         *   true if a video is paused, false otherwise
+         *   true if a video is paused, false otherwise.
          *
-         * @note using Youtube Player API
+         * @note Using Youtube Player API.
          * @see https://developers.google.com/youtube/js_api_reference
          */
         function pauseVideo(aDocument) {
           let player =
-            // new Flash in channel page
+            // New Flash in channel page.
             aDocument.getElementById('c4-player') ||
-            // old Flash in channel page / Flash in watch page
+            // Old Flash in channel page / Flash in watch page.
             aDocument.getElementById('movie_player') ||
-            // HTML5 in watch page
+            // HTML5 in watch page.
             aDocument.getElementById('watch7-video');
 
           if (player) {
@@ -468,8 +468,8 @@ const kSiteList = [
 
             if (player.getPlayerState) {
               switch (player.getPlayerState()) {
-                case 1: // playing
-                case 2: // paused
+                case 1: // Playing
+                case 2: // Paused
                   player.pauseVideo();
                   player.seekTo(getStartTime(aDocument.location.href));
                   return true;
@@ -500,26 +500,26 @@ const kSiteList = [
 ];
 
 /**
- * URL filter handler
+ * URL filter handler.
  *
  * @return {hash}
  *   @key init {function}
  *
  * [URL filter rules]
  * @value {regexp|string}|{regexp[]|string[]}
- *   {regexp} - used as-is
- *   {string} - usually a partial match
- *     @note special symbols are available;
- *     1.the leading '||' -> ^https?:\/\/[\w-.]*?
- *                        -> ^ (if URL scheme follows after)
- *     2.the leading '|'  -> ^https?:\/\/(?:www\d*\.)?
- *                        -> ^ (if URL scheme follows after)
- *     3.the wildcard '*' -> .+?
- *     4.'.tld' will match any top level domain
+ *   {regexp} Used as-is.
+ *   {string} Usually a partial match.
+ *     @note Special symbols are available;
+ *     1.The leading '||' -> ^https?:\/\/[\w-.]*?
+ *                        -> ^ (If URL scheme follows after.)
+ *     2.The leading '|'  -> ^https?:\/\/(?:www\d*\.)?
+ *                        -> ^ (If URL scheme follows after.)
+ *     3.The wildcard '*' -> .+?
+ *     4.'.tld' will match any top level domain.
  */
 const URLFilter = (function() {
   /**
-   * Create URL filter instance
+   * Create URL filter instance.
    *
    * @param aList {array}
    * @return {hash}
@@ -630,21 +630,21 @@ const URLFilter = (function() {
 })();
 
 /**
- * Page observer handler
+ * Page observer handler.
  *
  * @return {hash}
  *   @key init {function}
  *
- * TODO: surely detect when the document is loaded
- * WORKAROUND: applies a script when the complete request URL equals the
- * document URL
+ * TODO: Detect surely when the document is loaded.
+ * WORKAROUND: Applies a script when the complete request URL equals the
+ * document URL.
  *
- * TODO: surely detect when a request in the same document is loaded (e.g.
- * a next page from a link of the navigation bar of Google result)
- * WORKAROUND: observes |about:document-onload-blocker| and delays execution
- * of a command
+ * TODO: Detect surely when a request in the same document is loaded (e.g.
+ * a next page from a link of the navigation bar of Google result).
+ * WORKAROUND: Observes |about:document-onload-blocker| and delays execution
+ * of a command.
  *
- * TODO: surely detect the result page from the Google top page
+ * TODO: Detect surely the result page from the Google top page.
  */
 const PageObserver = (function() {
   const {
@@ -685,22 +685,22 @@ const PageObserver = (function() {
         return;
       }
 
-      // 1. apply the stylesheet
+      // 1. Apply the stylesheet.
       if (site.style) {
         let css = site.style(aBrowser.contentDocument);
 
         PageCSS.set(aBrowser.contentDocument, css);
       }
 
-      // 2. run the quick script before the document loading
+      // 2. Run the quick script before the document loading.
       if (site.quickScript) {
         if (!site.quickScript(aBrowser.contentDocument)) {
-          // suppress the following script
+          // Suppress the following script.
           return;
         }
       }
 
-      // 3. wait the document loads and run the script
+      // 3. Wait the document loads and run the script.
       if (site.script) {
         mBrowserState.set(aBrowser, {
           URL: URL,
@@ -725,7 +725,7 @@ const PageObserver = (function() {
       }
 
       if (aFlags & STATE_STOP) {
-        // fix up a cached page URL (wyciwyg:)
+        // Fix up a cached page URL (wyciwyg:).
         if (fixupURL(aRequest.name) === URL ||
             (aFlags & STATE_IS_WINDOW &&
              aWebProgress.DOMWindow === aBrowser.contentWindow) ||
@@ -751,13 +751,13 @@ const PageObserver = (function() {
   };
 
   /**
-   * Checks whether a document is alive or not
+   * Checks whether a document is alive or not.
    *
    * @param aDocument {Document}
    * @return {boolean}
    *
-   * TODO: this is a workaround for checking a dead object. consider a reliable
-   * method instead
+   * TODO: This is a workaround for checking a dead object. Make a reliable
+   * method instead.
    */
   function checkAlive(aDocument) {
     try {
@@ -788,8 +788,10 @@ const PageObserver = (function() {
     kSiteList.some((item) => {
       if (!item.disabled && testURL(item, aURL)) {
         site = item;
+
         return true;
       }
+
       return false;
     });
 
@@ -797,9 +799,9 @@ const PageObserver = (function() {
   }
 
   function testURL(aSite, aURL) {
-    // set the URL filter for inclusion inside each item
-    // TODO: avoid adding a hidden key that could cause an unexpected conflict
-    // in a constant |kSiteList|
+    // Set the URL filter for inclusion inside each item.
+    // TODO: Avoid adding a hidden key that could cause an unexpected conflict
+    // in a constant |kSiteList|.
     if (!aSite._includeFilter) {
       aSite._includeFilter = URLFilter.init(aSite.include);
     }
@@ -817,7 +819,7 @@ const PageObserver = (function() {
 })();
 
 /**
- * Noisy URL filter
+ * Noisy URL filter.
  *
  * @return {hash}
  *   @key test {function}
@@ -831,7 +833,7 @@ const NoisyURLFilter = (function() {
 })();
 
 /**
- * Page CSS handler
+ * Page CSS handler.
  *
  * @return {hash}
  *   @key set {function}
@@ -840,6 +842,7 @@ const PageCSS = (function() {
   function set(aDocument, aCSS) {
     if (/^(?:complete|interactive)$/.test(aDocument.readyState)) {
       setCSS(aDocument, aCSS);
+
       return;
     }
 
@@ -871,7 +874,7 @@ const PageCSS = (function() {
 })();
 
 /**
- * Preference menu handler
+ * Preference menu handler.
  *
  * @return {hash}
  *   @key init {function}
@@ -931,7 +934,7 @@ const PrefMenu = (function() {
 })();
 
 /**
- * Entry point
+ * Entry point.
  */
 function SiteStyle_init() {
   PageObserver.init();

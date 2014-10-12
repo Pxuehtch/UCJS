@@ -45,44 +45,44 @@ function log(aMsg) {
  * Identifiers
  */
 const kID = {
-  // Native
+  // Native ID.
   NAVIGATION_TOOLBAR: 'nav-bar',
   PANELUI_BUTTON: 'PanelUI-button',
 
-  // Custom
+  // Custom ID.
   CONTAINER: 'ucjs_PrefButton_container',
   ITEM: 'ucjs_PrefButton_item'
 };
 
 /**
- * List of buttons
+ * List of buttons.
  *
  * @param tabMode {boolean} [optional]
- *   true: updates the button state whenever a tab is selected
- *   set true if |command| should work only on the selected tab
+ *   true: Updates the button state whenever a tab is selected.
+ *   Set true if |command| should work only on the selected tab.
  * @param type {string}
- *   'button': a normal button
- *   'checkbox': a toggle button with on/off
+ *   'button': A normal button.
+ *   'checkbox': A toggle button with On/Off.
  * @param label {string}
  * @param image {URL string} [optional]
- *   the image instead of the label text of a button
+ *   The image instead of the label text of a button.
  * @param description {string}
- *   the text of tooltip
- * @param checked {boolean} [optional]
- *   necessary for 'checkbox' type button
- *   returns on or off state of this function
+ *   @note Used as a tooltip text.
+ * @param checked {getter} [optional]
+ *   @return {boolean}
+ *   Set a getter that returns On/Off state for 'checkbox' type button.
  * @param command {function}
  * @param disabled {boolean} [optional]
  */
 const kItemList = [
   {
-    // switch CSS for each tab
+    // Switch CSS for each tab.
     tabMode: true,
     type: 'checkbox',
     label: 'CSS',
     description: 'Switch CSS (Tab)',
 
-    // gets the content viewer for the current content document
+    // Gets the content viewer for the current content document.
     // @see chrome://browser/content/tabbrowser.xml::markupDocumentViewer
     get documentViewer() {
       return gBrowser.markupDocumentViewer;
@@ -97,15 +97,15 @@ const kItemList = [
     }
   },
   {
-    // switch the referrer header sending
+    // Switch the referrer header sending.
     type: 'checkbox',
     label: 'Ref.',
     description: 'Switch Referrer sending',
 
     // @pref
-    // 0: never send the referrer header
-    // 1: send when clicking on a link
-    // 2: send when clicking on a link or loading an image [default]
+    // 0: Never send the referrer header.
+    // 1: Send when clicking on a link.
+    // 2: Send when clicking on a link or loading an image [default].
     // @see http://kb.mozillazine.org/Network.http.sendRefererHeader
     pref: {
       key: 'network.http.sendRefererHeader',
@@ -124,19 +124,20 @@ const kItemList = [
 
     command: function() {
       let {key, value} = this.pref;
+
       setPref(key, this.checked ? value.never : value.linkOrImage);
     }
   },
   {
-    // switch the image animation
+    // Switch the image animation.
     type: 'checkbox',
     label: 'GIF',
     description: 'Switch GIF animation',
 
     // @pref
-    // 'none': prevent image animation
-    // 'once': let the image animate once
-    // 'normal': allow it to play over and over [default]
+    // 'none': Prevent image animation.
+    // 'once': Let the image animate once.
+    // 'normal': Allow it to play over and over [default].
     // @see http://kb.mozillazine.org/Animated_images
     pref: {
       key: 'image.animation_mode',
@@ -158,7 +159,7 @@ const kItemList = [
 
       setPref(key, this.checked ? value.none : value.normal);
 
-      // immediately apply the new mode in the animate-able image document
+      // Immediately apply the new mode in the animate-able image document.
       if (gBrowser.contentDocument instanceof ImageDocument &&
           /^image\/(?:gif|png)$/.test(gBrowser.contentDocument.contentType)) {
         // @see chrome://browser/content/browser.js::BrowserReload
@@ -167,8 +168,8 @@ const kItemList = [
     }
   },
   {
-    // switch Java
-    // @note I can't test this block anymore since I uninstalled Java plugin
+    // Switch Java.
+    // @note I can't test this block anymore since I uninstalled Java plugin.
     type: 'checkbox',
     label: 'Java',
     description: 'Switch Java',
@@ -192,7 +193,7 @@ const kItemList = [
         }
       }
 
-      // lazy definition
+      // Lazy definition.
       delete this.plugin;
       return this.plugin = plugin;
     },
@@ -208,8 +209,8 @@ const kItemList = [
     }
   },
   {
-    // open the sanitize dialog
-    // @note disabled since I hardly use this
+    // Open the sanitize dialog.
+    // @note Disabled since I hardly use this.
     disabled: true,
     type: 'button',
     label: 'CLR',
@@ -223,7 +224,7 @@ const kItemList = [
 ];
 
 /**
- * Progress listener
+ * Progress listener.
  */
 const BrowserProgressListener = {
   onStateChange: function(aWebProgress, aRequest, aFlags, aStatus) {
@@ -252,6 +253,7 @@ function PrefButton_init() {
   }, false);
 
   gBrowser.addProgressListener(BrowserProgressListener);
+
   addEvent(window, 'unload', () => {
     gBrowser.removeProgressListener(BrowserProgressListener);
   }, false);
@@ -269,7 +271,7 @@ function updateState(aOption) {
 
     switch (item.type) {
       case 'button':
-        // nothing to do
+        // Nothing to do.
         break;
 
       case 'checkbox':
@@ -322,8 +324,8 @@ function makeButtons() {
 }
 
 function setStyleSheet() {
-  // @note the styles are adjusted to the themes of my Firefox and OS
-  // @note the positioning assumes that the nav-bar's height is 24px
+  // @note The styles are adjusted to the themes of my Firefox and OS.
+  // @note The positioning assumes that the nav-bar's height is 24px.
   let css = '\
     #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\
@@ -363,7 +365,7 @@ function setStyleSheet() {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 PrefButton_init();
 

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name AppLauncher.uc.js
-// @description Application launcher
+// @description Application launcher.
 // @include main
 // ==/UserScript==
 
@@ -17,9 +17,13 @@
 
 /**
  * Main function
- * @param Util {hash} utility functions
- * @param window {ChromeWindow} the global window object
- * @param undefined {undefined} the |undefined| constant
+ *
+ * @param Util {hash}
+ *   Utility functions.
+ * @param window {ChromeWindow}
+ *   The global window object.
+ * @param undefined {undefined}
+ *   The |undefined| constant.
  */
 (function(Util, window, undefined) {
 
@@ -28,7 +32,7 @@
 
 
 /**
- * Import from |Util|
+ * Import from |Util|.
  */
 const {
   checkApp,
@@ -45,41 +49,41 @@ function $E(aTag, aAttribute) {
 }
 
 /**
- * Application list
+ * Application list.
  *
- * @note don't add a key '_index' that is reserved for internal use
+ * @note Don't add a key '_index' that is reserved for internal use.
  * @see |initAppList()|
  */
 const kAppList = [
   {
-    // display name
+    // A display name.
     name: 'IE',
 
-    // type for available actions
+    // A type for available actions.
     // @see |kTypeAction|
     type: 'browse',
 
-    // executable file path
-    // @note some alias of the special folder is available
+    // An executable file path.
+    // @note Some alias of the special folder is available.
     // @see |kSpecialFolderAliases|
-    //   %ProgF%: program files folder
-    //   %LocalAppData%: local application data folder
+    //   %ProgF%: Program files folder.
+    //   %LocalAppData%: Local application data folder.
     path: '%ProgF%/Internet Explorer/iexplore.exe',
 
-    // [optional] commandline arguments
-    // @note %URL% is replaced with the proper URL of each action
-    // @note if absent or empty array, it equals to <args: ['%URL%']>
-    // @note if launched as tool, an argument that contains %URL% is ignored
+    // [optional] Commandline arguments.
+    // @note %URL% is replaced with the proper URL of each action.
+    // @note If absent or empty array, it equals to <args: ['%URL%']>.
+    // @note If launched as tool, an argument that contains %URL% is ignored.
     args: ['-new', '%URL%'],
 
-    // [optional] this item is disabled
+    // [optional] This item is disabled.
     disabled: true
   },
   {
     name: 'WMP',
 
-    // @note if <type> is 'file', you should set <extensions> to describe the
-    // file extensions of a link URL that is passed to the application
+    // @note If <type> is 'file', you should also set <extensions> to describe
+    // the file extensions of a link URL that is passed to the application.
     type: 'file',
     extensions: ['asx', 'wax', 'wvx'],
 
@@ -151,9 +155,9 @@ const kAppList = [
 ];
 
 /**
- * Actions for each types
+ * Actions for each types.
  *
- * @note displayed in the declared order
+ * @note Displayed in the declared order.
  */
 const kTypeAction = [
   {
@@ -229,19 +233,19 @@ const kTypeAction = [
 ];
 
 /**
- * File extensions for the action on a link
+ * File extensions for the action on a link.
  */
 const kLinkExtension = {
-  // for <openFile>
+  // For <openFile>.
   // @note *SET NO VALUES* they will be automatically created with
-  // |kAppList.extensions|
+  // |kAppList.extensions|.
   // @see |FileExtUtil::updateFileExt()|
   file:  [],
-  // for <viewLinkSource>
+  // For <viewLinkSource>.
   text:  ['css', 'js', 'txt', 'xml'],
-  // for <viewLinkImage>
+  // For <viewLinkImage>.
   image: ['bmp', 'gif', 'jpg', 'png'],
-  // for <openLinkMedia>
+  // For <openLinkMedia>.
   media: ['asf', 'asx', 'avi', 'flv', 'mid',
           'mov', 'mp3', 'mp4', 'mpg', 'ogg',
           'ogv', 'pls', 'ra', 'ram', 'rm',
@@ -250,7 +254,7 @@ const kLinkExtension = {
 };
 
 /**
- * UI settings
+ * UI settings.
  */
 const kUI = {
   mainMenu: {
@@ -326,7 +330,7 @@ const kDataKey = {
 };
 
 /**
- * Utility for the file extensions
+ * Utility for the file extensions.
  */
 const FileExtUtil = {
   makeFileAction: function(aAction, aExt) {
@@ -338,10 +342,10 @@ const FileExtUtil = {
   },
 
   updateFileExt: function(aExtArray) {
-    // add new extensions
+    // Add new extensions.
     let fileExts = kLinkExtension['file'].concat(aExtArray);
 
-    // update array with the unique extensions
+    // Update array with the unique extensions.
     kLinkExtension['file'] =
     fileExts.filter((ext, i, array) => array.indexOf(ext) === i);
   },
@@ -369,26 +373,28 @@ function AppLauncher_init() {
 }
 
 function initAppList() {
-  // filter valid list items
+  // Filter valid list items.
   let apps = kAppList.filter((app) => {
     let {name, type, extensions, path, disabled} = app;
 
-    // 1.required properties
+    // 1.Required properties.
     if (!disabled && name && type && path) {
-      // 2.valid action type
+      // 2.Valid action type.
       if (kTypeAction.some((item) => item.type === type)) {
-        // 3.required 'extentions' property if type is 'file'
+        // 3.Required 'extentions' property if type is 'file'.
         if (type !== 'file' || (extensions && extensions.length)) {
-          // 4.valid application
+          // 4.Valid application.
           if (checkApp(app)) {
             if (type === 'file') {
               FileExtUtil.updateFileExt(extensions);
             }
+
             return true;
           }
         }
       }
     }
+
     return false;
   });
 
@@ -396,7 +402,7 @@ function initAppList() {
     return null;
   }
 
-  // sort items in type actions order and then alphabetical order
+  // Sort items in type actions order and then alphabetical order.
   let order = kTypeAction.map(({type}) => type);
 
   apps.sort((a, b) =>
@@ -404,9 +410,9 @@ function initAppList() {
     a.name.localeCompare(b.name)
   );
 
-  // set the array index inside each item
-  // TODO: avoid adding a hidden key that could cause an unexpected conflict
-  // in a constant |kAppList|
+  // Set the array index inside each item.
+  // TODO: Avoid adding a hidden key that could cause an unexpected conflict
+  // in a constant |kAppList|.
   apps.forEach((app, i) => app._index = i);
 
   return apps;
@@ -515,7 +521,7 @@ function makeActionItems(aPopup, aAppList) {
     });
 
     if (type === 'file') {
-      // make actions with extensions
+      // Make actions with extensions.
       actions = actions.reduce((a, b) => {
         return a.concat(app.extensions.map((ext) => {
           return FileExtUtil.makeFileAction(b, ext);
@@ -593,7 +599,7 @@ function addSeparator(aPopup, aID) {
 }
 
 function doBrowse(aPopup) {
-  // XPath for a <menuitem> with avalable actions
+  // XPath for a <menuitem> with avalable actions.
   let availableItem = (actions) => {
     let key = '@' + kDataKey.action + '="';
 
@@ -601,12 +607,12 @@ function doBrowse(aPopup) {
   };
 
   // XPath for a useless <menuseparator>;
-  // 1.it is the first visible item in the menu
-  // 2.it is the last visible item in the menu
-  // 3.the next visible item is a menu separator
+  // 1.It is the first visible item in the menu.
+  // 2.It is the last visible item in the menu.
+  // 3.The next visible item is a menu separator.
   let uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
 
-  // hide all menu items and show the others
+  // Hide all menu items and show the others.
   Array.forEach(aPopup.childNodes, (node) => {
     let hidden = node.localName === 'menuitem';
 
@@ -615,7 +621,7 @@ function doBrowse(aPopup) {
     }
   });
 
-  // show the menu items with available actions
+  // Show the menu items with available actions.
   $X(availableItem(getAvailableActions()), aPopup, {
     toArray: true
   }).
@@ -623,7 +629,7 @@ function doBrowse(aPopup) {
     node.hidden = false;
   });
 
-  // hide the useless menu separators
+  // Hide the useless menu separators.
   $X(uselessSeparator, aPopup, {
     toArray: true
   }).
@@ -842,7 +848,7 @@ function handleAttribute(aNode, aName, aValue) {
 }
 
 /**
- * Entry Point
+ * Entry Point.
  */
 AppLauncher_init();
 
@@ -851,8 +857,10 @@ AppLauncher_init();
 
 
 /**
- * Argument of the main function
- * @return Util {hash} utility functions
+ * Argument of the main function.
+ *
+ * @return Util {hash}
+ *   Utility functions
  */
 ((function(window, undefined) {
 
@@ -861,22 +869,22 @@ AppLauncher_init();
 
 
 /**
- * Aliases for local special folders
+ * Aliases for local special folders.
  * @see http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h
  */
 const kSpecialFolderAliases = [
-  // Windows "Program files" folder
+  // Windows "Program files" folder.
   // C:/Program Files/
   '%ProgF%',
 
-  // Windows "Local application data" folder
+  // Windows "Local application data" folder.
   // C:/Documents and Settings/{username}/Local Settings/Application Data/
   // C:/Users/{username}/AppData/Local/
   '%LocalAppData%'
 ];
 
 /**
- * XPCOM instances
+ * XPCOM instances.
  */
 let $I = (aCID, aIID) => Cc[aCID].createInstance(Ci[aIID]);
 
@@ -905,7 +913,7 @@ function checkApp(aApp) {
   let appFile = getAppFile(path);
 
   if (appFile) {
-    // @note overwrites the property value
+    // @note Overwrites the property value.
     aApp.path = appFile.path;
     return true;
   }
@@ -950,7 +958,7 @@ function execute(aApp, aTargetURL) {
 
   process.init(appFile);
 
-  // @note use 'wide string' version for Unicode arguments
+  // @note Use 'wide string' version for Unicode arguments.
   process.runwAsync(args, args.length);
 }
 
@@ -989,10 +997,10 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
             responseStatus = httpChannel.responseStatus;
           }
           catch (ex) {
-            // nothing to do
+            // Nothing to do.
             //
-            // @throws NS_ERROR_NOT_AVAILABLE;
-            // |requestSucceeded| throws when an invalid URL is requested
+            // @throw NS_ERROR_NOT_AVAILABLE
+            //   |requestSucceeded| throws when an invalid URL is requested.
           }
 
           if (!requestSucceeded) {
@@ -1112,7 +1120,7 @@ function makeFileName(aURI, aDocument) {
 
 function getAppArgs(aArgs, aURL) {
   if (aURL) {
-    // escape the path separator
+    // Escape the path separator.
     aURL = aURL.replace(/\\/g, '\\\\');
   }
 
@@ -1124,7 +1132,7 @@ function getAppArgs(aArgs, aURL) {
     return aArgs.map((arg) => arg.replace(/%URL%/g, aURL));
   }
 
-  // remove arguments with %URL% when the application is launched as 'tool'
+  // Remove arguments with %URL% when the application is launched as 'tool'.
   return aArgs.filter((arg) => !arg.contains('%URL%'));
 }
 

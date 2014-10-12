@@ -21,16 +21,16 @@ const ucjsUtil = (function(window, undefined) {
 
 
 /**
- * XPCOM handler
+ * XPCOM handler.
  *
- * @note this handler should be defined at the top of this file |Util.uc.js|,
- * because the access to XPCOM modules with the global property is ensured
- * here. this access is often used by the following functions
+ * @note This handler should be defined at the top of this common utility file,
+ * |Util.uc.js|, because the access to XPCOM modules with the global property
+ * is ensured here and this access is often used by the following functions.
  * @see |ensureAccessToModules()|
  */
 const XPCOM = (function() {
   /**
-   * ID List of extra services
+   * ID List of extra services.
    */
   const kServices = {
     'StyleSheetService': {
@@ -44,7 +44,7 @@ const XPCOM = (function() {
   };
 
   /**
-   * ID List of extra instances
+   * ID List of extra instances.
    */
   const kInstances = {
     'DocumentEncoder': {
@@ -54,9 +54,9 @@ const XPCOM = (function() {
   };
 
   /**
-   * References to extra services
+   * References to extra services.
    *
-   * @note initialized in |getService()|
+   * @note Initialized in |getService()|.
    */
   let mServices = {};
 
@@ -67,12 +67,12 @@ const XPCOM = (function() {
   }
 
   /**
-   * Ensures access to the XPCOM module with the global property
+   * Ensures access to the XPCOM module with the global property.
    *
-   * @note applied to any window that includes this file |Util.uc.js|
+   * @note Applied to any window that includes this file |Util.uc.js|.
    */
   function ensureAccessToModules() {
-    // access to the modules of |window.Components|
+    // Access to the modules of |window.Components|.
     [
       ['Cc', 'classes'],
       ['Ci', 'interfaces'],
@@ -83,7 +83,7 @@ const XPCOM = (function() {
       }
     });
 
-    // access to |window.Services|
+    // Access to |window.Services|.
     Cu.import('resource://gre/modules/Services.jsm');
   }
 
@@ -165,6 +165,7 @@ const XPCOM = (function() {
   }
 
   function getModule(aResourceURL) {
+    // Fx built-in JS module.
     if (/^\w+:.+\.jsm?$/.test(aResourceURL)) {
       let scope = {};
 
@@ -173,7 +174,7 @@ const XPCOM = (function() {
       return scope;
     }
 
-    // devtools module loader
+    // Devtools module loader.
     let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
 
     return loader.devtools.require(aResourceURL);
@@ -188,11 +189,11 @@ const XPCOM = (function() {
 })();
 
 /**
- * Timer handler
+ * Timer handler.
  *
  * @see resource://gre/modules/commonjs/sdk/timers.js
  *
- * TODO: get lazily
+ * TODO: Get lazily.
  */
 const Timer = XPCOM.getModule('sdk/timers');
 
@@ -201,12 +202,12 @@ const Timer = XPCOM.getModule('sdk/timers');
  *
  * @see resource://gre/modules/commonjs/sdk/preferences/service.js
  *
- * TODO: get lazily
+ * TODO: Get lazily.
  */
 const Prefs = XPCOM.getModule('sdk/preferences/service');
 
 /**
- * Functions for DOM handling
+ * Functions for DOM handling.
  */
 function addEvent(aTarget, aType, aListener, aCapture) {
   if (!aTarget || !aType || !aListener) {
@@ -224,7 +225,7 @@ function addEvent(aTarget, aType, aListener, aCapture) {
 }
 
 /**
- * Gets a selected text under the cursor
+ * Gets a selected text under the cursor.
  *
  * @param aOption {hash}
  *   @key event {MouseEvent}
@@ -233,9 +234,9 @@ function addEvent(aTarget, aType, aListener, aCapture) {
  *
  * TODO: |event.rangeOffset| sometimes returns a wrong value (e.g. it returns
  * the same value as if at the first row when a cursor is on the lines below
- * the first row in a <textarea>)
- * WORKAROUND: rescan ranges with the client coordinates instead of the range
- * offset
+ * the first row in a <textarea>).
+ * WORKAROUND: Rescan ranges with the client coordinates instead of the range
+ * offset.
  */
 function getSelectionAtCursor(aOption) {
   const kMaxCharLen = 150;
@@ -248,13 +249,13 @@ function getSelectionAtCursor(aOption) {
   let node, rangeParent, rangeOffset;
 
   if (event) {
-    // event mode
+    // Event mode.
     node = event.target;
     rangeParent = event.rangeParent;
     rangeOffset = event.rangeOffset; // TODO: may be wrong
   }
   else if (window.gContextMenu) {
-    // contextmenu mode
+    // Contextmenu mode.
     // @see chrome://browser/content/nsContextMenu.js
     node = window.document.popupNode;
     rangeParent = window.document.popupRangeParent;
@@ -269,7 +270,7 @@ function getSelectionAtCursor(aOption) {
 
   let text = '';
 
-  // scan ranges with the range offset
+  // Scan ranges with the range offset.
   for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
     range = selection.getRangeAt(i);
 
@@ -279,7 +280,7 @@ function getSelectionAtCursor(aOption) {
     }
   }
   // WORKAROUND: |event.rangeOffset| may be wrong when |text| is empty at the
-  // event mode. so, rescan the ranges with the client coordinates
+  // event mode. So, rescan the ranges with the client coordinates.
   if (event && !text) {
     let {clientX: x, clientY: y} = event;
     let rect;
@@ -296,7 +297,7 @@ function getSelectionAtCursor(aOption) {
     }
   }
 
-  // only use the first important chars
+  // Only use the first important chars.
   text = trimText(text, Math.min(charLen || kMaxCharLen, kMaxCharLen));
 
   return text;
@@ -307,7 +308,7 @@ function getSelectionController(aNode) {
     return null;
   }
 
-  // 1. scan selection in a textbox (exclude password)
+  // 1. Scan selection in a textbox (excluding password).
   if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
       aNode instanceof HTMLTextAreaElement) {
     try {
@@ -319,7 +320,7 @@ function getSelectionController(aNode) {
     return null;
   }
 
-  // 2. get a window selection
+  // 2. Get a window selection.
   let win = aNode.ownerDocument.defaultView || getFocusedWindow();
 
   return win.getSelection();
@@ -435,18 +436,18 @@ function createNode(aTagOrNode, aAttribute, aAttributeHandler) {
 }
 
 /**
- * Wrapper of |getElementById|
+ * Wrapper of |getElementById|.
  *
- * @note use only for XUL element
+ * @note Use only for XUL element.
  */
 function getNodeById(aId) {
   return window.document.getElementById(aId);
 }
 
 /**
- * Wrapper of |getAnonymousElementByAttribute|
+ * Wrapper of |getAnonymousElementByAttribute|.
  *
- * @note use only for XUL element
+ * @note Use only for XUL element.
  */
 function getNodeByAnonid(aId, aContext) {
   return window.document.
@@ -454,11 +455,11 @@ function getNodeByAnonid(aId, aContext) {
 }
 
 /**
- * Gets the focused window
+ * Gets the focused window.
  *
  * @return {Window}
- *   @note returns a (top or frame) content window when in the main browser
- *   window
+ *   @note Returns a (top or frame) content window when in the main browser
+ *   window.
  */
 function getFocusedWindow() {
   let focusedWindow = window.document.commandDispatcher.focusedWindow;
@@ -613,7 +614,7 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
 }
 
 /**
- * Functions for Tab / Window
+ * Functions for Tab / Window.
  */
 function checkSecurity(aURL, aOption) {
   let {
@@ -771,9 +772,9 @@ function openTab(aURL, aOption) {
     });
   }
 
-  // @note set explicit |false| to open in a foreground tab
-  // if absent, it will default to the |browser.tabs.loadInBackground|
-  // preference in |gBrowser.loadOneTab|
+  // @note Set |inBackground| to explicit |false| to open in a foreground tab.
+  // Since it will default to the |browser.tabs.loadInBackground| preference in
+  // |gBrowser.loadOneTab| if |undefined|.
   aOption = aOption || {};
   aOption.inBackground = inBackground === true;
 
@@ -827,7 +828,7 @@ function loadPage(aURL, aOption) {
 }
 
 /**
- * Alternative |gBrowser.removeTab|
+ * Alternative |gBrowser.removeTab|.
  *
  * @see chrome://browser/content/tabbrowser.xml::removeTab
  */
@@ -837,9 +838,9 @@ function removeTab(aTab, aOption) {
   } = aOption || {};
 
   if (safeBlock) {
-    // do not close;
-    // 1.pinned tab
-    // 2.only one unpinned tab
+    // Do not close;
+    // 1.Pinned tab.
+    // 2.Only one unpinned tab.
     if (aTab.pinned ||
         gBrowser.visibleTabs.length - gBrowser._numPinnedTabs <= 1) {
       return;
@@ -850,10 +851,10 @@ function removeTab(aTab, aOption) {
 }
 
 /**
- * Alternative |gBrowser.removeAllTabsBut|
+ * Alternative |gBrowser.removeAllTabsBut|.
  *
- * 1.does not warn against closing multiple tabs
- * 2.does not close blocked tabs
+ * 1.Does not warn against closing multiple tabs.
+ * 2.Does not close blocked tabs.
  *
  * @see chrome://browser/content/tabbrowser.xml::removeAllTabsBut
  */
@@ -878,7 +879,7 @@ function removeAllTabsBut(aTab) {
 }
 
 /**
- * Miscellaneous functions
+ * Miscellaneous functions.
  */
 function restartFx(aOption) {
   let {purgeCaches} = aOption || {}
@@ -892,8 +893,8 @@ function restartFx(aOption) {
     XPCOM.$S('appinfo').invalidateCachesOnRestart();
   }
 
-  // WORKAROUND: in Fx30, the browser cannot often restart on resume startup,
-  // so set the preference to force to restore the session
+  // WORKAROUND: In Fx30, the browser cannot often restart on resume startup,
+  // so set the preference to force to restore the session.
   Prefs.set('browser.sessionstore.resume_session_once', true);
 
   XPCOM.$S('startup').
@@ -1020,33 +1021,33 @@ function registerContentStyleSheet(aCSS, aOption) {
 }
 
 function normalizeCSS(aCSS) {
-  // @note you should put a 'half-width space' for the separator of;
-  // 1.the descendant selector (e.g. h1 em{...})
-  // 2.the shorthand properties (e.g. margin:1px 2px;)
+  // @note You should put a 'half-width space' for the separator of;
+  // 1.The descendant selector (e.g. h1 em{...}).
+  // 2.The shorthand properties (e.g. margin:1px 2px;).
 
   return aCSS.trim().
-    // put half-width spaces into one (maybe a necessary separator)
+    // Put half-width spaces into one (maybe a necessary separator).
     replace(/ +/g, ' ').
-    // remove consecutive white spaces
+    // Remove consecutive white spaces.
     replace(/\s{2,}/g, '').
-    // remove comment
+    // Remove comments.
     replace(/\s*\/\*.*?\*\/\s*/g, '');
 }
 
 /**
- * Query the Places database
+ * Query the Places database.
  *
  * @param aParam {hash}
  *   expression: {string}
- *     a SQL expression
+ *     A SQL expression.
  *   params: {hash} [optional]
- *     the binding parameters
+ *     The binding parameters.
  *   columns: {array}
- *     the column names
+ *     The column names.
  * @return {hash[]|null}
- *   array of {column name: value, ...}, or null if no result
+ *   The array of {column name: value, ...}, or null if no result.
  *
- * TODO: consider to unite with |promisePlacesDBResult|
+ * TODO: Unite with |promisePlacesDBResult|.
  */
 function getPlacesDBResult(aParam) {
   const {
@@ -1095,28 +1096,28 @@ function getPlacesDBResult(aParam) {
 }
 
 /**
- * Query the Places database asynchronously
+ * Query the Places database asynchronously.
  *
  * @param aParam {hash}
  *   expression: {string}
- *     a SQL expression
+ *     A SQL expression.
  *   params: {hash} [optional]
- *     the binding parameters
+ *     The binding parameters.
  *   columns: {array}
- *     the column names
+ *     The column names.
  * @return {Promise}
  *   onFulFill: {hash[]|null}
- *     resolved with an array of {column-name: value, ...}, or null if no
- *     result
+ *     Resolved with an array of {column-name: value, ...}, or null if no
+ *     result.
  *   onReject: {Error}
- *     rejected with an error object
+ *     Rejected with an error object.
  *
- * TODO: use |createAsyncStatement|
- * I'm not sure why it doesn't work well
+ * TODO: Use |createAsyncStatement|.
+ * I'm not sure why it doesn't work well.
  *
- * TODO: handle cancelling
+ * TODO: Handle cancelling.
  *
- * TODO: consider to use a reliable built-in module
+ * TODO: Use a reliable built-in module.
  * e.g. resource://gre/modules/Sqlite.jsm
  */
 function promisePlacesDBResult(aParam) {
@@ -1192,7 +1193,7 @@ function promisePlacesDBResult(aParam) {
 }
 
 /**
- * Log function
+ * Log function.
  */
 function logMessage(aTargetName, aMessage) {
   const kMessageFormat = '[%target%]\n%message%';
@@ -1218,8 +1219,8 @@ function logMessage(aTargetName, aMessage) {
     replace('%target%', aTargetName).
     replace('%message%', messages.join('\n'));
 
-  // output to the browser console
-  // @note no outputs to the web console
+  // Output to the browser console.
+  // @note No outputs to the web console.
   XPCOM.$S('console').logStringMessage(output);
 
   return output;

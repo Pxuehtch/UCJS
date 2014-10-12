@@ -22,7 +22,7 @@
 
 <!-- Command -->
 <commandset id="mainCommandSet">
-  <!-- overwrite the default -->
+  <!-- @note Overwrite the default setting. -->
   <command id="cmd_find"
     oncommand="ucjsUI.FindBar.toggle();"/>
 
@@ -36,7 +36,7 @@
     oncommand="(function(tb){tb.collapsed=!tb.collapsed;document.getElementById('ucjs_ToolbarContextMenu_toggleTabbar').setAttribute('checked',!tb.collapsed);})(document.getElementById('TabsToolbar'));"/>
 
   <!--
-   @see chrome://browser/content/search/search.xml#searchbar::openManager
+   * @see chrome://browser/content/search/search.xml#searchbar::openManager
    -->
   <command id="ucjs_cmd_openSearchEngineManager"
     oncommand="(function(sm){sm?sm.focus():setTimeout(()=>open('chrome://browser/content/search/engineManager.xul','','chrome,dialog,modal,centerscreen,resizable'),0);})(Services.wm.getMostRecentWindow('Browser:SearchManager'));"/>
@@ -68,14 +68,14 @@
     keycode="VK_ESCAPE" modifiers="shift"
     oncommand="BrowserStop();"/>
 
-  <!-- Error Console -->
-  <!-- TODO: remove this because the Error Console is deprecated -->
+  <!-- Error Console. -->
+  <!-- TODO: Remove this because the Error Console is deprecated. -->
   <key id="ucjs_key_errorConsole"
     key="J" modifiers="control,alt,shift"
     oncommand="toJavaScriptConsole();"/>
 
-  <!-- addon: DOM Inspector -->
-  <!-- overwrite the default -->
+  <!-- Addon: DOM Inspector. -->
+  <!-- @note Overwrite the default setting. -->
   <key id="key_inspectPage"
     key="I" modifiers="control,alt,shift"
     command="Tasks:InspectPage"/>
@@ -107,7 +107,7 @@
 </menupopup>
 
 <menupopup id="toolbar-context-menu">
-  <!-- TODO: set the position with the order of bars -->
+  <!-- TODO: Set the position with the order of bars. -->
   <menuitem id="ucjs_ToolbarContextMenu_toggleTabbar"
     label="タブバー" accesskey="t" type="checkbox" checked="true"
     insertbefore="viewToolbarsMenuSeparator"

@@ -13,7 +13,9 @@
  * - Normal mode: Gestures or wheel rotations holding down the right mouse
  *   button.
  * - Drag&Drop mode: Gestures dragging a selected text or a link or an image
+ *
  * - 'Shift' and 'Ctrl' keys are supported.
+ *   @note Keys are detected after gestures start.
  *
  * @note
  * - The gestures is only available within the inner frame of the content area,
@@ -57,31 +59,35 @@ const {
 } = window.ucjsUI;
 
 /**
- * Gesture signs for |kGestureSet|
+ * Gesture signs for |kGestureSet|.
  */
 const kGestureSign = {
-  // Modifier keys
+  // Modifier keys.
   shift: 'S&', ctrl: 'C&',
-  // Directions
+  // Directions.
   left: 'L', right: 'R', up: 'U', down: 'D',
-  // Mouse wheel for the normal mode
+  // Mouse wheel for the normal mode.
   wheelUp: 'W+', wheelDown: 'W-',
-  // Target types for the D&D mode
+  // Target types for the D&D mode.
   text: 'TEXT#', link: 'LINK#', image: 'IMAGE#',
-  // Do action immediately without mouseup when gesture matches
+  // Do action immediately without mouseup when gesture matches.
   quickShot: '!'
 };
 
 /**
- * Gestures setting
+ * Gestures setting.
  *
- * @key gestures {string[]} combination of |kGestureSign|
+ * @key gestures {string[]}
+ *   The combination of values of |kGestureSign|.
  * @key name {string}
  * @key command {function}
  *   @param {hash}
- *     @key event {MouseEvent} mouse event at when the gesture ends
- *     @key gesture {string} built gesture signs
- *     @key dragData {string} drag data on the D&D mode
+ *     @key event {MouseEvent}
+ *       The mouse event at when the gesture ends.
+ *     @key gesture {string}
+ *       The built gesture signs.
+ *     @key dragData {string}
+ *       The drag data on the D&D mode.
  * @key disabled {boolean} [optional]
  */
 const kGestureSet = [
@@ -222,7 +228,7 @@ const kGestureSet = [
     }
   },
   {
-    gestures: ['DURD'], // shape of 'h'
+    gestures: ['DURD'], // Shape of 'h'.
     name: 'ホームを開く',
     command: function() {
       window.ucjsUtil.openHomePages();
@@ -264,7 +270,7 @@ const kGestureSet = [
   },
 
   /**
-   * For D&D mode
+   * For D&D mode.
    */
   {
     gestures: ['TEXT#L'],
@@ -370,10 +376,10 @@ const kGestureSet = [
 ];
 
 /**
- * Handlers
+ * Mouse gesture main handler.
  *
- * TODO: cancel the gesture when enters into a window (always on top) that is
- * overwrapped on the gesture area
+ * TODO: Cancel the gesture when enters into a window (always on top) that is
+ * overwrapped on the gesture area.
  */
 function MouseGesture() {
   const kState = {READY: 0, GESTURE: 1, DRAG: 2};
@@ -398,20 +404,20 @@ function MouseGesture() {
 
     addEvent(pc, 'dragstart', onDragStart, false);
     addEvent(pc, 'dragend', onDragEnd, false);
-    // @note use 'dragover' (not 'dragenter') to check the coordinate
+    // @note Use 'dragover' (not 'dragenter') to check the coordinate.
     addEvent(pc, 'dragover', onDragOver, false);
-    // WORKAROUND: use capture mode to detect a drop event that is trapped by
-    // content script (e.g. gist.github.com)
-    // TODO: need to check the mode of the other events
+    // WORKAROUND: Use capture mode to detect a drop event that is trapped by
+    // content script (e.g. gist.github.com).
+    // TODO: Check the mode of the other events.
     addEvent(pc, 'drop', onDrop, true);
 
-    // WORKAROUND: observe a XUL popup in the content area for cancelling the
-    // gestures on it
+    // WORKAROUND: Observe a XUL popup in the content area for cancelling the
+    // gestures on it.
     addEvent(window, 'mouseup', onGlobalMouseUp, false);
   }
 
   /**
-   * Events
+   * Event handlers.
    */
   function onMouseDown(aEvent) {
     let canStart = mMouse.update(aEvent);
@@ -456,7 +462,7 @@ function MouseGesture() {
     }
   }
 
-  // WORKAROUND: cancel the gestures on a XUL popup
+  // WORKAROUND: Cancel the gestures on a XUL popup.
   function onGlobalMouseUp(aEvent) {
     if (mState === kState.GESTURE &&
         isPopupNode(aEvent.target)) {
@@ -517,9 +523,9 @@ function MouseGesture() {
   function onDragEnd(aEvent) {
     mMouse.update(aEvent);
 
-    // the drag operation is terminated;
-    // 1.cancelled by pressing ESC
-    // 2.dropped in a disallowed area
+    // The drag operation is terminated;
+    // 1.Cancelled by pressing the ESC key.
+    // 2.Dropped in a disallowed area.
     if (mState === kState.DRAG) {
       cancelGesture();
     }
@@ -530,8 +536,8 @@ function MouseGesture() {
       return;
     }
 
-    // cancel the gesture drag and the default drag works
-    // @note the default drag is also cancelled by pressing the ESC key
+    // Cancel the gesture drag and the default drag works.
+    // @note The default drag is also cancelled by pressing the ESC key.
     let forceCancel = aEvent.shiftKey && aEvent.altKey;
 
     if (forceCancel) {
@@ -550,8 +556,8 @@ function MouseGesture() {
     }
   }
 
-  // TODO: prevent the drop event when a right mouse button is pressed down
-  // while dragging. the drop event fires at present
+  // TODO: Prevent the drop event when a right mouse button is pressed down
+  // while dragging. The drop event fires for now.
   function onDrop(aEvent) {
     if (mState !== kState.DRAG) {
       return;
@@ -572,7 +578,7 @@ function MouseGesture() {
   }
 
   /**
-   * Helpers
+   * Helper functions.
    */
   function startGesture(aEvent) {
     mState = kState.GESTURE;
@@ -609,13 +615,15 @@ function MouseGesture() {
 }
 
 /**
- * Observes the mouse events
- * Manages to suppress the contextmenu popup and the click event
+ * Mouse events manager.
+ * Manages the state of mouse buttons and on/off of the contextmenu popup and
+ * the click event.
+ *
  * @return {hash}
  *   @key update {function}
  *
- * TODO: prevent contextmenu popups when a right mouse button is clicked while
- * dragging
+ * TODO: Prevent contextmenu popups when a right mouse button is clicked while
+ * dragging.
  */
 function MouseManager() {
   let mRightDown, mElseDown;
@@ -631,12 +639,13 @@ function MouseManager() {
   }
 
   /**
-   * Updates the state
+   * Updates the state.
+   *
    * @param aEvent {MouseEvent}
    * @return {boolean|undefined}
-   *   'mousedown' {boolean} ready or not that a normal mode gesture can start
-   *   'mouseup' {boolean} ready or not that a normal mode gesture can stop
-   *   otherwise {undefined} unused usually
+   *   'mousedown' {boolean} Ready or not that a normal mode gesture can start.
+   *   'mouseup' {boolean} Ready or not that a normal mode gesture can stop.
+   *   otherwise {undefined} Unused usually.
    */
   function update(aEvent) {
     const {type, button} = aEvent;
@@ -646,10 +655,10 @@ function MouseManager() {
     switch (type) {
       case 'mousedown':
         if (button === 2) {
-          // allow the gesture starts
+          // Allow the gesture starts.
           allowAction = !mElseDown;
 
-          // ready the contextmenu
+          // Ready the contextmenu.
           enableContextMenu(true);
           mSuppressMenu = false;
 
@@ -660,7 +669,7 @@ function MouseManager() {
           }
         }
         else {
-          // ready the default click event
+          // Ready the default click event.
           mSuppressClick = false;
 
           mElseDown = true;
@@ -674,7 +683,7 @@ function MouseManager() {
 
       case 'mouseup':
         if (button === 2) {
-          // allow the gesture stops
+          // Allow the gesture stops.
           allowAction = !mElseDown;
 
           mRightDown = false;
@@ -685,13 +694,13 @@ function MouseManager() {
         break;
 
       case 'dragend':
-        // @note always button===0
+        // @note Always 'button === 0'.
         mElseDown = false;
         break;
 
       case 'mousemove':
       case 'wheel':
-        // a gesture is in progress
+        // A gesture is in progress.
         if (mRightDown) {
           mSuppressMenu = true;
         }
@@ -707,7 +716,7 @@ function MouseManager() {
 
       case 'click':
         if (button === 2) {
-          // force to reset all states
+          // Force to reset all states.
           if (aEvent.altKey) {
             clear();
           }
@@ -735,7 +744,8 @@ function MouseManager() {
 }
 
 /**
- * Builds the mouse gestures and performs its command
+ * Gesture manager.
+ * Builds the mouse gestures and performs its command.
  *
  * @return {hash}
  *   @key clear {function}
@@ -743,13 +753,15 @@ function MouseManager() {
  *   @key update {function}
  *   @key evaluate {function}
  *
- * TODO: show some clear sign to the user that a quickshot has fired
+ * TODO: Show some clear sign to the user that a quickshot has fired.
  */
 function GestureManager() {
   /**
-   * Max length of the chain of a gesture
+   * Max length of the chain of a gesture.
+   *
    * @value {integer}
-   * @note the chain consists of directions and wheel rotations
+   *
+   * @note The chain consists of directions and wheel rotations.
    */
   const kMaxChainLength = 10;
 
@@ -795,11 +807,25 @@ function GestureManager() {
     return true;
   }
 
+  /**
+   * Gets information of the dragging data.
+   *
+   * @param aEvent {DragEvent}
+   * @return {hash}
+   *   type: {string}
+   *     'text' or 'link' or 'image' of |kGestureSign|.
+   *   data: {string}
+   *      Selection text or Link href URL or Image src URL.
+   *
+   * @note Retrieves only one from a composite data;
+   * - A selection text in a link string.
+   * - A link href URL of a linked image.
+   */
   function getDragInfo(aEvent) {
     let node = aEvent.target;
     let type = '', data = '';
 
-    // 1.selected text
+    // 1.A selection text.
     if (!type) {
       let text = getSelectionAtCursor({event: aEvent});
 
@@ -809,7 +835,7 @@ function GestureManager() {
       }
     }
 
-    // 2.link
+    // 2.A link URL.
     if (!type) {
       let link = getLinkURL(node);
 
@@ -819,7 +845,7 @@ function GestureManager() {
       }
     }
 
-    // 3.image
+    // 3.An image URL.
     if (!type) {
       let image = getImageURL(node);
 
@@ -875,7 +901,7 @@ function GestureManager() {
     }
 
     if (sign) {
-      // add a new link of chain when the last gesture is not this one
+      // Add a new link of chain when the last gesture is not this one.
       let gesture = kGestureSign[sign];
       let length = mChain.length;
 
@@ -1016,7 +1042,7 @@ function GestureManager() {
     let text = toString();
 
     if (mError) {
-      // HACK: display the status after its values have been cleared
+      // WORKAROUND: Display the status after its values have been cleared.
       setTimeout((aText) => updateStatusText(aText), 0, text);
     }
     else {
@@ -1031,7 +1057,7 @@ function GestureManager() {
   }
 
   /**
-   * Creates a display string
+   * Creates a display string.
    */
   function toString() {
     const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
@@ -1058,7 +1084,8 @@ function GestureManager() {
 }
 
 /**
- * Traces the coordinates of a mouse pointer
+ * Gesture position tracer.
+ * Traces the coordinates of a mouse pointer.
  *
  * @return {hash}
  *   @key clear {function}
@@ -1066,7 +1093,8 @@ function GestureManager() {
  *   @key update {function}
  */
 function GestureTracer() {
-  // The minimum distance of movement for the gesture is detected
+  // The minimum distance of movement for the gesture is detected.
+  //
   // @value {integer} [pixels > 0]
   const kTolerance = 10;
 
@@ -1112,21 +1140,26 @@ function GestureTracer() {
   };
 }
 
+/**
+ * Helper functions
+ */
 function inGestureArea(aEvent) {
-  // The margin of cancelling a gesture
+  // The margin of cancelling a gesture.
+  //
   // @value {integer} [pixels > 0]
-  // @note including the width of a scrollbar
-  // @note 16 pixels is the scrollbar width of my Fx
+  // @note Including the width of a scrollbar.
+  // @note 16 pixels is the scrollbar width of my Fx.
   const kMargin = 16;
 
-  // get the coordinates of the event relative to the content area
-  // @note |aEvent.clientX/Y| returns the coordinate within the window or
-  // frame, so that we can not retrieve the client coordinates over frames
+  // Get the coordinates of the event relative to the content area.
+  // @note |aEvent.clientX/Y| are not reliable here. Because they return the
+  // coordinate within the window or frame, so that we can not retrieve the
+  // client coordinates over frames.
   let {screenX: x, screenY: y} = aEvent;
   let {screenX: left, screenY: top, width, height} =
     gBrowser.selectedBrowser.boxObject;
 
-  // convert the screen coordinates of a cursor to the client ones
+  // Convert the screen coordinates of a cursor to the client ones.
   x -= left;
   y -= top;
 
@@ -1148,7 +1181,7 @@ function inEditable(aEvent) {
 function getLinkURL(aNode) {
   const XLinkNS = 'http://www.w3.org/1999/xlink';
 
-  // @note the initial node may be a text node
+  // @note The initial node may be a text node.
   let node = aNode;
 
   while (node) {
@@ -1203,7 +1236,7 @@ function doCmd(aCommand) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 function MouseGesture_init() {
   MouseGesture();

@@ -33,7 +33,7 @@ function log(aMsg) {
 }
 
 /**
- * UI settings
+ * UI settings.
  */
 const kUI = {
   menu: {
@@ -316,7 +316,7 @@ function moveTabToOtherWindow(aTab, aWindow) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 MoveTabToWindow_init();
 

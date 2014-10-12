@@ -36,36 +36,36 @@ function log(aMsg) {
 const kPref = {
   /**
    * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
-   * click
+   * click.
    *
-   * @value {integer} millisecond
+   * @value {integer} [millisecond]
    *
-   * @note the default click is deactivated at 'mouseup' in time, otherwise
-   * activated
+   * @note The default click is deactivated at 'mouseup' in time, otherwise
+   * activated.
    */
   clickThresholdTime: 200,
 
   /**
-   * Disable the default click action on the tab bar
+   * Disable the default click action on the tab bar.
    *
    * @value {boolean}
-   *   true: disabled completely
-   *   false: disabled when the custom click is recognized, otherwise enabled
+   *   true: Disabled completely.
+   *   false: Disabled when the custom click is recognized, otherwise enabled.
    *
-   * @note the default actions;
-   *   middle-click on a tab: closes a tab
-   *   double-click on a tabbar: opens a new tab
-   *   middle-click on a tabbar: opens a new tab
-   *   @see chrome://browser/content/tabbrowser.xml::
-   *     <binding id="tabbrowser-tabs">::
-   *     <handler event="dblclick">
-   *     <handler event="click">
+   * @note The default actions;
+   * - Middle-click on a tab: Closes a tab.
+   * - Double-click on a tabbar: Opens a new tab.
+   * - Middle-click on a tabbar: Opens a new tab.
+   * @see chrome://browser/content/tabbrowser.xml::
+   *   <binding id="tabbrowser-tabs">::
+   *   <handler event="dblclick">
+   *   <handler event="click">
    */
   disableDefaultClick: true
 }
 
 /**
- * Handler of the click event on the tab bar
+ * Handler of the click event on the tab bar.
  */
 const TabBarClickEvent = {
   clearState: function() {
@@ -92,8 +92,8 @@ const TabBarClickEvent = {
   },
 
   handleEvent: function(aEvent) {
-    // 1.show the default contextmenu
-    // 2.do not handle a UI element(button/menu) on the tab bar
+    // 1.Show the default contextmenu.
+    // 2.Do not handle a UI element(button/menu) on the tab bar.
     if (aEvent.button === 2 ||
         !this.checkTargetArea(aEvent)) {
       return;
@@ -192,24 +192,24 @@ const TabBarClickEvent = {
   checkTargetArea: function(aEvent) {
     let {target, originalTarget} = aEvent;
 
-    // skip UI elements on the tab bar
-    // TODO: the probable elements 'menu*|toolbar*' are examined. and more
-    // other items may be needed to test
+    // Skip UI elements on the tab bar.
+    // TODO: The probable elements, <menu*> or <toolbar*>, are examined. More
+    // other items may be needed to test.
     if (/^(?:menu|toolbar)/.test(originalTarget.localName)) {
       return null;
     }
 
-    // on a tab
+    // On a tab.
     if (target.localName === 'tab') {
       return target.selected ? 'foreTab' : 'backTab';
     }
 
-    // on the margin where has no tabs in the tab bar
+    // On the margin where has no tabs in the tab bar.
     if (target.localName === 'tabs') {
       return 'notTabs';
     }
 
-    // WORKAROUND: unknown case
+    // WORKAROUND: Unknown case.
     return null;
   },
 
@@ -227,39 +227,39 @@ const TabBarClickEvent = {
         LDC = button === 0 && clicks === 2,
         MC  = button === 1 && clicks === 1;
 
-    // selected tab / background tab / not tabs area
+    // Selected tab / Background tab / Not tabs area
     let foreTab = area === 'foreTab',
         backTab = area === 'backTab',
         notTabs = area === 'notTabs';
 
     /**
-     * Action settings
+     * Action settings.
      *
-     * TODO: separate the definition of actions, and generalize the code
+     * TODO: Separate the definition of actions and generalize the code.
      */
     switch (true) {
       case (LDC && notTabs):
-        // open home pages
-        // Shift: the current opened tabs are closed
-        // Ctrl: only the first of the multiple homepages is opened
+        // Open home pages.
+        // Shift: The current opened tabs are closed.
+        // Ctrl: Only the first of the multiple homepages is opened.
         window.ucjsUtil.
           openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
         break;
 
       case (MC && notTabs):
-        // reopen the prev-closed tab
+        // Reopen the prev-closed tab.
         // @see chrome://browser/content/browser.js::undoCloseTab
         window.undoCloseTab();
         break;
 
       case (LC && foreTab):
         if (ctrlKey) {
-          // select/reopen the opener tab
+          // Select/Reopen the opener tab.
           window.ucjsTabEx.selectOpenerTab(target, {undoClose: true});
         }
         else {
-          // select the previous selected tab
-          // Shift: select/reopen the *exact* previous selected tab
+          // Select the previous selected tab.
+          // Shift: Select/Reopen the *exact* previous selected tab.
           let option = shiftKey ? {undoClose: true} : {traceBack: true};
 
           window.ucjsTabEx.selectPrevSelectedTab(target, option);
@@ -267,7 +267,7 @@ const TabBarClickEvent = {
         break;
 
       case (LDC && foreTab):
-        // pin/unpin a tab
+        // Pin/Unpin a tab.
         if (!target.pinned) {
           gBrowser.pinTab(target);
         }
@@ -277,7 +277,7 @@ const TabBarClickEvent = {
         break;
 
       case (MC && (foreTab || backTab)):
-        // close a tab
+        // Close a tab.
         window.ucjsUtil.removeTab(target, {safeBlock: true});
         break;
     }
@@ -285,23 +285,23 @@ const TabBarClickEvent = {
 };
 
 /**
- * Cycle-selects tabs with a mouse wheel scroll on the tabbar
+ * Cycle-selects tabs with a mouse wheel scroll on the tabbar.
  *
- * @note disables the default scrolling of tabs when the tabbar overflows with
- * tabs
+ * @note Disables the default scrolling of tabs when the tabbar overflows tabs.
  */
 function switchTabsOnMouseWheel() {
   addEvent(gBrowser.tabContainer, 'wheel', (event) => {
     gBrowser.tabContainer.
       advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
 
+    // Prevent the default scrolling.
     event.stopPropagation();
     event.preventDefault();
   }, true);
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 function TabHandler_init() {
   TabBarClickEvent.init();

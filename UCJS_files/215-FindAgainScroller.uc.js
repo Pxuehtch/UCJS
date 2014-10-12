@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name FindAgainScroller.uc.js
-// @description Customizes the scroll style on "Find again" command.
+// @description Customizes the scroll style on <Find again> command.
 // @include main
 // ==/UserScript==
 
@@ -37,35 +37,51 @@ const {
  * Preferences
  */
 const kPref = {
-  // skip a found result that a user can not see (e.g. a text in a folded
-  // dropdown menu)
-  //
-  // @note if a document has only invisible results, they will be selected
-  // @note this is a workaround for Fx default behavior
-  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
+  /**
+   * Skip a found result that a user can not see (e.g. a text in a folded
+   * dropdown menu).
+   *
+   * @value {boolean}
+   *
+   * @note If a document has only invisible results, they will be selected.
+   * @note This is a workaround for Fx default behavior.
+   * @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
+   */
   skipInvisible: true,
 
-  // center a found text horizontally
-  //
-  // @note the result is scrolled *vertically* centered by Fx default behavior,
-  // but not *horizontally*
-  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=171237
-  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=743103
+  /**
+   * Center a found text horizontally.
+   *
+   * @value {boolean}
+   *
+   * @note The result is scrolled *vertically* centered by Fx default behavior,
+   * but not *horizontally*.
+   * @see https://bugzilla.mozilla.org/show_bug.cgi?id=171237
+   * @see https://bugzilla.mozilla.org/show_bug.cgi?id=743103
+   */
   horizontalCentered: true,
 
-  // scroll smoothly to a found text
-  //
-  // @note |SmoothScroll| has the detail setting
+  /**
+   * Scroll smoothly to a found text.
+   *
+   * @value {boolean}
+   *
+   * @note |SmoothScroll| has the detail setting.
+   */
   smoothScroll: true,
 
-  // blink a found text
-  //
-  // @note |FoundBlink| has the detail setting
+  /**
+   * Blink a found text.
+   *
+   * @value {boolean}
+   *
+   * @note |FoundBlink| has the detail setting.
+   */
   foundBlink: true
 };
 
 /**
- * Helper functions of the finder in the current tab
+ * Helper functions of the finder in the current tab.
  *
  * @see resource://gre/modules/Finder.jsm
  */
@@ -98,19 +114,20 @@ const TextFinder = {
     if (currentWindow) {
       return this.finder._getSelectionController(currentWindow);
     }
+
     return null;
   }
 };
 
 /**
- * Handler of a custom find-again command
+ * Handler of a custom find-again command.
  *
  * @return {hash}
  *   init: {function}
  */
 const FindAgainCommand = (function() {
   /**
-   * Detects a short time interval of calls of a find-again command
+   * Detects a short time interval of calls of a find-again command.
    *
    * @note Perform only the native processing when the command is called in
    * quick repeating (e.g. holding F3 key down) because an observation of
@@ -118,9 +135,9 @@ const FindAgainCommand = (function() {
    */
   let isRepeatingCommand = (function() {
     /**
-     * Max threshold interval time for a repeating command
+     * Max threshold interval time for a repeating command.
      *
-     * @value {integer} [ms]
+     * @value {integer} [millisecond]
      */
     const kMaxIntervalForRepeating = 500;
 
@@ -138,20 +155,20 @@ const FindAgainCommand = (function() {
 
   let mScrollObserver = ScrollObserver();
 
-  // Optional functions
+  // Optional functions.
   let mSkipInvisible = kPref.skipInvisible && SkipInvisible();
   let mHCentered = kPref.horizontalCentered && HorizontalCentered();
   let mSmoothScroll = kPref.smoothScroll && SmoothScroll();
   let mFoundBlink = kPref.foundBlink && FoundBlink();
 
   function init() {
-    // Customize the native function
+    // Customize the native function.
     // @modified chrome://global/content/bindings/findbar.xml::onFindAgainCommand
     const $onFindAgainCommand = gFindBar.onFindAgainCommand;
 
     gFindBar.onFindAgainCommand =
     function ucjsFindAgainScroller_onFindAgainCommand(aFindPrevious) {
-      // Terminate the active processing
+      // Terminate the active processing.
       if (mSmoothScroll) {
         mSmoothScroll.cancel();
       }
@@ -160,13 +177,14 @@ const FindAgainCommand = (function() {
         mFoundBlink.cancel();
       }
 
-      // Apply only the native processing for a short time repeating command
+      // Apply only the native processing for a short time repeating command.
       if (isRepeatingCommand()) {
         $onFindAgainCommand.apply(this, arguments);
+
         return;
       }
 
-      // Take a snapshot of the state of scroll before finding
+      // Take a snapshot of the state of scroll before finding.
       mScrollObserver.attach();
 
       do {
@@ -208,7 +226,7 @@ const FindAgainCommand = (function() {
 })();
 
 /**
- * Observer of the scrollable elements
+ * Observer of the scrollable elements.
  *
  * @return {hash}
  *   attach: {function}
@@ -226,37 +244,37 @@ function ScrollObserver() {
   function scanScrollables(aWindow) {
     if (aWindow.frames) {
       Array.forEach(aWindow.frames, (frame) => {
-        // recursively scan for a frame window
+        // Recursively scan for a frame window.
         scanScrollables(frame);
       });
     }
 
-    // <frame> window has |contentDocument|
+    // <frame> window has |contentDocument|.
     let doc = aWindow.contentDocument || aWindow.document;
-    // |body| returns <body> or <frameset> element
+    // |body| returns <body> or <frameset> element.
     let root = doc.body || doc.documentElement;
 
     if (!root) {
       return;
     }
 
-    // register the document that can be scrolled
-    // @note including scrollable <html> and <body>
+    // Register the document that can be scrolled.
+    // @note Including scrollable <html> and <body>.
     if (aWindow.scrollMaxX || aWindow.scrollMaxY) {
       addScrollable(aWindow);
     }
 
-    // register the elements that can be scrolled
-    // @note we have a simple processing for performance problems
+    // Register the elements that can be scrolled.
+    // @note We have a simple processing for performance problems.
 
-    // WORKAROUND: filter out a big document
-    // TODO: handle any size
+    // WORKAROUND: Filter out a big document.
+    // TODO: Handle any size.
     if (doc.getElementsByTagName('*').length > 10000) {
       return;
     }
 
-    // WORKAROUND: find only the typical scrollable element
-    // TODO: grab all kind of scrollable elements
+    // WORKAROUND: Find only the typical scrollable element.
+    // TODO: Grab all kind of scrollable elements.
     let xpath = [
       './/textarea',
       './/pre',
@@ -268,8 +286,8 @@ function ScrollObserver() {
 
     let nodes = $X(xpath, root);
 
-    // WORKAROUND: only check the scrollability of an element itself
-    // TODO: consider scrollable ancestors
+    // WORKAROUND: Only check the scrollability of an element itself.
+    // TODO: Handle scrollable ancestors.
     for (let i = 0, l = nodes.snapshotLength; i < l; i++) {
       let node = nodes.snapshotItem(i);
 
@@ -300,8 +318,8 @@ function ScrollObserver() {
   }
 
   function updateScrollState() {
-    // update the goal
-    // once the scrolled node is found, we simply observe it
+    // Update the goal.
+    // @note Once the scrolled node is found, we simply observe it.
     if (mScrollState) {
       let {node, goal} = mScrollState;
       let now = getScroll(node);
@@ -313,13 +331,13 @@ function ScrollObserver() {
       return;
     }
 
-    // first updating
+    // First updating.
     for (let [node, scroll] of mScrollables) {
       let now = getScroll(node);
 
       if (now.x !== scroll.x || now.y !== scroll.y) {
         // @note |mScrollState| is used as the parameters of
-        // |SmoothScroll::start|, |HorizontalCentered::align|
+        // |SmoothScroll::start|, |HorizontalCentered::align|.
         mScrollState = {
           node: node,
           start: scroll,
@@ -360,48 +378,50 @@ function ScrollObserver() {
 }
 
 /**
- * Handler for skipping a found result that a user can not see
+ * Handler for skipping a found result that a user can not see.
  *
  * @return {hash}
  *   test: {function}
  *
- * @note |test| is called as the loop condition in |onFindAgainCommand|
+ * @note |test| is called as the loop condition in |onFindAgainCommand|.
  */
 function SkipInvisible() {
-  // WORKAROUND: a fail-safe option to avoid an infinite loop for when a
+  // WORKAROUND: A fail-safe option to avoid an infinite loop for when a
   // document has only invisible results, in addition, when the comparing
-  // check of nodes does not work
+  // check of nodes does not work.
   const kMaxTestCount = 50;
 
   let mTestCount = 0;
   let mFirstInvisible = null;
 
   function test() {
-    // WORKAROUND: force to exit from a loop of testing
+    // WORKAROUND: Force to exit from a loop of testing.
     if (++mTestCount > kMaxTestCount) {
       mTestCount = 0;
       mFirstInvisible = null;
+
       return false;
     }
 
     let invisible = getInvisibleResult();
 
     if (invisible) {
-      // the first test passed
+      // The first test passed.
       if (!mFirstInvisible) {
         mFirstInvisible = invisible;
+
         return true;
       }
 
-      // got a result that is tested at the first time
+      // Got a result that is tested at the first time.
       if (mFirstInvisible !== invisible) {
         return true;
       }
     }
 
-    // not found
-    // 1.no invisible result is found
-    // 2.an invisible result is found but it has been tested ever
+    // Not found.
+    // 1.No invisible result is found.
+    // 2.An invisible result is found but it has been tested ever.
     mTestCount = 0;
     mFirstInvisible = null;
 
@@ -411,23 +431,23 @@ function SkipInvisible() {
   function getInvisibleResult() {
     let selectionController = TextFinder.selectionController;
 
-    // no result is found or error something
+    // No result is found or error something.
     if (!selectionController) {
       return null;
     }
 
-    // get the text node that contains the find range object
+    // Get the text node that contains the find range object.
     let result = selectionController.
       getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
       getRangeAt(0).
       commonAncestorContainer;
 
-    // a visible result is found
+    // A visible result is found.
     if (isVisible(result)) {
       return null;
     }
 
-    // found an invisible result
+    // Found an invisible result.
     return result;
   }
 
@@ -435,7 +455,7 @@ function SkipInvisible() {
     let getComputedStyle = aNode.ownerDocument.defaultView.getComputedStyle;
     let style;
 
-    // the initial node is a text node
+    // The initial node is a text node.
     let node = aNode;
 
     while (node) {
@@ -450,7 +470,7 @@ function SkipInvisible() {
           style.visibility !== 'visible' ||
           style.display === 'none' ||
 
-          // TODO: ensure to detect the position hacks to hide the content
+          // TODO: Ensure to detect the position hacks to hide the content.
           (/absolute|fixed/.test(style.position) &&
            (parseInt(style.left, 10) < 0 ||
             parseInt(style.top, 10) < 0 ||
@@ -477,7 +497,7 @@ function SkipInvisible() {
 }
 
 /**
- * Handler for the centering horizontally of a found text
+ * Handler for the centering horizontally of a found text.
  *
  * @return {hash}
  *   align: {function}
@@ -543,7 +563,7 @@ function HorizontalCentered() {
 }
 
 /**
- * Handler for scrolling an element smoothly
+ * Handler for scrolling an element smoothly.
  *
  * @return {hash}
  *   start: {function}
@@ -551,14 +571,17 @@ function HorizontalCentered() {
  */
 function SmoothScroll() {
   const kOption = {
-    // pitch of a scroll [integer]
-    //
-    // far: the goal is away from the current viewport over its width/height
-    // near: the goal comes within the w/h of the viewport
-    //
-    // @note 8 pitches mean approaching to the goal by each remaining distance
-    // divided by 8
-    // @note the bigger value, the slower moving
+    /**
+     * Pitch of a scroll.
+     *
+     * @value {integer}
+     * far: The goal is away from the current viewport over its width/height.
+     * near: The goal comes within the w/h of the viewport.
+     *
+     * @note 6 pitches mean approaching to the goal by each remaining distance
+     * divided by 6.
+     * @note The bigger value, the slower moving.
+     */
     pitch: {
       far: 2,
       near: 6
@@ -588,6 +611,7 @@ function SmoothScroll() {
       };
 
       this.initialized = true;
+
       return true;
     },
 
@@ -618,24 +642,29 @@ function SmoothScroll() {
     let {step} = mState.param;
 
     let was = getScroll();
+
     doScrollBy(step);
+
     let now = getScroll();
 
-    // took too much time. stop stepping and jump to goal
+    // Took too much time. stop stepping and jump to goal.
     if (aTime.current - aTime.start > 1000) {
       stop(true);
+
       return false;
     }
 
-    // reached the goal or went over. stop stepping at here
+    // Reached the goal or went over. stop stepping at here.
     if (was.delta.x * now.delta.x <= 0 &&
         was.delta.y * now.delta.y <= 0) {
       stop(false);
+
       return false;
     }
 
-    // ready for the next frame
+    // Ready for the next frame.
     mState.param.step = getStep(now.position);
+
     return true;
   }
 
@@ -654,7 +683,7 @@ function SmoothScroll() {
   }
 
   function cancel() {
-    // terminate scrolling at the current position
+    // Terminate scrolling at the current position.
     stop(false);
   }
 
@@ -755,6 +784,7 @@ function SmoothScroll() {
         height: height
       };
     }
+
     return null;
   }
 
@@ -762,6 +792,7 @@ function SmoothScroll() {
     if (aNode instanceof Window) {
       return aNode;
     }
+
     return aNode.ownerDocument.defaultView;
   }
 
@@ -782,37 +813,47 @@ function SmoothScroll() {
 }
 
 /**
- * Blinking a found text between on and off a selection
+ * Blinking a found text between on and off a selection.
  *
  * @return {hash}
  *   start: {function}
  *   cancel: {function}
  *
- * @note the blinking color set is the normal selection style (default: white
- * text on blue back)
- * @note the selection becomes harder to see accoding to a page style. so I
+ * @note The blinking color set is the normal selection style (default: white
+ * text on blue back).
+ * @note The selection becomes harder to see accoding to a page style. So I
  * have set the selection style in <userContent.css>;
  *   ::-moz-selection {
  *     color: white !important;
  *     background: blue !important;
  *   }
  *
- * TODO: use |nsISelectionController::SELECTION_ATTENTION|
- * if the style of a found text selection (default: white text on green back)
+ * TODO: use |nsISelectionController::SELECTION_ATTENTION|.
+ * If the style of a found text selection (default: white text on green back)
  * is overwritten by a page style, I don't know how to fix it because
- * <::-moz-selection> is not applied to it. For now I use |SELECTION_NORMAL| so
- * that the blinking color set can be restyled by <::-moz-selection>
+ * <::-moz-selection> is not applied to it.
+ * WORKAROUND: I use |SELECTION_NORMAL| so that the blinking color set can be
+ * restyled by <::-moz-selection> for now.
  */
 function FoundBlink() {
   const kOption = {
-    // duration of time for blinks [millisecond]
-    //
-    // @note a blinking will be canceled when the duration is expired
+    /**
+     * Duration of time for blinks.
+     *
+     * @value {integer} [millisecond]
+     *
+     * @note A blinking will be canceled when the duration is expired.
+     */
     duration: 2000,
 
-    // number of times to blink [even number]
-    //
-    // @note 6 steps mean on->off->on->off->on->off->on
+    /**
+     * Number of times to blink.
+     *
+     * @value {integer}
+     *
+     * @note Set to EVEN number.
+     * @note 6 steps mean 'on->off->on->off->on->off->on'.
+     */
     steps: 12
   };
 
@@ -839,6 +880,7 @@ function FoundBlink() {
       };
 
       this.initialized = true;
+
       return true;
     },
 
@@ -850,7 +892,7 @@ function FoundBlink() {
     }
   };
 
-  // attach a cleaner when the selection is removed by clicking
+  // Attach a cleaner when the selection is removed by clicking.
   addEvent(gBrowser.mPanelContainer, 'mousedown', cancel, false);
 
   function start() {
@@ -864,20 +906,20 @@ function FoundBlink() {
   function onEnterFrame(aTime) {
     let {duration, blinks, range} = mState.param;
 
-    // the duration is expired. stop blinking and display the selection
+    // The duration is expired. Stop blinking and display the selection.
     if (aTime.current - aTime.start > duration) {
       stop(true);
       return false;
     }
 
-    // do not blink until the selection comes into the view
+    // Do not blink until the selection comes into the view.
     if (blinks > 0 || isRangeIntoView(range)) {
-      // show the selection when |blinks| is odd, not when even(include 0)
+      // Show the selection when |blinks| is odd, not when even (including 0).
       setDisplay(!!(blinks % 2));
       mState.param.blinks++;
     }
 
-    // ready for the next frame
+    // Ready for the next frame.
     return true;
   }
 
@@ -896,7 +938,7 @@ function FoundBlink() {
   }
 
   function cancel() {
-    // terminate blinking and stay the display state of selection
+    // Terminate blinking and stay the display state of selection.
     stop(false);
   }
 
@@ -940,14 +982,14 @@ function FoundBlink() {
 }
 
 /**
- * Handler of the frame animation
+ * Handler of the frame animation.
  *
  * @return {hash}
  *   request: {function}
  *   cancel: {function}
  *
- * @note used in |SmoothScroll| and |FoundBlink|
- * TODO: should I make this function as a class for creating multiple
+ * @note Used in |SmoothScroll| and |FoundBlink|.
+ * TODO: Should I make this function as a class for creating multiple
  * instances?
  */
 function FrameAnimator(aCallback, aOption) {
@@ -1009,15 +1051,15 @@ function FrameAnimator(aCallback, aOption) {
 }
 
 /**
- * Entry point
+ * Entry point.
  */
-FindAgainScroller_init();
-
 function FindAgainScroller_init() {
   FindBar.register({
     onCreate: FindAgainCommand.init
   });
 }
+
+FindAgainScroller_init();
 
 
 })(this);

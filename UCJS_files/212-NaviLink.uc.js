@@ -10,7 +10,8 @@
 
 // @note Some functions are exposed (window.ucjsNaviLink.XXX).
 
-// @note This script scans only top content document, does not traverse frames.
+// @note This script scans only the top content document, does not traverse
+// frames.
 
 
 const ucjsNaviLink = (function(window, undefined) {
@@ -52,27 +53,27 @@ const {
  * Preference
  */
 const kPref = {
-  // show the unregistered navigation links
-  // @see |kNaviLinkType| for the registered types
+  // Show the unregistered navigation links.
+  // @see |kNaviLinkType| for the registered types.
   showSubNaviLinks: true,
 
-  // show the page information menu
+  // Show the page information menu.
   // @see |kPageInfoType|
   showPageInfo: true
 };
 
 /**
- * User presets
+ * User presets.
  *
  * @key name {string}
- *   a display name in the UI item
+ *   A display name in the UI item.
  * @key URL {RegExp}
- *   a URL of a page that should be scan the navigations
+ *   A URL of a page that should be scan the navigations.
  * @key prev {XPath}
  * @key next {XPath}
- *   set xpath of an element for navigation
- *   any element which has <href> attribute: opens its URL
- *   <input> element: submits with its form
+ *   Set xpath of an element for navigation;
+ *   Any element which has <href> attribute: Opens its URL.
+ *   <input> element: Submits with its form.
  */
 const kPresetNavi = [
   {
@@ -83,7 +84,7 @@ const kPresetNavi = [
   },
   {
     name: 'DuckDuckGo Search',
-    URL: /^https?:\/\/duckduckgo.com\/(?:html|lite)\//,
+    URL: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
     prev: './/input[@class="navbutton" and @value[contains(.,"Prev")]]',
     next: './/input[@class="navbutton" and @value[contains(.,"Next")]]'
   }
@@ -91,19 +92,19 @@ const kPresetNavi = [
 ];
 
 /**
- * Types of the link navigations
+ * Types of the link navigations.
  *
  * @key type {string}
- *   the value of <rel> attribute of an element that has <href> (e.g. <link>,
- *   <a>)
+ *   The value of <rel> attribute of an element that has <href> (e.g. <link>,
+ *   <a>).
  * @key synonym {string} [optional]
- *   the synonymous value that is converted to <type>
- *   the values can be combined with '|'
+ *   The synonymous value that is converted to <type>.
+ *   @note The values can be combined with '|'.
  * @key label {string} [optional]
- *   a displayed string
- *   a capitalized text of <type> will be displayed if <label> is empty
+ *   A displayed string.
+ *   @note A capitalized text of <type> will be displayed if <label> is empty.
  *
- * @note displayed in the declared order
+ * @note Displayed in the declared order.
  */
 const kNaviLinkType = [
   {
@@ -180,14 +181,14 @@ const kNaviLinkType = [
 ];
 
 /**
- * Types of the page information
+ * Types of the page information.
  *
  * @key type {string}
  * @key label {string} [optional]
- *   a displayed string
- *   a capitalized text of <type> will be displayed if <label> is empty
+ *   A displayed string.
+ *   @note A capitalized text of <type> will be displayed if <label> is empty.
  *
- * @note displayed in the declared order
+ * @note Displayed in the declared order.
  */
 const kPageInfoType = [
   {
@@ -213,9 +214,9 @@ const kPageInfoType = [
 ];
 
 /**
- * Types of the prev/next navigation
+ * Types of the prev/next navigation.
  *
- * @note the values is displayed
+ * @note The values is displayed.
  */
 const kSiblingScanType = {
   preset:    'プリセット',
@@ -225,27 +226,27 @@ const kSiblingScanType = {
 };
 
 /**
- * Strings format
+ * Strings format.
  *
- * @note the values is displayed through |F()|
+ * @note The values is displayed through |F()|.
  */
 const kFormat = {
-  // for the main categories
+  // For the main categories.
   upper: '上の階層',
   prev: '前ページ - %scanType%',
   next: '次ページ - %scanType%',
   naviLink: 'Navi Link',
   pageInfo: 'Page Info',
 
-  // for the item of <Sibling Navi>
+  // For the item of <Sibling Navi>.
   preset: '[%name%] %title%',
   official: '%title%',
   searching: '%title% (%score%)',
   numbering: '%here% -> %there%',
-  // submit mode warning
+  // Submit mode warning.
   submit: '<submit mode>',
 
-  // for the sub items of <Navi Link>/<Page Info>
+  // For the sub items of <Navi Link>/<Page Info>.
   tooManyItems: '項目が多いので表示を制限',
   type: ['%title%', '%title% (%count%)'],
   item: ['%title%', '%title% [%attributes%]'],
@@ -273,7 +274,7 @@ const kID = (function() {
 })();
 
 /**
- * Handler of the menu UI settings
+ * Handler of the menu UI settings.
  */
 const MenuUI = (function() {
   function init() {
@@ -408,7 +409,7 @@ const MenuUI = (function() {
       return;
     }
 
-    // remove existing items
+    // Remove existing items.
     let [sSep, eSep] = getSeparators();
 
     for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
@@ -614,7 +615,7 @@ const MenuUI = (function() {
       let childPopup = $E('menupopup');
 
       if (type === 'meta') {
-        // only shows <meta> information with no command
+        // Only shows <meta> information with no command.
         list.forEach((data) => {
           let text = formatText(data, {meta: true});
 
@@ -690,7 +691,7 @@ const MenuUI = (function() {
           });
       }
 
-      // unreachable here, for avoiding warnings
+      // Unreachable here, but avoid warnings.
       return null;
     }
 
@@ -708,10 +709,11 @@ const MenuUI = (function() {
   }
 
   /**
-   * Attributes formatter
+   * Attributes formatter.
    *
-   * @param aAttributes {array} see |NaviLink| for detail
+   * @param aAttributes {array}
    *   [['name', 'value'], ..., ['rel', ['value', 'value', ...]]]
+   *   @see |NaviLink| for detail.
    * @return {string}
    */
   function formatAttributes(aAttributes) {
@@ -745,6 +747,7 @@ const MenuUI = (function() {
     if (aText && aText !== getLeaf(aURL)) {
       return aText + '\n' + aURL;
     }
+
     return aURL;
   }
 
@@ -762,6 +765,7 @@ const MenuUI = (function() {
         return label || capitalize(type);
       }
     }
+
     return aType;
   }
 
@@ -771,18 +775,17 @@ const MenuUI = (function() {
 })();
 
 /**
- * Handler of the user preset of the navigation links
+ * Handler of the user preset of the navigation links.
  */
 const PresetNavi = (function() {
   /**
-   * Gets the preset data for the previous or next page
-   * @param aDirection {string} 'prev' or 'next'
+   * Gets the preset data for the previous or next page.
+   * @param aDirection {string}
+   *   'prev' or 'next'.
    * @return {hash|null}
-   * {
-   *   name:,
-   *   title:,
+   *   name:
+   *   title:
    *   URL or formIndex:
-   * }
    */
   function getData(aDirection) {
     let item;
@@ -804,7 +807,7 @@ const PresetNavi = (function() {
 
     if (node && node.href) {
       return {
-        // <data> for a preset
+        // <data> for a preset.
         name: item.name,
         title: trim(node.title) || trim(node.textContent) || '',
         URL: node.href
@@ -823,7 +826,7 @@ const PresetNavi = (function() {
       }
 
       return {
-        // <data> for a submit preset
+        // <data> for a submit preset.
         name: item.name,
         title: node.value,
         formIndex: index
@@ -846,9 +849,9 @@ const PresetNavi = (function() {
 })();
 
 /**
- * Handler of the official navigation links according to the <rel> attribute
+ * Handler of the official navigation links according to the <rel> attribute.
  *
- * @note [additional] makes a list of the page information
+ * @note [additional] Makes a list of the page information.
  */
 const NaviLink = (function() {
   const kFeedType = {
@@ -860,12 +863,12 @@ const NaviLink = (function() {
   };
 
   /**
-   * The max number of the items of each type
+   * The max number of the items of each type.
    */
   const kMaxNumItemsOfType = 20;
 
   /**
-   * Handler of the types of link navigations
+   * Handler of the types of link navigations.
    *
    * @see |kNaviLinkType|
    */
@@ -889,6 +892,7 @@ const NaviLink = (function() {
       if (type in naviLinkType) {
         return type;
       }
+
       return '';
     }
 
@@ -898,6 +902,7 @@ const NaviLink = (function() {
       if (!(type in naviLinkType)) {
         return type;
       }
+
       return '';
     }
 
@@ -920,21 +925,20 @@ const NaviLink = (function() {
   }
 
   /**
-   * Retrieves the first data of the list for the type
+   * Retrieves the first data of the list for the type.
    *
-   * @param aType {string} |kNaviLinkType.type| or |kPageInfoType.type|
-   * @return {hash|null} see |addItem()| for detail
-   * {
-   *   title:,
-   *   attributes:,
+   * @param aType {string}
+   *   |kNaviLinkType.type| or |kPageInfoType.type|.
+   * @return {hash|null}
+   *   title:
+   *   attributes:
    *   URL:
-   * }
    *
-   * for <meta>:
-   * {
-   *   name:,
+   *   For <meta>;
+   *   name:
    *   content:
-   * }
+   *
+   *   @see |addItem()| for detail.
    */
   function getData(aType) {
     let result = getNaviList();
@@ -946,19 +950,19 @@ const NaviLink = (function() {
         }
       }
     }
+
     return null;
   }
 
   /**
-   * Retrieves the list by types
+   * Retrieves the list by types.
    *
    * @return {hash[]|null}
-   * {
-   *   type: |kNaviLinkType.type| or |kPageInfoType.type|
-   *   list: {<data>[]} see |getData()| for detail
-   *   trimmed: {boolean} whether a list has been cut because of too much
-   *     items
-   * }
+   *   type: |kNaviLinkType.type| or |kPageInfoType.type|.
+   *   list: {<data>[]}
+   *     @see |getData()| for detail.
+   *   trimmed: {boolean}
+   *     whether a list has been cut because of too much items.
    */
   function getNaviList() {
     init();
@@ -1036,12 +1040,14 @@ const NaviLink = (function() {
         if (testUniqueData(resultList, data)) {
           resultList.push(data);
 
-          // stop scanning the source list
+          // Stop scanning the source list.
           if (resultList.length >= kMaxNumItemsOfType) {
             trimmed = true;
+
             return true;
           }
         }
+
         return false;
       });
 
@@ -1058,7 +1064,7 @@ const NaviLink = (function() {
   function testUniqueData(aArray, aData) {
     return aArray.every((data) => {
       for (let key in data) {
-        // <attributes> is {array}, the others are {string}
+        // <attributes> is {array}, the others are {string}.
         if (key === 'attributes') {
           if (data[key].join() !== aData[key].join()) {
             return true;
@@ -1068,6 +1074,7 @@ const NaviLink = (function() {
           return true;
         }
       }
+
       return false;
     });
   }
@@ -1098,7 +1105,7 @@ const NaviLink = (function() {
     let doc = getDocument();
     let metas = Array.slice(doc.getElementsByTagName('meta'));
 
-    // add <content-type> to avoid an empty meta list
+    // Add <content-type> to avoid an empty meta list.
     let empty = !metas.some((meta) =>
       meta.httpEquiv &&
       meta.httpEquiv.toLowerCase() === 'content-type'
@@ -1153,8 +1160,10 @@ const NaviLink = (function() {
 
     if (type) {
       addItem(aList, type, aNode, attributes);
+
       return true;
     }
+
     return false;
   }
 
@@ -1230,11 +1239,12 @@ const NaviLink = (function() {
 
     if (name) {
       return {
-        // <data> for a meta
+        // <data> for a meta.
         name: name,
         content: content
       };
     }
+
     return null;
   }
 
@@ -1253,12 +1263,13 @@ const NaviLink = (function() {
 
     if (title) {
       return {
-        // <data> for a script or rel
+        // <data> for a script or rel.
         title: title,
         attributes: aAttributes || [],
         URL: URL
       };
     }
+
     return null;
   }
 
@@ -1293,20 +1304,21 @@ const NaviLink = (function() {
 })();
 
 /**
- * Handler of links to the sibling(prev/next) page
+ * Handler of links to the sibling(prev/next) page.
  */
 const SiblingNavi = (function() {
-  // max number of links that are scanned to guess the sibling page
+  // Max number of links that are scanned to guess the sibling page.
   const kMaxNumScanningLinks = 400;
-  // max number of entries that are scored as the sibling page
+  // Max number of entries that are scored as the sibling page.
   const kMaxNumScoredEntries = 100;
-  // max number of guessed siblings to display
+  // Max number of guessed siblings to display.
   const kMaxNumSiblings = 3;
 
   /**
-   * Retrieves the URL string for the direction
+   * Retrieves the URL string for the direction.
    *
-   * @param aDirection {string} 'prev' or 'next'
+   * @param aDirection {string}
+   *   'prev' or 'next'.
    * @return {string}
    */
   function getURLFor(aDirection) {
@@ -1316,22 +1328,22 @@ const SiblingNavi = (function() {
   }
 
   /**
-   * Gets the information for the previous or next page
+   * Gets the information for the previous or next page.
    *
-   * @param aDirection {string} 'prev' or 'next'
+   * @param aDirection {string}
+   *   'prev' or 'next'.
    * @return {hash|null}
-   * {
    *   list: {<data>[]}
-   *   scanType: {string} see |kSiblingScanType| for detail
-   * }
+   *   scanType: {string}
+   *     @see |kSiblingScanType| for detail.
    *
-   * <data> has the proper members assigned to |kSiblingScanType|
-   * {name:, title:, URL:} for a <preset>
-   * {name:, title:, formIndex:} for a submit <preset>
-   * {name:, content:} for a meta of <official>
-   * {title:, attributes:, URL:} for a script or rel of <official>
-   * {title:, score:, URL:} for a sibling by <searching>
-   * {here:, there:, URL:} for a sibling by <numbering>
+   * <data> has the proper members assigned to |kSiblingScanType|.
+   * {name:, title:, URL:} for a <preset>.
+   * {name:, title:, formIndex:} for a submit <preset>.
+   * {name:, content:} for a meta of <official>.
+   * {title:, attributes:, URL:} for a script or rel of <official>.
+   * {title:, score:, URL:} for a sibling by <searching>.
+   * {here:, there:, URL:} for a sibling by <numbering>.
    */
   function getResult(aDirection) {
     let data;
@@ -1364,19 +1376,18 @@ const SiblingNavi = (function() {
   }
 
   /**
-   * Gets a list of the prev/next page by searching links
+   * Gets a list of the prev/next page by searching links.
    *
-   * @param aDirection {string} 'prev' or 'next'
+   * @param aDirection {string}
+   *   'prev' or 'next'.
    * @return {<data>[]|null}
    * <data> {hash}
-   * {
    *   title: {string}
    *   score: {number}
    *   URL: {string}
-   * }
    *
-   * @note allows only URL that has the same as the base domain of the document
-   * to avoid jumping to the outside by a 'prev/next' command
+   * @note Allows only URL that has the same as the base domain of the document
+   * to avoid jumping to the outside by a 'prev/next' command.
    */
   function guessBySearching(aDirection) {
     let URI = getURI('NO_REF');
@@ -1431,7 +1442,7 @@ const SiblingNavi = (function() {
         score: aScore
       };
 
-      // cache for |contains()|
+      // Cache for |contains()|.
       URLs[URLs.length] = aURL;
     }
 
@@ -1448,12 +1459,12 @@ const SiblingNavi = (function() {
         return null;
       }
 
-      // sort items in a *descending* of the score
+      // Sort items in a *descending* of the score.
       entries.sort((a, b) => b.score - a.score);
 
       let list = entries.map(({text, URL, score}) => {
         return {
-          // <data> for a sibling by searching
+          // <data> for a sibling by searching.
           title: text,
           score: score,
           URL: URL
@@ -1522,20 +1533,19 @@ const SiblingNavi = (function() {
   }
 
   /**
-   * Gets a list of the prev/next page by numbering of URL
+   * Gets a list of the prev/next page by numbering of URL.
    *
-   * @param aDirection {string} 'prev' or 'next'
+   * @param aDirection {string}
+   *   'prev' or 'next'.
    * @return {<data>[]|null}
-   * <data> {hash}
-   * {
-   *   here: {string}
-   *   there: {string}
-   *   URL: {string}
-   * }
+   *   <data> {hash}
+   *     here: {string}
+   *     there: {string}
+   *     URL: {string}
    */
   function guessByNumbering(aDirection) {
     /**
-     * Patterns like the page numbers in URL
+     * Patterns like the page numbers in URL.
      *
      * @const kNumQuery {RegExp}
      *   Query with a numeric value; [?&]page=123 or [?&]123
@@ -1587,6 +1597,7 @@ const SiblingNavi = (function() {
     if (list.length) {
       return trimSiblingsList(list);
     }
+
     return null;
   }
 
@@ -1606,11 +1617,11 @@ const SiblingNavi = (function() {
 })();
 
 /**
- * Evaluator of the navigation-like text and URL
+ * Evaluator of the navigation-like text and URL.
  */
 const NaviLinkTester = (function() {
   /**
-   * Test for text
+   * Test for text.
    */
   const TextLike = (function() {
     // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
@@ -1631,7 +1642,7 @@ const NaviLinkTester = (function() {
              '\\u6b21|\\u65b0\\u3057']
     };
 
-    // score weighting
+    // Score weighting.
     const kWeight = normalizeWeight({
       matchSign: 50,
       matchWord: 50,
@@ -1655,9 +1666,9 @@ const NaviLinkTester = (function() {
       oppositeWord = RegExp(word[0] + '|' +  word[1], 'i');
 
       word = kNaviWord[aDirection];
-      // find a text string or image filename like a navigation
-      // @note allows the short leading words before the navigation word for
-      // the ascii characters (e.g. 'Go to next page', 'goto-next-page.png')
+      // Find a text string or image filename like a navigation.
+      // @note Allows the short leading words before the navigation word for
+      // the ascii characters (e.g. 'Go to next page', 'goto-next-page.png').
       naviWord = RegExp('(?:^|^.{0,10}[\\s-_])(?:' + word[0] +
         ')(?:$|[\\s-_.])|^(?:' +  word[1] + ')', 'i');
     }
@@ -1686,7 +1697,7 @@ const NaviLinkTester = (function() {
           point += (kWeight.lessText * adjust);
         }
         else {
-          // exact match
+          // Exact match.
           point += kWeight.lessText;
         }
       }
@@ -1705,7 +1716,7 @@ const NaviLinkTester = (function() {
   })();
 
   /**
-   * Test for URL
+   * Test for URL.
    */
   const URLLike = (function() {
     const kWeight = normalizeWeight({
@@ -1729,7 +1740,7 @@ const NaviLinkTester = (function() {
     function getEqualLengthRate(aSrc, aDst) {
       let sLen = aSrc.length, dLen = aDst.length;
 
-      // be less than (1.0)
+      // Be less than (1.0).
       return 1 - (Math.abs(sLen - dLen) / (sLen + dLen));
     }
 
@@ -1742,13 +1753,15 @@ const NaviLinkTester = (function() {
 
           if (i > -1) {
             dParts[i] = '';
+
             return true;
           }
         }
+
         return false;
       });
 
-      // be less than (1.0)
+      // Be less than (1.0).
       return overlaps.length / sParts.length;
     }
 
@@ -1807,11 +1820,11 @@ const NaviLinkTester = (function() {
 })();
 
 /**
- * Handler of the links to the upper(top/parent) page
+ * Handler of the links to the upper(top/parent) page.
  */
 const UpperNavi = (function() {
   /**
-   * Gets the list of the upper page URLs from parent to top in order
+   * Gets the list of the upper page URLs from parent to top in order.
    *
    * @return {string[]}
    */
@@ -1834,13 +1847,14 @@ const UpperNavi = (function() {
       let path = aURI.path.replace(/\/(?:index\.html?)?$/i, '')
       let segments = path.split('/');
 
-      // remove the last one
+      // Remove the last one.
       segments.pop();
 
       let URL = aURI.prePath + segments.join('/') + '/';
 
       return (URL !== 'file:///') ? URL : '';
     }
+
     return getUpperHost(aURI);
   }
 
@@ -1850,6 +1864,7 @@ const UpperNavi = (function() {
 
       return match ? match[1] : '';
     }
+
     return aURI.hasPath() ? aURI.prePath + '/' : getUpperHost(aURI);
   }
 
@@ -1867,6 +1882,7 @@ const UpperNavi = (function() {
 
       return aURI.scheme + '://' + levels.join('.') + '/';
     }
+
     return '';
   }
 
@@ -1882,14 +1898,14 @@ const UpperNavi = (function() {
 })();
 
 /**
- * Gets the document object of the current content
+ * Gets the document object of the current content.
  */
 function getDocument() {
   return gBrowser.contentDocument;
 }
 
 /**
- * Gets the URI object of the current content
+ * Gets the URI object of the current content.
  */
 function getURI(aFlag) {
   return createURI(getDocument().documentURI, aFlag);
@@ -1989,12 +2005,12 @@ function getBaseDomain(aURI) {
    * for a specific host.
    *
    * For http://gitbookio.github.io/javascript/
-   * Expected:
-   * base domain = github.io
-   * public suffix = io
-   * Actual:
-   * base domain = gitbookio.github.io
-   * public suffix = github.io
+   * Expected;
+   *   base domain = github.io
+   *   public suffix = io
+   * Actual;
+   *   base domain = gitbookio.github.io
+   *   public suffix = github.io
    */
   const kBadHosts = [
     'github.io'
@@ -2039,14 +2055,15 @@ function handleAttribute(aNode, aName, aValue) {
 }
 
 /**
- * String formatter
+ * String formatter.
  *
- * @param aFormat {string|string[]} see |kFormat| for detail
+ * @param aFormat {string|string[]}
+ *   @see |kFormat| for detail.
  * @param aReplacement {hash}
  * @return {string}
  */
 function F(aFormat, aReplacement) {
-  // filter items that its value is |null| or |undefined|
+  // Filter items that its value is |null| or |undefined|.
   let replacement = {};
 
   for (let [name, value] in Iterator(aReplacement)) {
@@ -2059,7 +2076,7 @@ function F(aFormat, aReplacement) {
     aFormat = [aFormat];
   }
 
-  // retreive a format that has all aliases of the name of replacements
+  // Retreive a format that has all aliases of the name of replacements.
   let format;
   let names = Object.keys(replacement);
 
@@ -2087,6 +2104,7 @@ function getLeaf(aURL) {
 
     return aURL.slice(lastSlash + 1) || aURL;
   }
+
   return '';
 }
 
@@ -2094,11 +2112,12 @@ function trim(aText) {
   if (aText) {
     return aText.trim().replace(/\s+/g, ' ');
   }
+
   return '';
 }
 
 /**
- * Entry point
+ * Entry point.
  */
 function NaviLink_init() {
   MenuUI.init();

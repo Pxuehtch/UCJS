@@ -37,22 +37,22 @@ function log(aMsg) {
 }
 
 /**
- * Preset list
+ * Preset list.
  *
  * @key type {string}
- *   'get' - requests data
- *   'open' - opens tab
+ *   'get': Requests data.
+ *   'open': Opens a tab.
  * @key name {string}
- *   a preset name
+ *   A preset name.
  * @key URL {string}
- *   URL string of a web service
- *   @note pass the data with alias
+ *   A URL string of a web service.
+ *   @note Pass the data with alias.
  *   @see |AliasFixup|
- * @key form {hash} [optional; only with type 'open']
+ * @key form {hash} [optional for only 'open' type]
  *   @key form {XPath of <form>}
  *   @key input {XPath of <input>}
  * @key parse {function} [optional; only with type 'get']
- *   a function to parse the response text when the load is complete
+ *   A function to parse the response text when the load is complete.
  *   @param aResponseText {string}
  *   @param aXHR {nsIXMLHttpRequest}
  */
@@ -98,20 +98,20 @@ const kPresets = [
 ];
 
 /**
- * Handler of fixing up an alias with the data
+ * Handler of fixing up an alias with the data.
  *
  * @return {hash}
  *   @key create {function}
  *
  * [aliases]
- * %RAW% : data itself
- * %ENC% : with URI encoded
- * %SCHEMELESS%, %sl% : without the URL scheme
- * %PARAMLESS%, %pl% : without the URL parameter
+ * %RAW% : The data itself.
+ * %ENC% : With URI encoded.
+ * %SCHEMELESS%, %sl% : Without the URL scheme.
+ * %PARAMLESS%, %pl% : Without the URL parameter.
  *
- * @note aliases can be combined by '|';
- * e.g. %SCHEMELESS|ENC% : a data that is trimmed the scheme and then URI
- * encoded (the multiple aliases is applied in the order of settings)
+ * @note Aliases can be combined by '|';
+ * e.g. %SCHEMELESS|ENC% : A data that is trimmed the scheme and then URI
+ * encoded (the multiple aliases is applied in the order of settings).
  */
 const AliasFixup = (function() {
   const kAliasSplitter = '|';
@@ -161,21 +161,21 @@ const AliasFixup = (function() {
 })();
 
 /**
- * XMLHttpRequest handler
+ * XMLHttpRequest handler.
  */
 const RequestHandler = (function() {
-  // The minimum time for waiting a request
+  // The minimum time for waiting a request.
   //
   // @value {integer} [milliseconds > 0]
   const kMinCooldownTime = 2000;
 
-  // the request time for each host
+  // The request time for each host.
   const RequestTime = {
     mRequestTimeList: {},
 
     update: function(aURL) {
-      // @note no error checks due to supposing that |URL| of an item of
-      // |kPreset| is valid
+      // @note No error checks due to supposing that |URL| of an item of
+      // |kPreset| is valid.
       let host = (/^https?:\/\/([^\/]+)/.exec(aURL))[1];
 
       let lastRequestTime = this.mRequestTimeList[host] || 0;
@@ -184,7 +184,7 @@ const RequestHandler = (function() {
 
       this.mRequestTimeList[host] = requestTime;
 
-      // returns the cooldown time for the next request
+      // Returns the cooldown time for the next request.
       return Math.max(remainTime, 0)
     }
   };
@@ -192,7 +192,7 @@ const RequestHandler = (function() {
   function request(aURL, aOption) {
     let cooldownTime = RequestTime.update(aURL);
 
-    // TODO: implement a canceller
+    // TODO: Implement a canceller.
     setTimeout(() => {
       let {httpRequest} = getModule('resource://gre/modules/Http.jsm');
 
@@ -206,19 +206,19 @@ const RequestHandler = (function() {
 })();
 
 /**
- * Opens a new tab with the service
+ * Opens a new tab with the service.
  *
  * @param aParams {hash}
  *   name: {string}
- *     a preset name
+ *     A preset name.
  *   data: {string|number|[string|number]} [optional]
- *     data to complete the URL of the preset
- *     @note set the replaced values in the order in Array[] when a URL has
- *     multiple aliases
+ *     Data to complete the URL of the preset.
+ *     @note Set the replaced values in the order in Array[] when a URL has
+ *     multiple aliases.
  *   tabOption: {hash} [optional]
- *     options for a new tab
+ *     Options for a new tab.
  *     @see |ucjsUtil::openTab|
- *     e.g. |tabOption: {inBackground: true}| opens tab in background
+ *     e.g. |tabOption: {inBackground: true}| opens tab in background.
  *
  * @usage window.ucjsWebService.open(aParams);
  */
@@ -231,32 +231,32 @@ function open(aParams) {
 
   let tab = openTab(result.URL, result.tabOption);
 
-  // TODO: observe the document loaded to manage a form
+  // TODO: Observe the document loaded to manage a form.
   // WORKAROUND:
-  // 1.uses an easy delay for a selected tab
-  // 2.the URL is only opened for a background tab
-  // XXX: I'm unwilling to handle an observer for this
+  // 1.Uses an easy delay for a selected tab.
+  // 2.The URL is just only opened for a background tab.
+  // XXX: I'm unwilling to handle an observer for this.
   if (tab.selected && result.form) {
     setTimeout(inputAndSubmit, 500, result.form, result.data);
   }
 }
 
 /**
- * Gets the response of request to the service
+ * Gets the response of request to the service.
  *
  * @param aParams {hash}
  *   name: {string}
- *     a preset name
+ *     A preset name.
  *   data: {string|number|[string|number]} [optional]
- *     data to complete the URL of the preset
- *     @note set the replaced values in the order in Array[] when the URL has
- *     multiple aliases
+ *     Data to complete the URL of the preset.
+ *     @note Set the replaced values in the order in Array[] when the URL has
+ *     multiple aliases.
  *   onLoad: {function}
- *     a function handle to call when the load is complete
+ *     A function handle to call when the load is complete.
  *     @param aResponseText {string}
  *     @param aXHR {nsIXMLHttpRequest}
  *   onError: {function} [optional]
- *     a function handle to call when an error occcurs
+ *     A function handle to call when an error occcurs.
  *     @param aErrorText {string}
  *     @param aResponseText {string}
  *     @param aXHR {nsIXMLHttpRequest}
@@ -311,19 +311,19 @@ function getResult(aParams, aType) {
 function evaluate(aParams, aPreset) {
   let result = {};
 
-  // copy the preset
+  // Copy the preset.
   for (let key in aPreset) {
     result[key] = aPreset[key];
   }
 
-  // add the option
+  // Add the option.
   for (let key in aParams) {
     if (!(key in result)) {
       result[key] = aParams[key];
     }
   }
 
-  // build a URL
+  // Build a URL.
   if (!result.URL) {
     throw Error('aPreset.URL is empty');
   }
