@@ -9,6 +9,8 @@
 // @usage Opens a tooltip panel with 'Alt + Ctrl + MouseMove' on an element
 // with the attribute for description or URL or event-handler including the
 // ancestor elements.
+// @note You can select and copy texts. And also can copy the whole data by the
+// 'Copy All' menu item of the context menu.
 
 
 (function(window, undefined) {
@@ -122,6 +124,10 @@ const kUI = {
   subTooltip: {
     // @note The id prefix of a sub tooltip.
     id: 'ucjs_TooltipEx_subTooltip'
+  },
+  copy: {
+    id: 'ucjs_TooltipEx_copy',
+    label: 'Copy'
   },
   copyAll: {
     id: 'ucjs_TooltipEx_copyAll',
@@ -307,12 +313,19 @@ const TooltipPanel = (function() {
       backdrag: true
     });
 
-    panel.style.maxWidth = kPref.maxLineLength + 'em';
-
     // Make the context menu.
-    let popup = $E('menupopup');
+    let popup = $E('menupopup', {
+      // @see chrome://global/content/globalOverlay.js::goUpdateCommand
+      onpopupshowing: 'goUpdateCommand("cmd_copy");'
+    });
 
     addEvent(popup, 'command', handleEvent, false);
+
+    popup.appendChild($E('menuitem', {
+      id: kUI.copy.id,
+      label: kUI.copy.label,
+      command: 'cmd_copy'
+    }));
 
     popup.appendChild($E('menuitem', {
       id: kUI.copyAll.id,
@@ -508,14 +521,21 @@ const TooltipPanel = (function() {
   function createTipItem(aTipData) {
     let {text, head, rest, cropped} = aTipData;
 
-    let $label = (attribute) => $E('label', attribute);
+    // An block element for a tip data.
+    let $item = (aAttribute) => {
+      if (aAttribute) {
+        aAttribute.style += '-moz-user-focus:normal;-moz-user-select:text;';
+      }
+
+      return $E('html:div', aAttribute);
+    };
 
     // An inline element for styling of a text.
     let $span = (aAttribute) => $E('html:span', aAttribute);
 
-    let $text = (text) => window.document.createTextNode(text);
+    let $text = (aText) => window.document.createTextNode(aText);
 
-    let item = $label({
+    let item = $item({
       style: kStyle.item,
       'tipText': text
     });
@@ -549,10 +569,10 @@ const TooltipPanel = (function() {
       }
 
       item.appendChild(subTooltip).
-        appendChild($label()).
+        appendChild($item()).
         appendChild($text(text));
 
-      item.appendChild($label({
+      item.appendChild($E('label', {
         value: kTipFormat.ellipsis,
         style: kStyle.crop,
         class: 'plain',
