@@ -268,9 +268,14 @@ function log(aMsg) {
     // @note |pattern| tests an HTML-escaped URL string.
     const kAccent = [
       {
-        // domain
+        // HTTP domains.
         pattern: /https?(?::|%(?:25)*3a)(?:\/|%(?:25)*2f){2}[\w-.]+/ig,
-        style: 'color:blue;'
+        style: 'color:blue;background-color:lightgray;'
+      },
+      {
+        // Parameter delimiters.
+        pattern: /[?#]/g,
+        style: 'background-color:pink;'
       }
     ];
 
