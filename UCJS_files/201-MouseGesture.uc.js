@@ -1041,7 +1041,8 @@ function GestureManager() {
       }
       catch (ex) {
         mError = 'Command error';
-        log([showStatusText(), ex]);
+
+        log([delayedShowStatusText(), ex]);
       }
     }
   }
@@ -1056,16 +1057,27 @@ function GestureManager() {
     return gesture;
   }
 
-  function showStatusText() {
-    let text = toString();
+  /**
+   * Delayed show the status text.
+   *
+   * @note This is a workaround for a command error in |doAction|.
+   * Show the error status even after the gesture state is cleared. Since the
+   * status display is also cleared just after |doAction| is called at the end
+   * of gestures.
+   * @see |MouseGesture.stopGesture()|
+   */
+  function delayedShowStatusText() {
+    let text = makeStatusText();
 
-    if (mError) {
-      // WORKAROUND: Display the status after its values have been cleared.
-      setTimeout((aText) => updateStatusText(aText), 0, text);
-    }
-    else {
-      updateStatusText(text);
-    }
+    setTimeout((aText) => updateStatusText(aText), 0, text);
+
+    return text;
+  }
+
+  function showStatusText() {
+    let text = makeStatusText();
+
+    updateStatusText(text);
 
     return text;
   }
@@ -1074,23 +1086,20 @@ function GestureManager() {
     updateStatusText('');
   }
 
-  /**
-   * Creates a display string.
-   */
-  function toString() {
+  function makeStatusText() {
     const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
 
-    let value = kFormat[0].replace('%GESTURE%', buildGesture());
+    let text = kFormat[0].replace('%GESTURE%', buildGesture());
 
     if (mMatchItem) {
-      value += kFormat[1].replace('%NAME%', mMatchItem.name);
+      text += kFormat[1].replace('%NAME%', mMatchItem.name);
     }
 
     if (mError) {
-      value += kFormat[2].replace('%ERROR%', mError);
+      text += kFormat[2].replace('%ERROR%', mError);
     }
 
-    return value;
+    return text;
   }
 
   return {
