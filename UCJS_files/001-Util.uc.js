@@ -395,13 +395,26 @@ function trimText(aText, aMaxLength) {
  *
  * @note Use only for XUL element.
  *
- * TODO: Manage the namespace of tag/attribute.
+ * TODO: Manage the namespace of attribute.
  */
 function createNode(aTagOrNode, aAttribute, aAttributeHandler) {
   let node;
 
   if (typeof aTagOrNode === 'string') {
-    node = window.document.createElement(aTagOrNode);
+    let [ns, tag] = aTagOrNode.split(':');
+
+    if (ns && tag) {
+      let nsURI = lookupNamespaceURI(ns);
+
+      if (!nsURI) {
+        throw Error('Invalid namespace prefix: ' + ns);
+      }
+
+      node = window.document.createElementNS(nsURI, tag);
+    }
+    else {
+      node = window.document.createElement(aTagOrNode);
+    }
   }
   else {
     node = aTagOrNode;
