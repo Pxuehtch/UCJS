@@ -47,7 +47,7 @@ const kPref = {
    *
    * @note 'max-width' of a text container is set to this value by 'em'.
    */
-  maxLineLength: 40,
+  maxWidth: 40,
 
   /**
    * Number of lines in the visible portion of a long text being cropped.
@@ -56,7 +56,14 @@ const kPref = {
    *
    * @note Applied to a long URL with 'javascript:' or 'data:' scheme.
    */
-  visibleLinesWhenCropped: 2
+  maxNumWrapLinesWhenCropped: 2,
+
+  /**
+   * Max numbers of wrap lines of a long text in a sub tooltip.
+   *
+   * @value {integer} [>0]
+   */
+  maxNumWrapLinesOfSubTooltip: 20
 };
 
 /**
@@ -104,7 +111,6 @@ const kInfoAttribute = {
     'cite', 'longdesc', 'background'
   ]
 };
-
 
 /**
  * UI setting.
@@ -288,11 +294,16 @@ const TooltipPanel = (function() {
   }
 
   function create() {
-    // @note Set 'white-space:pre;' that suppresses text wrapping for our own
-    // control of it.
+    let panelStyle =
+      '-moz-appearance:tooltip;' +
+      // @note The inner container |mBox| has 'max-width'.
+      'max-width:none;' +
+      // Tight text wrapping.
+      'word-break:break-all;word-wrap:break-word;'
+
     let panel = $E('panel', {
       id: kUI.panel.id,
-      style: '-moz-appearance:tooltip;white-space:pre;',
+      style: panelStyle,
       backdrag: true
     });
 
@@ -311,7 +322,10 @@ const TooltipPanel = (function() {
     panel.contextMenu = '_child';
     panel.appendChild(popup);
 
-    mBox = panel.appendChild($E('vbox'));
+    mBox = panel.appendChild($E('vbox', {
+      style: 'max-width:' + kPref.maxWidth + 'em;'
+    }));
+
     mPanel = $ID('mainPopupSet').appendChild(panel);
 
     return panel;
@@ -466,53 +480,21 @@ const TooltipPanel = (function() {
 
     let text = (aHead + aRest).trim().replace(/\s+/g, ' ');
 
-    let {wrappedText, croppedText} = wrapLines(text, aDoCrop);
+    let croppedText;
+
+    if (aDoCrop) {
+      let maxLength = kPref.maxWidth * kPref.maxNumWrapLinesWhenCropped;
+
+      if (text.length > maxLength) {
+        croppedText = text.substr(0, maxLength);
+      }
+    }
 
     return {
       text: text,
       head: aHead,
-      rest: (croppedText || wrappedText).substr(aHead.length),
-      uncroppedText: croppedText && wrappedText
-    };
-  }
-
-  function wrapLines(aText, aDoCrop) {
-    const {maxLineLength, visibleLinesWhenCropped} = kPref;
-
-    let lines = [];
-    let count = 0, last = 0;
-
-    for (let i = 0, l = aText.length; i < l; i++) {
-      // Count characters based on width.
-      // WORKAROUND: Regards only printable ASCII character as one letter.
-      count += /[ -~]/.test(aText[i]) ? 1 : 2;
-
-      if (count > maxLineLength) {
-        lines.push(aText.substring(last, i).trim());
-        last = i;
-        count = 1;
-      }
-    }
-
-    if (!lines.length) {
-      return {
-        wrappedText: aText
-      };
-    }
-
-    // Add the last fragment of text.
-    lines.push(aText.substring(last).trim());
-
-    let wrappedText = lines.join('\n');
-    let croppedText;
-
-    if (aDoCrop && lines.length > visibleLinesWhenCropped) {
-      croppedText = lines.slice(0, visibleLinesWhenCropped).join('\n');
-    }
-
-    return {
-      wrappedText: wrappedText,
-      croppedText: croppedText
+      rest: (croppedText || text).substr(aHead.length),
+      cropped: !!croppedText
     };
   }
 
@@ -524,7 +506,7 @@ const TooltipPanel = (function() {
    * @return {Element}
    */
   function createTipItem(aTipData) {
-    let {text, head, rest, uncroppedText} = aTipData;
+    let {text, head, rest, cropped} = aTipData;
 
     let $label = (attribute) => $E('label', attribute);
 
@@ -548,29 +530,34 @@ const TooltipPanel = (function() {
       item.appendChild($text(rest));
     }
 
-    if (uncroppedText) {
+    if (cropped) {
+      let subTooltipStyle =
+        'max-width:' + kPref.maxWidth + 'em;' +
+        'word-break:break-all;word-wrap:break-word;' +
+        kStyle.item;
+
       let subTooltip = $E('tooltip', {
         // TODO: Make a smart unique id.
         id: kUI.subTooltip.id + mBox.childNodes.length,
-        style: kStyle.item
+        style: subTooltipStyle
       });
 
-      let tooLong = kPref.maxLineLength * 20;
+      let maxLength = kPref.maxWidth * kPref.maxNumWrapLinesOfSubTooltip;
 
-      if (uncroppedText.length > tooLong) {
-        uncroppedText = uncroppedText.substr(0, tooLong) + kTipFormat.ellipsis;
+      if (text.length > maxLength) {
+        text = text.substr(0, maxLength) + kTipFormat.ellipsis;
       }
 
       item.appendChild(subTooltip).
         appendChild($label()).
-        appendChild($text(uncroppedText));
+        appendChild($text(text));
 
-      let crop = $span({
+      item.appendChild($label({
+        value: kTipFormat.ellipsis,
         style: kStyle.crop,
+        class: 'plain',
         tooltip: subTooltip.id
-      });
-
-      item.appendChild(crop).appendChild($text(kTipFormat.ellipsis));
+      }));
     }
 
     return item;
