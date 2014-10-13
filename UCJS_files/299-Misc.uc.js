@@ -370,7 +370,7 @@ function log(aMsg) {
 (function() {
 
   addEvent(gBrowser.mPanelContainer, 'keypress', (aEvent) => {
-    if (aEvent.keyCode === event.DOM_VK_TAB && aEvent.repeat) {
+    if (aEvent.key === 'Tab' && aEvent.repeat) {
       aEvent.preventDefault();
       aEvent.stopPropagation();
     }

@@ -923,9 +923,7 @@ function GestureManager() {
     const {shift, ctrl} = kGestureSign;
     const {
       type,
-      keyCode,
       shiftKey, ctrlKey,
-      DOM_VK_SHIFT, DOM_VK_CONTROL
     } = aEvent;
 
     let key = '';
@@ -934,21 +932,21 @@ function GestureManager() {
     let has = (aKey) => mKey.indexOf(aKey) > -1;
 
     if (type === 'keydown') {
-      if (keyCode === DOM_VK_SHIFT && !has(shift)) {
+      if (aEvent.key === 'Shift' && !has(shift)) {
         key = shift;
         pressed = true;
       }
-      else if (keyCode === DOM_VK_CONTROL && !has(ctrl)) {
+      else if (aEvent.key === 'Control' && !has(ctrl)) {
         key = ctrl;
         pressed = true;
       }
     }
     else if (type === 'keyup') {
-      if (keyCode === DOM_VK_SHIFT && has(shift)) {
+      if (aEvent.key === 'Shift' && has(shift)) {
         key = shift;
         pressed = false;
       }
-      else if (keyCode === DOM_VK_CONTROL && has(ctrl)) {
+      else if (aEvent.key === 'Control' && has(ctrl)) {
         key = ctrl;
         pressed = false;
       }
