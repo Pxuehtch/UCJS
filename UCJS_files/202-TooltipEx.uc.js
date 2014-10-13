@@ -9,6 +9,7 @@
 // @usage Opens a tooltip panel with 'Alt + Ctrl + MouseMove' on an element
 // with the attribute for description or URL or event-handler including the
 // ancestor elements.
+// @note You can move the panel with dragging the outer margin of the content.
 // @note You can select and copy texts. And also can copy the whole data by the
 // 'Copy All' menu item of the context menu.
 
@@ -305,7 +306,9 @@ const TooltipPanel = (function() {
       // @note The inner container |mBox| has 'max-width'.
       'max-width:none;' +
       // Tight text wrapping.
-      'word-break:break-all;word-wrap:break-word;'
+      'word-break:break-all;word-wrap:break-word;' +
+      // The margin for dragging the panel.
+      'padding:.3em;';
 
     let panel = $E('panel', {
       id: kUI.panel.id,
