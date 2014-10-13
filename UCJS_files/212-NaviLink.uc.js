@@ -329,7 +329,7 @@ const MenuUI = (function() {
 
     if (data.open) {
       if (!/^(?:https?|ftp|file):/.test(data.open)) {
-        log('invalid scheme to open:\n' + data.open);
+        log('Invalid scheme to open:\n' + data.open);
         return;
       }
 
@@ -340,7 +340,19 @@ const MenuUI = (function() {
       });
     }
     else if (data.submit) {
+      let submit = (aDocument) => {
+        try {
+          aDocument.forms[data.submit].submit();
+        }
+        catch (ex) {
+          log('Error for a form element:\n' + ex);
+        }
+      };
+
       if (inTab) {
+        // TODO: A document sometimes cannot be duplicated with the same
+        // content.
+        // @note I have tested only 'DuckDuckGo'.
         let newTab = gBrowser.duplicateTab(gBrowser.selectedTab);
 
         if (!inBG) {
@@ -349,16 +361,21 @@ const MenuUI = (function() {
 
         let browser = gBrowser.getBrowserForTab(newTab);
 
-        browser.addEventListener('load', function onLoad(event) {
-          if (event.target === browser.contentDocument) {
-            browser.removeEventListener('load', onLoad, true);
+        if (browser.contentDocument.readyState === 'complete') {
+          submit(browser.contentDocument);
+        }
+        else {
+          browser.addEventListener('load', function onLoad(event) {
+            if (event.target === browser.contentDocument) {
+              browser.removeEventListener('load', onLoad, true);
 
-            browser.contentDocument.forms[data.submit].submit();
-          }
-        }, true);
+              submit(browser.contentDocument);
+            }
+          }, true);
+        }
       }
       else {
-        getDocument().forms[data.submit].submit();
+        submit(getDocument());
       }
     }
   }
