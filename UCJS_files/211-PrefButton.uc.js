@@ -230,11 +230,10 @@ const BrowserProgressListener = {
   onStateChange: function(aWebProgress, aRequest, aFlags, aStatus) {
     const {STATE_STOP, STATE_IS_WINDOW} = Ci.nsIWebProgressListener;
 
-    if (aFlags & STATE_STOP) {
-      if (aFlags & STATE_IS_WINDOW &&
-          aWebProgress.DOMWindow === gBrowser.contentWindow) {
-        updateState();
-      }
+    if (aFlags & STATE_STOP &&
+        aFlags & STATE_IS_WINDOW &&
+        aWebProgress.DOMWindow === gBrowser.contentWindow) {
+      updateState();
     }
   },
 
