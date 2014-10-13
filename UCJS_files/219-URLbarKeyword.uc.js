@@ -81,8 +81,6 @@ function URLbarKeyword_init() {
 }
 
 function handleEvent(aEvent) {
-  aEvent.stopPropagation();
-
   switch (aEvent.type) {
     case 'popupshowing': {
       let menu = aEvent.target.parentElement;

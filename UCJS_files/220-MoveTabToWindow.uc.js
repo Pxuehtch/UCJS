@@ -128,9 +128,7 @@ function buildMenu() {
     accesskey: kUI.menu.accesskey
   });
 
-  let popup = menu.appendChild($E('menupopup', {
-    onpopupshowing: 'event.stopPropagation();'
-  }));
+  let popup = menu.appendChild($E('menupopup'));
 
   popup.appendChild($E('menuitem', {
     id: kUI.newWindow.id,
@@ -146,12 +144,10 @@ function buildMenu() {
 
   TabContext.menu.insertBefore(menu, defaultItem);
 
-  addEvent(TabContext.menu, 'popupshowing', updateMenu, false);
+  addEvent(TabContext.menu, 'popupshowing', onPopupShowing, false);
 }
 
-function updateMenu(aEvent) {
-  aEvent.stopPropagation();
-
+function onPopupShowing(aEvent) {
   if (aEvent.target !== TabContext.menu) {
     return;
   }
@@ -229,8 +225,6 @@ function updateMenu(aEvent) {
 }
 
 function onCommand(aEvent) {
-  aEvent.stopPropagation();
-
   let item = aEvent.target;
 
   if (item.id === kUI.newWindow.id) {

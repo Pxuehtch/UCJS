@@ -110,6 +110,7 @@ const kInfoAttribute = {
  */
 const kID = {
   panel: 'ucjs_TooltipEx_panel',
+  copyAll: 'ucjs_TooltipEx_copyAll',
   tipText: 'ucjs_TooltipEx_tipText',
   subTooltip: 'ucjs_TooltipEx_subTooltip'
 };
@@ -226,30 +227,46 @@ const TooltipPanel = (function() {
   function handleEvent(aEvent) {
     switch (aEvent.type) {
       // Display the tooltip.
-      case 'mousemove':
+      case 'mousemove': {
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
             show(aEvent);
           }
         }
+
         break;
+      }
 
       // Clean up when the page is switched.
       case 'select':
-      case 'pagehide':
+      case 'pagehide': {
         // @note |popuphiding| will be dispatched.
         hide();
+
         break;
+      }
 
       // Clean up when a tooltip closes.
-      case 'popuphiding':
-        clear();
+      case 'popuphiding': {
+        if (aEvent.target.id === kID.panel) {
+          clear();
+        }
+
         break;
+      }
 
       // Command of the context menu of a tooltip.
-      case 'command':
-        copyTipInfo();
+      case 'command': {
+        switch (aEvent.target.id) {
+          case kID.copyAll: {
+            copyTipInfo();
+
+            break;
+          }
+        }
+
         break;
+      }
     }
   }
 
@@ -265,17 +282,14 @@ const TooltipPanel = (function() {
     panel.style.maxWidth = kPref.maxLineLength + 'em';
 
     // Make the context menu.
-    let copymenu = $E('menuitem', {
-      label: 'Copy'
+    let popup = $E('menupopup');
+
+    addEvent(popup, 'command', handleEvent, false);
+
+    popup.appendChild($E('menuitem', {
+      id: kID.copyAll,
+      label: 'Copy All'
     });
-
-    addEvent(copymenu, 'command', handleEvent, false);
-
-    let popup = $E('menupopup', {
-      onpopuphiding: 'event.stopPropagation();'
-    });
-
-    popup.appendChild(copymenu);
 
     panel.contextMenu = '_child';
     panel.appendChild(popup);
@@ -526,8 +540,7 @@ const TooltipPanel = (function() {
       let subTooltip = $E('tooltip', {
         // TODO: Make a smart unique id.
         id: kID.subTooltip + mBox.childNodes.length,
-        style: kStyle.item,
-        onpopuphiding: 'event.stopPropagation();'
+        style: kStyle.item
       });
 
       let tooLong = kPref.maxLineLength * 20;

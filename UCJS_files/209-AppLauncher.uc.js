@@ -434,8 +434,6 @@ function initMenu(aAppList) {
 }
 
 function onPopupShowing(aEvent) {
-  aEvent.stopPropagation();
-
   let menupopup = aEvent.target;
 
   if (menupopup.parentElement.id === kUI.mainMenu.id) {
@@ -444,8 +442,6 @@ function onPopupShowing(aEvent) {
 }
 
 function onCommand(aEvent, aAppList) {
-  aEvent.stopPropagation();
-
   let element = aEvent.target;
 
   if (!element.hasAttribute(kDataKey.appIndex)) {

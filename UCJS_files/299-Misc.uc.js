@@ -85,10 +85,15 @@ function log(aMsg) {
   addEvent(mTooltip, 'popuphiding', onPopupHiding, false);
 
   // Replace the default tooltip 'tabbrowser-tab-tooltip'.
+  // @note Resisters on the tab bar including the margin without tabs.
   $ID('tabbrowser-tabs').tooltip = kUI.tooltip.id;
 
   function onPopupHiding(aEvent) {
-    aEvent.stopPropagation();
+    let tooltip = aEvent.target;
+
+    if (tooltip.id !== kUI.tooltip.id) {
+      return;
+    }
 
     if (mTooltip.label) {
       mTooltip.label = '';
@@ -101,12 +106,18 @@ function log(aMsg) {
 
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
   function onPopupShowing(aEvent) {
-    aEvent.stopPropagation();
+    let tooltip = aEvent.target;
+
+    if (tooltip.id !== kUI.tooltip.id) {
+      return;
+    }
 
     let tab = window.document.tooltipNode;
 
+    // Don't show a tooltip not on a tab in the tab bar.
     if (tab.localName !== 'tab') {
       aEvent.preventDefault();
+      aEvent.stopPropagation();
       return;
     }
 
@@ -353,17 +364,16 @@ function log(aMsg) {
 })();
 
 /**
- * Suppress continuous focusing with holding the TAB-key down.
+ * Suppress a rapid moving of focuses with holding the TAB key down.
+ *
+ * @note Applied only in the content area.
  */
 (function() {
 
-  addEvent(gBrowser.mPanelContainer, 'keypress', (event) => {
-    if (event.keyCode === event.DOM_VK_TAB) {
-      if (event.repeat) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
+  addEvent(gBrowser.mPanelContainer, 'keypress', (aEvent) => {
+    if (aEvent.keyCode === event.DOM_VK_TAB && aEvent.repeat) {
+      aEvent.preventDefault();
+      aEvent.stopPropagation();
     }
   }, true);
 
@@ -520,9 +530,7 @@ function log(aMsg) {
     accesskey: 'N'
   });
 
-  let popup = menu.appendChild($E('menupopup', {
-    onpopupshowing: 'event.stopPropagation();'
-  }));
+  let popup = menu.appendChild($E('menupopup'));
 
   popup.appendChild($E('menuitem', {
     label: 'スタートページ',
@@ -744,8 +752,6 @@ function log(aMsg) {
    *   <handler event="command">
    */
   addEvent(alltabsPopup, 'command', (aEvent) => {
-    aEvent.stopPropagation();
-
     let menuitem = aEvent.target;
 
     if (menuitem.parentNode.id !== kID.ALLTABS_POPUP) {
@@ -764,8 +770,6 @@ function log(aMsg) {
    * @note This is a workaround for a suspended tab by TabEx.uc.js.
    */
   addEvent(alltabsPopup, 'DOMMenuItemActive', (aEvent) => {
-    aEvent.stopPropagation();
-
     let menuitem = aEvent.target;
 
     if (menuitem.parentNode.id !== kID.ALLTABS_POPUP) {
@@ -804,8 +808,6 @@ function log(aMsg) {
    * @note This is a workaround for an unread tab handled by TabEx.uc.js.
    */
   addEvent(alltabsPopup, 'popupshowing', (aEvent) => {
-    aEvent.stopPropagation();
-
     let popup = aEvent.target;
 
     if (popup.id !== kID.ALLTABS_POPUP) {
@@ -823,8 +825,6 @@ function log(aMsg) {
   }, false);
 
   addEvent(alltabsPopup, 'popuphiding', (aEvent) => {
-    aEvent.stopPropagation();
-
     let popup = aEvent.target;
 
     if (popup.id !== kID.ALLTABS_POPUP) {
@@ -895,8 +895,6 @@ function log(aMsg) {
   addEvent(gBrowser.tabContainer, 'TabSelect', handleEvent, false);
 
   function handleEvent(aEvent) {
-    aEvent.stopPropagation();
-
     const {FindBar} = window.ucjsUI;
 
     switch (aEvent.type) {

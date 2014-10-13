@@ -238,8 +238,6 @@ function createMenu(aContextMenu) {
 }
 
 function onPopupShowing(aEvent) {
-  aEvent.stopPropagation();
-
   let menupopup = aEvent.target;
   let contextMenu = aEvent.currentTarget;
 

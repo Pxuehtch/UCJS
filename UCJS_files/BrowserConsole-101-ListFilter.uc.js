@@ -163,16 +163,18 @@ function setObserver() {
  * Event listener of a button command.
  */
 function onCommand(aEvent) {
-  aEvent.stopPropagation();
-
   let target = aEvent.target;
 
   let buttonID = target.id;
-  let doFilter = !target.checked;
 
-  let index = +buttonID.replace(kID.item, '');
-  let {category, condition} = kItemList[index];
+  if (!buttonID.startsWith(kID.item)) {
+    return;
+  }
+
+  let {category, condition} = kItemList[+buttonID.replace(kID.item, '')];
+
   let filterKey = kID.filteredBy + category;
+  let doFilter = !target.checked;
 
   FilteredCategory[category] = doFilter;
 

@@ -36,8 +36,6 @@ function ResetSearchPoint_init() {
 }
 
 function handleEvent(aEvent) {
-  aEvent.stopPropagation();
-
   if (aEvent.button !== 0) {
     return;
   }

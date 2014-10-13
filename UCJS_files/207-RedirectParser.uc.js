@@ -168,8 +168,6 @@ function createMenu(aContextMenu) {
 }
 
 function onPopupShowing(aEvent) {
-  aEvent.stopPropagation();
-
   let menupopup = aEvent.target;
   let contextMenu = aEvent.currentTarget;
 
@@ -187,8 +185,6 @@ function onPopupShowing(aEvent) {
 }
 
 function onPopupHiding(aEvent) {
-  aEvent.stopPropagation();
-
   let menupopup = aEvent.target;
   let contextMenu = aEvent.currentTarget;
 

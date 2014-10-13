@@ -229,8 +229,6 @@ const MainMenu = (function() {
   }
 
   function onPopupShowing(aEvent) {
-    aEvent.stopPropagation();
-
     let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
@@ -273,8 +271,6 @@ const MainMenu = (function() {
   }
 
   function onPopupHiding(aEvent) {
-    aEvent.stopPropagation();
-
     let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
@@ -297,17 +293,13 @@ const MainMenu = (function() {
   }
 
   function onCommand(aEvent) {
-    aEvent.stopPropagation();
-
     let menuitem = aEvent.target;
 
     let commandData = menuitem[kDataKey.commandData];
 
-    if (!commandData) {
-      return;
+    if (commandData) {
+      commandData.command(aEvent, commandData.params);
     }
-
-    commandData.command(aEvent, commandData.params);
   }
 
   return {
@@ -1195,9 +1187,11 @@ const Tooltip = (function() {
   }
 
   function onPopupHiding(aEvent) {
-    aEvent.stopPropagation();
+    let tooltip = aEvent.target;
 
-    let tooltip = aEvent.currentTarget;
+    if (tooltip.id !== kUI.tooltip.id) {
+      return;
+    }
 
     while (tooltip.hasChildNodes()) {
       tooltip.removeChild(tooltip.firstChild);
@@ -1205,13 +1199,13 @@ const Tooltip = (function() {
   }
 
   function onPopupShowing(aEvent) {
-    aEvent.stopPropagation();
-
     let menuitem = window.document.tooltipNode;
 
-    let data = menuitem[kDataKey.tooltipData];
+    let tooltipData = menuitem[kDataKey.tooltipData];
 
-    fillInTooltip(data);
+    if (tooltipData) {
+      fillInTooltip(tooltipData);
+    }
   }
 
   function fillInTooltip({title, URL, list}) {

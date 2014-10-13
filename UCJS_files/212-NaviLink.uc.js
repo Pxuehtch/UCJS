@@ -295,8 +295,6 @@ const MenuUI = (function() {
   }
 
   function onClick(aEvent) {
-    aEvent.stopPropagation();
-
     let item = aEvent.target;
 
     let data = item[kID.data];
@@ -313,8 +311,6 @@ const MenuUI = (function() {
   }
 
   function onCommand(aEvent) {
-    aEvent.stopPropagation();
-
     let item = aEvent.target;
 
     let data = item[kID.data];
@@ -368,8 +364,6 @@ const MenuUI = (function() {
   }
 
   function onPopupShowing(aEvent) {
-    aEvent.stopPropagation();
-
     let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
@@ -400,8 +394,6 @@ const MenuUI = (function() {
   }
 
   function onPopupHiding(aEvent) {
-    aEvent.stopPropagation();
-
     let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 

@@ -724,8 +724,10 @@ function MouseManager() {
         else {
           // @see chrome://browser/content/browser.js::contentAreaClick()
           if (mSuppressClick) {
-            aEvent.preventDefault();
             mSuppressClick = false;
+
+            aEvent.preventDefault();
+            aEvent.stopPropagation();
           }
         }
         break;

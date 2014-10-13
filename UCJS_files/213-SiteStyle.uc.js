@@ -889,12 +889,10 @@ const PrefMenu = (function() {
       accesskey: kUI.prefMenu.accesskey
     }));
 
-    addEvent(menu, 'command', doCommand, false);
-
     if (kSiteList.length) {
-      let popup = $E('menupopup', {
-        onpopupshowing: 'event.stopPropagation();'
-      });
+      let popup = $E('menupopup');
+
+      addEvent(popup, 'command', onCommand, false);
 
       kSiteList.forEach(({name, disabled}, i) => {
         popup.appendChild($E('menuitem', {
@@ -916,9 +914,7 @@ const PrefMenu = (function() {
     }
   }
 
-  function doCommand(aEvent) {
-    aEvent.stopPropagation();
-
+  function onCommand(aEvent) {
     let item = aEvent.target;
 
     if (!item.value) {

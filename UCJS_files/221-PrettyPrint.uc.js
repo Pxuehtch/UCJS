@@ -133,8 +133,6 @@ const Menu = (function() {
   }
 
   function onPopupShowing(aEvent) {
-    aEvent.stopPropagation();
-
     let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
@@ -151,8 +149,6 @@ const Menu = (function() {
   }
 
   function onCommand(aEvent) {
-    aEvent.stopPropagation();
-
     if (aEvent.target.id === kUI.prettifyPage.id) {
       let contentDocument = gBrowser.contentDocument;
       let state = {

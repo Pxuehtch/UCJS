@@ -284,7 +284,6 @@ function updateState(aOption) {
 }
 
 function doCommand(aEvent) {
-  aEvent.stopPropagation();
   if (aEvent.button !== 0) {
     return;
   }

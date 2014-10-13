@@ -55,8 +55,6 @@ function IMEState_init() {
 }
 
 function handleEvent(aEvent) {
-  aEvent.stopPropagation();
-
   switch (aEvent.type) {
     case 'click':
     case 'pageshow':

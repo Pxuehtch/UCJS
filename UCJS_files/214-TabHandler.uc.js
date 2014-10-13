@@ -287,16 +287,16 @@ const TabBarClickEvent = {
 /**
  * Cycle-selects tabs with a mouse wheel scroll on the tabbar.
  *
- * @note Disables the default scrolling of tabs when the tabbar overflows tabs.
+ * @note Disables the default scrolling when the tabbar overflows tabs.
  */
 function switchTabsOnMouseWheel() {
-  addEvent(gBrowser.tabContainer, 'wheel', (event) => {
+  addEvent(gBrowser.tabContainer, 'wheel', (aEvent) => {
     gBrowser.tabContainer.
-      advanceSelectedTab((event.deltaY < 0) ? -1 : 1, true);
+      advanceSelectedTab((aEvent.deltaY < 0) ? -1 : 1, true);
 
     // Prevent the default scrolling.
-    event.stopPropagation();
-    event.preventDefault();
+    aEvent.preventDefault();
+    aEvent.stopPropagation();
   }, true);
 }
 
