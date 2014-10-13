@@ -529,12 +529,7 @@ const TooltipPanel = (function() {
     let $label = (attribute) => $E('label', attribute);
 
     // An inline element for styling of a text.
-    // TODO: Use a reliable element instead of <label>.
-    let $span = (attribute) => {
-      attribute.style += 'margin:0;';
-
-      return $E('label', attribute);
-    };
+    let $span = (aAttribute) => $E('html:span', aAttribute);
 
     let $text = (text) => window.document.createTextNode(text);
 

@@ -278,9 +278,8 @@ function log(aMsg) {
       '<label>%value%</label>'.replace('%value%', htmlEscape(aValue));
 
     // An inline element for styling of a text.
-    // TODO: Use a reliable element instead of <label>.
     let $span = (aStyle) =>
-      '<label style="margin:0;%style%">$&</label>'.replace('%style%', aStyle);
+      '<html:span style="%style%">$&</html:span>'.replace('%style%', aStyle);
 
     let html = $label(aURL);
 
