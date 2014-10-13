@@ -81,19 +81,6 @@ const kDataKey = {
 };
 
 /**
- * Fx native UI elements.
- */
-const UI = {
-  get outputContainer() {
-    return $ID('output-container');
-  },
-
-  get clearButton() {
-    return $S1('.webconsole-clear-console-button');
-  }
-};
-
-/**
  * List of the categories being filtered.
  *
  * @note Initialized in |onCommand()|.
@@ -115,7 +102,7 @@ function setStyleSheet() {
 }
 
 function makeUI() {
-  let clearButton = UI.clearButton;
+  let clearButton = $S1('.webconsole-clear-console-button');
 
   // Insert tab indexes of our buttons before the clear button.
   // TODO: The clear button has the last index in the console window on the
@@ -189,7 +176,7 @@ function onCommand(aEvent) {
   FilteredCategory[category] = doFilter;
 
   let xpath = './/*[contains(@class, "message")]' + condition;
-  let nodes = $X(xpath, UI.outputContainer);
+  let nodes = $X(xpath, $ID('output-container'));
 
   if (nodes) {
     for (let i = 0, l = nodes.snapshotLength; i < l; i++) {
