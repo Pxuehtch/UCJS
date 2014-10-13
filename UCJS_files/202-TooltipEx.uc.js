@@ -105,14 +105,31 @@ const kInfoAttribute = {
   ]
 };
 
+
 /**
- * Identifiers
+ * UI setting.
  */
-const kID = {
-  panel: 'ucjs_TooltipEx_panel',
-  copyAll: 'ucjs_TooltipEx_copyAll',
-  tipText: 'ucjs_TooltipEx_tipText',
-  subTooltip: 'ucjs_TooltipEx_subTooltip'
+const kUI = {
+  panel: {
+    id: 'ucjs_TooltipEx_panel'
+  },
+  subTooltip: {
+    // @note The id prefix of a sub tooltip.
+    id: 'ucjs_TooltipEx_subTooltip'
+  },
+  copyAll: {
+    id: 'ucjs_TooltipEx_copyAll',
+    label: 'Copy All'
+  }
+};
+
+/**
+ * Key names for storing data.
+ *
+ * @note Extended property name of a menuitem.
+ */
+const kDataKey = {
+  tipText: 'ucjs_TooltipEx_tipText'
 };
 
 /**
@@ -248,7 +265,7 @@ const TooltipPanel = (function() {
 
       // Clean up when a tooltip closes.
       case 'popuphiding': {
-        if (aEvent.target.id === kID.panel) {
+        if (aEvent.target.id === kUI.panel.id) {
           clear();
         }
 
@@ -258,7 +275,7 @@ const TooltipPanel = (function() {
       // Command of the context menu of a tooltip.
       case 'command': {
         switch (aEvent.target.id) {
-          case kID.copyAll: {
+          case kUI.copyAll.id: {
             copyTipInfo();
 
             break;
@@ -274,7 +291,7 @@ const TooltipPanel = (function() {
     // @note Set 'white-space:pre;' that suppresses text wrapping for our own
     // control of it.
     let panel = $E('panel', {
-      id: kID.panel,
+      id: kUI.panel.id,
       style: '-moz-appearance:tooltip;white-space:pre;',
       backdrag: true
     });
@@ -287,9 +304,9 @@ const TooltipPanel = (function() {
     addEvent(popup, 'command', handleEvent, false);
 
     popup.appendChild($E('menuitem', {
-      id: kID.copyAll,
-      label: 'Copy All'
-    });
+      id: kUI.copyAll.id,
+      label: kUI.copyAll.label
+    }));
 
     panel.contextMenu = '_child';
     panel.appendChild(popup);
@@ -539,7 +556,7 @@ const TooltipPanel = (function() {
     if (uncroppedText) {
       let subTooltip = $E('tooltip', {
         // TODO: Make a smart unique id.
-        id: kID.subTooltip + mBox.childNodes.length,
+        id: kUI.subTooltip.id + mBox.childNodes.length,
         style: kStyle.item
       });
 
@@ -568,8 +585,10 @@ const TooltipPanel = (function() {
     let info = [];
 
     Array.forEach(mBox.childNodes, (node) => {
-      if (node[kID.tipText]) {
-        info.push(node[kID.tipText]);
+      let tipText = node[kDataKey.tipText];
+
+      if (tipText) {
+        info.push(tipText);
       }
     });
 
@@ -616,7 +635,7 @@ function copyToClipboard(aText) {
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'tipText') {
     if (aValue) {
-      aNode[kID.tipText] = aValue;
+      aNode[kDataKey.tipText] = aValue;
     }
 
     return true;

@@ -58,6 +58,15 @@ const kUI = {
 };
 
 /**
+ * Key name for storing data.
+ *
+ * @note Extended property name of a menuitem.
+ */
+const kDataKey = {
+  windowIndex: 'ucjs_MoveTabToWindow_windowIndex'
+};
+
+/**
  * Fx native elements for the tab context menu.
  */
 const TabContext = {
@@ -200,12 +209,13 @@ function onPopupShowing(aEvent) {
 
   windowsData.forEach((win) => {
     let item = popup.insertBefore($E('menuitem', {
-      value: win.id,
       label: kUI.otherWindow.label.
         replace('%title%', win.title).
         replace('%tabsNum%', win.tabsNum).
         replace('%s%', win.tabsNum > 1 ? 's' : '')
     }), refItem);
+
+    item[kDataKey.windowIndex] = win.id;
 
     if (win.isPrivate) {
       $E(item, {
@@ -230,8 +240,12 @@ function onCommand(aEvent) {
   if (item.id === kUI.newWindow.id) {
     moveTabToWindow(TabContext.tab);
   }
-  else if (item.value) {
-    moveTabToWindow(TabContext.tab, WindowUtil.getWindowById(+item.value));
+  else {
+    let index = item[kDataKey.windowIndex];
+
+    if (index > -1) {
+      moveTabToWindow(TabContext.tab, WindowUtil.getWindowById(index));
+    }
   }
 }
 

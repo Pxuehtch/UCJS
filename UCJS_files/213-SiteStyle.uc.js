@@ -55,6 +55,15 @@ const kUI = {
 };
 
 /**
+ * Key name for storing data.
+ *
+ * @note Extended property name of a menuitem.
+ */
+const kDataKey = {
+  itemIndex: 'ucjs_SiteStyle_itemIndex'
+};
+
+/**
  * List of noisy URLs in the search results of the web search engine.
  *
  * @value {string|regexp}
@@ -895,13 +904,14 @@ const PrefMenu = (function() {
       addEvent(popup, 'command', onCommand, false);
 
       kSiteList.forEach(({name, disabled}, i) => {
-        popup.appendChild($E('menuitem', {
-          value: i,
+        let menuitem = popup.appendChild($E('menuitem', {
           label: name + (disabled ? ' [disabled]' : ''),
           type: 'checkbox',
           checked: !disabled,
           closemenu: 'none'
         }));
+
+        menuitem[kDataKey.itemIndex] = i;
       });
 
       menu.appendChild(popup);
@@ -917,11 +927,11 @@ const PrefMenu = (function() {
   function onCommand(aEvent) {
     let item = aEvent.target;
 
-    if (!item.value) {
-      return;
-    }
+    let index = item[kDataKey.itemIndex];
 
-    kSiteList[+(item.value)].disabled = !item.hasAttribute('checked');
+    if (index > -1) {
+      kSiteList[index].disabled = !item.hasAttribute('checked');
+    }
   }
 
   return {

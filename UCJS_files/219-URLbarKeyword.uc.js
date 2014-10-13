@@ -68,6 +68,15 @@ const kUI = {
   }
 };
 
+/**
+ * Key name for storing data.
+ *
+ * @note Extended property name of a menuitem.
+ */
+const kDataKey = {
+  keyword: 'ucjs_URLbarKeyword_keyword'
+};
+
 function URLbarKeyword_init() {
   URLBarContextMenu.register({
     events: [
@@ -110,8 +119,10 @@ function handleEvent(aEvent) {
     case 'command': {
       let item = aEvent.target;
 
-      if (item.value) {
-        gURLBar.value = item.value + ' ' + gURLBar.value.trim();
+      let keyword = item[kDataKey.keyword];
+
+      if (keyword) {
+        gURLBar.value = keyword + ' ' + gURLBar.value.trim();
 
         // Trigger the auto-complete popup.
         gURLBar.editor.deleteSelection(0, 0);
@@ -179,11 +190,12 @@ function buildGroup(aRefItem, aData) {
   let fragment = window.document.createDocumentFragment();
 
   aData.forEach(({name, keyword, URL}) => {
-    fragment.appendChild($E('menuitem', {
+    let item = fragment.appendChild($E('menuitem', {
       label: $label(name, keyword),
-      tooltiptext: URL,
-      value: keyword
+      tooltiptext: URL
     }));
+
+    item[kDataKey.keyword] = keyword;
   });
 
   insertElement(aRefItem, fragment);

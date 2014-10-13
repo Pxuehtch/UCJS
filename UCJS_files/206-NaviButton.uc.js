@@ -54,11 +54,11 @@ function log(aMsg) {
  * Identifiers
  */
 const kID = {
-  // Native
+  // Native ID.
   BACK_BUTTON: 'back-button',
   FORWARD_BUTTON: 'forward-button',
 
-  // Custom
+  // Custom ID.
   TOOLTIP: 'ucjs_NaviButton_tooltip',
   REFERRER: 'ucjs_NaviButton_referrer'
 };

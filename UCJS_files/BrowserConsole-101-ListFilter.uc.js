@@ -61,10 +61,22 @@ const kItemList = [
 ];
 
 /**
- * Identifier
+ * UI setting.
  */
-const kID = {
-  item: 'ucjs_ListFilter_item',
+const kUI = {
+  button: {
+    // @note The id prefix of a button.
+    id: 'ucjs_ListFilter_button'
+  }
+};
+
+/**
+ * Key name for storing data.
+ *
+ * @note Extended attribute name of a filtered item.
+ */
+const kDataKey = {
+  // @note The class name prefix of a listview item being filtered by category.
   filteredBy: 'ucjs_ListFilter_filteredBy'
 };
 
@@ -95,12 +107,11 @@ function ListFilter_init() {
 }
 
 function setStyleSheet() {
-  // CSS for hiding of rows for each category.
-  let css =
-    kItemList.map(({category}) => '.' + kID.filteredBy + category).join(',') + 
-    '{display:none;}';
+  // Register CSS for hiding of rows for each category.
+  let classNames =
+    kItemList.map(({category}) => '.' + kDataKey.filteredBy + category);
 
-  setCSS(css);
+  setCSS(classNames.join(',') + '{display:none;}');
 }
 
 function makeUI() {
@@ -115,7 +126,7 @@ function makeUI() {
 
   kItemList.forEach(({category, description}, i) => {
     let toolbarButton = $E('toolbarbutton', {
-      id: kID.item + i,
+      id: kUI.button.id + i,
       label: category,
       tooltiptext: description,
       accesskey: i + 1,
@@ -163,18 +174,17 @@ function setObserver() {
  * Event listener of a button command.
  */
 function onCommand(aEvent) {
-  let target = aEvent.target;
+  let button = aEvent.target;
 
-  let buttonID = target.id;
+  let id = button.id;
 
-  if (!buttonID.startsWith(kID.item)) {
+  if (!id.startsWith(kUI.button.id)) {
     return;
   }
 
-  let {category, condition} = kItemList[+buttonID.replace(kID.item, '')];
-
-  let filterKey = kID.filteredBy + category;
-  let doFilter = !target.checked;
+  let {category, condition} = kItemList[+id.replace(kUI.button.id, '')];
+  let filterKey = kDataKey.filteredBy + category;
+  let doFilter = !button.checked;
 
   FilteredCategory[category] = doFilter;
 
@@ -214,7 +224,7 @@ function onMessageAdded(aEvent, aMessageNodes) {
         /* logOnMessageAdded(node, 'message added'); */
 
         if ($X1('.' + condition, node)) {
-          let filterKey = kID.filteredBy + category;
+          let filterKey = kDataKey.filteredBy + category;
 
           node.classList.add(filterKey);
         }

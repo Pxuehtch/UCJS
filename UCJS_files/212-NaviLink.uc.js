@@ -261,7 +261,7 @@ const kID = (function() {
   const names = [
     'upper', 'prev', 'next', 'naviLink', 'pageInfo',
     'startSeparator', 'endSeparator', 'pageInfoSeparator',
-    'data'
+    'commandData'
   ];
 
   let hash = {};
@@ -297,7 +297,7 @@ const MenuUI = (function() {
   function onClick(aEvent) {
     let item = aEvent.target;
 
-    let data = item[kID.data];
+    let data = item[kID.commandData];
 
     if (!data) {
       return;
@@ -313,7 +313,7 @@ const MenuUI = (function() {
   function onCommand(aEvent) {
     let item = aEvent.target;
 
-    let data = item[kID.data];
+    let data = item[kID.commandData];
 
     if (!data) {
       return;
@@ -2035,8 +2035,8 @@ function handleAttribute(aNode, aName, aValue) {
     case 'open':
     case 'submit': {
       if (aValue) {
-        aNode[kID.data] = {};
-        aNode[kID.data][aName] = aValue;
+        aNode[kID.commandData] = {};
+        aNode[kID.commandData][aName] = aValue;
       }
 
       return true;
