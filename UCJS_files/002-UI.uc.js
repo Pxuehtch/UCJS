@@ -463,7 +463,6 @@ const FindBar = (function() {
       aText = aText || '';
 
       if (this.value !== aText) {
-        // @note Starts finding the text in background.
         UI.textBox.value = aText;
       }
     },

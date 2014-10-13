@@ -925,8 +925,9 @@ function log(aMsg) {
           if (FindBar.findText.value !== mFindString) {
             FindBar.reset();
 
-            // Find the text in background.
+            // Find the new string.
             FindBar.findText.value = mFindString;
+            gFindBar.onFindAgainCommand();
           }
         }
 
