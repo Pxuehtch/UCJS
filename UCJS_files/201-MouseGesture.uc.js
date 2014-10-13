@@ -556,8 +556,8 @@ function MouseGesture() {
     }
   }
 
-  // TODO: Prevent the drop event when a right mouse button is pressed down
-  // while dragging. The drop event fires for now.
+  // TODO: Prevent the drop event when the right or wheel button is pressed
+  // down while dragging. The drop event fires for now.
   function onDrop(aEvent) {
     if (mState !== kState.DRAG) {
       return;
@@ -884,22 +884,28 @@ function GestureManager() {
   }
 
   function updateChain(aEvent) {
-    const {type, deltaY} = aEvent;
-
     let sign = '';
 
-    if (type === 'mousemove' || type === 'dragover') {
-      let {x, y} = mTracer.update(aEvent);
+    switch (aEvent.type) {
+      case 'mousemove':
+      case 'dragover': {
+        let {x, y} = mTracer.update(aEvent);
 
-      if (x !== 0) {
-        sign = (x < 0) ? 'left' : 'right';
+        if (x !== 0) {
+          sign = (x < 0) ? 'left' : 'right';
+        }
+        else if (y !== 0) {
+          sign = (y < 0) ? 'up' : 'down';
+        }
+
+        break;
       }
-      else if (y !== 0) {
-        sign = (y < 0) ? 'up' : 'down';
+
+      case 'wheel': {
+        sign = (aEvent.deltaY < 0) ? 'wheelUp' : 'wheelDown';
+
+        break;
       }
-    }
-    else if (type === 'wheel') {
-      sign = (deltaY < 0) ? 'wheelUp' : 'wheelDown';
     }
 
     if (sign) {
@@ -913,52 +919,62 @@ function GestureManager() {
         if (length + 1 > kMaxChainLength) {
           mError = 'Too long';
         }
+
         return true;
       }
     }
+
     return false;
   }
 
   function updateKey(aEvent) {
     const {shift, ctrl} = kGestureSign;
-    const {
-      type,
-      shiftKey, ctrlKey,
-    } = aEvent;
+
+    let has = (aKey) => mKey.indexOf(aKey) > -1;
 
     let key = '';
     let pressed = false;
 
-    let has = (aKey) => mKey.indexOf(aKey) > -1;
+    switch (aEvent.type) {
+      case 'keydown': {
+        if (aEvent.key === 'Shift' && !has(shift)) {
+          key = shift;
+          pressed = true;
+        }
+        else if (aEvent.key === 'Control' && !has(ctrl)) {
+          key = ctrl;
+          pressed = true;
+        }
 
-    if (type === 'keydown') {
-      if (aEvent.key === 'Shift' && !has(shift)) {
-        key = shift;
-        pressed = true;
+        break;
       }
-      else if (aEvent.key === 'Control' && !has(ctrl)) {
-        key = ctrl;
-        pressed = true;
+
+      case 'keyup': {
+        if (aEvent.key === 'Shift' && has(shift)) {
+          key = shift;
+          pressed = false;
+        }
+        else if (aEvent.key === 'Control' && has(ctrl)) {
+          key = ctrl;
+          pressed = false;
+        }
+
+        break;
       }
-    }
-    else if (type === 'keyup') {
-      if (aEvent.key === 'Shift' && has(shift)) {
-        key = shift;
-        pressed = false;
-      }
-      else if (aEvent.key === 'Control' && has(ctrl)) {
-        key = ctrl;
-        pressed = false;
-      }
-    }
-    else if (type === 'dragover') {
-      if (shiftKey !== has(shift)) {
-        key = shift;
-        pressed = shiftKey;
-      }
-      else if (ctrlKey !== has(ctrl)) {
-        key = ctrl;
-        pressed = ctrlKey;
+
+      case 'dragover': {
+        let {shiftKey, ctrlKey} = aEvent;
+
+        if (shiftKey !== has(shift)) {
+          key = shift;
+          pressed = shiftKey;
+        }
+        else if (ctrlKey !== has(ctrl)) {
+          key = ctrl;
+          pressed = ctrlKey;
+        }
+
+        break;
       }
     }
 
@@ -969,8 +985,10 @@ function GestureManager() {
       else {
         mKey.splice(mKey.indexOf(key), 1);
       }
+
       return true;
     }
+
     return false;
   }
 
