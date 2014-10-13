@@ -166,60 +166,6 @@ const kItemList = [
         window.BrowserReload();
       }
     }
-  },
-  {
-    // Switch Java.
-    // @note I can't test this block anymore since I uninstalled Java plugin.
-    type: 'checkbox',
-    label: 'Java',
-    description: 'Switch Java',
-
-    get disabled() {
-      return this.plugin === null;
-    },
-
-    get plugin() {
-      let plugins =
-        Cc['@mozilla.org/plugin/host;1'].
-        getService(Ci.nsIPluginHost).
-        getPluginTags({});
-
-      let plugin = null;
-
-      for (let i = 0; i < plugins.length; i++) {
-        if (plugins[i].name.contains('Java(TM)')) {
-          plugin = plugins[i];
-          break;
-        }
-      }
-
-      // Lazy definition.
-      delete this.plugin;
-      return this.plugin = plugin;
-    },
-
-    get checked() {
-      return !(this.plugin.disabled || this.plugin.blocklisted);
-    },
-
-    command: function() {
-      if (!this.plugin.blocklisted) {
-        this.plugin.disabled = !this.plugin.disabled;
-      }
-    }
-  },
-  {
-    // Open the sanitize dialog.
-    // @note Disabled since I hardly use this.
-    disabled: true,
-    type: 'button',
-    label: 'CLR',
-    description: 'Clear cache',
-    image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAe1BMVEUAAAC6urpmZmZvb2+qqqpmZjOZZjMzMzOZmZmZZmbMzGbMmTOZmTOZmWbMzJnFxcXMmWb//5n/zGZmMzPS0tL//8z/zJlaW1szM2bMmZlaZGd7e3szZmbi4uKHh4fMzMzv7+/IyMhecnqZmcxmZswzM5mZZpmZzMxmZpkJF2RIAAAAKXRSTlMA/////////////////////////////////////////////////////0LHzqgAAACJSURBVHhefc7JEsIgEARQYkZFMIPEsCiSqLjk/7/QEU1JLvbtdddQMPY3KamSz5TGcQIAqEe63f3kOET+M4oBzpcYrtkKEY1BiD24/r2SKBoDD/WJig4tUdv2cAzOd7nRxloUonG+yk+qHepWCLndf8xY1dAu5Zp/Tb/Y0F6YmuVqZrpa1DMXeQFq7Aju0wjcLAAAAABJRU5ErkJggg==',
-
-    command: function() {
-      $ID('Tools:Sanitize').doCommand();
-    }
   }//,
 ];
 
