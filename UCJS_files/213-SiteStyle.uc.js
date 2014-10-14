@@ -33,7 +33,7 @@ const {
   setContentStyleSheet
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
 }
@@ -418,8 +418,10 @@ const kSiteList = [
       // can pause at that time.
       if (/#at=\d+/.test(location.href)) {
         location.replace(location.href.replace('#at=', '#t='));
+
         return false;
       }
+
       return true;
     },
     script: function(aDocument) {
@@ -445,6 +447,7 @@ const kSiteList = [
         timerID = setInterval(() => {
           if (--waitCount < 0) {
             clear();
+
             return;
           }
 
@@ -481,10 +484,12 @@ const kSiteList = [
                 case 2: // Paused
                   player.pauseVideo();
                   player.seekTo(getStartTime(aDocument.location.href));
+
                   return true;
               }
             }
           }
+
           return false;
         }
 
@@ -552,6 +557,7 @@ const URLFilter = (function() {
     aList.forEach((item) => {
       if (item instanceof RegExp) {
         regExpList.push(item.source);
+
         return;
       }
 
@@ -571,6 +577,7 @@ const URLFilter = (function() {
 
           return true;
         }
+
         return false;
       });
 
@@ -890,13 +897,11 @@ const PageCSS = (function() {
  */
 const PrefMenu = (function() {
   function init() {
-    let menu = $ID('menu_ToolsPopup').
-
-    appendChild($E('menu', {
+    let menu = $E('menu', {
       id: kUI.prefMenu.id,
       label: kUI.prefMenu.label,
       accesskey: kUI.prefMenu.accesskey
-    }));
+    });
 
     if (kSiteList.length) {
       let popup = $E('menupopup');
@@ -922,6 +927,8 @@ const PrefMenu = (function() {
         disabled: true
       });
     }
+
+    $ID('menu_ToolsPopup').appendChild(menu);
   }
 
   function onCommand(aEvent) {
