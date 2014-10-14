@@ -32,7 +32,7 @@ function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
 }
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('ListEx.uc.js', aMsg);
 }
@@ -99,7 +99,7 @@ const kPref = {
 };
 
 /**
- * UI settings
+ * UI settings.
  */
 const kUI = {
   historyMenu: {
@@ -1173,12 +1173,16 @@ const ClosedList = (function() {
  */
 const Tooltip = (function() {
   function init() {
+    let tooltipStyle =
+      // @note Each inner text container has 'max-width'.
+      'max-width:none;' +
+      // Tight text wrapping.
+      'word-break:break-all;word-wrap:break-word;';
+
     let tooltip = $ID('mainPopupSet').appendChild(
       $E('tooltip', {
         id: kUI.tooltip.id,
-        style:
-          'max-width:none;padding:auto 0;' +
-          'word-break:break-all;word-wrap:break-word;'
+        style: tooltipStyle
       })
     );
 
@@ -1215,7 +1219,7 @@ const Tooltip = (function() {
     let fragment = createDocumentFragment();
 
     let add = (aValue) => {
-      let style = 'max-width:' + maxWidth + 'em;margin:auto 0;padding:auto 0;';
+      let style = 'max-width:' + maxWidth + 'em;';
 
       if (aValue.title) {
         style += 'font-weight:bold;background-color:lightgray;';

@@ -35,7 +35,7 @@ function setGlobalAgentCSS(aCSS) {
   return window.ucjsUtil.setGlobalStyleSheet(aCSS, 'AGENT_SHEET');
 }
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
 }
@@ -75,9 +75,7 @@ function log(aMsg) {
   let mTooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
       id: kUI.tooltip.id,
-      style:
-        'max-width:none;padding:auto 0;' +
-        'word-break:break-all;word-wrap:break-word;'
+      style: 'max-width:none;word-break:break-all;word-wrap:break-word;'
     })
   );
 
@@ -118,6 +116,7 @@ function log(aMsg) {
     if (tab.localName !== 'tab') {
       aEvent.preventDefault();
       aEvent.stopPropagation();
+
       return;
     }
 
@@ -132,6 +131,7 @@ function log(aMsg) {
 
     if (tab.mOverCloseButton) {
       mTooltip.label = tab.getAttribute('closetabtext');
+
       return;
     }
 
@@ -184,8 +184,7 @@ function log(aMsg) {
   function setLabel({title, URL, referrer}) {
     let value = title || URL;
 
-    let style = 'max-width:' + kPref.maxWidth + 'em;' +
-      'margin:auto 0;padding:auto 0;';
+    let style = 'max-width:' + kPref.maxWidth + 'em;';
 
     if (title) {
       style += kUI.style.title
@@ -496,7 +495,7 @@ function log(aMsg) {
       );
     }
 
-    return false
+    return false;
   }
 
   function getLink(aNode) {
@@ -696,6 +695,7 @@ function log(aMsg) {
  * @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
  */
 (function() {
+
   /* Clear scrollbar. */
   setGlobalAgentCSS('\
     scrollbar {\
