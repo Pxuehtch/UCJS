@@ -77,7 +77,7 @@ const kAppList = [
     args: ['-new', '%URL%'],
 
     // [optional] This item is disabled.
-    disabled: true
+    //disabled: true
   },
   {
     name: 'WMP',
@@ -97,19 +97,9 @@ const kAppList = [
     path: 'C:/PF/FoxitReader/Foxit Reader.exe'
   },
   {
-    name: 'Opera',
-    type: 'browse',
-    path: '%ProgF%/Opera/opera.exe'
-  },
-  {
     name: 'Chrome',
     type: 'browse',
     path: '%LocalAppData%/Google/Chrome/Application/chrome.exe'
-  },
-  {
-    name: 'unDonut',
-    type: 'browse',
-    path: 'C:/PF/unDonut/unDonut.exe'
   },
   {
     name: 'TB',
