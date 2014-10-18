@@ -145,7 +145,7 @@ const kUI = {
  * @note Extended property name of a menuitem.
  */
 const kDataKey = {
-  tipText: 'ucjs_TooltipEx_tipText'
+  textData: 'ucjs_TooltipEx_textData'
 };
 
 /**
@@ -292,7 +292,7 @@ const TooltipPanel = (function() {
       case 'command': {
         switch (aEvent.target.id) {
           case kUI.copyAll.id: {
-            copyTipInfo();
+            copyAllData();
 
             break;
           }
@@ -544,7 +544,7 @@ const TooltipPanel = (function() {
 
     let item = $item({
       style: kUI.style.text,
-      'tipText': text
+      'textData': text
     });
 
     let accent = $span({
@@ -590,18 +590,18 @@ const TooltipPanel = (function() {
     return item;
   }
 
-  function copyTipInfo() {
-    let info = [];
+  function copyAllData() {
+    let data = [];
 
     Array.forEach(mBox.childNodes, (node) => {
-      let tipText = node[kDataKey.tipText];
+      let textData = node[kDataKey.textData];
 
-      if (tipText) {
-        info.push(tipText);
+      if (textData) {
+        data.push(textData);
       }
     });
 
-    copyToClipboard(info.join('\n'));
+    copyToClipboard(data.join('\n'));
   }
 
   return {
@@ -642,9 +642,9 @@ function copyToClipboard(aText) {
 }
 
 function handleAttribute(aNode, aName, aValue) {
-  if (aName === 'tipText') {
+  if (aName === 'textData') {
     if (aValue) {
-      aNode[kDataKey.tipText] = aValue;
+      aNode[kDataKey.textData] = aValue;
     }
 
     return true;
