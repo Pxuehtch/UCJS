@@ -24,6 +24,7 @@
  * Imports
  */
 const {
+  getModule,
   getNodeById: $ID,
   addEvent,
   unescapeURLForUI,
@@ -136,7 +137,14 @@ const kUI = {
   /**
    * The ellipsis mark.
    */
-  ellipsis: '...'
+  get ellipsis() {
+    const {PlacesUIUtils} = getModule('app/modules/PlacesUIUtils.jsm');
+
+    // Lazy definition.
+    delete this.ellipsis
+
+    return this.ellipsis = PlacesUIUtils.ellipsis;
+  }
 };
 
 /**
