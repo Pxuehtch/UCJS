@@ -65,8 +65,7 @@ const kUI = {
  *   'button': A normal button.
  *   'checkbox': A toggle button with On/Off.
  * @param label {string}
- *   @note Set a short string since the width of a button is fixed.
- *   @see |setStyleSheet()|
+ *   A label text of a button.
  * @param image {URL string} [optional]
  *   The image instead of the label text of a button.
  * @param description {string}
@@ -282,7 +281,6 @@ function setStyleSheet() {
     .%%kUI.button.id%% {\
       -moz-user-focus: ignore;\
       -moz-appearance: none;\
-      width: 20px;\
       min-width: 20px;\
       height: 16px;\
       margin: 0 2px 0 0;\
