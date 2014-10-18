@@ -789,7 +789,7 @@ const PageObserver = (function() {
    */
   function checkAlive(aDocument) {
     try {
-      return !!(aDocument && aDocument.defaultView);
+      return !Cu.isDeadWrapper(aDocument);
     }
     catch (ex) {}
 

@@ -221,7 +221,7 @@ const TargetNode = (function() {
    */
   function checkAlive(aNode) {
     try {
-      return !!(aNode && aNode.parentNode);
+      return !Cu.isDeadWrapper(aNode);
     }
     catch (ex) {}
 
