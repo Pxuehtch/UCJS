@@ -29,7 +29,7 @@ const {
   openTab
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('TextLink.uc.js', aMsg);
 }

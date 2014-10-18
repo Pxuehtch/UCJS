@@ -32,7 +32,7 @@ function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
 }
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
 }

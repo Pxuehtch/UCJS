@@ -30,7 +30,7 @@ const {
   promisePlacesDBResult
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('URLbarKeyword.uc.js', aMsg);
 }

@@ -38,7 +38,7 @@ function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
 }
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
 }
@@ -330,6 +330,7 @@ const MenuUI = (function() {
     if (data.open) {
       if (!/^(?:https?|ftp|file):/.test(data.open)) {
         log('Invalid scheme to open:\n' + data.open);
+
         return;
       }
 
@@ -1594,7 +1595,7 @@ const SiblingNavi = (function() {
           let newVal = leading + newNum + (trailing || '');
 
           list.push({
-            // <data> for a sibling by numbering
+            // <data> for a sibling by numbering.
             here: match,
             there: newVal,
             URL: URL.replace(match, newVal)

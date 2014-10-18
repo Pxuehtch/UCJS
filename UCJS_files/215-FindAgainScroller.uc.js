@@ -24,7 +24,7 @@ const {
   addEvent
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
 }

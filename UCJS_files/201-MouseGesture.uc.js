@@ -43,7 +43,7 @@ const {
   openTab
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
 }
@@ -542,6 +542,7 @@ function MouseGesture() {
 
     if (forceCancel) {
       cancelGesture();
+
       return;
     }
 
@@ -653,7 +654,7 @@ function MouseManager() {
     let allowAction;
 
     switch (type) {
-      case 'mousedown':
+      case 'mousedown': {
         if (button === 2) {
           // Allow the gesture starts.
           allowAction = !mElseDown;
@@ -679,9 +680,11 @@ function MouseManager() {
             mSuppressClick = true;
           }
         }
-        break;
 
-      case 'mouseup':
+        break;
+      }
+
+      case 'mouseup': {
         if (button === 2) {
           // Allow the gesture stops.
           allowAction = !mElseDown;
@@ -691,30 +694,38 @@ function MouseManager() {
         else {
           mElseDown = false;
         }
-        break;
 
-      case 'dragend':
+        break;
+      }
+
+      case 'dragend': {
         // @note Always 'button === 0'.
         mElseDown = false;
+
         break;
+      }
 
       case 'mousemove':
-      case 'wheel':
+      case 'wheel': {
         // A gesture is in progress.
         if (mRightDown) {
           mSuppressMenu = true;
         }
-        break;
 
-      case 'contextmenu':
+        break;
+      }
+
+      case 'contextmenu': {
         enableContextMenu(!mSuppressMenu);
 
         if (mSuppressMenu) {
           mSuppressMenu = false;
         }
-        break;
 
-      case 'click':
+        break;
+      }
+
+      case 'click': {
         if (button === 2) {
           // Force to reset all states.
           if (aEvent.altKey) {
@@ -730,7 +741,9 @@ function MouseManager() {
             aEvent.stopPropagation();
           }
         }
+
         break;
+      }
     }
 
     return allowAction;
@@ -806,6 +819,7 @@ function GestureManager() {
       mDragType = info.type;
       mDragData = info.data;
     }
+
     return true;
   }
 
@@ -1014,8 +1028,10 @@ function GestureManager() {
           if (currentGesture === gesture) {
             matchItem = item;
             quickShot = isQuickShot;
+
             return true;
           }
+
           return false;
         });
       });
@@ -1168,7 +1184,7 @@ function GestureTracer() {
 }
 
 /**
- * Helper functions
+ * Helper functions.
  */
 function inGestureArea(aEvent) {
   // The margin of cancelling a gesture.

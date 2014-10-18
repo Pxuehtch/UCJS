@@ -28,7 +28,7 @@ const {
   addEvent
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('PrettyPrint.uc.js', aMsg);
 }
@@ -198,11 +198,13 @@ const Scratchpad = (function() {
 
     if (!type) {
       prompt('Error: unsupported text type');
+
       return;
     }
 
     if (!text) {
       prompt('Error: no content');
+
       return;
     }
 
@@ -225,6 +227,7 @@ const Scratchpad = (function() {
 
     if (!open(state)) {
       prompt('Error: cannot open Scratchpad');
+
       return;
     }
   }
@@ -360,21 +363,27 @@ const Prettifier = (function() {
       }
       else {
         switch (setting.type) {
-          case 'number':
+          case 'number': {
             value = parseInt(value, 10);
 
             if (isNaN(value)) {
               value = setting.defaultValue;
             }
-            break;
 
-          case 'string':
+            break;
+          }
+
+          case 'string': {
             value = value + '';
-            break;
 
-          case 'boolean':
-            value = !!value;
             break;
+          }
+
+          case 'boolean': {
+            value = !!value;
+
+            break;
+          }
         }
       }
 

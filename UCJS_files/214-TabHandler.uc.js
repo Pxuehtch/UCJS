@@ -25,7 +25,7 @@ const {
   addEvent
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('TabHandler.uc.js', aMsg);
 }
@@ -100,22 +100,28 @@ const TabBarClickEvent = {
     }
 
     switch (aEvent.type) {
-      case 'mousedown':
+      case 'mousedown': {
         this.onMouseDown(aEvent);
-        break;
 
-      case 'mouseup':
-        this.onMouseUp(aEvent);
         break;
+      }
+
+      case 'mouseup': {
+        this.onMouseUp(aEvent);
+
+        break;
+      }
 
       case 'click':
-      case 'dblclick':
+      case 'dblclick': {
         if (kPref.disableDefaultClick ||
             this.handled) {
           aEvent.preventDefault();
           aEvent.stopPropagation();
         }
+
         break;
+      }
     }
   },
 
@@ -181,6 +187,7 @@ const TabBarClickEvent = {
     if (this.state.target !== aEvent.target ||
         !this.idledMouseDown) {
       this.handled = false;
+
       return;
     }
 
@@ -238,21 +245,25 @@ const TabBarClickEvent = {
      * TODO: Separate the definition of actions and generalize the code.
      */
     switch (true) {
-      case (LDC && notTabs):
+      case (LDC && notTabs): {
         // Open home pages.
         // Shift: The current opened tabs are closed.
         // Ctrl: Only the first of the multiple homepages is opened.
         window.ucjsUtil.
           openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
-        break;
 
-      case (MC && notTabs):
+        break;
+      }
+
+      case (MC && notTabs): {
         // Reopen the prev-closed tab.
         // @see chrome://browser/content/browser.js::undoCloseTab
         window.undoCloseTab();
-        break;
 
-      case (LC && foreTab):
+        break;
+      }
+
+      case (LC && foreTab): {
         if (ctrlKey) {
           // Select/Reopen the opener tab.
           window.ucjsTabEx.selectOpenerTab(target, {undoClose: true});
@@ -264,9 +275,11 @@ const TabBarClickEvent = {
 
           window.ucjsTabEx.selectPrevSelectedTab(target, option);
         }
-        break;
 
-      case (LDC && foreTab):
+        break;
+      }
+
+      case (LDC && foreTab): {
         // Pin/Unpin a tab.
         if (!target.pinned) {
           gBrowser.pinTab(target);
@@ -274,12 +287,16 @@ const TabBarClickEvent = {
         else {
           gBrowser.unpinTab(target);
         }
-        break;
 
-      case (MC && (foreTab || backTab)):
+        break;
+      }
+
+      case (MC && (foreTab || backTab)): {
         // Close a tab.
         window.ucjsUtil.removeTab(target, {safeBlock: true});
+
         break;
+      }
     }
   }
 };

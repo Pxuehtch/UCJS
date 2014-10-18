@@ -31,7 +31,7 @@ const {
   openTab
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('WebService.uc.js', aMsg);
 }
@@ -300,8 +300,10 @@ function getResult(aParams, aType) {
   kPresets.some((preset) => {
     if (preset.type === aType && preset.name === aParams.name) {
       result = evaluate(aParams, preset);
+
       return true;
     }
+
     return false;
   });
 
@@ -371,9 +373,11 @@ function updateFormInput(aData, aOption) {
     if (input) {
       textForm = form;
       textInput = input;
+
       return true;
     }
-    return false
+
+    return false;
   });
 
   if (!textInput || !textInput.value) {

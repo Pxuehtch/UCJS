@@ -26,7 +26,7 @@ const {
   addEvent
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
 }

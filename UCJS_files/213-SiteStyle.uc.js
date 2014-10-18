@@ -478,14 +478,26 @@ const kSiteList = [
           if (player) {
             player = player.wrappedJSObject;
 
+            /**
+             * |player.getPlayerState()| returns the state of the player.
+             *
+             * Possible values are:
+             * -1 – unstarted
+             * 0 – ended
+             * 1 – playing
+             * 2 – paused
+             * 3 – buffering
+             * 5 – video cued
+             */
             if (player.getPlayerState) {
               switch (player.getPlayerState()) {
-                case 1: // Playing
-                case 2: // Paused
+                case 1:
+                case 2: {
                   player.pauseVideo();
                   player.seekTo(getStartTime(aDocument.location.href));
 
                   return true;
+                }
               }
             }
           }

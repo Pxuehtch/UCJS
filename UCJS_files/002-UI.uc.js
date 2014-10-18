@@ -34,7 +34,7 @@ const {
   promisePlacesDBResult
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('UI.uc.js', aMsg);
 }
@@ -360,19 +360,23 @@ const FindBar = (function() {
       let tab = aEvent.target;
 
       switch (aEvent.type) {
-        case 'TabFindInitialized':
+        case 'TabFindInitialized': {
           manageHandlers({
             doCreate: true,
             tab: tab
           });
-          break;
 
-        case 'TabClose':
+          break;
+        }
+
+        case 'TabClose': {
           manageHandlers({
             doDestroy: true,
             tab: tab
           });
+
           break;
+        }
       }
     }
 
@@ -802,7 +806,7 @@ const StatusField = (function() {
         columns: ['visit_date']
       }).
       // Resolved with the date or null.
-      // @note we ordered a single row
+      // @note We ordered a single row.
       then((aRows) => aRows ? aRows[0].visit_date : null);
     }
 
@@ -820,7 +824,7 @@ const StatusField = (function() {
         params: {'url': aURL},
         columns: ['id']
       }).
-      // Resolved with bookmarked or not
+      // Resolved with bookmarked or not.
       then((aRows) => !!aRows);
     }
 

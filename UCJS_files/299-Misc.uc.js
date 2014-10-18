@@ -228,7 +228,7 @@ function log(aMsg) {
     })
   );
 
-  const kTooltipShowDelay = 500; // [ms]
+  const kTooltipShowDelay = 500; // [millisecond]
   let mTooltipTimer = null;
 
   // TODO: In Fx29, a URL tooltip shows even if the first URL does not overflow

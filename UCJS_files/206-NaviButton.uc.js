@@ -17,11 +17,11 @@
  * @note A new tab will open in *foreground* by middle-button-click.
  *
  * [Special usage for the back-button with a referrer.]
- * Shift+Ctrl+Click: Select a tab with the referrer URL if exists, open a tab
- * otherwise.
+ * Shift+Ctrl+Click: Select a tab with the referrer URL if already opens, Open
+ * a tab in *foreground* otherwise.
+ * @note The referrer's tab will open in *background* by middle-button-click.
  * @note Does the same action by 'Click' for the back-button without backward
  * history.
- * @note The referrer's tab will be in *background* by middle-button-click.
  *
  * @see |History.jump()|
  */
@@ -45,7 +45,7 @@ const {
   getNodeById: $ID
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('NaviButton.uc.js', aMsg);
 }
@@ -127,21 +127,27 @@ const Button = {
 
   handleEvent: function(aEvent) {
     switch (aEvent.type) {
-      case 'mouseover':
+      case 'mouseover': {
         Tooltip.show(aEvent);
-        break;
 
-      case 'mouseout':
+        break;
+      }
+
+      case 'mouseout': {
         Tooltip.hide(aEvent);
-        break;
 
-      case 'click':
+        break;
+      }
+
+      case 'click': {
         if (aEvent.button !== 2) {
           Tooltip.hide(aEvent);
           History.jump(aEvent);
           Tooltip.delayShow(aEvent);
         }
+
         break;
+      }
     }
   },
 
@@ -166,6 +172,7 @@ const Button = {
 
 /**
  * Progress listener.
+ *
  * @see |NaviButton_init()|
  */
 const BrowserProgressListener = {
@@ -188,12 +195,14 @@ const BrowserProgressListener = {
 
 /**
  * Referrer handler.
+ *
  * @require TabEx.uc.js
  */
 const Referrer = {
   get referrer() {
     // Lazy definition.
     delete this.referrer;
+
     return this.referrer =
       window.ucjsTabEx &&
       window.ucjsTabEx.referrer;
@@ -203,6 +212,7 @@ const Referrer = {
     if (this.referrer) {
       return this.referrer.exists(gBrowser.selectedTab);
     }
+
     return false;
   },
 
@@ -212,7 +222,7 @@ const Referrer = {
 };
 
 /**
- * Tooltip panel handler.
+ * Tooltip handler.
  */
 const Tooltip = {
   init: function() {
@@ -221,7 +231,7 @@ const Tooltip = {
   },
 
   delayShow: function(aEvent) {
-    const kTooltipShowDelay = 500; // [ms]
+    const kTooltipShowDelay = 500; // [millisecond]
 
     this.timer = setTimeout(this.show.bind(this), kTooltipShowDelay, aEvent);
   },
@@ -317,21 +327,27 @@ const Tooltip = {
     }
 
     switch (aKey) {
-      case 'neighbor':
+      case 'neighbor': {
         dir = backward ? 'prev' : 'next';
         title = title || kUI.title.noHistory;
-        break;
 
-      case 'border':
+        break;
+      }
+
+      case 'border': {
         dir = backward ? 'rewind' : 'fastforward';
+
         if (distance === 1) {
           title = kUI.title.ditto;
           URL = '';
         }
-        break;
 
-      case 'stop':
+        break;
+      }
+
+      case 'stop': {
         dir = backward ? 'start' : 'end';
+
         if (distance === 1) {
           title = '';
           URL = '';
@@ -340,11 +356,15 @@ const Tooltip = {
           title = kUI.title.ditto;
           URL = '';
         }
-        break;
 
-      case 'referrer':
-        dir = 'referrer';
         break;
+      }
+
+      case 'referrer': {
+        dir = 'referrer';
+
+        break;
+      }
     }
 
     if (title) {
@@ -439,6 +459,7 @@ const History = {
     forEach(([entry, index]) => {
       if (sh.index !== index) {
         let info = sh.getEntryAt(index);
+
         entry.title = info.title;
         entry.URL = info.URL;
         entry.index = index;
@@ -457,6 +478,7 @@ const History = {
         getEntryAt: getEntryAt
       };
     }
+
     return null;
 
     function getEntryAt(aIndex) {
@@ -496,6 +518,7 @@ const History = {
     if (referrer) {
       if (!gBrowser.canGoBack || (shiftKey && ctrlKey)) {
         selectOrOpen(referrer, {inBackground: button === 1});
+
         return;
       }
     }
@@ -528,6 +551,9 @@ const History = {
   }
 };
 
+/**
+ * Helper function.
+ */
 function selectOrOpen(aURL, aOption) {
   function getURL(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
@@ -546,6 +572,7 @@ function selectOrOpen(aURL, aOption) {
       if (!inBackground) {
         gBrowser.selectedTab = tabs[i];
       }
+
       return;
     }
   }

@@ -36,7 +36,7 @@ const {
   setChromeStyleSheet: setCSS
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
 }
@@ -64,6 +64,8 @@ const kID = {
  *   'button': A normal button.
  *   'checkbox': A toggle button with On/Off.
  * @param label {string}
+ *   @note Set a short string since the width of a button is fixed.
+ *   @see |setStyleSheet()|
  * @param image {URL string} [optional]
  *   The image instead of the label text of a button.
  * @param description {string}
@@ -215,15 +217,18 @@ function updateState(aOption) {
     let button = $ID(kID.ITEM + i);
 
     switch (item.type) {
-      case 'button':
+      case 'button': {
         // Nothing to do.
         break;
+      }
 
-      case 'checkbox':
+      case 'checkbox': {
         if (button.checked !== item.checked) {
           button.checked = item.checked;
         }
+
         break;
+      }
     }
   });
 }
@@ -269,7 +274,6 @@ function makeButtons() {
 
 function setStyleSheet() {
   // @note The styles are adjusted to the themes of my Firefox and OS.
-  // @note The positioning assumes that the nav-bar's height is 24px.
   let css = '\
     #%%kID.CONTAINER%%{\
       margin:3px 0 3px 2px;\

@@ -28,7 +28,7 @@ function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
 }
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('SendTo.uc.js', aMsg);
 }
@@ -40,7 +40,7 @@ const {
 } = window.ucjsUI;
 
 /**
- * UI settings
+ * UI settings.
  */
 const kUI = {
   item: {
@@ -141,6 +141,7 @@ const kPreset = [
       // Do not request a URL with parameters for security.
       if (/[?#].*$/.test(data)) {
         updateLabel('注意：パラメータ付 URL');
+
         return;
       }
 

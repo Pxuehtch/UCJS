@@ -198,7 +198,7 @@ const XPCOM = (function() {
 const Timer = XPCOM.getModule('sdk/timers');
 
 /**
- * Preferences handler
+ * Preferences handler.
  *
  * @see resource://gre/modules/commonjs/sdk/preferences/service.js
  *
@@ -252,7 +252,7 @@ function getSelectionAtCursor(aOption) {
     // Event mode.
     node = event.target;
     rangeParent = event.rangeParent;
-    rangeOffset = event.rangeOffset; // TODO: may be wrong
+    rangeOffset = event.rangeOffset; // TODO: May be wrong value.
   }
   else if (window.gContextMenu) {
     // Contextmenu mode.
@@ -279,7 +279,7 @@ function getSelectionAtCursor(aOption) {
       break;
     }
   }
-  // WORKAROUND: |event.rangeOffset| may be wrong when |text| is empty at the
+  // WORKAROUND: |event.rangeOffset| may be wrong when |text| is empty in the
   // event mode. So, rescan the ranges with the client coordinates.
   if (event && !text) {
     let {clientX: x, clientY: y} = event;

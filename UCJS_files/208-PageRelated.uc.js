@@ -26,7 +26,7 @@ function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
 }
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
 }
@@ -73,7 +73,7 @@ const kUI = {
  *       @key URL {string}
  *       @key title {string}
  *     @return {string}
- *       a URL string
+ *       a URL string.
  *
  * @note Displayed in the declared order.
  */

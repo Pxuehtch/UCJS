@@ -16,7 +16,7 @@
 
 
 /**
- * Main function
+ * Main function.
  *
  * @param Util {hash}
  *   Utility functions.
@@ -40,7 +40,7 @@ const {
   makeURIURL,
   getNodesByXPath: $X,
   contentAreaContextMenu,
-  // for debug
+  // For debugging.
   log
 } = Util;
 
@@ -856,7 +856,7 @@ AppLauncher_init();
  * Argument of the main function.
  *
  * @return Util {hash}
- *   Utility functions
+ *   Utility functions.
  */
 ((function(window, undefined) {
 
@@ -946,6 +946,7 @@ function execute(aApp, aTargetURL) {
 
   if (!appFile) {
     warn('not executed', ['the application is not available now', aApp.path]);
+
     return;
   }
 
@@ -970,6 +971,7 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
   }
   catch (ex) {
     warn('not downloaded', [ex.message, aTargetURL]);
+
     return;
   }
 
@@ -995,19 +997,21 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
           catch (ex) {
             // Nothing to do.
             //
-            // @throw NS_ERROR_NOT_AVAILABLE
+            // @throw |NS_ERROR_NOT_AVAILABLE|
             //   |requestSucceeded| throws when an invalid URL is requested.
           }
 
           if (!requestSucceeded) {
             warn('not downloaded',
               ['HTTP status ' + responseStatus, aRequest.name]);
+
             return;
           }
         }
 
         if (!saveFile || !saveFile.exists()) {
           warn('not downloaded', ['something wrong', aRequest.name]);
+
           return;
         }
 

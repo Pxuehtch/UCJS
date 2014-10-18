@@ -34,7 +34,7 @@ function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
 }
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
 }
@@ -239,7 +239,7 @@ const TooltipPanel = (function() {
   // Tooltip <panel>.
   let mPanel;
 
-  // Container <box> for tip items data.
+  // Container <box> for rows of tooltip texts.
   let mBox;
 
   function init() {
@@ -478,7 +478,7 @@ const TooltipPanel = (function() {
   }
 
   /**
-   * Make a formatted data for creating an element of tip info.
+   * Make a data for creating an element of a tooltip text.
    *
    * @param aHead {string}
    * @param aRest {string}
@@ -515,7 +515,7 @@ const TooltipPanel = (function() {
   }
 
   /**
-   * Create an element of tip info.
+   * Create an element of a tooltip text.
    *
    * @param aTipData {hash}
    *   @note The value is created by |makeTipData|.
@@ -524,9 +524,10 @@ const TooltipPanel = (function() {
   function createTipItem(aTipData) {
     let {text, head, rest, cropped} = aTipData;
 
-    // An block element for a tip data.
+    // A block element for a tooltip text.
     let $item = (aAttribute) => {
       if (aAttribute) {
+        // Make the content text selectable by user.
         aAttribute.style += '-moz-user-focus:normal;-moz-user-select:text;';
       }
 

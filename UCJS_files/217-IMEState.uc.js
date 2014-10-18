@@ -26,7 +26,7 @@ const {
   getNodeById: $ID
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('IMEState.uc.js', aMsg);
 }
@@ -50,19 +50,20 @@ function IMEState_init() {
   addEvent(window, 'keyup', handleEvent, false);
   addEvent(window, 'unload', handleEvent, false);
 
-  addEvent(gBrowser, 'pageshow', handleEvent, false);
   addEvent(gBrowser, 'select', handleEvent, false);
+  addEvent(gBrowser, 'pageshow', handleEvent, false);
 }
 
 function handleEvent(aEvent) {
   switch (aEvent.type) {
     case 'click':
-    case 'pageshow':
     case 'select':
+    case 'pageshow': {
       // Show a sign if focused on an editable field, otherwise clear.
       SignPanel.update();
 
       break;
+    }
 
     case 'keyup': {
       // Update a sign if IME toggled, otherwise clear forcibly.
@@ -90,10 +91,11 @@ function handleEvent(aEvent) {
       break;
     }
 
-    case 'unload':
+    case 'unload': {
       SignPanel.uninit();
 
       break;
+    }
   }
 }
 

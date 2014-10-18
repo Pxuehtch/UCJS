@@ -33,7 +33,7 @@ const {
   setChromeStyleSheet: setCSS
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
 }
@@ -73,7 +73,7 @@ const kUI = {
 /**
  * Key name for storing data.
  *
- * @note Extended attribute name of a filtered item.
+ * @note Extended attribute name of an element.
  */
 const kDataKey = {
   // @note The class name prefix of a listview item being filtered by category.
@@ -147,6 +147,7 @@ function setObserver() {
 
   if (browserConsole) {
     observeMessageAdded(browserConsole);
+
     return;
   }
 

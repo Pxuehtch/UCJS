@@ -130,6 +130,7 @@ function ScriptLoader() {
       Log.list('Not init window', {
         'Blocked URL': document.location.href
       });
+
       return false;
     }
 
@@ -145,6 +146,7 @@ function ScriptLoader() {
     if (inBrowserWindow()) {
       watchSidebar();
     }
+
     return true;
   }
 
@@ -167,6 +169,7 @@ function ScriptLoader() {
           'Loaded node': target.nodeName
         });
         */
+
         return;
       }
 
@@ -174,6 +177,7 @@ function ScriptLoader() {
         Log.list('Not init sidebar', {
           'Blocked URL': target.location.href
         });
+
         return;
       }
 
@@ -190,6 +194,7 @@ function ScriptLoader() {
     if (inBrowserWindow()) {
       return mScriptList.get();
     }
+
     return null;
   }
 
@@ -304,12 +309,14 @@ function ScriptList() {
         if (segment) {
           try {
             directory.append(segment);
+
             return directory.exists() &&
                    directory.isDirectory() &&
                    !directory.isHidden();
           }
           catch (ex) {}
         }
+
         return false;
       });
 
@@ -359,10 +366,12 @@ function ScriptList() {
         if (kPref.jscriptExts.indexOf(ext) > -1) {
           return 'js';
         }
+
         if (kPref.overlayExts.indexOf(ext) > -1) {
           return 'xul';
         }
       }
+
       return '';
     }
   }
@@ -785,6 +794,7 @@ function Log(aEnabled) {
     if (Array.isArray(data)) {
       return data.map((item) => indent + item).join('\n');
     }
+
     return indent + data;
   };
 

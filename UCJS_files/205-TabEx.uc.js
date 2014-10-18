@@ -41,7 +41,7 @@ const {
   getPlacesDBResult
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('TabEx.uc.js', aMsg);
 }
@@ -86,11 +86,11 @@ const kPosType = {
   LAST_END: 3,
 
   // At the previous adjacent.
-  // @note No match if no previous tab for |SELECTPOS|.
+  // @note No matches if no previous tab for |SELECTPOS|.
   PREV_ADJACENT: 4,
 
   // At the next adjacent.
-  // @note No match if no next tab for |SELECTPOS|.
+  // @note No matches if no next tab for |SELECTPOS|.
   NEXT_ADJACENT: 5,
 
   /**
@@ -108,24 +108,24 @@ const kPosType = {
    */
 
   // The previous adjacent tab that is an ancestor of the closed tab.
-  // @note May be no match.
+  // @note May be no matches.
   PREV_ADJACENT_ANCESTOR: 7,
 
   // The next adjacent tab that is a descendant of the closed tab or is a
   // sibling (has the same parent of the closed tab) or his descendant.
-  // @note May be no match.
+  // @note May be no matches.
   NEXT_ADJACENT_EXTENDED_DESCENDANT: 8,
 
   // The parent tab of the closed tab.
-  // @note May be no match.
+  // @note May be no matches.
   ANYWHERE_OPENER: 9,
 
   // Tab that has been selected most recently before the closed tab.
-  // @note May be no match.
+  // @note May be no matches.
   ANYWHERE_PREV_SELECTED: 10,
 
   // The oldest opened tab of unread tabs.
-  // @note May be no match
+  // @note May be no matches.
   ANYWHERE_OLDEST_UNREAD: 11
 };
 
@@ -531,10 +531,11 @@ const TabOpener = {
         };
 
         TabData.set(aTab, 'openInfo', openInfo);
+
         break;
       }
 
-      case 'NewTab':
+      case 'NewTab': {
         if (Referrer.isRelatedToCurrent(aTab)) {
           // Inherit the ancestors so that the opener tab becomes the parent.
           let parent = gBrowser.selectedTab;
@@ -543,7 +544,9 @@ const TabOpener = {
 
           TabData.set(aTab, 'ancestors', [open].concat(ancs));
         }
+
         break;
+      }
 
       case 'DuplicatedTab': {
         // This duplicated tab has the same data of its original tab.
@@ -552,6 +555,7 @@ const TabOpener = {
         let ancs = TabData.get(aTab, 'ancestors') || [];
 
         TabData.set(aTab, 'ancestors', [open].concat(ancs));
+
         break;
       }
     }
@@ -687,6 +691,7 @@ const TabSelector = {
       TabData.set(aTab, 'selectTime', null);
       TabData.set(aTab, 'readTime', null);
       TabData.set(aTab, 'read', null);
+
       return;
     }
 

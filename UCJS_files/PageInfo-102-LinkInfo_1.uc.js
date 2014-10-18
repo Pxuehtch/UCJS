@@ -84,7 +84,7 @@ const LinkInfoView = (function() {
         window.goThroughFrames(window.gDocument, window.gWindow);
       }
       catch (ex) {
-        // @throw (NS_ERROR_FAILURE) [nsIDOMWindow.length]
+        // @throw |NS_ERROR_FAILURE| [nsIDOMWindow.length]
         // |gWindow.frames.length| is undefined after closing the target page
         // which has frames.
         return;
@@ -267,6 +267,7 @@ function grabLink(aNode) {
   else {
     return NodeFilter.FILTER_SKIP;
   }
+
   return NodeFilter.FILTER_ACCEPT;
 }
 

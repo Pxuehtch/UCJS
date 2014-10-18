@@ -27,7 +27,7 @@ const {
   addEvent
 } = window.ucjsUtil;
 
-// for debug
+// For debugging.
 function log(aMsg) {
   return window.ucjsUtil.logMessage('MoveTabToWindow.uc.js', aMsg);
 }
@@ -281,6 +281,7 @@ function getWindowsData(aTab) {
 function moveTabToWindow(aTab, aWindow) {
   if (aWindow) {
     moveTabToOtherWindow(aTab, aWindow);
+
     return;
   }
 

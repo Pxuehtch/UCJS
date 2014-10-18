@@ -15,7 +15,7 @@
 <script type="application/x-javascript" xmlns="http://www.w3.org/1999/xhtml">
 <![CDATA[
 (function() {
-  // optional initialization
+  // @note Add optional initialization.
 })();
 ]]>
 </script>
