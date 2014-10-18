@@ -42,16 +42,17 @@ function log(aMsg) {
 }
 
 /**
- * Identifiers
+ * UI setting.
  */
-const kID = {
-  // Native ID.
-  NAVIGATION_TOOLBAR: 'nav-bar',
-  PANELUI_BUTTON: 'PanelUI-button',
-
-  // Custom ID.
-  CONTAINER: 'ucjs_PrefButton_container',
-  ITEM: 'ucjs_PrefButton_item'
+const kUI = {
+  container: {
+    id: 'ucjs_PrefButton_container'
+  },
+  button: {
+    // @note The id prefix of a button.
+    // @note The class name for styling a button.
+    id: 'ucjs_PrefButton_button'
+  }
 };
 
 /**
@@ -214,7 +215,7 @@ function updateState(aOption) {
       return;
     }
 
-    let button = $ID(kID.ITEM + i);
+    let button = $ID(kUI.button.id + i);
 
     switch (item.type) {
       case 'button': {
@@ -240,28 +241,28 @@ function doCommand(aEvent) {
 
   let button = aEvent.target;
 
-  if (button.id && button.id.startsWith(kID.ITEM)) {
-    kItemList[+button.id.replace(kID.ITEM, '')].command();
+  if (button.id && button.id.startsWith(kUI.button.id)) {
+    kItemList[+button.id.replace(kUI.button.id, '')].command();
   }
 }
 
 function makeButtons() {
-  let toolbar = $ID(kID.NAVIGATION_TOOLBAR);
+  let toolbar = $ID('nav-bar');
 
-  let hbox = $E('hbox', {
-    id: kID.CONTAINER
+  let container = $E('hbox', {
+    id: kUI.container.id
   });
 
-  addEvent(hbox, 'click', doCommand, false);
+  addEvent(container, 'click', doCommand, false);
 
   kItemList.forEach((item, i) => {
     if (item.disabled) {
       return;
     }
 
-    hbox.appendChild($E('button', {
-      id: kID.ITEM + i,
-      class: kID.ITEM,
+    container.appendChild($E('button', {
+      id: kUI.button.id + i,
+      class: kUI.button.id,
       type: (item.type !== 'button') ? item.type : null,
       image: item.image || null,
       label: !item.image ? item.label : null,
@@ -269,43 +270,43 @@ function makeButtons() {
     }));
   });
 
-  toolbar.insertBefore(hbox, $ID(kID.PANELUI_BUTTON));
+  toolbar.insertBefore(container, $ID('PanelUI-button'));
 }
 
 function setStyleSheet() {
   // @note The styles are adjusted to the themes of my Firefox and OS.
   let css = '\
-    #%%kID.CONTAINER%%{\
-      margin:3px 0 3px 2px;\
+    #%%kUI.container.id%% {\
+      margin: 3px 0 3px 2px;\
     }\
-    .%%kID.ITEM%%{\
-      -moz-user-focus:ignore;\
-      -moz-appearance:none;\
-      width:20px;\
-      min-width:20px;\
-      height:16px;\
-      margin:0 2px 0 0;\
-      padding:0;\
-      border:1px solid #999;\
-      -moz-border-top-colors:none;\
-      -moz-border-right-colors:none;\
-      -moz-border-bottom-colors:none;\
-      -moz-border-left-colors:none;\
-      background:transparent none center center no-repeat;\
-      font:8px "Arial";\
+    .%%kUI.button.id%% {\
+      -moz-user-focus: ignore;\
+      -moz-appearance: none;\
+      width: 20px;\
+      min-width: 20px;\
+      height: 16px;\
+      margin: 0 2px 0 0;\
+      padding: 0;\
+      border: 1px solid #999;\
+      -moz-border-top-colors: none;\
+      -moz-border-right-colors: none;\
+      -moz-border-bottom-colors: none;\
+      -moz-border-left-colors: none;\
+      background: transparent none center center no-repeat;\
+      font: 8px "Arial";\
     }\
-    .%%kID.ITEM%%:active,\
-    .%%kID.ITEM%%[checked=true]{\
-      border:1px inset #ccc;\
-      background-color:#ffcccc;\
+    .%%kUI.button.id%%:active,\
+    .%%kUI.button.id%%[checked=true]{\
+      border: 1px inset #ccc;\
+      background-color: #ffcccc;\
     }\
-    .%%kID.ITEM%%:hover{\
-      cursor:pointer;\
-      opacity:0.6;\
+    .%%kUI.button.id%%:hover{\
+      cursor: pointer;\
+      opacity: .6;\
     }\
-    .%%kID.ITEM%%>hbox{\
-      border:none;\
-      padding:0;\
+    .%%kUI.button.id%% > hbox{\
+      border: none;\
+      padding: 0;\
     }\
   ';
 

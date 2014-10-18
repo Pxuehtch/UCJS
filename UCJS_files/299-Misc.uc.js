@@ -737,11 +737,15 @@ function log(aMsg) {
  */
 (function() {
 
-  const kID = {
-    ALLTABS_POPUP: 'alltabs-popup'
+  /**
+   * Fx native UI elements.
+   */
+  const UI = {
+    get alltabsPopup() {
+      // <menupopup#alltabs-popup>
+      return $ID('alltabs-popup');
+    }
   };
-
-  let alltabsPopup = $ID(kID.ALLTABS_POPUP);
 
   /**
    * Ensure that the target tab is visible by the command of a menuitem in
@@ -755,10 +759,10 @@ function log(aMsg) {
    *   <binding id="tabbrowser-alltabs-popup">::
    *   <handler event="command">
    */
-  addEvent(alltabsPopup, 'command', (aEvent) => {
+  addEvent(UI.alltabsPopup, 'command', (aEvent) => {
     let menuitem = aEvent.target;
 
-    if (menuitem.parentNode.id !== kID.ALLTABS_POPUP) {
+    if (menuitem.parentNode !== UI.alltabsPopup) {
       return;
     }
 
@@ -773,10 +777,10 @@ function log(aMsg) {
    *
    * @note This is a workaround for a suspended tab by TabEx.uc.js.
    */
-  addEvent(alltabsPopup, 'DOMMenuItemActive', (aEvent) => {
+  addEvent(UI.alltabsPopup, 'DOMMenuItemActive', (aEvent) => {
     let menuitem = aEvent.target;
 
-    if (menuitem.parentNode.id !== kID.ALLTABS_POPUP) {
+    if (menuitem.parentNode !== UI.alltabsPopup) {
       return;
     }
 
@@ -811,10 +815,10 @@ function log(aMsg) {
    *
    * @note This is a workaround for an unread tab handled by TabEx.uc.js.
    */
-  addEvent(alltabsPopup, 'popupshowing', (aEvent) => {
+  addEvent(UI.alltabsPopup, 'popupshowing', (aEvent) => {
     let popup = aEvent.target;
 
-    if (popup.id !== kID.ALLTABS_POPUP) {
+    if (popup !== UI.alltabsPopup) {
       return;
     }
 
@@ -828,10 +832,10 @@ function log(aMsg) {
       addEventListener('TabAttrModified', onTabAttrModified, false);
   }, false);
 
-  addEvent(alltabsPopup, 'popuphiding', (aEvent) => {
+  addEvent(UI.alltabsPopup, 'popuphiding', (aEvent) => {
     let popup = aEvent.target;
 
-    if (popup.id !== kID.ALLTABS_POPUP) {
+    if (popup !== UI.alltabsPopup) {
       return;
     }
 
@@ -860,8 +864,13 @@ function log(aMsg) {
  */
 (function() {
 
-  const kID = {
-    lockButton: 'ucjs_Misc_CommonFindbar_lockButton'
+  const kUI = {
+    lockButton: {
+      id: 'ucjs_Misc_GlobalFindbar_lockButton',
+      label: 'Lock',
+      accesskey: 'l',
+      tooltiptext: 'Use the global findbar'
+    }
   };
 
   let mIsLocked = false;
@@ -875,11 +884,12 @@ function log(aMsg) {
     let {findBar} = aParam;
 
     findBar.appendChild($E('toolbarbutton', {
-      label: 'Lock',
-      accesskey: 'l',
-      tooltiptext: 'Use the same find string in all tabs',
-      type: 'checkbox',
-      class: kID.lockButton
+      // @note Identified by the class name since each tab has a findbar.
+      class: kUI.lockButton.id,
+      label: kUI.lockButton.label,
+      accesskey: kUI.lockButton.accesskey,
+      tooltiptext: kUI.lockButton.tooltiptext,
+      type: 'checkbox'
     }));
   }
 
@@ -888,7 +898,7 @@ function log(aMsg) {
     // @note Avoid creating a needless findbar once the lazy getter |gFindBar|
     // is called.
     if (gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
-      return gFindBar.getElementsByClassName(kID.lockButton)[0];
+      return gFindBar.getElementsByClassName(kUI.lockButton.id)[0];
     }
 
     return null;

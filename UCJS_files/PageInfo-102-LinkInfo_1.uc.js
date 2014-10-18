@@ -16,53 +16,87 @@ const ucjsLinkInfo = (function(window, undefined) {
 
 
 /**
- * Identifiers
+ * UI setting.
  */
-const kID = {
-  linkTree: 'linktree',
-  addressColumn: 'linktree-address'
-};
+const kUI = {
+  tree: {
+    id: 'ucjs_LinkInfo_tree'
+  },
 
-/**
- * Type of link node.
- */
-const kType = {
-  a: '<A>',
-  area: '<AREA>',
-  submit: 'Submit',
-  script: '<SCRIPT>',
-  link: '<LINK>',
-  XLink: 'XLink',
-  q: '<Q>',
-  blockquote: '<BLOCKQUOTE>',
-  ins: '<INS>',
-  del: '<DEL>'
-};
+  /**
+   * Columns of the tree view.
+   *
+   * @note Define items in the column's order in |LinkInfo.uc.xul|.
+   */
+  column: {
+    index:  {
+      id: 'ucjs_LinkInfo_indexColumn'
+    },
+    name:  {
+      id: 'ucjs_LinkInfo_nameColumn'
+    },
+    address:  {
+      id: 'ucjs_LinkInfo_addressColumn'
+    },
+    type:  {
+      id: 'ucjs_LinkInfo_typeColumn'
+    },
+    target: {
+      id: 'ucjs_LinkInfo_targetColumn'
+    },
+    accesskey: {
+      id: 'ucjs_LinkInfo_accesskeyColumn'
+    }
+  },
 
-/**
- * Notes
- */
-const kNote = {
-  error: '[N/A]',
-  image: '[IMG]'
+  /**
+   * Elements with the attribute about URL.
+   */
+  type: {
+    a: '<A>',
+    area: '<AREA>',
+    submit: 'Submit', // <INPUT>, <BUTTON>
+    script: '<SCRIPT>',
+    link: '<LINK>',
+    XLink: 'XLink',
+    q: '<Q>',
+    blockquote: '<BLOCKQUOTE>',
+    ins: '<INS>',
+    del: '<DEL>'
+  },
+
+  /**
+   * Note to a column text.
+   */
+  note: {
+    error: '[N/A]',
+    image: '[IMG]'
+  }
 };
 
 /**
  * Link view handler.
  */
 const LinkInfoView = (function() {
+  const UI = {
+    get tree() {
+      return window.document.getElementById(kUI.tree.id);
+    },
+
+    get addressColumn() {
+      return this.tree.columns.getNamedColumn(kUI.column.address.id);
+    }
+  };
+
   let mView = null;
   let mIsBuilt = false;
 
   function init() {
     if (!mView) {
-      let tree = window.document.getElementById(kID.linkTree);
-      let copyColumnIndex =
-        tree.columns.getNamedColumn(kID.addressColumn).index;
-
       // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
-      mView = new window.pageInfoTreeView(kID.linkTree, copyColumnIndex);
-      tree.view = mView;
+      mView = new window.pageInfoTreeView(kUI.tree.id, UI.addressColumn.index);
+
+      UI.tree.view = mView;
 
       // Clean up when the Page Info window is closed.
       // @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
@@ -110,17 +144,14 @@ const LinkInfoView = (function() {
       return;
     }
 
-    let tree = window.document.getElementById(kID.linkTree);
-
     // @see chrome://browser/content/pageinfo/pageInfo.js::getSelectedRow()
-    let row = window.getSelectedRow(tree);
+    let row = window.getSelectedRow(UI.tree);
 
     if (row === -1) {
       return;
     }
 
-    let column = tree.columns.getNamedColumn(kID.addressColumn);
-    let URL = mView.data[row][column.index];
+    let URL = mView.data[row][UI.addressColumn.index];
 
     let opener = window.opener;
 

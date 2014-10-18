@@ -50,14 +50,14 @@ function log(aMsg) {
  * @note Extended attribute name of a tab.
  */
 const kDataKey = {
-  OPENINFO: 'ucjs_TabEx_openInfo',
-  OPENTIME: 'ucjs_TabEx_openTime',
-  SELECTTIME: 'ucjs_TabEx_selectTime',
-  READTIME: 'ucjs_TabEx_readTime',
-  ANCESTORS: 'ucjs_TabEx_ancestors',
-  SUSPENDED: 'ucjs_TabEx_suspended',
-  READ: 'ucjs_TabEx_read',
-  RESTORING: 'ucjs_TabEx_restoring'
+  openInfo: 'ucjs_TabEx_openInfo',
+  openTime: 'ucjs_TabEx_openTime',
+  selectTime: 'ucjs_TabEx_selectTime',
+  readTime: 'ucjs_TabEx_readTime',
+  ancestors: 'ucjs_TabEx_ancestors',
+  suspended: 'ucjs_TabEx_suspended',
+  read: 'ucjs_TabEx_read',
+  restoring: 'ucjs_TabEx_restoring'
 };
 
 /**
@@ -228,44 +228,44 @@ const TabData = (function () {
 
     switch (aKey) {
       case 'openInfo': // {hash}
-        name = kDataKey.OPENINFO;
+        name = kDataKey.openInfo;
         getter = (value) => JSON.parse(htmlUnescape(value));
         setter = (value) => htmlEscape(JSON.stringify(value));
         break;
 
       case 'openTime': // {integer}
-        name = kDataKey.OPENTIME;
+        name = kDataKey.openTime;
         getter = getInt;
         break;
 
       case 'selectTime': // {integer}
-        name = kDataKey.SELECTTIME;
+        name = kDataKey.selectTime;
         getter = getInt;
         break;
 
       case 'readTime': // {integer}
-        name = kDataKey.READTIME;
+        name = kDataKey.readTime;
         getter = getInt;
         break;
 
       case 'ancestors': // {integer[]}
-        name = kDataKey.ANCESTORS;
+        name = kDataKey.ancestors;
         getter = (value) => value.split(' ').map(getInt);
         setter = (value) => value.join(' ');
         break;
 
       case 'suspended': // {boolean}
-        name = kDataKey.SUSPENDED;
+        name = kDataKey.suspended;
         type = 'boolean';
         break;
 
       case 'read': // {boolean}
-        name = kDataKey.READ;
+        name = kDataKey.read;
         type = 'boolean';
         break;
 
       case 'restoring': // {boolean}
-        name = kDataKey.RESTORING;
+        name = kDataKey.restoring;
         type = 'boolean';
         break;
 
@@ -856,11 +856,11 @@ const SessionStore = {
 
   persistTabAttribute: function() {
     let savedAttributes = [
-      kDataKey.OPENINFO,
-      kDataKey.OPENTIME,
-      kDataKey.SELECTTIME,
-      kDataKey.READTIME,
-      kDataKey.ANCESTORS
+      kDataKey.openInfo,
+      kDataKey.openTime,
+      kDataKey.selectTime,
+      kDataKey.readTime,
+      kDataKey.ancestors
     ];
 
     savedAttributes.forEach((key) => {

@@ -51,22 +51,13 @@ function log(aMsg) {
 }
 
 /**
- * Identifiers
- */
-const kID = {
-  // Native ID.
-  BACK_BUTTON: 'back-button',
-  FORWARD_BUTTON: 'forward-button',
-
-  // Custom ID.
-  TOOLTIP: 'ucjs_NaviButton_tooltip',
-  REFERRER: 'ucjs_NaviButton_referrer'
-};
-
-/**
  * UI settings.
  */
 const kUI = {
+  tooltip: {
+    id: 'ucjs_NaviButton_tooltip'
+  },
+
   title: {
     noTitle:   'No title',
     noHistory: 'No history',
@@ -96,6 +87,27 @@ const kUI = {
 };
 
 /**
+ * Key name for storing data.
+ */
+const kDataKey = {
+  // @note An attribute name of the back button for the referrer check.
+  referrer: 'ucjs_NaviButton_referrer'
+};
+
+/**
+ * Fx native UI elements.
+ */
+const UI = {
+  get backButton() {
+    return $ID('back-button');
+  },
+
+  get forwardButton() {
+    return $ID('forward-button');
+  }
+};
+
+/**
  * Handler of a navigation button.
  */
 const Button = {
@@ -108,7 +120,7 @@ const Button = {
     aButton.removeAttribute('onclick');
     aButton.removeAttribute('oncommand');
 
-    this.preventCommand(aButton);
+    this.preventDefaultCommand(aButton);
 
     aButton.addEventListener('mouseover', this, false);
     aButton.addEventListener('mouseout', this, false);
@@ -151,9 +163,9 @@ const Button = {
     }
   },
 
-  preventCommand: function(aButton) {
-    let command = (aButton.id === kID.BACK_BUTTON) ?
-      'BrowserBack' : 'BrowserForward';
+  preventDefaultCommand: function(aButton) {
+    let command =
+      (aButton === UI.backButton) ? 'BrowserBack' : 'BrowserForward';
 
     // @modified chrome://browser/content/browser.js::BrowserBack
     // @modified chrome://browser/content/browser.js::BrowserForward
@@ -177,13 +189,14 @@ const Button = {
  */
 const BrowserProgressListener = {
   onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
-    let back = $ID(kID.BACK_BUTTON);
+    let backButton = UI.backButton;
+    let referrerKey = kDataKey.referrer;
 
     if (!gBrowser.canGoBack && Referrer.exists()) {
-      back.setAttribute(kID.REFERRER, true);
+      backButton.setAttribute(referrerKey, true);
     }
-    else if (back.hasAttribute(kID.REFERRER)) {
-      back.removeAttribute(kID.REFERRER);
+    else if (backButton.hasAttribute(referrerKey)) {
+      backButton.removeAttribute(referrerKey);
     }
   },
 
@@ -226,8 +239,9 @@ const Referrer = {
  */
 const Tooltip = {
   init: function() {
-    this.tooltip = $ID('mainPopupSet').appendChild($E('tooltip'));
-    this.tooltip.id = kID.TOOLTIP;
+    this.tooltip = $ID('mainPopupSet').appendChild($E('tooltip', {
+      id: kUI.tooltip.id
+    }));
   },
 
   delayShow: function(aEvent) {
@@ -248,7 +262,7 @@ const Tooltip = {
   show: function(aEvent) {
     let button = aEvent.target;
 
-    let backward = button.id === kID.BACK_BUTTON;
+    let backward = button === UI.backButton;
     let referrer = backward && Referrer.exists();
     let disabled = button.disabled;
 
@@ -584,21 +598,19 @@ function selectOrOpen(aURL, aOption) {
  * Entry point.
  */
 function NaviButton_init() {
-  let back = $ID(kID.BACK_BUTTON),
-      forward = $ID(kID.FORWARD_BUTTON);
-
-  Button.init(back);
-  Button.init(forward);
+  Button.init(UI.backButton);
+  Button.init(UI.forwardButton);
 
   Tooltip.init();
 
   gBrowser.addProgressListener(BrowserProgressListener);
 
-  window.addEventListener('unload', function cleanup() {
-    window.removeEventListener('unload', cleanup, false);
+  window.addEventListener('unload', function onUnload() {
+    window.removeEventListener('unload', onUnload, false);
     gBrowser.removeProgressListener(BrowserProgressListener);
-    Button.uninit(back);
-    Button.uninit(forward);
+
+    Button.uninit(UI.backButton);
+    Button.uninit(UI.forwardButton);
   }, false);
 }
 

@@ -33,27 +33,27 @@
 
 <deck id="mainDeck">
   <vbox id="linkPanel">
-    <tree id="linktree" flex="1"
+    <tree id="ucjs_LinkInfo_tree" flex="1"
       contextmenu="picontext"
-      ondraggesture="window.onBeginLinkDrag(event,'linktree-address','linktree-name')"
+      ondraggesture="window.onBeginLinkDrag(event,'ucjs_LinkInfo_addressColumn','ucjs_LinkInfo_nameColumn')"
       ondblclick="ucjsLinkInfo.openLink(event);">
       <treecols>
-        <treecol id="linktree-index" label="#"
+        <treecol id="ucjs_LinkInfo_indexColumn" label="#"
           persist="hidden" style="min-width:2em;"/>
         <splitter class="tree-splitter"/>
-        <treecol id="linktree-name" label="名前"
+        <treecol id="ucjs_LinkInfo_nameColumn" label="名前"
           persist="hidden width" width="5" flex="5"/>
         <splitter class="tree-splitter"/>
-        <treecol id="linktree-address" label="URI"
+        <treecol id="ucjs_LinkInfo_addressColumn" label="URI"
           persist="hidden width" width="7" flex="7"/>
         <splitter class="tree-splitter"/>
-        <treecol id="linktree-type" label="タイプ"
+        <treecol id="ucjs_LinkInfo_typeColumn" label="タイプ"
           persist="hidden width" width="2" flex="2"/>
         <splitter class="tree-splitter"/>
-        <treecol id="linktree-target" label="ターゲット"
+        <treecol id="ucjs_LinkInfo_targetColumn" label="ターゲット"
           persist="hidden width" width="2" flex="2" hidden="true"/>
         <splitter class="tree-splitter"/>
-        <treecol id="linktree-accesskey" label="アクセスキー"
+        <treecol id="ucjs_LinkInfo_accesskeyColumn" label="アクセスキー"
           persist="hidden width" width="2" hidden="true"/>
       </treecols>
       <treechildren flex="1"/>

@@ -70,36 +70,6 @@ const kPref = {
 };
 
 /**
- * Style setting
- *
- * @key item {CSS}
- *   Styles for tip items.
- * @key accent {CSS}
- *   Styles for accent portions.
- *   @note Applied to;
- *   - '<tag>'
- *   - 'description-attribute='
- *   - 'URL-attribute=scheme:'
- * @key crop {CSS}
- *   Styles for ellipsis mark of a cropped text.
- *   @note Applied to a long URL with 'javascript:' or 'data:' scheme.
- */
-const kStyle = {
-  item: 'font:1em/1.2 monospace;letter-spacing:.1em;',
-  accent: 'color:blue;',
-  crop: 'color:red;font-weight:bold;'
-};
-
-/**
- * Format in tip items.
- */
-const kTipFormat = {
-  tag: '<%tag%>',
-  attribute: '%name%=',
-  ellipsis: '...'
-};
-
-/**
  * Attribute names for the informations of an element.
  *
  * @key descriptions {string[]}
@@ -133,7 +103,40 @@ const kUI = {
   copyAll: {
     id: 'ucjs_TooltipEx_copyAll',
     label: 'Copy All'
-  }
+  },
+
+  /**
+   * CSS styles of tooltip texts.
+   *
+   * @key text {CSS}
+   *   The base style of tooltip texts.
+   * @key accent {CSS}
+   *   For accent portions of a text.
+   *   @note Applied to;
+   *   - '<tag>'
+   *   - 'description-attribute='
+   *   - 'URL-attribute=scheme:'
+   * @key ellipsis {CSS}
+   *   For the ellipsis mark of a cropped text.
+   */
+  style: {
+    text: 'font:1em/1.2 monospace;letter-spacing:.1em;',
+    accent: 'color:blue;',
+    ellipsis: 'color:red;font-weight:bold;'
+  },
+
+  /**
+   * Template for accent portions of a tooltip text.
+   */
+  accent: {
+    tag: '<%tag%>',
+    attribute: '%name%='
+  },
+
+  /**
+   * The ellipsis mark.
+   */
+  ellipsis: '...'
 };
 
 /**
@@ -419,8 +422,8 @@ const TooltipPanel = (function() {
 
   function collectTipData(aNode) {
     // Helper functions.
-    let $tag = (name) => kTipFormat.tag.replace('%tag%', name);
-    let $attr = (name) => kTipFormat.attribute.replace('%name%', name);
+    let $tag = (name) => kUI.accent.tag.replace('%tag%', name);
+    let $attr = (name) => kUI.accent.attribute.replace('%name%', name);
 
     let data = [];
     let attributes = {};
@@ -540,12 +543,12 @@ const TooltipPanel = (function() {
     let $text = (aText) => window.document.createTextNode(aText);
 
     let item = $item({
-      style: kStyle.item,
+      style: kUI.style.text,
       'tipText': text
     });
 
     let accent = $span({
-      style: kStyle.accent
+      style: kUI.style.accent
     });
 
     item.appendChild(accent).appendChild($text(head));
@@ -558,7 +561,7 @@ const TooltipPanel = (function() {
       let subTooltipStyle =
         'max-width:' + kPref.maxWidth + 'em;' +
         'word-break:break-all;word-wrap:break-word;' +
-        kStyle.item;
+        kUI.style.text;
 
       let subTooltip = $E('tooltip', {
         // TODO: Make a smart unique id.
@@ -569,7 +572,7 @@ const TooltipPanel = (function() {
       let maxLength = kPref.maxWidth * kPref.maxNumWrapLinesOfSubTooltip;
 
       if (text.length > maxLength) {
-        text = text.substr(0, maxLength) + kTipFormat.ellipsis;
+        text = text.substr(0, maxLength) + kUI.ellipsis;
       }
 
       item.appendChild(subTooltip).
@@ -577,8 +580,8 @@ const TooltipPanel = (function() {
         appendChild($text(text));
 
       item.appendChild($E('label', {
-        value: kTipFormat.ellipsis,
-        style: kStyle.crop,
+        value: kUI.ellipsis,
+        style: kUI.style.ellipsis,
         class: 'plain',
         tooltip: subTooltip.id
       }));
