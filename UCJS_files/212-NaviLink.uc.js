@@ -24,9 +24,7 @@ const ucjsNaviLink = (function(window, undefined) {
  * Imports
  */
 const {
-  XPCOM: {
-    getModule
-  },
+  getModule,
   getNodeById: $ID,
   getNodesBySelector: $S,
   getFirstNodeByXPath: $X1,
@@ -1147,7 +1145,8 @@ const NaviLink = (function() {
 
     if (aRels.feed ||
         (aNode.type && aRels.alternate && !aRels.stylesheet)) {
-      const {Feeds} = getModule('resource:///modules/Feeds.jsm');
+      const {Feeds} = getModule('app/modules/Feeds.jsm');
+
       let feedType =
         Feeds.isValidFeed(aNode, getDocument().nodePrincipal, aRels.feed);
 

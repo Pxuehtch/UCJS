@@ -164,27 +164,10 @@ const XPCOM = (function() {
     return aCID;
   }
 
-  function getModule(aResourceURL) {
-    // Fx built-in JS module.
-    if (/^\w+:.+\.jsm?$/.test(aResourceURL)) {
-      let scope = {};
-
-      Cu.import(aResourceURL, scope);
-
-      return scope;
-    }
-
-    // Devtools module loader.
-    let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
-
-    return loader.devtools.require(aResourceURL);
-  }
-
   return {
     $S: getService,
     $I: getInstance,
-    $C: getConstructor,
-    getModule: getModule
+    $C: getConstructor
   };
 })();
 
@@ -195,7 +178,7 @@ const XPCOM = (function() {
  *
  * TODO: Get lazily.
  */
-const Timer = XPCOM.getModule('sdk/timers');
+const Timer = getModule('sdk/timers');
 
 /**
  * Preferences handler.
@@ -204,7 +187,30 @@ const Timer = XPCOM.getModule('sdk/timers');
  *
  * TODO: Get lazily.
  */
-const Prefs = XPCOM.getModule('sdk/preferences/service');
+const Prefs = getModule('sdk/preferences/service');
+
+/**
+ * JS module loader.
+ */
+function getModule(aResourceURL) {
+  // Built-in JS module.
+  if (/\.jsm$/.test(aResourceURL)) {
+    if (/^(?:gre|app)\//.test(aResourceURL)) {
+      aResourceURL = 'resource://' + aResourceURL;
+    }
+
+    let scope = {};
+
+    Cu.import(aResourceURL, scope);
+
+    return scope;
+  }
+
+  // Devtools module loader.
+  let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+
+  return loader.devtools.require(aResourceURL);
+}
 
 /**
  * Functions for DOM handling.
@@ -1069,8 +1075,7 @@ function getPlacesDBResult(aParam) {
     columns
   } = aParam || {};
 
-  const {PlacesUtils} =
-    XPCOM.getModule('resource://gre/modules/PlacesUtils.jsm');
+  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   let statement =
     PlacesUtils.history.DBConnection.createStatement(expression);
@@ -1140,8 +1145,7 @@ function promisePlacesDBResult(aParam) {
     columns
   } = aParam || {};
 
-  const {PlacesUtils} =
-    XPCOM.getModule('resource://gre/modules/PlacesUtils.jsm');
+  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   let statement =
     PlacesUtils.history.DBConnection.createStatement(expression);
@@ -1216,7 +1220,7 @@ function logMessage(aTargetName, aMessage) {
     aMessage = [aMessage];
   }
 
-  const {Log} = XPCOM.getModule('resource://gre/modules/Log.jsm');
+  const {Log} = getModule('gre/modules/Log.jsm');
 
   let messages = aMessage.map((value) => {
     if (value instanceof Error) {
@@ -1247,9 +1251,10 @@ function log(aMessage) {
  * Export
  */
 return {
-  XPCOM: XPCOM,
   Timer: Timer,
   Prefs: Prefs,
+
+  getModule: getModule,
 
   addEvent: addEvent,
   getSelectionAtCursor: getSelectionAtCursor,

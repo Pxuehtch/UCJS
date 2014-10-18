@@ -25,9 +25,6 @@ const ucjsTabEx = (function(window, undefined) {
  * Imports
  */
 const {
-  XPCOM: {
-    getModule
-  },
   Timer: {
     setTimeout,
     clearTimeout,
@@ -35,6 +32,7 @@ const {
     clearInterval
   },
   Prefs,
+  getModule,
   addEvent,
   openTab,
   removeTab,
@@ -1766,7 +1764,7 @@ function fetchPageTitle(aURL, aCallback) {
     aCallback(aURL);
   }
 
-  const {PlacesUtils} = getModule('resource://gre/modules/PlacesUtils.jsm');
+  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   PlacesUtils.promisePlaceInfo(uri).then(
     function onFulfill(aPlaceInfo) {

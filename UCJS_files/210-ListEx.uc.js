@@ -20,9 +20,7 @@
  * Imports
  */
 const {
-  XPCOM: {
-    getModule
-  },
+  getModule,
   getNodeById: $ID,
   addEvent,
   promisePlacesDBResult
@@ -1400,8 +1398,7 @@ function limitListRange({index, length, maxNumItems}) {
 }
 
 function fitIntoLabel(aText, aWrapping) {
-  const {PlacesUIUtils} =
-    getModule('resource://app/modules/PlacesUIUtils.jsm');
+  const {PlacesUIUtils} = getModule('app/modules/PlacesUIUtils.jsm');
 
   let crop;
 
@@ -1434,7 +1431,7 @@ function fitIntoLabel(aText, aWrapping) {
 }
 
 function fixFaviconURL(aIconURL) {
-  const {PlacesUtils} = getModule('resource://gre/modules/PlacesUtils.jsm');
+  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   if (aIconURL) {
     if (/^https?:/.test(aIconURL)) {

@@ -19,9 +19,7 @@
  * Imports
  */
 const {
-  XPCOM: {
-    getModule
-  },
+  getModule,
   createNode: $E,
   getNodeById: $ID,
   addEvent

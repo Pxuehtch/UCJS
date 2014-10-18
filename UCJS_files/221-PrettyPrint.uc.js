@@ -20,9 +20,7 @@
  * Imports
  */
 const {
-  XPCOM: {
-    getModule
-  },
+  getModule,
   createNode: $E,
   getNodeById: $ID,
   addEvent
@@ -245,7 +243,7 @@ const Scratchpad = (function() {
    */
   function open(aState) {
     const {ScratchpadManager} =
-      getModule('resource://app/modules/devtools/scratchpad-manager.jsm');
+      getModule('app/modules/devtools/scratchpad-manager.jsm');
 
     let scratchpadWindow = ScratchpadManager.openScratchpad();
 
@@ -482,8 +480,7 @@ const Prettifier = (function() {
       //indent_case: false // [default: false]
     };
 
-    const {js_beautify} =
-      getModule('resource://app/modules/devtools/Jsbeautify.jsm');
+    const {js_beautify} = getModule('app/modules/devtools/Jsbeautify.jsm');
 
     return js_beautify(aText, options);
   }

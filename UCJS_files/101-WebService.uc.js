@@ -20,13 +20,11 @@ const ucjsWebService = (function(window, undefined) {
  * Imports
  */
 const {
-  XPCOM: {
-    getModule
-  },
   Timer: {
     setTimeout,
     clearTimeout
   },
+  getModule,
   getFirstNodeByXPath: $X1,
   openTab
 } = window.ucjsUtil;
@@ -194,7 +192,7 @@ const RequestHandler = (function() {
 
     // TODO: Implement a canceller.
     setTimeout(() => {
-      let {httpRequest} = getModule('resource://gre/modules/Http.jsm');
+      let {httpRequest} = getModule('gre/modules/Http.jsm');
 
       httpRequest(aURL, aOption);
     }, cooldownTime);
