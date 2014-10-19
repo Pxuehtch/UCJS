@@ -128,8 +128,23 @@ const LinkInfoView = (function() {
     }
   }
 
-  function addLink(aValueArray) {
-    mView.addRow([mView.rowCount + 1].concat(aValueArray));
+  function addItem(aItem) {
+    aItem.index = mView.rowCount + 1;
+
+    let row = [];
+
+    // Set data in the column's order of the tree view.
+    // @note Not test the falsy value 'number 0' since it isn't given for now.
+    for (let key of Object.keys(kUI.column)) {
+      if (aItem[key]) {
+        row.push(aItem[key]);
+      }
+      else {
+        row.push(kUI.note.error);
+      }
+    }
+
+    mView.addRow(row);
   }
 
   /**
@@ -165,7 +180,7 @@ const LinkInfoView = (function() {
 
   return {
     init: init,
-    addLink: addLink,
+    addItem: addItem,
     openLink: openLink
   };
 })();
@@ -176,6 +191,7 @@ function LI_processFrames() {
 
   if (gFrameList.length) {
     let doc = gFrameList[0];
+
     let iterator = doc.createTreeWalker(
       doc, NodeFilter.SHOW_ELEMENT, grabLink, true);
 
@@ -189,6 +205,7 @@ function LI_doGrab(aIterator) {
   for (let i = 0; i < 500; ++i) {
     if (!aIterator.nextNode()) {
       LI_processFrames();
+
       return;
     }
   }
@@ -197,36 +214,36 @@ function LI_doGrab(aIterator) {
 }
 
 function grabLink(aNode) {
-  let {addLink} = LinkInfoView;
+  let {addItem} = LinkInfoView;
 
   if (aNode instanceof HTMLAnchorElement && aNode.href) {
     let imgs = aNode.getElementsByTagName('img');
-    let note = (imgs && imgs.length) ? kNote.image : '';
+    let note = (imgs && imgs.length) ? kUI.note.image : '';
 
-    addLink([
-      note + getText(aNode),
-      aNode.href,
-      kType.a,
-      aNode.target,
-      aNode.accessKey
-    ]);
+    addItem({
+      name: note + getText(aNode),
+      address: aNode.href,
+      type: kUI.type.a,
+      target: aNode.target,
+      accesskey: aNode.accessKey
+    });
   }
   else if (aNode instanceof HTMLScriptElement && aNode.src) {
-    addLink([
-      getText(aNode, kType.script),
-      aNode.src,
-      kType.script
-    ]);
+    addItem({
+      name: getText(aNode, kUI.type.script),
+      address: aNode.src,
+      type: kUI.type.script
+    });
   }
   else if (aNode instanceof HTMLLinkElement && aNode.href) {
     let target = aNode.rel || aNode.rev || '';
 
-    addLink([
-      getText(aNode, target),
-      aNode.href,
-      kType.link,
-      target
-    ]);
+    addItem({
+      name: getText(aNode, target),
+      address: aNode.href,
+      type: kUI.type.link,
+      target: target
+    });
   }
   else if ((aNode instanceof HTMLInputElement ||
             aNode instanceof HTMLButtonElement) && aNode.type) {
@@ -237,10 +254,10 @@ function grabLink(aNode) {
       name = '';
 
       if (type === 'image') {
-        name += kNote.image;
+        name += kUI.note.image;
       }
 
-      name += getText(aNode, aNode.alt || aNode.value || kType.submit);
+      name += getText(aNode, aNode.alt || aNode.value || kUI.type.submit);
 
       if (aNode.form) {
         address = aNode.form.action;
@@ -249,29 +266,29 @@ function grabLink(aNode) {
     }
 
     if (name) {
-      addLink([
-        name,
-        address || kNote.error,
-        kType.submit,
-        target || ''
-      ]);
+      addItem({
+        name: name,
+        address: address,
+        type: kUI.type.submit,
+        target: target
+      });
     }
   }
   else if (aNode instanceof HTMLAreaElement && aNode.href) {
-    addLink([
-      getText(aNode),
-      aNode.href,
-      kType.area,
-      aNode.target
-    ]);
+    addItem({
+      name: getText(aNode),
+      address: aNode.href,
+      type: kUI.type.area,
+      target: aNode.target
+    });
   }
   else if ((aNode instanceof HTMLQuoteElement ||
             aNode instanceof HTMLModElement) && aNode.cite) {
-    addLink([
-      getText(aNode),
-      aNode.cite,
-      kType[aNode.localName]
-    ]);
+    addItem({
+      name: getText(aNode),
+      address: aNode.cite,
+      type: kUI.type[aNode.localName]
+    });
   }
   else if (aNode.hasAttributeNS(XLinkNS, 'href')) {
     let address;
@@ -286,15 +303,13 @@ function grabLink(aNode) {
 
       address = Services.io.newURI(href, charset, baseURI).spec;
     }
-    catch (ex) {
-      address = kNote.error;
-    }
+    catch (ex) {}
 
-    addLink([
-      getText(aNode),
-      address,
-      kType.XLink
-    ]);
+    addItem({
+      name: getText(aNode),
+      address: address,
+      type: kUI.type.XLink
+    });
   }
   else {
     return NodeFilter.FILTER_SKIP;
@@ -305,11 +320,7 @@ function grabLink(aNode) {
 
 // @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
 function getText(aNode, aDefault) {
-  let text =
-    window.getValueText(aNode) ||
-    aNode.title ||
-    aDefault ||
-    kNote.error;
+  let text = window.getValueText(aNode) || aNode.title || aDefault || '';
 
   return text.substr(0, 50);
 }
