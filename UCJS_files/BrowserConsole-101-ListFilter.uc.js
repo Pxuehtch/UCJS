@@ -64,6 +64,7 @@ const kItemList = [
 const kUI = {
   button: {
     // @note The id prefix of a button.
+    // @note The class name for styling a button.
     id: 'ucjs_ListFilter_button'
   }
 };
@@ -92,17 +93,51 @@ function ListFilter_init() {
 }
 
 function setStyleSheet() {
-  // Register CSS for hiding of rows for each category.
-  let classNames =
-    kItemList.map(({category}) => '.' + kDataKey.filteredBy + category);
+  // The class names of items being filtered by category.
+  let filteredCategory =
+    kItemList.map(({category}) => '.' + kDataKey.filteredBy + category).
+    join(',');
 
-  setCSS(classNames.join(',') + '{display:none;}');
+  // Set the style of our 'checkbox' type button to the same style of the
+  // native 'menu-button' type button.
+  // @note I use the light theme.
+  // @see chrome://browser/skin/devtools/light-theme.css
+  let css = '\
+    %%filteredCategory%% {\
+      display: none;\
+    }\
+    .%%kUI.button.id%% {\
+      margin: 2px 0 2px 2px !important;\
+      padding: 1px 1px 1px 0 !important;\
+    }\
+    .%%kUI.button.id%%:not(:hover) {\
+      background-color: transparent !important;\
+    }\
+    .theme-light .%%kUI.button.id%%[checked] {\
+      background-color: rgba(76, 158, 217, .2) !important;\
+    }\
+    .theme-light .%%kUI.button.id%%[checked]:hover {\
+      background-color: rgba(76, 158, 217, .4) !important;\
+    }\
+    /*\
+    .theme-dark .%%kUI.button.id%%[checked] {\
+      background-color: rgba(29, 79, 115, .7) !important;\
+      color: #f5f7fa !important;\
+    }\
+    .theme-dark .%%kUI.button.id%%[checked]:hover {\
+      background-color: rgba(29, 79, 115, .8) !important;\
+      color: #f5f7fa !important;\
+    }\
+    */\
+  ';
+
+  setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
 }
 
 function makeUI() {
   let clearButton = $S1('.webconsole-clear-console-button');
 
-  // Insert tab indexes of our buttons before the clear button.
+  // Insert the tab index of our buttons before the clear button.
   // TODO: The clear button has the last index in the console window on the
   // current version of Fx. So if a new index has been appended after the
   // clear button in the future, we would need to re-index it.
@@ -115,7 +150,7 @@ function makeUI() {
       label: category,
       tooltiptext: description,
       accesskey: i + 1,
-      class: 'devtools-toolbarbutton',
+      class: ['devtools-toolbarbutton', kUI.button.id].join(' '),
       type: 'checkbox',
       checked: true,
       tabindex: lastTabIndex++
