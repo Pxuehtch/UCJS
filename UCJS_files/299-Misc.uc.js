@@ -72,24 +72,24 @@ function log(aMsg) {
     }
   };
 
-  let mTooltip = $ID('mainPopupSet').appendChild(
-    $E('tooltip', {
-      id: kUI.tooltip.id,
-      style: 'max-width:none;word-break:break-all;word-wrap:break-word;'
-    })
-  );
-
-  addEvent(mTooltip, 'popupshowing', onPopupShowing, false);
-  addEvent(mTooltip, 'popuphiding', onPopupHiding, false);
+  let mTooltip = $ID('mainPopupSet').appendChild($E('tooltip', {
+    id: kUI.tooltip.id,
+    style:
+      // @note Each inner text container has 'max-width'.
+      'max-width:none;' +
+      // Tight text wrapping.
+      'word-break:break-all;word-wrap:break-word;'
+  }));
 
   // Replace the default tooltip 'tabbrowser-tab-tooltip'.
   // @note Resisters on the tab bar including the margin without tabs.
   $ID('tabbrowser-tabs').tooltip = kUI.tooltip.id;
 
-  function onPopupHiding(aEvent) {
-    let tooltip = aEvent.target;
+  addEvent(mTooltip, 'popupshowing', onPopupShowing, false);
+  addEvent(mTooltip, 'popuphiding', onPopupHiding, false);
 
-    if (tooltip.id !== kUI.tooltip.id) {
+  function onPopupHiding(aEvent) {
+    if (aEvent.target !== mTooltip) {
       return;
     }
 
@@ -104,9 +104,7 @@ function log(aMsg) {
 
   // @see chrome://browser/content/tabbrowser.xml::createTooltip
   function onPopupShowing(aEvent) {
-    let tooltip = aEvent.target;
-
-    if (tooltip.id !== kUI.tooltip.id) {
+    if (aEvent.target !== mTooltip) {
       return;
     }
 
@@ -224,6 +222,7 @@ function log(aMsg) {
   let mTooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
       id: 'ucjs_Misc_URLTooltip',
+      // Tight text wrapping.
       style: 'word-break:break-all;word-wrap:break-word;'
     })
   );
@@ -246,7 +245,10 @@ function log(aMsg) {
 
     mTooltipTimer = setTimeout(() => {
       fillInTooltip(this.value);
+
+      // Set the max width to the width of the URLbar.
       mTooltip.maxWidth = this.boxObject.width;
+
       mTooltip.openPopup(this, 'after_start', 0, 0, false, false);
     }, kTooltipShowDelay);
   };
