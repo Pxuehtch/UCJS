@@ -328,16 +328,6 @@ const Prettifier = (function() {
     extraLine: {
       type: 'boolean',
       defaultValue: true
-    },
-
-    /**
-     * Complement a semicolon after the last statement in a block.
-     *
-     * @see |complementLastSemicolon()|
-     */
-    lastSemicolon: {
-      type: 'boolean',
-      defaultValue: true
     }
   };
 
@@ -428,10 +418,6 @@ const Prettifier = (function() {
       result = addExtraLine(result);
     }
 
-    if (aOptions.lastSemicolon) {
-      result = complementLastSemicolon(result);
-    }
-
     return result;
   }
 
@@ -444,16 +430,6 @@ const Prettifier = (function() {
    */
   function addExtraLine(aText) {
     return aText.replace(/(}[,;]?\n)(?!\s*(?:}|\*\/))/g, '$1\n');
-  }
-
-  /**
-   * Complement a semicolon after the last statement before '}' of a block end.
-   *
-   * @param aText {string}
-   * return {string}
-   */
-  function complementLastSemicolon(aText) {
-    return aText.replace(/[^;}\s](?=\n\s*\})/g, '$&;');
   }
 
   /**
