@@ -880,6 +880,22 @@ function log(aMsg) {
     onCreate: onCreate
   });
 
+  addEvent(gBrowser.mPanelContainer, 'command', handleEvent, false);
+  addEvent(gBrowser.mPanelContainer, 'find', handleEvent, false);
+  addEvent(gBrowser, 'select', handleEvent, false);
+  addEvent(gBrowser, 'pageshow', handleEvent, false);
+
+  function getLockButton() {
+    // Get the lock button if a findbar in the current tab is initialized to
+    // avoid creating a needless findbar once the lazy getter |gFindBar| is
+    // called.
+    if (gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
+      return gFindBar.getElementsByClassName(kUI.lockButton.id)[0];
+    }
+
+    return null;
+  }
+
   function onCreate(aParam) {
     let {findBar} = aParam;
 
@@ -892,21 +908,6 @@ function log(aMsg) {
       type: 'checkbox'
     }));
   }
-
-  function getLockButton() {
-    // Get the lock button if a findbar in the current tab is initialized.
-    // @note Avoid creating a needless findbar once the lazy getter |gFindBar|
-    // is called.
-    if (gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
-      return gFindBar.getElementsByClassName(kUI.lockButton.id)[0];
-    }
-
-    return null;
-  }
-
-  addEvent(gBrowser.mPanelContainer, 'command', handleEvent, false);
-  addEvent(gBrowser.mPanelContainer, 'find', handleEvent, false);
-  addEvent(gBrowser.tabContainer, 'TabSelect', handleEvent, false);
 
   function handleEvent(aEvent) {
     const {FindBar} = window.ucjsUI;
@@ -933,23 +934,40 @@ function log(aMsg) {
         break;
       }
 
-      case 'TabSelect': {
-        if (mIsLocked) {
-          FindBar.open();
-
-          if (FindBar.findText.value !== mFindString) {
-            FindBar.reset();
-
-            // Find the new string.
-            FindBar.findText.value = mFindString;
-            gFindBar.onFindAgainCommand();
-          }
+      case 'select':
+      case 'pageshow': {
+        // Handle the selected tab that completely loaded.
+        if ((aEvent.type === 'select' &&
+             gBrowser.contentDocument.readyState !== 'complete') ||
+            (aEvent.type === 'pageshow' &&
+             aEvent.target !== gBrowser.contentDocument)) {
+          break;
         }
 
         let lockButton = getLockButton();
 
-        if (lockButton) {
+        if (lockButton && lockButton.checked !== mIsLocked) {
           lockButton.checked = mIsLocked;
+        }
+
+        if (mIsLocked) {
+          FindBar.open();
+
+          let isUpdated = false;
+
+          if (FindBar.findText.value !== mFindString) {
+            FindBar.reset();
+            FindBar.findText.value = mFindString;
+
+            isUpdated = true;
+          }
+
+          // Find again;
+          // 1. With the new string when a tab is selected.
+          // 2. With the same string when a new document loads.
+          if (isUpdated || aEvent.type === 'pageshow') {
+            gFindBar.onFindAgainCommand();
+          }
         }
 
         break;
