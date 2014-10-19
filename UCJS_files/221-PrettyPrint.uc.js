@@ -88,10 +88,11 @@ const kEditorOptionsMenuitemID = {
 /**
  * Optional settings for prettifier.
  *
- * @note The default values are used if absent.
  * @see |Prettifier::kOptionList|
  */
-const kPrettifierOptions = {};
+const kPrettifierOptions = {
+  extraLine: true
+};
 
 /**
  * Menu handler.
@@ -327,7 +328,7 @@ const Prettifier = (function() {
      */
     extraLine: {
       type: 'boolean',
-      defaultValue: true
+      defaultValue: false
     }
   };
 
@@ -422,14 +423,15 @@ const Prettifier = (function() {
   }
 
   /**
-   * Add an extra line after '}' or '},' or '};' being not the last one in a
-   * nesting block or in a block comment.
+   * Add an extra line after a block end ('}' or '},' or '};') in case of
+   *   the following line is not empty, and
+   *   being not the last block end in a nesting block or in a block comment.
    *
    * @param aText {string}
    * return {string}
    */
   function addExtraLine(aText) {
-    return aText.replace(/(}[,;]?\n)(?!\s*(?:}|\*\/))/g, '$1\n');
+    return aText.replace(/(}[,;]?\n)(?!\s*\n|\s*(?:}|\*\/))/g, '$1\n');
   }
 
   /**
