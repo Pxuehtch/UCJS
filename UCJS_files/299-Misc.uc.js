@@ -919,6 +919,9 @@ function log(aMsg) {
         let lockButton = getLockButton();
 
         if (lockButton && button === lockButton) {
+          // Change the quick find mode into the normal find mode.
+          gFindBar.open(gFindBar.FIND_NORMAL);
+
           mIsLocked = button.checked;
           mFindString = mIsLocked ? FindBar.findText.value : null;
         }
@@ -951,7 +954,8 @@ function log(aMsg) {
         }
 
         if (mIsLocked) {
-          FindBar.open();
+          // @note The focus does not move to the findbar.
+          gFindBar.open(gFindBar.FIND_NORMAL);
 
           let isUpdated = false;
 
