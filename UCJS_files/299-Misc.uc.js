@@ -875,6 +875,19 @@ function log(aMsg) {
     }
   };
 
+  const UI = {
+    get lockButton() {
+      // Get the lock button if a findbar in the current tab is initialized to
+      // avoid creating a needless findbar once the lazy getter |gFindBar| is
+      // called.
+      if (gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
+        return gFindBar.getElementsByClassName(kUI.lockButton.id)[0];
+      }
+
+      return null;
+    }
+  };
+
   let mIsLocked = false;
   let mFindString = null;
 
@@ -886,17 +899,6 @@ function log(aMsg) {
   addEvent(gBrowser.mPanelContainer, 'find', handleEvent, false);
   addEvent(gBrowser, 'select', handleEvent, false);
   addEvent(gBrowser, 'pageshow', handleEvent, false);
-
-  function getLockButton() {
-    // Get the lock button if a findbar in the current tab is initialized to
-    // avoid creating a needless findbar once the lazy getter |gFindBar| is
-    // called.
-    if (gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
-      return gFindBar.getElementsByClassName(kUI.lockButton.id)[0];
-    }
-
-    return null;
-  }
 
   function onCreate(aParam) {
     let {findBar} = aParam;
@@ -918,7 +920,7 @@ function log(aMsg) {
       case 'command': {
         let button = aEvent.target;
 
-        let lockButton = getLockButton();
+        let lockButton = UI.lockButton;
 
         if (lockButton && button === lockButton) {
           // Change the quick find mode into the normal find mode.
@@ -949,7 +951,7 @@ function log(aMsg) {
           break;
         }
 
-        let lockButton = getLockButton();
+        let lockButton = UI.lockButton;
 
         if (lockButton && lockButton.checked !== mIsLocked) {
           lockButton.checked = mIsLocked;
