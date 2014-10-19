@@ -278,12 +278,13 @@ function grabLink(aNode) {
     let href = aNode.getAttributeNS(XLinkNS, 'href');
     let charset = aNode.ownerDocument.characterSet;
 
-    Components.utils.import('resource://gre/modules/Services.jsm');
-    const io = Services.io;
+    const {Services} = Components.utils.
+      import('resource://gre/modules/Services.jsm', {});
 
     try {
-      address = io.newURI(href, charset,
-        io.newURI(aNode.baseURI, charset, null)).spec;
+      let baseURI = Services.io.newURI(aNode.baseURI, charset, null);
+
+      address = Services.io.newURI(href, charset, baseURI).spec;
     }
     catch (ex) {
       address = kNote.error;
