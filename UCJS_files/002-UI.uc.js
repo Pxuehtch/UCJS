@@ -487,13 +487,6 @@ const FindBar = (function() {
     }
   }
 
-  function open() {
-    if (gFindBar.hidden) {
-      // Open a findbar but not focus on it.
-      gFindBar.open(gFindBar.FIND_NORMAL);
-    }
-  }
-
   function toggle() {
     if (gFindBar.hidden) {
       // Open a findbar and focus on it.
@@ -541,7 +534,6 @@ const FindBar = (function() {
     register: HandlerManager.register,
     findText: FindText,
     reset: reset,
-    open: open,
     toggle: toggle,
     find: find
   };
