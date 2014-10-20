@@ -254,7 +254,7 @@ const TooltipPanel = (function() {
   let mBox;
 
   function init() {
-    // Create the tooltip base and observe its closing.
+    // Create the tooltip and observe its closing.
     addEvent(create(), 'popuphiding', handleEvent, false);
 
     // Observe the mouse moving to show the tooltip.
@@ -267,7 +267,7 @@ const TooltipPanel = (function() {
 
   function handleEvent(aEvent) {
     switch (aEvent.type) {
-      // Display the tooltip.
+      // Show the tooltip on a target node in the content area.
       case 'mousemove': {
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
@@ -287,9 +287,9 @@ const TooltipPanel = (function() {
         break;
       }
 
-      // Clean up when a tooltip closes.
+      // Clean up when the tooltip closes.
       case 'popuphiding': {
-        if (aEvent.target.id === kUI.panel.id) {
+        if (aEvent.target === mPanel) {
           clear();
         }
 
@@ -316,10 +316,10 @@ const TooltipPanel = (function() {
       '-moz-appearance:tooltip;' +
       // @note The inner container |mBox| has 'max-width'.
       'max-width:none;' +
-      // Tight text wrapping.
-      'word-break:break-all;word-wrap:break-word;' +
       // The margin for dragging the panel.
-      'padding:.3em;';
+      'padding:.3em;' +
+      // Tight text wrapping.
+      'word-break:break-all;word-wrap:break-word;';
 
     let panel = $E('panel', {
       id: kUI.panel.id,

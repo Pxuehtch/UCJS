@@ -173,7 +173,7 @@ const Button = {
     window[command] = function(aEvent) {
       if (aEvent &&
           aEvent.sourceEvent &&
-          aEvent.sourceEvent.target.id === aButton.id) {
+          aEvent.sourceEvent.target === aButton) {
         return;
       }
 
@@ -285,7 +285,10 @@ const Tooltip = {
     }
 
     [
-      'neighbor', 'border', 'stop', 'referrer'
+      'neighbor',
+      'border',
+      'stop',
+      'referrer'
     ].
     forEach((key) => {
       let [title, URL] = this.formatData(aData, key);
