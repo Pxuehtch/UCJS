@@ -361,6 +361,10 @@ const TooltipPanel = (function() {
   function show(aEvent) {
     let target = aEvent.target;
 
+    if (mPanel.state === 'showing' || mPanel.state === 'hiding') {
+      return;
+    }
+
     if (mPanel.state === 'open') {
       // Leave the tooltip of the same target.
       if (TargetNode.equals(target)) {
@@ -369,9 +373,6 @@ const TooltipPanel = (function() {
 
       // Close the existing tooltip of the different target.
       hide();
-    }
-    else if (mPanel.state !== 'closed') {
-      return;
     }
 
     if (build(target)) {
