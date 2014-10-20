@@ -698,7 +698,7 @@ function log(aMsg) {
  */
 (function() {
 
-  /* Clear scrollbar. */
+  // Clear scrollbar.
   setGlobalAgentCSS('\
     scrollbar {\
       -moz-appearance:none!important;\
@@ -722,7 +722,7 @@ function log(aMsg) {
     }\
   ');
 
-  /* Tooltip text with tight line-wrapping. */
+  // Tooltip with tight text wrapping.
   setGlobalAgentCSS('\
     .tooltip-label {\
       word-break:break-all!important;\
@@ -923,11 +923,13 @@ function log(aMsg) {
         let lockButton = UI.lockButton;
 
         if (lockButton && button === lockButton) {
-          // Change the quick find mode into the normal find mode.
-          gFindBar.open(gFindBar.FIND_NORMAL);
-
           mIsLocked = button.checked;
           mFindString = mIsLocked ? FindBar.findText.value : null;
+
+          if (mIsLocked) {
+            // @note Ensure the findbar opens in the normal mode.
+            gFindBar.open(gFindBar.FIND_NORMAL);
+          }
         }
 
         break;
