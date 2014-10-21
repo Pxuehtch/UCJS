@@ -961,8 +961,10 @@ function FoundBlink() {
     let type = aShow ? SELECTION_ON : SELECTION_OFF;
 
     try {
-      mState.selectionController.setDisplaySelection(type);
-      mState.selectionController.repaintSelection(SELECTION_NORMAL);
+      if (mState.selectionController.getDisplaySelection() !== type) {
+        mState.selectionController.setDisplaySelection(type);
+        mState.selectionController.repaintSelection(SELECTION_NORMAL);
+      }
     }
     catch (ex) {}
   }
