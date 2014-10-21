@@ -842,7 +842,7 @@ function FoundBlink() {
      *
      * @value {integer} [millisecond]
      *
-     * @note A blinking will be canceled when the duration is expired.
+     * @note A blinking will be cancelled when the duration is expired.
      */
     duration: 2000,
 
@@ -892,7 +892,7 @@ function FoundBlink() {
     }
   };
 
-  // Attach a cleaner when the selection is removed by clicking.
+  // Cancel blinking when the selection is removed by clicking.
   addEvent(gBrowser.mPanelContainer, 'mousedown', cancel, false);
 
   function start() {
@@ -906,9 +906,10 @@ function FoundBlink() {
   function onEnterFrame(aTime) {
     let {duration, blinks, range} = mState.param;
 
-    // The duration is expired. Stop blinking and display the selection.
+    // The duration is expired. Stop blinking.
     if (aTime.current - aTime.start > duration) {
-      stop(true);
+      cancel();
+
       return false;
     }
 
@@ -923,23 +924,17 @@ function FoundBlink() {
     return true;
   }
 
-  function stop(aForceSelect) {
+  function cancel() {
     if (!mState.initialized) {
       return;
     }
 
     mState.frameAnimator.cancel();
 
-    if (aForceSelect) {
-      setDisplay(true);
-    }
+    // Ensure the selection is shown.
+    setDisplay(true);
 
     mState.uninit();
-  }
-
-  function cancel() {
-    // Terminate blinking and stay the display state of selection.
-    stop(false);
   }
 
   function isRangeIntoView(aRange) {
