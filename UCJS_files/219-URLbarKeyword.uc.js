@@ -232,7 +232,7 @@ function getRestrictKeywordData() {
     if (keyword) {
       data.push({
         name: kRestrictKeys[key],
-        keyword: keyword
+        keyword
       });
     }
   }

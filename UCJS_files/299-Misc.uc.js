@@ -168,13 +168,13 @@ function log(aMsg) {
 
   function buildData({title, URL, referrer}) {
     setLabel({
-      title: title,
-      referrer: referrer
+      title,
+      referrer
     });
 
     if (title !== URL) {
       setLabel({
-        URL: URL
+        URL
       });
     }
   }
@@ -205,7 +205,7 @@ function log(aMsg) {
     }
 
     let label = $E('label', {
-      style: style
+      style
     });
 
     mTooltip.appendChild(label).
@@ -552,7 +552,7 @@ function log(aMsg) {
     popup.appendChild($E('menuitem', {
       label: url,
       oncommand: 'openUILinkIn("' + url + '", "tab");',
-      accesskey: accesskey
+      accesskey
     }));
   });
 
@@ -892,7 +892,7 @@ function log(aMsg) {
   let mFindString = null;
 
   window.ucjsUI.FindBar.register({
-    onCreate: onCreate
+    onCreate
   });
 
   addEvent(gBrowser.mPanelContainer, 'command', handleEvent, false);

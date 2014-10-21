@@ -186,7 +186,7 @@ const kPref = {
   // is selected and loaded completely.
   //
   // @value {integer} [millisecond]
-  // @note The marking is canceled when the other tab is selected in a short
+  // @note The marking is cancelled when the other tab is selected in a short
   // time (e.g. while flipping tabs with a shortcut key or mouse wheeling).
   SELECTED_DELAY: 1000
 };
@@ -274,10 +274,10 @@ const TabData = (function () {
     }
 
     return {
-      name: name,
-      type: type,
-      getter: getter,
-      setter: setter
+      name,
+      type,
+      getter,
+      setter
     };
   }
 
@@ -401,10 +401,10 @@ const TabData = (function () {
   };
 
   return {
-    get: get,
-    set: set,
-    getSS: getSS,
-    state: state
+    get,
+    set,
+    getSS,
+    state
   };
 })();
 
@@ -497,7 +497,7 @@ const TabOpener = {
         // support.
         openInfo = {
           URL: aURI,
-          flags: flags,
+          flags,
           referrerURL: aReferrerURI || undefined,
           charset: aCharset || undefined,
           relatedToCurrent: aRelatedToCurrent || undefined,
@@ -524,7 +524,7 @@ const TabOpener = {
         // successfully loads.
         let URL = browser.userTypedValue || browser.currentURI.spec;
         let openInfo = {
-          URL: URL,
+          URL,
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
 
@@ -585,7 +585,7 @@ const Referrer = {
     fetchPageTitle(URL, (aTitle) => {
       aCallback({
         title: aTitle,
-        URL: URL
+        URL
       });
     });
   },
@@ -1828,7 +1828,7 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
   }
 
   return {
-    matchKey: matchKey
+    matchKey
   };
 }
 
@@ -1878,11 +1878,11 @@ TabEx_init();
 return {
   tabState: TabData.state,
   referrer: Referrer,
-  selectOpenerTab: selectOpenerTab,
-  selectPrevSelectedTab: selectPrevSelectedTab,
-  closeLeftTabs: closeLeftTabs,
-  closeRightTabs: closeRightTabs,
-  closeReadTabs: closeReadTabs
+  selectOpenerTab,
+  selectPrevSelectedTab,
+  closeLeftTabs,
+  closeRightTabs,
+  closeReadTabs
 };
 
 

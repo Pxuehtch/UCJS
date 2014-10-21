@@ -476,7 +476,7 @@ function makeAppMenu(aPopup, aAppList) {
   aAppList.forEach((app) => {
     addMenuItem(appMenuPopup, {
       action: 'launchTool',
-      app: app,
+      app,
       inAppMenu: true
     });
   });
@@ -517,8 +517,8 @@ function makeActionItems(aPopup, aAppList) {
 
     actions.forEach((action) => {
       addMenuItem(aPopup, {
-        action: action,
-        app: app
+        action,
+        app
       });
     });
   });
@@ -802,8 +802,8 @@ function doAction(aApp, aAction) {
 
   if (save) {
     saveInfo = {
-      sourceDocument: sourceDocument,
-      targetDocument: targetDocument
+      sourceDocument,
+      targetDocument
     };
   }
 
@@ -1189,15 +1189,15 @@ function log(aMsg) {
  * Export
  */
 return {
-  checkApp: checkApp,
-  runApp: runApp,
-  makeURIURL: makeURIURL,
+  checkApp,
+  runApp,
+  makeURIURL,
 
   createNode: window.ucjsUtil.createNode,
   getNodesByXPath: window.ucjsUtil.getNodesByXPath,
   contentAreaContextMenu: window.ucjsUI.ContentArea.contextMenu,
 
-  log: log
+  log
 };
 
 

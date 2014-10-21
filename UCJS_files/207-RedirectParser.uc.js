@@ -302,13 +302,13 @@ function makeMenuItems(aParseList) {
     }
 
     fragment.appendChild($E('menuitem', {
-      label: label,
+      label,
       crop: 'center',
-      accesskey: accesskey,
-      tooltiptext: tooltiptext,
-      styles: styles,
+      accesskey,
+      tooltiptext,
+      styles,
       action: [action, URL],
-      disabled: disabled
+      disabled
     }));
   });
 
@@ -563,10 +563,10 @@ function createParseList(aPreset, aSourceURLType) {
     preset: mPreset,
     sourceURLType: mSourceURLType,
     URLs: mURLs,
-    add: add,
-    validate: validate,
-    markAsNewURL: markAsNewURL,
-    checkNewURLStart: checkNewURLStart
+    add,
+    validate,
+    markAsNewURL,
+    checkNewURLStart
   };
 }
 

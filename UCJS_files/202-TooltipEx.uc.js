@@ -237,9 +237,9 @@ const TargetNode = (function() {
   }
 
   return {
-    init: init,
-    uninit: uninit,
-    equals: equals
+    init,
+    uninit,
+    equals
   };
 })();
 
@@ -519,7 +519,7 @@ const TooltipPanel = (function() {
     }
 
     return {
-      text: text,
+      text,
       head: aHead,
       rest: (croppedText || text).substr(aHead.length),
       cropped: !!croppedText
@@ -614,7 +614,7 @@ const TooltipPanel = (function() {
   }
 
   return {
-    init: init
+    init
   };
 })();
 

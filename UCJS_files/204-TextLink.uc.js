@@ -145,10 +145,10 @@ const URLUtil = (function() {
   }
 
   return {
-    guess: guess,
-    grab: grab,
-    map: map,
-    fix: fix
+    guess,
+    grab,
+    map,
+    fix
   }
 })();
 
@@ -251,8 +251,8 @@ function initRange(aRange, aSourceRange) {
     }
 
     return {
-      border: border,
-      count: count
+      border,
+      count
     };
   }
 
@@ -266,8 +266,8 @@ function initRange(aRange, aSourceRange) {
   aRange.setStartBefore(result.border);
 
   // Store the source position.
-  let startPos = result.count;
-  let endPos = startPos + aSourceRange.toString().length;
+  let start = result.count;
+  let end = start + aSourceRange.toString().length;
 
   // Expand range after the source selection.
   result = expand(
@@ -279,8 +279,8 @@ function initRange(aRange, aSourceRange) {
   aRange.setEndAfter(result.border);
 
   return {
-    start: startPos,
-    end: endPos
+    start,
+    end
   };
 }
 

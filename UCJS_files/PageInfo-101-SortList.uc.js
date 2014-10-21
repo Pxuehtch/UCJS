@@ -34,8 +34,8 @@ const SortState = (function() {
   }
 
   return {
-    get: get,
-    clear: clear
+    get,
+    clear
   };
 })();
 

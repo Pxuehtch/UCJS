@@ -17,6 +17,9 @@
  * - 'Shift' and 'Ctrl' keys are supported.
  *   @note Keys are detected after gestures start.
  *
+ * - You can reset all status of gestures by 'Alt + RightClick' if a problem
+ *   occurs.
+ *
  * @note
  * - The gestures is only available within the inner frame of the content area,
  *   and the default width of the frame is 16px.
@@ -297,9 +300,9 @@ const kGestureSet = [
     gestures: ['S&TEXT#R'],
     name: 'Google検索 site:',
     command: function({dragData}) {
-      let data = dragData + ' site:' + gBrowser.currentURI.spec;
+      dragData += ' site:' + gBrowser.currentURI.spec;
 
-      window.ucjsWebService.open({name: 'GoogleSearch', data: data});
+      window.ucjsWebService.open({name: 'GoogleSearch', data: dragData});
     }
   },
   {
@@ -754,7 +757,7 @@ function MouseManager() {
   }
 
   return {
-    update: update
+    update
   };
 }
 
@@ -872,8 +875,8 @@ function GestureManager() {
     }
 
     return {
-      type: type,
-      data: data
+      type,
+      data
     };
   }
 
@@ -1119,10 +1122,10 @@ function GestureManager() {
   }
 
   return {
-    clear: clear,
-    init: init,
-    update: update,
-    evaluate: evaluate
+    clear,
+    init,
+    update,
+    evaluate
   };
 }
 
@@ -1177,9 +1180,9 @@ function GestureTracer() {
   }
 
   return {
-    clear: clear,
-    init: init,
-    update: update
+    clear,
+    init,
+    update
   };
 }
 

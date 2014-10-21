@@ -323,7 +323,7 @@ const MenuUI = (function() {
      * ctrl+shift / shift+middle-click: Open a new tab in background.
      */
     let {ctrlKey, shiftKey, button} = aEvent;
-    let [inTab, inBG] = [ctrlKey || button === 1,  shiftKey];
+    let [inTab, inBackground] = [ctrlKey || button === 1,  shiftKey];
 
     if (data.open) {
       if (!/^(?:https?|ftp|file):/.test(data.open)) {
@@ -333,8 +333,8 @@ const MenuUI = (function() {
       }
 
       openURL(data.open, {
-        inTab: inTab,
-        inBackground: inBG,
+        inTab,
+        inBackground,
         relatedToCurrent: true
       });
     }
@@ -354,7 +354,7 @@ const MenuUI = (function() {
         // @note I have tested only 'DuckDuckGo'.
         let newTab = gBrowser.duplicateTab(gBrowser.selectedTab);
 
-        if (!inBG) {
+        if (!inBackground) {
           gBrowser.selectedTab = newTab;
         }
 
@@ -432,7 +432,7 @@ const MenuUI = (function() {
     ].
     forEach((id) => {
       aContextMenu.appendChild($E('menuseparator', {
-        id: id
+        id
       }));
     });
   }
@@ -483,7 +483,7 @@ const MenuUI = (function() {
 
     if (list.length === 1) {
       let data = list[0];
-      let tooltip = formatTooltip(
+      let tooltiptext = formatTooltip(
         formatText(data, {
           siblingScanType: scanType
         }),
@@ -491,7 +491,7 @@ const MenuUI = (function() {
       );
 
       node = $E('menuitem', {
-        tooltiptext: tooltip,
+        tooltiptext,
         'open': data.URL,
         'submit': data.formIndex
       });
@@ -594,8 +594,8 @@ const MenuUI = (function() {
         }
 
         popup.appendChild($E(child, {
-          label: label,
-          tooltiptext: tooltiptext || null
+          label,
+          tooltiptext
         }));
       });
     });
@@ -742,8 +742,8 @@ const MenuUI = (function() {
 
       if (value) {
         attributes.push(F(kAttributeFormat, {
-          name: name,
-          value: value
+          name,
+          value
         }));
       }
     });
@@ -778,7 +778,7 @@ const MenuUI = (function() {
   }
 
   return {
-    init: init
+    init
   };
 })();
 
@@ -852,7 +852,7 @@ const PresetNavi = (function() {
   }
 
   return {
-    getData: getData
+    getData
   };
 })();
 
@@ -915,8 +915,8 @@ const NaviLink = (function() {
     }
 
     return {
-      registered: registered,
-      unregistered: unregistered
+      registered,
+      unregistered
     };
   })();
 
@@ -1060,9 +1060,9 @@ const NaviLink = (function() {
       });
 
       result.push({
-        type: type,
+        type,
         list: resultList,
-        trimmed: trimmed
+        trimmed
       });
     });
 
@@ -1249,8 +1249,8 @@ const NaviLink = (function() {
     if (name) {
       return {
         // <data> for a meta.
-        name: name,
-        content: content
+        name,
+        content
       };
     }
 
@@ -1273,9 +1273,9 @@ const NaviLink = (function() {
     if (title) {
       return {
         // <data> for a script or rel.
-        title: title,
+        title,
         attributes: aAttributes || [],
-        URL: URL
+        URL
       };
     }
 
@@ -1305,10 +1305,10 @@ const NaviLink = (function() {
   }
 
   return {
-    getData: getData,
-    getNaviList: getNaviList,
-    getSubNaviList: getSubNaviList,
-    getInfoList: getInfoList
+    getData,
+    getNaviList,
+    getSubNaviList,
+    getInfoList
   };
 })();
 
@@ -1378,7 +1378,7 @@ const SiblingNavi = (function() {
     if (data && !data.error) {
       return {
         list: Array.isArray(data) ? data : [data],
-        scanType: scanType
+        scanType
       };
     }
     return null;
@@ -1475,8 +1475,8 @@ const SiblingNavi = (function() {
         return {
           // <data> for a sibling by searching.
           title: text,
-          score: score,
-          URL: URL
+          score,
+          URL
         };
       });
 
@@ -1486,10 +1486,10 @@ const SiblingNavi = (function() {
     }
 
     return {
-      add: add,
-      contains: contains,
-      isFull: isFull,
-      collect: collect
+      add,
+      contains,
+      isFull,
+      collect
     };
   }
 
@@ -1615,7 +1615,7 @@ const SiblingNavi = (function() {
   }
 
   return {
-    getResult: getResult,
+    getResult,
     getPrev: function() {
       return getURLFor('prev');
     },
@@ -1719,8 +1719,8 @@ const NaviLinkTester = (function() {
     }
 
     return {
-      init: init,
-      score: score
+      init,
+      score
     };
   })();
 
@@ -1775,8 +1775,8 @@ const NaviLinkTester = (function() {
     }
 
     return {
-      init: init,
-      score: score
+      init,
+      score
     };
   })();
 
@@ -1823,8 +1823,8 @@ const NaviLinkTester = (function() {
   }
 
   return {
-    init: init,
-    score: score
+    init,
+    score
   };
 })();
 
@@ -1896,7 +1896,7 @@ const UpperNavi = (function() {
   }
 
   return {
-    getList: getList,
+    getList,
     getParent: function() {
       return getParent(getURI('NO_QUERY'));
     },
@@ -1964,15 +1964,15 @@ function createURI(aURI, aFlag) {
   }
 
   return {
-    scheme: scheme,
-    host: host,
-    baseDomain: baseDomain,
-    prePath: prePath,
-    path: path,
-    spec: spec,
-    hasPath: hasPath,
-    isSamePage: isSamePage,
-    isSameBaseDomain: isSameBaseDomain
+    scheme,
+    host,
+    baseDomain,
+    prePath,
+    path,
+    spec,
+    hasPath,
+    isSamePage,
+    isSameBaseDomain
   };
 }
 

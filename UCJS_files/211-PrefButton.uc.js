@@ -263,7 +263,7 @@ function makeButtons() {
       id: kUI.button.id + i,
       class: kUI.button.id,
       type: (item.type !== 'button') ? item.type : null,
-      image: item.image || null,
+      image: item.image,
       label: !item.image ? item.label : null,
       tooltiptext: item.description
     }));

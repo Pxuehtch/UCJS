@@ -301,7 +301,7 @@ const MainMenu = (function() {
   }
 
   return {
-    init: init
+    init
   };
 })();
 
@@ -354,14 +354,14 @@ const HistoryList = (function() {
       oncommand = oncommand.replace(/%URL%/g, aURL);
 
       return {
-        oncommand: oncommand,
+        oncommand,
         onclick: 'checkForMiddleClick(this,event);'
       };
     }
 
     return {
-      openTabHistory: openTabHistory,
-      openRecentHistory: openRecentHistory
+      openTabHistory,
+      openRecentHistory
     };
   })();
 
@@ -421,8 +421,8 @@ const HistoryList = (function() {
     }
 
     return {
-      promiseRecentHistory: promiseRecentHistory,
-      promiseTimeAndIcon: promiseTimeAndIcon
+      promiseRecentHistory,
+      promiseTimeAndIcon
     };
   })();
 
@@ -498,11 +498,11 @@ const HistoryList = (function() {
       // @note |label| and |icon| will be set asynchronously.
       let menuitem = fragment.appendChild($E('menuitem', {
         tooltip: {
-          title: title,
-          URL: URL
+          title,
+          URL
         },
         class: className.join(' '),
-        action: action
+        action
       }));
 
       asyncGetTimeAndIcon(URL, ({time, icon}) => {
@@ -511,7 +511,7 @@ const HistoryList = (function() {
             prefix: formatTime(time),
             value: title
           },
-          icon: icon
+          icon
         });
       });
     }
@@ -559,12 +559,12 @@ const HistoryList = (function() {
           value: title
         },
         tooltip: {
-          title: title,
-          URL: URL
+          title,
+          URL
         },
         icon: entry.icon,
         class: className.join(' '),
-        action: action
+        action
       }));
     });
 
@@ -580,7 +580,7 @@ const HistoryList = (function() {
   }
 
   return {
-    build: build
+    build
   };
 })();
 
@@ -627,8 +627,8 @@ const OpenedList = (function() {
     }
 
     return {
-      selectTab: selectTab,
-      selectWindow: selectWindow
+      selectTab,
+      selectWindow
     };
   })();
 
@@ -680,10 +680,10 @@ const OpenedList = (function() {
     }
 
     return {
-      getWindows: getWindows,
-      isBrowser: isBrowser,
-      getIdFor: getIdFor,
-      getWindowById: getWindowById
+      getWindows,
+      isBrowser,
+      getIdFor,
+      getWindowById
     };
   })();
 
@@ -740,7 +740,7 @@ const OpenedList = (function() {
 
       // [optional]
       // Show that a tab is suspended from loading in background.
-      // @note A suspended tab has no history since the initialization is
+      // @note A suspended tab may have no history if the initialization is
       // interrupted.
       // @require TabEx.uc.js
       if (window.ucjsTabEx) {
@@ -792,12 +792,12 @@ const OpenedList = (function() {
         },
         tooltip: {
           title: tab.label,
-          URL: URL,
+          URL,
           list: history
         },
         icon: gBrowser.getIcon(tab),
         class: className.join(' '),
-        action: action
+        action
       }));
 
       // [optional]
@@ -884,13 +884,13 @@ const OpenedList = (function() {
           value: title
         },
         tooltip: {
-          title: title,
-          URL: URL,
+          title,
+          URL,
           list: tabList
         },
-        icon: icon,
+        icon,
         class: className.join(' '),
-        action: action
+        action
       }));
     }
 
@@ -898,7 +898,7 @@ const OpenedList = (function() {
   }
 
   return {
-    build: build
+    build
   };
 })();
 
@@ -940,8 +940,8 @@ const ClosedList = (function() {
     }
 
     return {
-      undoCloseTab: undoCloseTab,
-      undoCloseWindow: undoCloseWindow
+      undoCloseTab,
+      undoCloseWindow
     };
   })();
 
@@ -989,8 +989,8 @@ const ClosedList = (function() {
     }
 
     return {
-      getClosedTabs: getClosedTabs,
-      getClosedWindows: getClosedWindows
+      getClosedTabs,
+      getClosedWindows
     };
   })();
 
@@ -1073,7 +1073,7 @@ const ClosedList = (function() {
         },
         tooltip: {
           title: closedTab.title,
-          URL: URL,
+          URL,
           list: history
         },
         icon: closedTab.image,
@@ -1147,7 +1147,7 @@ const ClosedList = (function() {
         },
         tooltip: {
           title: closedWindow.title,
-          URL: URL,
+          URL,
           list: tabList
         },
         icon: tabs[closedWindow.selected - 1].image,
@@ -1162,7 +1162,7 @@ const ClosedList = (function() {
   }
 
   return {
-    build: build
+    build
   };
 })();
 
@@ -1234,13 +1234,13 @@ const Tooltip = (function() {
 
       if (aValue.wrapping) {
         aValue.label.wrapping = {
-          maxTextLength: maxTextLength
+          maxTextLength
         };
       }
 
       fragment.appendChild($E('label', {
         label: aValue.label,
-        style: style
+        style
       }));
     };
 
@@ -1273,7 +1273,7 @@ const Tooltip = (function() {
   }
 
   return {
-    init: init
+    init
   };
 })();
 
@@ -1426,7 +1426,7 @@ function fitIntoLabel(aText, aWrapping) {
 
   return {
     value: aText || PlacesUIUtils.getString('noTitle'),
-    crop: crop
+    crop
   };
 }
 

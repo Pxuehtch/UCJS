@@ -179,9 +179,9 @@ const LinkInfoView = (function() {
   }
 
   return {
-    init: init,
-    addItem: addItem,
-    openLink: openLink
+    init,
+    addItem,
+    openLink
   };
 })();
 
@@ -242,7 +242,7 @@ function grabLink(aNode) {
       name: getText(aNode, target),
       address: aNode.href,
       type: kUI.type.link,
-      target: target
+      target
     });
   }
   else if ((aNode instanceof HTMLInputElement ||
@@ -267,10 +267,10 @@ function grabLink(aNode) {
 
     if (name) {
       addItem({
-        name: name,
-        address: address,
+        name,
+        address,
         type: kUI.type.submit,
-        target: target
+        target
       });
     }
   }
@@ -307,7 +307,7 @@ function grabLink(aNode) {
 
     addItem({
       name: getText(aNode),
-      address: address,
+      address,
       type: kUI.type.XLink
     });
   }

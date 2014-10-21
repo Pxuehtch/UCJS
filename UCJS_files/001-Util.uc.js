@@ -215,6 +215,17 @@ function getModule(aResourceURL) {
 /**
  * Functions for DOM handling.
  */
+function lookupNamespaceURI(aPrefix) {
+  const kNS = {
+    xul:   'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
+    html:  'http://www.w3.org/1999/xhtml',
+    xhtml: 'http://www.w3.org/1999/xhtml',
+    xlink: 'http://www.w3.org/1999/xlink'
+  };
+
+  return kNS[aPrefix] || null;
+}
+
 function addEvent(aTarget, aType, aListener, aCapture) {
   if (!aTarget || !aType || !aListener) {
     return;
@@ -303,7 +314,7 @@ function getSelectionAtCursor(aOption) {
     }
   }
 
-  // Only use the first important chars.
+  // Use only the first important chars.
   text = trimText(text, Math.min(charLen || kMaxCharLen, kMaxCharLen));
 
   return text;
@@ -338,7 +349,7 @@ function getSelectedTextInRange(aRange) {
   }
 
   let type = 'text/plain';
-  let encoder = XPCOM.$I('DocumentEncoder', {type: type});
+  let encoder = XPCOM.$I('DocumentEncoder', {type});
 
   encoder.init(
     aRange.startContainer.ownerDocument,
@@ -587,17 +598,6 @@ function evaluateXPath(aXPath, aContext, aType) {
   return null;
 }
 
-function lookupNamespaceURI(aPrefix) {
-  const kNS = {
-    xul:   'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
-    html:  'http://www.w3.org/1999/xhtml',
-    xhtml: 'http://www.w3.org/1999/xhtml',
-    xlink: 'http://www.w3.org/1999/xlink'
-  };
-
-  return kNS[aPrefix] || null;
-}
-
 /**
  * @see http://nanto.asablo.jp/blog/2008/12/11/4003371
  */
@@ -717,7 +717,7 @@ function openHomePages(aOption) {
   }
 
   openTabs(homePages, {
-    doReplace: doReplace,
+    doReplace,
     skipSecurityCheck: true
   });
 }
@@ -786,8 +786,8 @@ function openTab(aURL, aOption) {
 
   if (!skipSecurityCheck) {
     checkSecurity(URL, {
-      trustURL: trustURL,
-      allowImageData: allowImageData
+      trustURL,
+      allowImageData
     });
   }
 
@@ -821,8 +821,8 @@ function loadPage(aURL, aOption) {
 
   if (!skipSecurityCheck) {
     checkSecurity(URL, {
-      trustURL: trustURL,
-      allowImageData: allowImageData
+      trustURL,
+      allowImageData
     });
   }
 
@@ -973,7 +973,7 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
   }
 }
 
-function registerChromeStyleSheet(aCSS) {
+function setChromeStyleSheet(aCSS) {
   let css = normalizeCSS(aCSS);
 
   if (!css) {
@@ -998,7 +998,7 @@ function registerChromeStyleSheet(aCSS) {
     insertBefore(newStyleSheet, window.document.documentElement);
 }
 
-function registerContentStyleSheet(aCSS, aOption) {
+function setContentStyleSheet(aCSS, aOption) {
   let {
     document,
     id
@@ -1251,41 +1251,42 @@ function log(aMessage) {
  * Export
  */
 return {
-  Timer: Timer,
-  Prefs: Prefs,
+  XPCOM,
+  Timer,
+  Prefs,
 
-  getModule: getModule,
+  getModule,
 
-  addEvent: addEvent,
-  getSelectionAtCursor: getSelectionAtCursor,
-  createNode: createNode,
-  getNodeById: getNodeById,
-  getNodeByAnonid: getNodeByAnonid,
-  getFirstNodeBySelector: getFirstNodeBySelector,
-  getNodesBySelector: getNodesBySelector,
-  getFirstNodeByXPath: getFirstNodeByXPath,
-  getNodesByXPath: getNodesByXPath,
+  addEvent,
+  getSelectionAtCursor,
+  createNode,
+  getNodeById,
+  getNodeByAnonid,
+  getFirstNodeBySelector,
+  getNodesBySelector,
+  getFirstNodeByXPath,
+  getNodesByXPath,
 
-  unescapeURLCharacters: unescapeURLCharacters,
-  unescapeURLForUI: unescapeURLForUI,
-  resolveURL: resolveURL,
-  openHomePages: openHomePages,
-  openTabs: openTabs,
-  openURL: openURL,
-  openTab: openTab,
-  loadPage: loadPage,
-  removeTab: removeTab,
-  removeAllTabsBut: removeAllTabsBut,
+  unescapeURLCharacters,
+  unescapeURLForUI,
+  resolveURL,
+  openHomePages,
+  openTabs,
+  openURL,
+  openTab,
+  loadPage,
+  removeTab,
+  removeAllTabsBut,
 
-  restartFx: restartFx,
-  setGlobalStyleSheet: setGlobalStyleSheet,
-  removeGlobalStyleSheet: removeGlobalStyleSheet,
-  setChromeStyleSheet: registerChromeStyleSheet,
-  setContentStyleSheet: registerContentStyleSheet,
-  getPlacesDBResult: getPlacesDBResult,
-  promisePlacesDBResult: promisePlacesDBResult,
+  restartFx,
+  setGlobalStyleSheet,
+  removeGlobalStyleSheet,
+  setChromeStyleSheet,
+  setContentStyleSheet,
+  getPlacesDBResult,
+  promisePlacesDBResult,
 
-  logMessage: logMessage
+  logMessage
 }
 
 

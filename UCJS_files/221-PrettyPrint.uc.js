@@ -166,7 +166,7 @@ const Menu = (function() {
    * Export
    */
   return {
-    init: init
+    init
   };
 })();
 
@@ -218,8 +218,8 @@ const Scratchpad = (function() {
     }
 
     let state = {
-      filename: filename,
-      type: type,
+      filename,
+      type,
       text: Prettifier.execute(type, text, prettifierOptions),
       options: editorOptions
     };
@@ -287,7 +287,7 @@ const Scratchpad = (function() {
    * Export
    */
   return {
-    prettify: prettify
+    prettify
   };
 })();
 
@@ -363,7 +363,7 @@ const Prettifier = (function() {
           }
 
           case 'string': {
-            value = value + '';
+            value += '';
 
             break;
           }
@@ -472,7 +472,7 @@ const Prettifier = (function() {
    * Export
    */
   return {
-    execute: execute
+    execute
   };
 })();
 

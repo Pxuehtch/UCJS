@@ -267,9 +267,9 @@ const Tooltip = {
     let disabled = button.disabled;
 
     History.scan({
-      backward: backward,
-      referrer: referrer,
-      disabled: disabled
+      backward,
+      referrer,
+      disabled
     },
     (aData) => {
       this.build(aData);
@@ -294,12 +294,12 @@ const Tooltip = {
       let [title, URL] = this.formatData(aData, key);
 
       setLabel({
-        title: title,
+        title,
         referrer: key === 'referrer'
       });
 
       setLabel({
-        URL: URL
+        URL
       });
     });
 
@@ -325,9 +325,9 @@ const Tooltip = {
       }
 
       let label = $E('label', {
-        value: value,
+        value,
         crop: 'center',
-        style: style || null
+        style
       });
 
       tooltip.appendChild(label);
@@ -420,7 +420,7 @@ const History = {
 
     // Make a new property.
     this.data = {
-      backward: backward,
+      backward,
       neighbor: Entry(),
       border:   Entry(),
       stop:     Entry(),
@@ -492,7 +492,7 @@ const History = {
       return {
         index: sh.index,
         count: sh.count,
-        getEntryAt: getEntryAt
+        getEntryAt
       };
     }
 
@@ -594,7 +594,9 @@ function selectOrOpen(aURL, aOption) {
     }
   }
 
-  gBrowser.loadOneTab(aURL, {inBackground: inBackground});
+  gBrowser.loadOneTab(aURL, {
+    inBackground
+  });
 }
 
 /**

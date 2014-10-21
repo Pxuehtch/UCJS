@@ -224,8 +224,8 @@ const SignPanel = (function() {
   }
 
   return {
-    uninit: uninit,
-    update: update
+    uninit,
+    update
   };
 })();
 

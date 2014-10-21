@@ -147,7 +147,7 @@ const kPreset = [
 
       window.ucjsWebService.get({
         name: 'HatenaBookmarkCounter',
-        data: data,
+        data,
         onLoad: function(aResponseText) {
           updateLabel(aResponseText);
         },
@@ -240,7 +240,7 @@ const AliasFixup = (function() {
   }
 
   return {
-    create: create
+    create
   };
 })();
 
@@ -342,18 +342,21 @@ function makeItem(aType, aData, aService) {
   let label = aService.label.
     replace('%TYPE%', kUI.item.types[aType]);
 
-  let tooltip = kUI.item.tooltip.
+  let tooltiptext = kUI.item.tooltip.
     replace('%URL%', URL).
     replace('%DATA%', aData);
 
   let item = $E('menuitem', {
-    label: label,
-    tooltiptext: tooltip,
+    label,
+    tooltiptext,
     open: URL
   });
 
   if (aService.command) {
-    aService.command({menuitem: item, data: aData});
+    aService.command({
+      menuitem: item,
+      data: aData
+    });
   }
 
   return item;

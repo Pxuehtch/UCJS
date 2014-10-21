@@ -277,7 +277,7 @@ const PopupMenuHandler = (function() {
     }
 
     return {
-      register: register
+      register
     };
   }
 
@@ -285,7 +285,7 @@ const PopupMenuHandler = (function() {
    * Expose
    */
   return {
-    init: init
+    init
   };
 })();
 
@@ -298,7 +298,7 @@ const ContentArea = (function() {
   let contextMenu = PopupMenuHandler.init(getContextMenu);
 
   return {
-    contextMenu: contextMenu
+    contextMenu
   };
 })();
 
@@ -318,7 +318,7 @@ const URLBar = (function() {
   });
 
   return {
-    contextMenu: contextMenu
+    contextMenu
   };
 })();
 
@@ -363,7 +363,7 @@ const FindBar = (function() {
         case 'TabFindInitialized': {
           manageHandlers({
             doCreate: true,
-            tab: tab
+            tab
           });
 
           break;
@@ -372,7 +372,7 @@ const FindBar = (function() {
         case 'TabClose': {
           manageHandlers({
             doDestroy: true,
-            tab: tab
+            tab
           });
 
           break;
@@ -393,7 +393,7 @@ const FindBar = (function() {
      */
     function HandlerParam({tab}) {
       return {
-        tab: tab,
+        tab,
         findBar: gBrowser.getFindBar(tab)
       };
     }
@@ -403,7 +403,7 @@ const FindBar = (function() {
 
       handlers.forEach((handler) => {
         handler(HandlerParam({
-          tab: tab
+          tab
         }));
       });
     }
@@ -437,7 +437,7 @@ const FindBar = (function() {
         Array.forEach(gBrowser.tabs, (tab) => {
           if (gBrowser.isFindBarInitialized(tab)) {
             onCreate(HandlerParam({
-              tab: tab
+              tab
             }));
           }
         });
@@ -451,7 +451,7 @@ const FindBar = (function() {
     }
 
     return {
-      register: register
+      register
     };
   })();
 
@@ -533,9 +533,9 @@ const FindBar = (function() {
   return {
     register: HandlerManager.register,
     findText: FindText,
-    reset: reset,
-    toggle: toggle,
-    find: find
+    reset,
+    toggle,
+    find
   };
 })();
 
@@ -617,8 +617,8 @@ const StatusField = (function() {
      * Expose
      */
     return {
-      hasMessage: hasMessage,
-      showMessage: showMessage
+      hasMessage,
+      showMessage
     };
   })();
 
@@ -770,8 +770,8 @@ const StatusField = (function() {
         }
 
         return {
-          newURL: newURL,
-          linkState: linkState
+          newURL,
+          linkState
         };
       });
     }
@@ -875,7 +875,7 @@ const StatusField = (function() {
      * Expose
      */
     return {
-      setOverLink: setOverLink
+      setOverLink
     };
   })();
 
@@ -919,11 +919,11 @@ const Menuitem = {
  * Exports
  */
 return {
-  ContentArea: ContentArea,
-  URLBar: URLBar,
-  FindBar: FindBar,
-  StatusField: StatusField,
-  Menuitem: Menuitem
+  ContentArea,
+  URLBar,
+  FindBar,
+  StatusField,
+  Menuitem
 };
 
 

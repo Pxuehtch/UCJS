@@ -219,7 +219,7 @@ const AliasFixup = (function() {
   }
 
   return {
-    create: create
+    create
   };
 })();
 

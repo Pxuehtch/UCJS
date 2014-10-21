@@ -653,7 +653,7 @@ const URLFilter = (function() {
   }
 
   return {
-    init: init
+    init
   };
 })();
 
@@ -731,8 +731,8 @@ const PageObserver = (function() {
       // 3. Wait the document loads and run the script.
       if (site.script) {
         mBrowserState.set(aBrowser, {
-          URL: URL,
-          site: site,
+          URL,
+          site,
           isSameDocument: aFlags & LOCATION_CHANGE_SAME_DOCUMENT
         });
       }
@@ -842,7 +842,7 @@ const PageObserver = (function() {
   }
 
   return {
-    init: init
+    init
   };
 })();
 
@@ -897,7 +897,7 @@ const PageCSS = (function() {
   }
 
   return {
-    set: set
+    set
   };
 })();
 
@@ -954,7 +954,7 @@ const PrefMenu = (function() {
   }
 
   return {
-    init: init
+    init
   };
 })();
 

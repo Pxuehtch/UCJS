@@ -154,7 +154,7 @@ const AliasFixup = (function() {
   }
 
   return {
-    create: create
+    create
   };
 })();
 
@@ -199,7 +199,7 @@ const RequestHandler = (function() {
   }
 
   return {
-    request: request
+    request
   };
 })();
 
@@ -397,9 +397,9 @@ function updateFormInput(aData, aOption) {
  * Exports
  */
 return {
-  open: open,
-  get: get,
-  updateFormInput: updateFormInput
+  open,
+  get,
+  updateFormInput
 };
 
 

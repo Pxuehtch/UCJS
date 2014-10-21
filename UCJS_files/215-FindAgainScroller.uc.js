@@ -232,7 +232,7 @@ const FindAgainCommand = (function() {
    * Expose
    */
   return {
-    init: init
+    init
   };
 })();
 
@@ -350,7 +350,7 @@ function ScrollObserver() {
         // @note |mScrollState| is used as the parameters of
         // |SmoothScroll::start|, |HorizontalCentered::align|.
         mScrollState = {
-          node: node,
+          node,
           start: scroll,
           goal: now
         };
@@ -373,8 +373,8 @@ function ScrollObserver() {
     }
 
     return {
-      x: x,
-      y: y
+      x,
+      y
     };
   }
 
@@ -382,9 +382,9 @@ function ScrollObserver() {
    * Expose
    */
   return {
-    attach: attach,
-    detach: detach,
-    check: check
+    attach,
+    detach,
+    check
   };
 }
 
@@ -499,7 +499,7 @@ function SkipInvisible() {
    * Expose
    */
   return {
-    test: test
+    test
   };
 }
 
@@ -558,7 +558,7 @@ function HorizontalCentered() {
    * Expose
    */
   return {
-    align: align
+    align
   };
 }
 
@@ -779,9 +779,9 @@ function SmoothScroll() {
 
     if (scrollable) {
       return {
-        view: view,
-        width: width,
-        height: height
+        view,
+        width,
+        height
       };
     }
 
@@ -807,8 +807,8 @@ function SmoothScroll() {
    * Expose
    */
   return {
-    start: start,
-    cancel: cancel
+    start,
+    cancel
   };
 }
 
@@ -874,7 +874,7 @@ function FoundBlink() {
       });
 
       this.param = {
-        duration: duration,
+        duration,
         blinks: 0,
         range: TextFinder.selectionRange
       };
@@ -967,8 +967,8 @@ function FoundBlink() {
    * Expose
    */
   return {
-    start: start,
-    cancel: cancel
+    start,
+    cancel
   };
 }
 
@@ -1036,8 +1036,8 @@ function FrameAnimator(aCallback, aOption) {
   }
 
   return {
-    request: request,
-    cancel: cancel
+    request,
+    cancel
   };
 }
 

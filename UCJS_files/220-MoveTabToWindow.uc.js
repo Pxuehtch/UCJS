@@ -117,10 +117,10 @@ const WindowUtil = (function() {
   }
 
   return {
-    getBrowserWindows: getBrowserWindows,
-    isPrivate: isPrivate,
-    getIdFor: getIdFor,
-    getWindowById: getWindowById
+    getBrowserWindows,
+    isPrivate,
+    getIdFor,
+    getWindowById
   };
 })();
 

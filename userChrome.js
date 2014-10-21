@@ -92,7 +92,9 @@ function ucjsScriptLoader_init() {
 
     if (scriptList) {
       // Exposes new property in |window|.
-      window[kSystem.loaderName] = {scriptList: scriptList};
+      window[kSystem.loaderName] = {
+        scriptList
+      };
     }
 
     window.addEventListener('unload', function onUnload() {
@@ -217,9 +219,9 @@ function ScriptLoader() {
    * Exports
    */
   return {
-    init: init,
-    uninit: uninit,
-    getScriptList: getScriptList
+    init,
+    uninit,
+    getScriptList
   };
 }
 
@@ -434,8 +436,8 @@ function ScriptList() {
    * Exports
    */
   return {
-    init: init,
-    uninit: uninit,
+    init,
+    uninit,
     get: getData,
     run: runData
   };
@@ -471,7 +473,7 @@ function UserScript(aFile) {
   }
 
   return {
-    uninit: uninit,
+    uninit,
     getMetaData: UserScript_getMetaData.bind(null, mMetaData),
     formatMetaData: UserScript_formatMetaData.bind(null, mMetaData),
     testTarget: UserScript_testTarget.bind(null, mMetaData),
@@ -710,18 +712,18 @@ function Util() {
    * Exports
    */
   return {
-    getLastModifiedTime: getLastModifiedTime,
-    readFile: readFile,
-    getChromeDirectory: getChromeDirectory,
-    getEntryList: getEntryList,
-    getNextEntry: getNextEntry,
-    getTopBrowserWindow: getTopBrowserWindow,
-    getURLSpecFromFile: getURLSpecFromFile,
-    loadJscript: loadJscript,
-    loadOverlay: loadOverlay,
-    getBrowserURL: getBrowserURL,
-    testURL: testURL,
-    log: log
+    getLastModifiedTime,
+    readFile,
+    getChromeDirectory,
+    getEntryList,
+    getNextEntry,
+    getTopBrowserWindow,
+    getURLSpecFromFile,
+    loadJscript,
+    loadOverlay,
+    getBrowserURL,
+    testURL,
+    log
   };
 }
 
