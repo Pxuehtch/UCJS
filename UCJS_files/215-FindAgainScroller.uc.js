@@ -55,8 +55,8 @@ const kPref = {
    *
    * @note The result is scrolled *vertically* centered by Fx default behavior,
    * but not *horizontally*.
-   * @see https://bugzilla.mozilla.org/show_bug.cgi?id=171237
-   * @see https://bugzilla.mozilla.org/show_bug.cgi?id=743103
+   * @see [vertically] https://bugzilla.mozilla.org/show_bug.cgi?id=171237
+   * @see [horizontally] https://bugzilla.mozilla.org/show_bug.cgi?id=743103
    */
   horizontalCentered: true,
 
@@ -80,7 +80,7 @@ const kPref = {
 };
 
 /**
- * Helper functions of the finder in the current tab.
+ * Wrapper of the finder of the current tab.
  *
  * @see resource://gre/modules/Finder.jsm
  */
@@ -112,6 +112,18 @@ const TextFinder = {
 
     if (currentWindow) {
       return this.finder._getSelectionController(currentWindow);
+    }
+
+    return null;
+  },
+
+  get selectionRange() {
+    let selectionController = this.selectionController;
+
+    if (selectionController) {
+      return selectionController.
+        getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
+        getRangeAt(0);
     }
 
     return null;
@@ -285,7 +297,7 @@ function ScrollObserver() {
 
     let nodes = $X(xpath, root);
 
-    // WORKAROUND: Only check the scrollability of an element itself.
+    // WORKAROUND: Check the scrollability of an element itself only.
     // TODO: Handle scrollable ancestors.
     for (let i = 0, l = nodes.snapshotLength; i < l; i++) {
       let node = nodes.snapshotItem(i);
@@ -428,18 +440,14 @@ function SkipInvisible() {
   }
 
   function getInvisibleResult() {
-    let selectionController = TextFinder.selectionController;
+    let selectionRange = TextFinder.selectionRange;
 
-    // No result is found or error something.
-    if (!selectionController) {
+    if (!selectionRange) {
       return null;
     }
 
     // Get the text node that contains the find range object.
-    let result = selectionController.
-      getSelection(Ci.nsISelectionController.SELECTION_NORMAL).
-      getRangeAt(0).
-      commonAncestorContainer;
+    let result = selectionRange.commonAncestorContainer;
 
     // A visible result is found.
     if (isVisible(result)) {
@@ -503,24 +511,17 @@ function SkipInvisible() {
  */
 function HorizontalCentered() {
   function align({node}) {
-    let selection = getSelection();
+    let selectionRange = TextFinder.selectionRange;
 
-    if (selection) {
-      scrollSelection(selection, node);
+    if (!selectionRange) {
+      return;
     }
+
+    centerSelectionInView(selectionRange, node);
   }
 
-  function getSelection() {
-    let selectionController = TextFinder.selectionController;
-
-    return selectionController &&
-      selectionController.
-        getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
-  }
-
-  function scrollSelection(aSelection, aView) {
-    let range = aSelection.getRangeAt(0);
-    let {left, right, width} = range.getBoundingClientRect();
+  function centerSelectionInView(aRange, aView) {
+    let {left, right, width} = aRange.getBoundingClientRect();
     let viewWidth, center;
 
     if (aView instanceof Window) {
@@ -646,14 +647,14 @@ function SmoothScroll() {
 
     let now = getScroll();
 
-    // Took too much time. stop stepping and jump to goal.
+    // Took too much time. Stop stepping and jump to goal.
     if (aTime.current - aTime.start > 1000) {
       stop(true);
 
       return false;
     }
 
-    // Reached the goal or went over. stop stepping at here.
+    // Reached the goal or went over. Stop stepping at here.
     if (was.delta.x * now.delta.x <= 0 &&
         was.delta.y * now.delta.y <= 0) {
       stop(false);
@@ -875,7 +876,7 @@ function FoundBlink() {
       this.param = {
         duration: duration,
         blinks: 0,
-        range: getRange()
+        range: TextFinder.selectionRange
       };
 
       this.initialized = true;
@@ -944,22 +945,14 @@ function FoundBlink() {
     return 0 <= top && bottom <= window.innerHeight;
   }
 
-  function getRange() {
-    const {SELECTION_NORMAL} = Ci.nsISelectionController;
-
-    return mState.selectionController.
-      getSelection(SELECTION_NORMAL).
-      getRangeAt(0);
-  }
-
-  function setDisplay(aShow) {
+  function setDisplay(aDoShow) {
     const {
       SELECTION_NORMAL,
       SELECTION_OFF,
       SELECTION_ON
     } = Ci.nsISelectionController;
 
-    let type = aShow ? SELECTION_ON : SELECTION_OFF;
+    let type = aDoShow ? SELECTION_ON : SELECTION_OFF;
 
     try {
       if (mState.selectionController.getDisplaySelection() !== type) {
