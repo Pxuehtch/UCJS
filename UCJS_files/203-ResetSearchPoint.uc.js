@@ -7,9 +7,10 @@
 // @require Util.uc.js
 
 /**
- * @usage The next find again will start from the point with "double-clicking".
- * @note In the same frame/textbox, the point is reset with "single-clicking"
- * by Fx default behavior.
+ * @usage The next <Find Again> command will start from a point
+ * *double clicked*.
+ * @note In the same frame or textbox, the point is reset at a *single clicked*
+ * point by Fx default behavior.
  */
 
 
@@ -31,6 +32,25 @@ function log(aMsg) {
   return window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
 }
 
+/**
+ * Wrapper of the finder of the current tab.
+ *
+ * @see resource://gre/modules/Finder.jsm
+ */
+const TextFinder = {
+  get finder() {
+    return gBrowser.finder;
+  },
+
+  get fastFind() {
+    return this.finder._fastFind;
+  },
+
+  removeSelection: function() {
+    this.finder.removeSelection();
+  }
+};
+
 function ResetSearchPoint_init() {
   addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, false);
 }
@@ -40,15 +60,15 @@ function handleEvent(aEvent) {
     return;
   }
 
-  let clickManager = getClickManager(aEvent.target),
-      fastFind = getFinder()._fastFind;
+  let clickManager = getClickManager(aEvent.target);
+  let fastFind = TextFinder.fastFind;
 
   if (!clickManager || !fastFind) {
     return;
   }
 
-  let {clickedWindow, clickedElement} = clickManager,
-      {currentWindow, foundEditable} = fastFind;
+  let {clickedWindow, clickedElement} = clickManager;
+  let {currentWindow, foundEditable} = fastFind;
 
   if (currentWindow !== clickedWindow ||
       foundEditable !== clickedElement) {
@@ -77,7 +97,7 @@ function clearSelection(aEditable) {
 }
 
 function setSelection(aElement, aWindow) {
-  getFinder().removeSelection();
+  TextFinder.removeSelection();
 
   let selection = aWindow.getSelection();
   let range = null;
@@ -102,7 +122,7 @@ function setFastFindFor(aWindow) {
     getInterface(Ci.nsIWebNavigation).
     QueryInterface(Ci.nsIDocShell);
 
-  getFinder()._fastFind.setDocShell(docShell);
+  TextFinder.fastFind.setDocShell(docShell);
 }
 
 /**
@@ -158,15 +178,8 @@ function getClickManager(aNode) {
     clickedWindow: aNode.ownerDocument.defaultView,
     // @note We also handle an image element since the start point of finding
     // is not reset by clicking it.
-    clickedElement: (isEditable || isImage) && !isLinked ? aNode : null
+    clickedElement: ((isEditable || isImage) && !isLinked) ? aNode : null
   };
-}
-
-/**
- * Gets the finder of the current browser.
- */
-function getFinder() {
-  return gBrowser.finder;
 }
 
 /**
