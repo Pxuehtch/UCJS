@@ -20,8 +20,7 @@
  * Imports
  */
 const {
-  getNodesByXPath: $X,
-  addEvent
+  getNodesByXPath: $X
 } = window.ucjsUtil;
 
 // For debugging.
@@ -881,19 +880,21 @@ function FoundBlink() {
 
       this.initialized = true;
 
+      // Cancel blinking when the selection is removed by clicking.
+      gBrowser.mPanelContainer.addEventListener('mousedown', cancel, false);
+
       return true;
     },
 
     uninit:  function() {
+      gBrowser.mPanelContainer.removeEventListener('mousedown', cancel, false);
+
       this.selectionController = null;
       this.frameAnimator = null;
       this.param = null;
       this.initialized = null;
     }
   };
-
-  // Cancel blinking when the selection is removed by clicking.
-  addEvent(gBrowser.mPanelContainer, 'mousedown', cancel, false);
 
   function start() {
     if (!mState.init()) {
