@@ -35,13 +35,15 @@ function log(aMsg) {
 }
 
 /**
- * URL string handler.
+ * Helper functions for URL-like strings.
  *
  * @return {hash}
  *   @key guess {function}
- *   @key grab {function}
+ *   @key extract {function}
  *   @key map {function}
  *   @key fix {function}
+ *
+ * TODO: Detect Kana/Kanji characters.
  */
 const URLUtil = (function() {
   /**
@@ -83,13 +85,14 @@ const URLUtil = (function() {
    *
    * @param aString {string}
    * @return {array|null}
-   *   |null| if no match.
+   *   |null| if no matches.
    */
   let match = (function() {
     const absolute =
       '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[!-~]*';
     const relative =
       '\\.\\.?\\/[!-~]+';
+
     const re = RegExp(absolute + '|' + relative, 'ig');
 
     return (aString) => normalize(aString).match(re);
@@ -100,19 +103,21 @@ const URLUtil = (function() {
    *
    * @param aSelection {nsISelection}
    * @return {boolean}
+   *
+   * @note Guesses the selection string at a part of a URL.
    */
   function guess(aSelection) {
     return isASCII(aSelection.toString());
   }
 
   /**
-   * Retrieves an array of URL-like strings from a range text.
+   * Extracts an array of URL-like strings from a range text.
    *
    * @param aRange {nsIDOMRange}
    * @return {array|null}
-   *   |null| if no match.
+   *   |null| if no matches.
    */
-  function grab(aRange) {
+  function extract(aRange) {
     return match(encodeToPlain(aRange));
   }
 
@@ -123,8 +128,7 @@ const URLUtil = (function() {
    * @param aRange {nsIDOMRange}
    * @return {string}
    *
-   * @note The text is used as a map indicating the position of the target
-   * URL string.
+   * @note Used as a map indicating the position of URL strings.
    */
   function map(aRange) {
     return normalize(aRange.toString());
@@ -146,7 +150,7 @@ const URLUtil = (function() {
 
   return {
     guess,
-    grab,
+    extract,
     map,
     fix
   }
@@ -169,6 +173,7 @@ function handleEvent(aEvent) {
   }
 
   let selection = doc.defaultView.getSelection();
+
   let URL = findURL(doc, selection);
 
   if (URL) {
@@ -183,6 +188,7 @@ function handleEvent(aEvent) {
 function findURL(aDocument, aSelection) {
   let URL = '';
 
+  // Test if the selection seems to be a part of a URL.
   if (!aSelection ||
       !aSelection.rangeCount ||
       !URLUtil.guess(aSelection)) {
@@ -198,8 +204,8 @@ function findURL(aDocument, aSelection) {
   // in the target range.
   let position = initRange(range, aSelection.getRangeAt(0));
 
-  // Retrieve an array of URL-like strings from the target range.
-  let URLs = URLUtil.grab(range);
+  // Extract an array of URL strings.
+  let URLs = URLUtil.extract(range);
 
   if (!URLs) {
     return URL;
