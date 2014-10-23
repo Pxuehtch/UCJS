@@ -186,13 +186,11 @@ function handleEvent(aEvent) {
 }
 
 function findURL(aDocument, aSelection) {
-  let URL = '';
-
   // Test if the selection seems to be a part of a URL.
   if (!aSelection ||
       !aSelection.rangeCount ||
       !URLUtil.guess(aSelection)) {
-    return URL;
+    return null;
   }
 
   // Make a target range with a source selection.
@@ -208,26 +206,29 @@ function findURL(aDocument, aSelection) {
   let URLs = URLUtil.extract(range);
 
   if (!URLs) {
-    return URL;
+    return null;
   }
 
-  // Scan the position of a URL in the target range.
-  let map = URLUtil.map(range);
+  // Find the URL string that contains the source selection.
+  let resultURL = null;
+
   let start, end = 0;
+  let map = URLUtil.map(range);
 
-  URLs.some((url) => {
-    start = map.indexOf(url, end);
-    end = start + url.length;
+  URLs.some((URL) => {
+    start = map.indexOf(URL, end);
+    end = start + URL.length;
 
-    // Got it if the URL contains the source selection.
     if (position.start < end && start < position.end) {
-      URL = URLUtil.fix(url);
+      resultURL = URLUtil.fix(URL);
+
       return true;
     }
+
     return false;
   });
 
-  return URL;
+  return resultURL;
 }
 
 function initRange(aRange, aSourceRange) {
@@ -300,8 +301,7 @@ function encodeToPlain(aRange) {
   encoder.init(
     aRange.startContainer.ownerDocument,
     'text/plain',
-    encoder.OutputLFLineBreak |
-    encoder.SkipInvisibleContent
+    encoder.OutputLFLineBreak | encoder.SkipInvisibleContent
   );
 
   encoder.setRange(aRange);
