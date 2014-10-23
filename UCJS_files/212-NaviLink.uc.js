@@ -1370,8 +1370,10 @@ const SiblingNavi = (function() {
       if (result) {
         data = result;
         scanType = type;
+
         return true;
       }
+
       return false;
     });
 
@@ -1381,6 +1383,7 @@ const SiblingNavi = (function() {
         scanType
       };
     }
+
     return null;
   }
 

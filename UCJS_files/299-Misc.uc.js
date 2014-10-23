@@ -48,11 +48,11 @@ function log(aMsg) {
 (function() {
 
   const kPref = {
-    // Max numbers of characters in a line.
+    // Max number of characters in a line.
     // @note 'max-width' of a text container is set to this value by 'em'.
     maxWidth: 40,
 
-    // Max numbers of wrap lines of a long text.
+    // Max number of wrap lines of a long text.
     maxNumWrapLines: 4
   };
 

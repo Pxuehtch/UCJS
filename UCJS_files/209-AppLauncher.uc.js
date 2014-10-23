@@ -350,6 +350,7 @@ const FileExtUtil = {
         return ext;
       }
     }
+
     return null;
   }
 };
@@ -501,8 +502,10 @@ function makeActionItems(aPopup, aAppList) {
     kTypeAction.some((item) => {
       if (item.type === type) {
         actions = item.actions;
+
         return true;
       }
+
       return false;
     });
 
@@ -901,8 +904,10 @@ function checkApp(aApp) {
   if (appFile) {
     // @note Overwrites the property value.
     aApp.path = appFile.path;
+
     return true;
   }
+
   return false;
 }
 

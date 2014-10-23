@@ -595,6 +595,7 @@ function SmoothScroll() {
       }
 
       let scrollable = testScrollable(node);
+
       if (!scrollable) {
         return false;
       }
@@ -602,9 +603,11 @@ function SmoothScroll() {
       this.view = scrollable.view;
       this.width = scrollable.width;
       this.height = scrollable.height;
+
       this.node = node;
       this.start = start;
       this.goal = goal;
+
       this.frameAnimator = FrameAnimator(onEnterFrame);
       this.param = {
         step: getStep(start)

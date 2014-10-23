@@ -354,8 +354,7 @@ function getSelectedTextInRange(aRange) {
   encoder.init(
     aRange.startContainer.ownerDocument,
     type,
-    encoder.OutputLFLineBreak |
-    encoder.SkipInvisibleContent
+    encoder.OutputLFLineBreak | encoder.SkipInvisibleContent
   );
 
   encoder.setRange(aRange);
@@ -767,6 +766,7 @@ function openURL(aURL, aOption) {
   if (inTab) {
     return openTab(aURL, aOption);
   }
+
   return loadPage(aURL, aOption);
 }
 
@@ -1110,6 +1110,7 @@ function getPlacesDBResult(aParam) {
   if (rows.length) {
     return rows;
   }
+
   return null;
 }
 
@@ -1229,6 +1230,7 @@ function logMessage(aTargetName, aMessage) {
         replace('%message%', value.message || '').
         replace('%stack%', Log.stackTrace(value));
     }
+
     return value;
   });
 

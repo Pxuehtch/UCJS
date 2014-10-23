@@ -634,6 +634,7 @@ const Referrer = {
       // @note We ordered a single row.
       return resultRows[0].url;
     }
+
     return null;
   }
 };
@@ -872,6 +873,7 @@ const SessionStore = {
     if (this.SS.getClosedTabCount(window) > 0) {
       return JSON.parse(this.SS.getClosedTabData(window));
     }
+
     return null;
   }
 };
@@ -1234,6 +1236,7 @@ function getOriginalTabOfDuplicated(aTab) {
       return tab;
     }
   }
+
   return null;
 }
 
@@ -1401,6 +1404,7 @@ function getFamilyTab(aBaseTab, aStatement) {
 
     isRelated = function(tab) {
       let id = TabData.get(tab, 'openTime');
+
       // 1.This tab is an ancestor of the base tab.
       return baseAncs.indexOf(id) > -1;
     };
@@ -1620,6 +1624,7 @@ function getAdjacentTab(aBaseTab, aDirection) {
       (aDirection === +1 && basePos === tabs.length - 1)) {
     return null;
   }
+
   return tabs[basePos + aDirection];
 }
 

@@ -49,7 +49,7 @@ const {
  */
 const kPref = {
   /**
-   * Max numbers of listed items.
+   * Max number of listed items.
    *
    * @value {integer} [>0]
    * @note A list is not created if set to 0.
@@ -85,10 +85,10 @@ const kPref = {
   /**
    * Tooltip settings.
    *
-   * maxWidth: Max numbers of characters in a line.
+   * maxWidth: Max number of characters in a line.
    * @note 'max-width' of a text container is set to this value by 'em'.
    *
-   * maxNumWrapLines: Max numbers of wrap lines of a long text.
+   * maxNumWrapLines: Max number of wrap lines of a long text.
    */
   tooltip: {
     maxWidth: 40,

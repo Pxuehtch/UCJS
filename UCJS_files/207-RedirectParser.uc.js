@@ -211,8 +211,10 @@ function buildParsedURLs(aParam) {
 
   if (parseList) {
     makeMenuItems(parseList);
+
     return true;
   }
+
   return false;
 }
 
@@ -321,6 +323,7 @@ function testGeneralScheme(aURL) {
 
     return re.test(aURL);
   }
+
   return false;
 }
 
@@ -368,12 +371,14 @@ function getParseListByPreset(aSourceURL) {
 
       return true;
     }
+
     return false;
   });
 
   if (parseList && parseList.validate()) {
     return parseList;
   }
+
   return null;
 }
 
@@ -403,6 +408,7 @@ function getParseListByScan(aSourceURL) {
   if (parseList && parseList.validate()) {
     return parseList;
   }
+
   return null;
 }
 
@@ -509,6 +515,7 @@ function sliceScheme(aString) {
       return [aString.slice(0, aString.lastIndexOf(scheme)), scheme];
     }
   }
+
   return [aString, ''];
 }
 
@@ -518,6 +525,7 @@ function removeFragment(aURL) {
   if (trimmedURL !== aURL) {
     return trimmedURL;
   }
+
   return '';
 }
 

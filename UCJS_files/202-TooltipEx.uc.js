@@ -45,7 +45,7 @@ function log(aMsg) {
  */
 const kPref = {
   /**
-   * Max numbers of characters in a line.
+   * Max number of characters in a line.
    *
    * @value {integer} [>0]
    *
@@ -63,7 +63,7 @@ const kPref = {
   maxNumWrapLinesWhenCropped: 2,
 
   /**
-   * Max numbers of wrap lines of a long text in a sub tooltip.
+   * Max number of wrap lines of a long text in a sub tooltip.
    *
    * @value {integer} [>0]
    */

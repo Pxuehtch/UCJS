@@ -480,9 +480,11 @@ function MouseGesture() {
             aNode.popupBoxObject.popupState === 'open') {
           return true;
         }
+
         aNode = aNode.parentNode;
       }
     }
+
     return false;
   }
 
