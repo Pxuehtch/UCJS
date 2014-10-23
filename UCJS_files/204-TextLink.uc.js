@@ -193,14 +193,9 @@ function findURL(aDocument, aSelection) {
     return null;
   }
 
-  // Make a target range with a source selection.
-  let range = aDocument.createRange();
-
-  range.selectNode(aDocument.documentElement);
-
-  // Update the target range and get the position of the source selection
-  // in the target range.
-  let position = initRange(range, aSelection.getRangeAt(0));
+  // Create a large range that contains the source selection and retrieve the
+  // position of the source selection in the range.
+  let {range, sourcePosition} = createRange(aDocument, aSelection);
 
   // Extract an array of URL strings.
   let URLs = URLUtil.extract(range);
@@ -219,7 +214,7 @@ function findURL(aDocument, aSelection) {
     start = map.indexOf(URL, end);
     end = start + URL.length;
 
-    if (position.start < end && start < position.end) {
+    if (sourcePosition.start < end && start < sourcePosition.end) {
       resultURL = URLUtil.fix(URL);
 
       return true;
@@ -231,65 +226,75 @@ function findURL(aDocument, aSelection) {
   return resultURL;
 }
 
-function initRange(aRange, aSourceRange) {
-  function expand(aXPath, aNode, aCount) {
-    // The threshold number of characters without white-spaces.
-    // @note It seems that 2,000 characters are sufficient for a HTTP URL.
-    const kMaxTextLength = 2000;
+function createRange(aDocument, aSelection) {
+  let range = aDocument.createRange();
 
-    let node = aNode;
-    let border = node;
-    let count = aCount;
-    let text;
+  range.selectNode(aDocument.documentElement);
 
-    while (count < kMaxTextLength) {
-      node = $X1(aXPath, node);
+  let sourceRange = aSelection.getRangeAt(0);
 
-      if (!node) {
-        break;
-      }
-
-      border = node;
-      text = node.textContent;
-      count += text.length;
-
-      // A white-space marks off the URL string.
-      if (/\s/.test(text)) {
-        break;
-      }
-    }
-
-    return {
-      border,
-      count
-    };
-  }
-
-  // Expand range before the source selection.
-  let result = expand(
+  // Expand the range before the source selection.
+  let result = findBorder(
     'preceding::text()[1]',
-    aSourceRange.startContainer,
-    aSourceRange.startOffset
+    sourceRange.startContainer,
+    sourceRange.startOffset
   );
 
-  aRange.setStartBefore(result.border);
+  range.setStartBefore(result.borderNode);
 
-  // Store the source position.
-  let start = result.count;
-  let end = start + aSourceRange.toString().length;
+  // Store the position of the source selection in the range.
+  let start = result.textLength;
+  let end = start + sourceRange.toString().length;
 
   // Expand range after the source selection.
-  result = expand(
+  result = findBorder(
     'following::text()[1]',
-    aSourceRange.endContainer,
-    aSourceRange.endContainer.textContent.length - aSourceRange.endOffset
+    sourceRange.endContainer,
+    sourceRange.endContainer.textContent.length - sourceRange.endOffset
   );
 
-  aRange.setEndAfter(result.border);
+  range.setEndAfter(result.borderNode);
 
   return {
-    start,
-    end
+    range,
+    sourcePosition: {
+      start,
+      end
+    }
+  };
+}
+
+function findBorder(aXPath, aNode, aTextLength) {
+  // The threshold number of characters without white-spaces.
+  // @note It seems that 2,000 characters are sufficient for a HTTP URL.
+  const kMaxTextLength = 2000;
+
+  let borderNode = aNode;
+  let textLength = aTextLength;
+
+  let node = aNode;
+
+  while (textLength < kMaxTextLength) {
+    node = $X1(aXPath, node);
+
+    if (!node) {
+      break;
+    }
+
+    let text = node.textContent;
+
+    borderNode = node;
+    textLength += text.length;
+
+    // A white-space marks off a URL string.
+    if (/\s/.test(text)) {
+      break;
+    }
+  }
+
+  return {
+    borderNode,
+    textLength
   };
 }
 
