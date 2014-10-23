@@ -226,14 +226,16 @@ function findURL(aDocument, aSelection) {
 
 function initRange(aRange, aSourceRange) {
   function expand(aXPath, aNode, aCount) {
-    const kCharsBuffer = 256;
+    // The threshold number of characters without white-spaces.
+    // @note It seems that 2,000 characters are sufficient for a HTTP URL.
+    const kMaxTextLength = 2000;
 
     let node = aNode;
     let border = node;
     let count = aCount;
     let text;
 
-    while (count < kCharsBuffer) {
+    while (count < kMaxTextLength) {
       node = $X1(aXPath, node);
 
       if (!node) {
