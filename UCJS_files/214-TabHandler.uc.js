@@ -423,27 +423,61 @@ const TabBarClickEvent = {
 };
 
 /**
- * Cycle-selects tabs with a mouse wheel scroll on the tabbar.
- *
- * @note Disables the default scrolling when the tabbar overflows tabs.
+ * Handler of the mouse-wheel event on the tab bar.
  */
-function switchTabsOnMouseWheel() {
-  addEvent(gBrowser.tabContainer, 'wheel', (aEvent) => {
-    gBrowser.tabContainer.
-      advanceSelectedTab((aEvent.deltaY < 0) ? -1 : 1, true);
+const TabBarWheelEvent = {
+  init: function() {
+    // @note Use the capture mode to catch the event before the default event.
+    addEvent(gBrowser.tabContainer, 'wheel', (aEvent) => {
+      this.scrollTabs(aEvent) || this.switchTabs(aEvent);
 
-    // Prevent the default scrolling.
-    aEvent.preventDefault();
-    aEvent.stopPropagation();
-  }, true);
-}
+      // Prevent the default scrolling when the tab bar overflows with tabs.
+      aEvent.preventDefault();
+      aEvent.stopPropagation();
+    }, true);
+  },
+
+  /**
+   * Scroll the tab bar by one tab when it overflows and the wheel event works
+   * on the scroll buttons.
+   */
+  scrollTabs: function(aEvent) {
+    if (!gBrowser.tabContainer.hasAttribute('overflow')) {
+      return false;
+    }
+
+    let button = aEvent.originalTarget;
+
+    // Handle the scroll buttons 'scrollbutton-up' or 'scrollbutton-down'.
+    if (!/^scrollbutton\-/.test(button.getAttribute('anonid'))) {
+      return false;
+    }
+
+    // @see chrome://global/content/bindings/scrollbox.xml::scrollByIndex
+    let direction = (aEvent.deltaY < 0) ? -1 : 1;
+
+    button.parentNode.scrollByIndex(direction);
+
+    return true;
+  },
+
+  /**
+   * Switch tabs by one.
+   */
+  switchTabs: function(aEvent) {
+    // @see chrome://global/content/bindings/tabbox.xml::advanceSelectedTab
+    let direction = (aEvent.deltaY < 0) ? -1 : 1;
+
+    gBrowser.tabContainer.advanceSelectedTab(direction, true);
+  }
+};
 
 /**
  * Entry point.
  */
 function TabHandler_init() {
   TabBarClickEvent.init();
-  switchTabsOnMouseWheel();
+  TabBarWheelEvent.init();
 }
 
 TabHandler_init();
