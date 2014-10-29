@@ -433,7 +433,7 @@ const TabOpener = {
         return newTab;
       }
 
-      let aRelatedToCurrent, aFromExternal, aDisableMCB;
+      let aRelatedToCurrent, aFromExternal, aAllowMixedContent;
 
       if (arguments.length === 2 &&
           typeof arguments[1] === 'object' &&
@@ -445,7 +445,7 @@ const TabOpener = {
         aAllowThirdPartyFixup = params.allowThirdPartyFixup;
         aFromExternal         = params.fromExternal;
         aRelatedToCurrent     = params.relatedToCurrent;
-        aDisableMCB           = params.disableMCB;
+        aAllowMixedContent    = params.allowMixedContent;
       }
 
       let openInfo;
@@ -488,7 +488,7 @@ const TabOpener = {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
         }
 
-        if (aDisableMCB) {
+        if (aAllowMixedContent) {
           flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
         }
 

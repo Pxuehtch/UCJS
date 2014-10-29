@@ -740,7 +740,9 @@ function openTabs(aURLs, aOption) {
   if (doReplace) {
     // @see chrome://browser/content/browser.js::BrowserOpenTab
     window.BrowserOpenTab();
+
     removeAllTabsBut(gBrowser.selectedTab);
+
     firstTabAdded = loadPage(aURLs.shift(), aOption);
   }
   else {
@@ -813,7 +815,7 @@ function loadPage(aURL, aOption) {
     postData,
     allowThirdPartyFixup,
     fromExternal,
-    disableMCB,
+    allowMixedContent,
     skipSecurityCheck,
     trustURL,
     allowImageData
@@ -837,7 +839,7 @@ function loadPage(aURL, aOption) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
   }
 
-  if (disableMCB) {
+  if (allowMixedContent) {
     flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
   }
 
