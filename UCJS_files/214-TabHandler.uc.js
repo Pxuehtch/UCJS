@@ -223,12 +223,12 @@ const kClickAction = [
 const TabBarClickEvent = {
   clearState: function() {
     this.state.target   = null;
-    this.state.button   = 0;
-    this.state.ctrlKey  = false;
-    this.state.altKey   = false;
-    this.state.shiftKey = false;
-    this.state.clicks   = 0;
-    this.state.area     = '';
+    this.state.area     = null;
+    this.state.button   = null;
+    this.state.clicks   = null;
+    this.state.shiftKey = null;
+    this.state.ctrlKey  = null;
+    this.state.altKey   = null;
   },
 
   init: function() {
@@ -327,12 +327,12 @@ const TabBarClickEvent = {
     if (this.state.target !== aEvent.target ||
         this.state.button !== aEvent.button) {
       this.state.target   = aEvent.target;
+      this.state.area     = this.getTargetArea(aEvent);
       this.state.button   = aEvent.button;
+      this.state.clicks   = 0;
+      this.state.shiftKey = aEvent.shiftKey;
       this.state.ctrlKey  = aEvent.ctrlKey;
       this.state.altKey   = aEvent.altKey;
-      this.state.shiftKey = aEvent.shiftKey;
-      this.state.clicks   = 0;
-      this.state.area     = this.checkTargetArea(aEvent);
     }
 
     this.idledMouseDown = true;
