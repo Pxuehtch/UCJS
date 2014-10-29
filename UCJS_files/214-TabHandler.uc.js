@@ -221,6 +221,55 @@ const kClickAction = [
  * TODO: Use |MouseEvent.buttons| to detect extra buttons.
  */
 const TabBarClickEvent = {
+  get isMouseDownIdling() {
+    return !!this.mouseDownTimer;
+  },
+
+  set isMouseDownIdling(aValue) {
+    if (aValue === true) {
+      this.mouseDownTimer = setTimeout(() => {
+        this.stopObserving();
+      }, kPref.clickThresholdTime);
+    }
+    else /* if (aValue === false) */ {
+      if (this.mouseDownTimer) {
+        clearTimeout(this.mouseDownTimer);
+        this.mouseDownTimer = null;
+      }
+    }
+  },
+
+  get isMouseUpIdling() {
+    return !!this.mouseUpTimer;
+  },
+
+  set isMouseUpIdling(aValue) {
+    if (aValue === true) {
+      this.mouseUpTimer = setTimeout(() => {
+        this.doAction();
+
+        this.stopObserving();
+      }, kPref.clickThresholdTime);
+    }
+    else /* if (aValue === false) */ {
+      if (this.mouseUpTimer) {
+        clearTimeout(this.mouseUpTimer);
+        this.mouseUpTimer = null;
+      }
+    }
+  },
+
+  get isObserving() {
+    return !!this.state.target;
+  },
+
+  stopObserving: function() {
+    this.isMouseDownIdling = false;
+    this.isMouseUpIdling = false;
+
+    this.clearState();
+  },
+
   clearState: function() {
     this.state.target   = null;
     this.state.area     = null;
@@ -234,7 +283,6 @@ const TabBarClickEvent = {
   init: function() {
     this.state = {};
     this.clearState();
-    this.handled = false;
 
     let tc = gBrowser.tabContainer;
 
@@ -250,7 +298,7 @@ const TabBarClickEvent = {
     // 1.A context menu.
     // 2.A UI element (button, menu).
     if (aEvent.button === 2 ||
-        !this.checkTargetArea(aEvent)) {
+        !this.getTargetArea(aEvent)) {
       return;
     }
 
@@ -270,7 +318,7 @@ const TabBarClickEvent = {
       case 'click':
       case 'dblclick': {
         if (kPref.disableDefaultClick ||
-            this.handled) {
+            this.isObserving) {
           aEvent.preventDefault();
           aEvent.stopPropagation();
         }
@@ -280,49 +328,18 @@ const TabBarClickEvent = {
     }
   },
 
-  get idledMouseDown() {
-    return !!this.mouseDownTimer;
-  },
-
-  set idledMouseDown(aVal) {
-    if (aVal === true) {
-      this.mouseDownTimer = setTimeout(() => {
-        this.idledMouseDown = false;
-      }, kPref.clickThresholdTime);
-    }
-    else if (aVal === false) {
-      clearTimeout(this.mouseDownTimer);
-      this.mouseDownTimer = null;
-    }
-  },
-
-  get idledMouseUp() {
-    return !!this.mouseUpTimer;
-  },
-
-  set idledMouseUp(aVal) {
-    if (aVal === true) {
-      this.mouseUpTimer = setTimeout(() => {
-        this.idledMouseUp = false;
-        this.doAction();
-        this.handled = false;
-      }, kPref.clickThresholdTime);
-    }
-    else if (aVal === false) {
-      clearTimeout(this.mouseUpTimer);
-      this.mouseUpTimer = null;
-    }
-  },
-
   onMouseDown: function(aEvent) {
-    this.handled = true;
+    if (this.isObserving) {
+      // Two buttons are pressed down.
+      if (this.isMouseDownIdling) {
+        this.stopObserving();
 
-    if (this.state.target &&
-        !this.idledMouseUp) {
-      this.clearState();
+        return;
+      }
     }
 
-    this.idledMouseUp = false;
+    this.isMouseUpIdling = false;
+    this.isMouseDownIdling = true;
 
     if (this.state.target !== aEvent.target ||
         this.state.button !== aEvent.button) {
@@ -334,8 +351,6 @@ const TabBarClickEvent = {
       this.state.ctrlKey  = aEvent.ctrlKey;
       this.state.altKey   = aEvent.altKey;
     }
-
-    this.idledMouseDown = true;
 
     // Disable selecting a background tab.
     // @see chrome://browser/content/tabbrowser.xml::
@@ -352,19 +367,23 @@ const TabBarClickEvent = {
   },
 
   onMouseUp: function(aEvent) {
-    if (this.state.target !== aEvent.target ||
-        !this.idledMouseDown) {
-      this.handled = false;
+    if (!this.isObserving) {
+      return;
+    }
+
+    if (this.state.target !== aEvent.target) {
+      this.stopObserving();
 
       return;
     }
 
-    this.idledMouseDown = false;
+    this.isMouseDownIdling = false;
+    this.isMouseUpIdling = true;
+
     this.state.clicks++;
-    this.idledMouseUp = true;
   },
 
-  checkTargetArea: function(aEvent) {
+  getTargetArea: function(aEvent) {
     let {target, originalTarget} = aEvent;
 
     // Ignore a UI element to let its native action work.
