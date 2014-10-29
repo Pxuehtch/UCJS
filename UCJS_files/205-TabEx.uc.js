@@ -46,10 +46,9 @@ function log(aMsg) {
 
 /**
  * Key name for storing data.
- *
- * @note Extended attribute name of a tab.
  */
 const kDataKey = {
+  // Extended attribute name of a tab.
   openInfo: 'ucjs_TabEx_openInfo',
   openTime: 'ucjs_TabEx_openTime',
   selectTime: 'ucjs_TabEx_selectTime',
@@ -57,7 +56,11 @@ const kDataKey = {
   ancestors: 'ucjs_TabEx_ancestors',
   suspended: 'ucjs_TabEx_suspended',
   read: 'ucjs_TabEx_read',
-  restoring: 'ucjs_TabEx_restoring'
+  restoring: 'ucjs_TabEx_restoring',
+
+  // Extended property name of a browser for moving tab between windows.
+  // @see |MovingTabObserver|
+  tabData: 'ucjs_tabex_tabData',
 };
 
 /**
@@ -995,13 +998,17 @@ const Startup = {
 /**
  * Observer of moving tab between windows.
  */
-const JumpTabObserver = {
+const MovingTabObserver = {
   init: function() {
     // Observe a tab that moves to the other window.
+    // @note The event fires on both our browser and the other browser;
+    // 1.|originalTarget| = our browser, |detail| = the other browser.
+    // 2.|originalTarget| = the other browser, |detail| = our browser.
     // @see chrome://browser/content/tabbrowser.xml::_swapBrowserDocShells
     addEvent(gBrowser, 'SwapDocShells', this, false);
 
-    // Observe a tab that moves to a newly opened window.
+    // Observe a tab that becomes a new window.
+    // @note 'SwapDocShells' event fires after 'TabBecomingWindow' event.
     // @see chrome://browser/content/tabbrowser.xml::replaceTabWithWindow
     addEvent(gBrowser.tabContainer, 'TabBecomingWindow', this, false);
   },
@@ -1009,75 +1016,79 @@ const JumpTabObserver = {
   handleEvent: function(aEvent) {
     switch (aEvent.type) {
       case 'SwapDocShells': {
-        let browser = aEvent.originalTarget;
-        let originalBrowser = aEvent.detail;
+        let originalBrowser = aEvent.originalTarget;
+        let newBrowser = aEvent.detail;
 
-        let originalTabbrowser =
-          originalBrowser.ownerDocument.defaultView.gBrowser;
+        let originalTab = this.getTabFor(originalBrowser);
+        let newTab = this.getTabFor(newBrowser);
 
-        if (!originalTabbrowser) {
+        // When our window (A) with one tab is replaced into a tab of the other
+        // window (B), |newBrowser| of the event on (B) is attached to the
+        // closing (A) and the tab has been removed.
+        if (!newTab) {
           return;
         }
 
-        let tab = gBrowser._getTabForBrowser(browser);
-        let originalTab =
-          originalTabbrowser._getTabForBrowser(originalBrowser);
+        // Retrieve the tab data that is saved on 'TabBecomingWindow' event.
+        let originalData = originalBrowser[kDataKey.tabData];
 
-        if (!originalTab) {
-          return;
+        if (originalData) {
+          delete originalBrowser[kDataKey.tabData];
+        }
+        else {
+          // Ignore the event on the other browser.
+          if (TabData.get(newTab, 'openTime') <
+              TabData.get(originalTab, 'openTime')) {
+            return;
+          }
+
+          originalData = this.getTabData(originalTab);
         }
 
-        this.TabState.renew(tab, originalTab);
+        // Restore the original open info.
+        // @note Other data are created for a new tab.
+        TabData.set(newTab, 'openInfo', originalData.openInfo);
+
+        // Set a flag to load the suspended tab.
+        if (originalData.suspended) {
+          TabData.set(newTab, 'suspended', true);
+        }
 
         break;
       }
 
       case 'TabBecomingWindow': {
-        let tab = aEvent.originalTarget;
+        let originalTab = aEvent.target;
 
-        // Save the tab state since this original tab will be removed by the
-        // native process after a new browser opens.
-        this.TabState.save(tab);
+        // Evacuate the tab data in the browser. We can refer to it on
+        // 'SwapDocShells' event that fires after a new browser opens. At that
+        // point our original tab is removed but the browser still remains.
+        // @see chrome://browser/content/browser.js::_delayedStartup
+        // @see chrome://browser/content/tabbrowser.xml::swapBrowsersAndCloseOther
+        let originalBrowser = gBrowser.getBrowserForTab(originalTab);
 
-        let topic = 'browser-delayed-startup-finished';
-
-        let onBrowserOpen = (aSubject) => {
-          Services.obs.removeObserver(onBrowserOpen, topic);
-
-          this.TabState.renew(aSubject.gBrowser.selectedTab);
-        };
-
-        Services.obs.addObserver(onBrowserOpen, topic, false)
+        originalBrowser[kDataKey.tabData] = this.getTabData(originalTab);
 
         break;
       }
     }
   },
 
-  TabState: {
-    save: function(aTab) {
-      this.state = {
-        openInfo: TabData.get(aTab, 'openInfo'),
-        suspended: TabData.get(aTab, 'suspended')
-      };
-    },
+  getTabFor: function(aBrowser) {
+    let tabBrowser = aBrowser.getTabBrowser();
 
-    renew: function(aTab, aOriginalTab) {
-      if (aOriginalTab) {
-        this.save(aOriginalTab);
-      }
-
-      // Copy the original open info.
-      // @note Other states are created for a new tab.
-      TabData.set(aTab, 'openInfo', this.state.openInfo);
-
-      // Set a flag to load the suspended tab.
-      if (this.state.suspended) {
-        TabData.set(aTab, 'suspended', true);
-      }
-
-      delete this.state;
+    if (tabBrowser) {
+      return tabBrowser._getTabForBrowser(aBrowser);
     }
+
+    return null;
+  },
+
+  getTabData: function(aTab) {
+    return {
+      openInfo: TabData.get(aTab, 'openInfo'),
+      suspended: TabData.get(aTab, 'suspended')
+    };
   }
 };
 
@@ -1872,7 +1883,7 @@ function TabEx_init() {
   TabEvent.init();
   SessionStore.init();
   Startup.init();
-  JumpTabObserver.init();
+  MovingTabObserver.init();
 }
 
 TabEx_init();
