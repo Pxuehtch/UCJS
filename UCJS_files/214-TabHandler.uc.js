@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name TabHandler.uc.js
-// @description Custom handling on the tab bar.
+// @description Custom mouse handling on the tab bar.
 // @include main
 // ==/UserScript==
 
@@ -40,8 +40,10 @@ const kPref = {
    *
    * @value {integer} [millisecond]
    *
-   * @note The default click is deactivated at 'mouseup' in time, otherwise
-   * activated.
+   * @note The default click is deactivated when 'mouseup' fires in this time
+   * after 'mousedown', otherwise activated.
+   * @note Set |disableDefaultClick| to true to disable the default click
+   * completely.
    */
   clickThresholdTime: 200,
 
@@ -53,9 +55,9 @@ const kPref = {
    *   false: Disabled when the custom click is recognized, otherwise enabled.
    *
    * @note The default actions;
-   * - Middle-click on a tab: Closes a tab.
-   * - Double-click on a tabbar: Opens a new tab.
-   * - Middle-click on a tabbar: Opens a new tab.
+   * - Middle click on a tab: Closes a tab.
+   * - Double click on the tab bar: Opens a new tab.
+   * - Middle click on the tab bar: Opens a new tab.
    * @see chrome://browser/content/tabbrowser.xml::
    *   <binding id="tabbrowser-tabs">::
    *   <handler event="dblclick">
@@ -65,7 +67,146 @@ const kPref = {
 }
 
 /**
+ * Mouse click area.
+ *
+ * @note Bitmask flags.
+ */
+const kClickArea = {
+	// On a foreground(selected) tab.
+	foreTab: 1,
+	// On a background tab.
+	backTab: 2,
+	// On the empty area of the tab bar.
+	notTabs: 4
+};
+
+/**
+ * Click action setting.
+ *
+ * @key area {kClickArea}
+ *   The clicked area.
+ *   @note You can make a bitmask.
+ * @key button {integer}
+ *   The clicked mouse button.
+ *   0: Left button.
+ *   1: Middle button.
+ *   @note Right button is never detected.
+ * @key clicks {integer}
+ *   The number of clicks.
+ * @key command {function}
+ *   @param aState {hash}
+ *     @key target {XULElement}
+ *       The clicked element, <tab> or <tabs#tabbrowser-tabs>.
+ *     @key area {kClickArea}
+ *     @key button {integer}
+ *     @key clicks {integer}
+ *     @key shiftKey {boolean}
+ *     @key ctrlKey {boolean}
+ *     @key altKey {boolean}
+ */
+const kClickAction = [
+  {
+    // Double click not on a tab.
+    area: kClickArea.notTabs,
+    button: 0,
+    clicks: 2,
+    command: function(aState) {
+      let {shiftKey, ctrlKey} = aState;
+
+      // Open home pages.
+      // Shift: The current opened tabs are closed.
+      // Ctrl: Opens only the first one of the multiple homepages.
+      window.ucjsUtil.openHomePages({
+        doReplace: shiftKey,
+        onlyFirstPage: ctrlKey
+      });
+    }
+  },
+  {
+    // Triple click on the selected tab or not on a tab.
+    area: kClickArea.foreTab | kClickArea.notTabs,
+    button: 0,
+    clicks: 3,
+    command: function(aState) {
+      let {shiftKey} = aState;
+
+      // Fail safe.
+      if (!shiftKey) {
+        return;
+      }
+
+      // Close tabs except for the selected tab.
+      window.ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
+    }
+  },
+  {
+    // Middle click not on a tab.
+    area: kClickArea.notTabs,
+    button: 1,
+    clicks: 1,
+    command: function(aState) {
+      // Reopen a previously closed tab.
+      // @see chrome://browser/content/browser.js::undoCloseTab
+      window.undoCloseTab();
+    }
+  },
+  {
+    // Click on a selected tab.
+    area: kClickArea.foreTab,
+    button: 0,
+    clicks: 1,
+    command: function(aState) {
+      let {target, shiftKey, ctrlKey} = aState;
+
+      if (ctrlKey) {
+        // Select/Reopen the opener tab.
+        window.ucjsTabEx.selectOpenerTab(target, {undoClose: true});
+      }
+      else {
+        // Select the previously selected tab.
+        // Shift: Select/Reopen the *exact* previously selected tab.
+        let option = shiftKey ? {undoClose: true} : {traceBack: true};
+
+        window.ucjsTabEx.selectPrevSelectedTab(target, option);
+      }
+    }
+  },
+  {
+    // Double click on a selected tab.
+    area: kClickArea.foreTab,
+    button: 0,
+    clicks: 2,
+    command: function(aState) {
+      let {target} = aState;
+
+      // Pin/Unpin the tab.
+      if (!target.pinned) {
+        gBrowser.pinTab(target);
+      }
+      else {
+        gBrowser.unpinTab(target);
+      }
+    }
+  },
+  {
+    // Middle click on a tab.
+    area: kClickArea.foreTab | kClickArea.backTab,
+    button: 1,
+    clicks: 1,
+    command: function(aState) {
+      let {target} = aState;
+
+      // Close the tab.
+      window.ucjsUtil.removeTab(target, {safeBlock: true});
+    }
+  }
+  //,
+];
+
+/**
  * Handler of the click event on the tab bar.
+ *
+ * TODO: Use |MouseEvent.buttons| to detect extra buttons.
  */
 const TabBarClickEvent = {
   clearState: function() {
@@ -93,8 +234,9 @@ const TabBarClickEvent = {
   },
 
   handleEvent: function(aEvent) {
-    // 1.Show the default contextmenu.
-    // 2.Do not handle a UI element(button/menu) on the tab bar.
+    // Bail out for native actions;
+    // 1.A context menu.
+    // 2.A UI element (button, menu).
     if (aEvent.button === 2 ||
         !this.checkTargetArea(aEvent)) {
       return;
@@ -200,21 +342,21 @@ const TabBarClickEvent = {
   checkTargetArea: function(aEvent) {
     let {target, originalTarget} = aEvent;
 
-    // Skip UI elements on the tab bar.
-    // TODO: The probable elements, <menu*> or <toolbar*>, are examined. More
-    // other items may be needed to test.
+    // Ignore a UI element to let its native action work.
+    // TODO: The probable elements, <menu*> or <toolbar*>, are examined. We may
+    // need to test the others.
     if (/^(?:menu|toolbar)/.test(originalTarget.localName)) {
       return null;
     }
 
     // On a tab.
     if (target.localName === 'tab') {
-      return target.selected ? 'foreTab' : 'backTab';
+      return target.selected ? kClickArea.foreTab : kClickArea.backTab;
     }
 
     // On the margin where has no tabs in the tab bar.
     if (target.localName === 'tabs') {
-      return 'notTabs';
+      return kClickArea.notTabs;
     }
 
     // WORKAROUND: Unknown case.
@@ -222,83 +364,17 @@ const TabBarClickEvent = {
   },
 
   doAction: function() {
-    let {
-      target,
-      button,
-      ctrlKey, altKey, shiftKey,
-      clicks,
-      area
-    } = this.state;
+    kClickAction.some(({area, button, clicks, command}) => {
+      if (this.state.area & area &&
+          this.state.button === button &&
+          this.state.clicks === clicks) {
+        command(this.state);
 
-    // Left-Click / Left-Double-Click / Middle-Click
-    let LC  = button === 0 && clicks === 1,
-        LDC = button === 0 && clicks === 2,
-        MC  = button === 1 && clicks === 1;
-
-    // Selected tab / Background tab / Not tabs area
-    let foreTab = area === 'foreTab',
-        backTab = area === 'backTab',
-        notTabs = area === 'notTabs';
-
-    /**
-     * Action settings.
-     *
-     * TODO: Separate the definition of actions and generalize the code.
-     */
-    switch (true) {
-      case (LDC && notTabs): {
-        // Open home pages.
-        // Shift: The current opened tabs are closed.
-        // Ctrl: Only the first of the multiple homepages is opened.
-        window.ucjsUtil.
-          openHomePages({doReplace: shiftKey, onlyFirstPage: ctrlKey});
-
-        break;
+        return true;
       }
 
-      case (MC && notTabs): {
-        // Reopen the prev-closed tab.
-        // @see chrome://browser/content/browser.js::undoCloseTab
-        window.undoCloseTab();
-
-        break;
-      }
-
-      case (LC && foreTab): {
-        if (ctrlKey) {
-          // Select/Reopen the opener tab.
-          window.ucjsTabEx.selectOpenerTab(target, {undoClose: true});
-        }
-        else {
-          // Select the previous selected tab.
-          // Shift: Select/Reopen the *exact* previous selected tab.
-          let option = shiftKey ? {undoClose: true} : {traceBack: true};
-
-          window.ucjsTabEx.selectPrevSelectedTab(target, option);
-        }
-
-        break;
-      }
-
-      case (LDC && foreTab): {
-        // Pin/Unpin a tab.
-        if (!target.pinned) {
-          gBrowser.pinTab(target);
-        }
-        else {
-          gBrowser.unpinTab(target);
-        }
-
-        break;
-      }
-
-      case (MC && (foreTab || backTab)): {
-        // Close a tab.
-        window.ucjsUtil.removeTab(target, {safeBlock: true});
-
-        break;
-      }
-    }
+      return false;
+    }, this);
   }
 };
 
