@@ -64,7 +64,7 @@ const kPref = {
    *   <handler event="click">
    */
   disableDefaultClick: true
-}
+};
 
 /**
  * Mouse click area.
@@ -186,6 +186,18 @@ const kClickAction = [
       else {
         gBrowser.unpinTab(target);
       }
+    }
+  },
+  {
+    // Click on a background tab.
+    area: kClickArea.backTab,
+    button: 0,
+    clicks: 1,
+    command: function(aState) {
+      let {target} = aState;
+
+      // Select the tab.
+      gBrowser.selectedTab = target;
     }
   },
   {
@@ -324,6 +336,19 @@ const TabBarClickEvent = {
     }
 
     this.idledMouseDown = true;
+
+    // Disable selecting a background tab.
+    // @see chrome://browser/content/tabbrowser.xml::
+    //   <binding id="tabbrowser-tab">::
+    //   <handler event="mousedown">
+    // @see chrome://global/content/bindings/tabbox.xml::
+    //   <binding id="tab">::
+    //   <handler event="mousedown">
+    //
+    // TODO: Some side effect may occur especially for focusing.
+    if (this.state.area === kClickArea.backTab) {
+      aEvent.stopPropagation();
+    }
   },
 
   onMouseUp: function(aEvent) {
