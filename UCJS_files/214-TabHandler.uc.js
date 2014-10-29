@@ -85,6 +85,7 @@ const TabBarClickEvent = {
 
     let tc = gBrowser.tabContainer;
 
+    // @note Use the capture mode to catch the event before the default event.
     addEvent(tc, 'mousedown', this, true);
     addEvent(tc, 'mouseup', this, true);
     addEvent(tc, 'click', this, true);

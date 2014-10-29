@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 
-// @usage Opens a tooltip panel with 'Alt + Ctrl + MouseMove' on an element
+// @usage Opens a tooltip panel with 'Ctrl + Alt + MouseMove' on an element
 // with the attribute for description or URL or event-handler including the
 // ancestor elements.
 // @note You can move the panel with dragging the outer margin of the content.
@@ -160,8 +160,8 @@ const kDataKey = {
  * Target node handler.
  *
  * TODO: Ensure uninitializing of the handler.
- * WORKAROUND: Makes many opportunity of uninitializing; when switching the
- * current page for now.
+ * WORKAROUND: Makes many opportunity of uninitializing;
+ * Whenever the document is switched for now.
  * @see |TooltipPanel::init()|
  *
  * XXX: I don't want to store a reference to the DOM element.
@@ -254,13 +254,15 @@ const TooltipPanel = (function() {
   let mBox;
 
   function init() {
-    // Create the tooltip and observe its closing.
+    // Create the tooltip panel and observe its closing.
     addEvent(create(), 'popuphiding', handleEvent, false);
 
     // Observe the mouse moving to show the tooltip.
-    addEvent(gBrowser.mPanelContainer, 'mousemove', handleEvent, false);
+    // @note Use the capture mode to surely catch the event in the content
+    // area.
+    addEvent(gBrowser.mPanelContainer, 'mousemove', handleEvent, true);
 
-    // Hide the tooltip when the page is switched.
+    // Close the tooltip when the document is switched.
     addEvent(gBrowser, 'select', handleEvent, false);
     addEvent(gBrowser, 'pagehide', handleEvent, false);
   }
@@ -278,7 +280,7 @@ const TooltipPanel = (function() {
         break;
       }
 
-      // Clean up when the page is switched.
+      // Clean up when the document is switched.
       case 'select':
       case 'pagehide': {
         // @note |popuphiding| will be dispatched.

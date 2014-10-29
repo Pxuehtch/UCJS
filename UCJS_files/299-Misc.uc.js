@@ -375,6 +375,7 @@ function log(aMsg) {
  */
 (function() {
 
+  // @note Use the capture mode to surely catch the event in the content area.
   addEvent(gBrowser.mPanelContainer, 'keypress', (aEvent) => {
     if (aEvent.key === 'Tab' && aEvent.repeat) {
       aEvent.preventDefault();
@@ -448,6 +449,7 @@ function log(aMsg) {
  */
 (function() {
 
+  // @note Use the capture mode to surely catch the event in the content area.
   addEvent(gBrowser.mPanelContainer, 'mousedown', onMouseDown, true);
 
   function onMouseDown(aEvent) {

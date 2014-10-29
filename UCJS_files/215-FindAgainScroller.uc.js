@@ -885,13 +885,15 @@ function FoundBlink() {
       this.initialized = true;
 
       // Cancel blinking when the selection is removed by clicking.
-      gBrowser.mPanelContainer.addEventListener('mousedown', cancel, false);
+      // @note Use the capture mode to surely catch the event in the content
+      // area.
+      gBrowser.mPanelContainer.addEventListener('mousedown', cancel, true);
 
       return true;
     },
 
     uninit:  function() {
-      gBrowser.mPanelContainer.removeEventListener('mousedown', cancel, false);
+      gBrowser.mPanelContainer.removeEventListener('mousedown', cancel, true);
 
       this.selectionController = null;
       this.frameAnimator = null;

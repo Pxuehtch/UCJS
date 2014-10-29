@@ -46,12 +46,14 @@ const kUI = {
 };
 
 function IMEState_init() {
-  addEvent(window, 'click', handleEvent, false);
-  addEvent(window, 'keyup', handleEvent, false);
-  addEvent(window, 'unload', handleEvent, false);
+  // @note Use the capture mode to surely catch the event in the content area.
+  addEvent(window, 'click', handleEvent, true);
+  addEvent(window, 'keyup', handleEvent, true);
 
   addEvent(gBrowser, 'select', handleEvent, false);
   addEvent(gBrowser, 'pageshow', handleEvent, false);
+
+  addEvent(window, 'unload', handleEvent, false);
 }
 
 function handleEvent(aEvent) {

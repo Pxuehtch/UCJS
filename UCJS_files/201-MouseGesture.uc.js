@@ -396,22 +396,22 @@ function MouseGesture() {
   function registerEvents() {
     let pc = gBrowser.mPanelContainer;
 
-    addEvent(pc, 'mousedown', onMouseDown, false);
-    addEvent(pc, 'mousemove', onMouseMove, false);
-    addEvent(pc, 'mouseup', onMouseUp, false);
-    addEvent(pc, 'wheel', onMouseWheel, false);
-    addEvent(pc, 'keydown', onKeyDown, false);
-    addEvent(pc, 'keyup', onKeyUp, false);
-    addEvent(pc, 'contextmenu', onContextMenu, false);
-    addEvent(pc, 'click', onClick, false);
+    // @note Use the capture mode to surely catch the event in the content
+    // area.
+    addEvent(pc, 'mousedown', onMouseDown, true);
+    addEvent(pc, 'mousemove', onMouseMove, true);
+    addEvent(pc, 'mouseup', onMouseUp, true);
+    addEvent(pc, 'wheel', onMouseWheel, true);
+    addEvent(pc, 'keydown', onKeyDown, true);
+    addEvent(pc, 'keyup', onKeyUp, true);
+    addEvent(pc, 'contextmenu', onContextMenu, true);
+    addEvent(pc, 'click', onClick, true);
 
-    addEvent(pc, 'dragstart', onDragStart, false);
-    addEvent(pc, 'dragend', onDragEnd, false);
-    // @note Use 'dragover' (not 'dragenter') to check the coordinate.
-    addEvent(pc, 'dragover', onDragOver, false);
-    // WORKAROUND: Use capture mode to detect a drop event that is trapped by
-    // content script (e.g. gist.github.com).
-    // TODO: Check the mode of the other events.
+    addEvent(pc, 'dragstart', onDragStart, true);
+    addEvent(pc, 'dragend', onDragEnd, true);
+    // @note Use 'dragover' (not 'dragenter') to check the coordinate of a
+    // cursor.
+    addEvent(pc, 'dragover', onDragOver, true);
     addEvent(pc, 'drop', onDrop, true);
 
     // WORKAROUND: Observe a XUL popup in the content area for cancelling the

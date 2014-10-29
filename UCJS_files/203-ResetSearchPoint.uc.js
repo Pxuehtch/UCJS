@@ -52,7 +52,8 @@ const TextFinder = {
 };
 
 function ResetSearchPoint_init() {
-  addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, false);
+  // @note Use the capture mode to surely catch the event in the content area.
+  addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, true);
 }
 
 function handleEvent(aEvent) {
