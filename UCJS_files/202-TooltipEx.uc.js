@@ -157,101 +157,26 @@ const kDataKey = {
 };
 
 /**
- * Target node handler.
- *
- * TODO: Ensure uninitializing of the handler.
- * WORKAROUND: Makes many opportunity of uninitializing;
- * Whenever the document is switched for now.
- * @see |TooltipPanel::init()|
- *
- * XXX: I don't want to store a reference to the DOM element.
- */
-const TargetNode = (function() {
-  let mTargetNode;
-  let mTitleStore;
-
-  function init(aNode) {
-    mTargetNode = aNode;
-    mTitleStore = new Map();
-
-    // Disable the default tooltip.
-    storeTitles();
-  }
-
-  function uninit() {
-    // Enable the default tooltip.
-    // WORKAROUND: Don't access to objects being unloaded unexpectedly.
-    if (checkAlive(mTargetNode)) {
-      restoreTitles();
-    }
-
-    mTargetNode = null;
-    mTitleStore = null;
-  }
-
-  function equals(aNode) {
-    return aNode === mTargetNode;
-  }
-
-  function storeTitles() {
-    // @note The initial node may be a text node.
-    let node = mTargetNode;
-
-    while (node) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.title) {
-          mTitleStore.set(node, node.title);
-
-          node.title = '';
-        }
-      }
-
-      node = node.parentNode;
-    }
-  }
-
-  function restoreTitles() {
-    for (let [node, title] of mTitleStore) {
-      node.title = title;
-    }
-
-    mTitleStore.clear();
-  }
-
-  /**
-   * Checks whether a node is alive or not.
-   *
-   * @param aNode {Node}
-   * @return {boolean}
-   *
-   * TODO: This is a workaround for checking a dead object. Make a reliable
-   * method instead.
-   */
-  function checkAlive(aNode) {
-    try {
-      return !Cu.isDeadWrapper(aNode);
-    }
-    catch (ex) {}
-
-    return false;
-  }
-
-  return {
-    init,
-    uninit,
-    equals
-  };
-})();
-
-/**
  * Tooltip panel handler.
  */
 const TooltipPanel = (function() {
-  // Tooltip <panel>.
+  /**
+   * Tooltip <panel>.
+   */
   let mPanel;
 
-  // Container <box> for rows of tooltip texts.
+  /**
+   * Container <box> for rows of tooltip texts.
+   */
   let mBox;
+
+  /**
+   * Target node in the content area.
+   *
+   * TODO: Make sure to release the reference.
+   * WORKAROUND: Cleans up whenever the document is switched.
+   */
+  let mTarget;
 
   function init() {
     // Create the tooltip panel and observe its closing.
@@ -369,7 +294,7 @@ const TooltipPanel = (function() {
 
     if (mPanel.state === 'open') {
       // Leave the tooltip of the same target.
-      if (TargetNode.equals(target)) {
+      if (target === mTarget) {
         return;
       }
 
@@ -410,7 +335,7 @@ const TooltipPanel = (function() {
     }
 
     // @note Use the initial |aNode|.
-    TargetNode.init(aNode);
+    mTarget = aNode;
 
     let fragment = window.document.createDocumentFragment();
 
@@ -428,7 +353,7 @@ const TooltipPanel = (function() {
       mBox.removeChild(mBox.firstChild);
     }
 
-    TargetNode.uninit();
+    mTarget = null;
   }
 
   function collectTipData(aNode) {
