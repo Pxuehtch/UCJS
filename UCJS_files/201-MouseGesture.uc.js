@@ -393,7 +393,7 @@ function MouseGesture() {
   };
 
   let mState = kState.READY;
-  let mMouse = MouseManager();
+  let mMouse = MouseEventManager();
   let mGesture = GestureManager();
 
   registerEvents();
@@ -641,12 +641,12 @@ function MouseGesture() {
  * TODO: Prevent the context menu popup when the right mouse button is clicked
  * while dragging.
  */
-function MouseManager() {
+function MouseEventManager() {
   // Whether the right button is pressed down or not.
   let mRightDown;
 
   // Whether the left/middle(wheel) button is pressed down or not.
-  let mElseDown;
+  let mOtherDown;
 
   // Whether the context menu is disabled or not.
   let mSuppressMenu;
@@ -660,7 +660,7 @@ function MouseManager() {
 
   function clear() {
     mRightDown = false;
-    mElseDown = false;
+    mOtherDown = false;
     mSuppressMenu = false;
     mSuppressClick = false;
   }
@@ -677,33 +677,36 @@ function MouseManager() {
   function update(aEvent) {
     const {type, button} = aEvent;
 
-    let allowAction;
+    let canGestureStart, canGestureStop;
 
     switch (type) {
       case 'mousedown': {
         if (button === 2) {
-          // Allow the gesture starts.
-          allowAction = !mElseDown;
-
-          // Ready the contextmenu.
-          enableContextMenu(true);
-          mSuppressMenu = false;
-
           mRightDown = true;
 
-          if (mElseDown) {
-            mSuppressMenu = true;
+          // Disable the context menu while other button is down.
+          // @note OtherDown -> RightDown -> RightUP: Disable the context menu.
+          if (mSuppressMenu !== mOtherDown) {
+            mSuppressMenu = mOtherDown;
           }
+
+          // Allow a gesture starts.
+          canGestureStart = !mOtherDown;
         }
         else {
-          // Ready the default click event.
-          mSuppressClick = false;
+          mOtherDown = true;
 
-          mElseDown = true;
+          // Disable the context menu while the left/middle button is down.
+          // @note RightDown -> OtherDown -> RightUP: Disable the context menu.
+          if (mSuppressMenu !== mRightDown) {
+            mSuppressMenu = mRightDown;
+          }
 
-          if (mRightDown) {
-            mSuppressMenu = true;
-            mSuppressClick = true;
+          // Disable the default click action of the left/middle button while
+          // the right button is down.
+          // @note RightDown -> OtherClick: Disable the click.
+          if (mSuppressClick !== mRightDown) {
+            mSuppressClick = mRightDown;
           }
         }
 
@@ -712,13 +715,13 @@ function MouseManager() {
 
       case 'mouseup': {
         if (button === 2) {
-          // Allow the gesture stops.
-          allowAction = !mElseDown;
-
           mRightDown = false;
+
+          // Allow a gesture stops.
+          canGestureStop = !mOtherDown;
         }
         else {
-          mElseDown = false;
+          mOtherDown = false;
         }
 
         break;
@@ -726,7 +729,7 @@ function MouseManager() {
 
       case 'dragend': {
         // @note Always 'button === 0'.
-        mElseDown = false;
+        mOtherDown = false;
 
         break;
       }
@@ -735,17 +738,19 @@ function MouseManager() {
       case 'wheel': {
         // A gesture is in progress.
         if (mRightDown) {
-          mSuppressMenu = true;
+          if (!mSuppressMenu) {
+            mSuppressMenu = true;
+          }
         }
 
         break;
       }
 
       case 'contextmenu': {
-        enableContextMenu(!mSuppressMenu);
+        let menu = contentAreaContextMenu.get();
 
-        if (mSuppressMenu) {
-          mSuppressMenu = false;
+        if (menu.hidden !== mSuppressMenu) {
+          menu.hidden = mSuppressMenu;
         }
 
         break;
@@ -773,11 +778,7 @@ function MouseManager() {
       }
     }
 
-    return allowAction;
-  }
-
-  function enableContextMenu(aEnable) {
-    contentAreaContextMenu.get().hidden = !aEnable;
+    return canGestureStart || canGestureStop;
   }
 
   return {
