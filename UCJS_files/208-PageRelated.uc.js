@@ -366,7 +366,7 @@ function handleAttribute(aNode, aName, aValue) {
  *
  * For one URL;
  * command: Open a tab.
- * ctrl / middle-click: Open a tab in background.
+ * <Ctrl> / <MiddleClick>: Open a tab in background.
  *
  * For all URLs;
  * command: Open tabs in background.

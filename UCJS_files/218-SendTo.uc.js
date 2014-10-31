@@ -412,7 +412,7 @@ function handleAttribute(aNode, aName, aValue) {
  * Set attributes of a menuitem for its command actions.
  *
  * command: Open a tab.
- * ctrl / middle-click: Open a tab in background.
+ * <Ctrl> / <MiddleClick>: Open a tab in background.
  *
  * @require Util.uc.js
  */

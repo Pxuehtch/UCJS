@@ -320,9 +320,9 @@ const HistoryList = (function() {
      * Command action for tab history.
      *
      * command: Load in current tab.
-     * ctrl / middle-click: Open a new tab.
-     * ctrl+shift / shift+middle-click: Open a new tab in background.
-     * shift: Open a new window.
+     * <Ctrl> / <MiddleClick>: Open a new tab.
+     * <Ctrl+Shift> / <Shift+MiddleClick>: Open a new tab in background.
+     * <Shift>: Open a new window.
      *
      * @see chrome://browser/content/browser.js::gotoHistoryIndex
      * @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
@@ -339,9 +339,9 @@ const HistoryList = (function() {
      * Command action for recent history.
      *
      * command: Load in current tab.
-     * ctrl / middle-click: Open a new tab.
-     * ctrl+shift / shift+middle-click: Open a new tab in background.
-     * shift: Open a new window.
+     * <Ctrl> / <MiddleClick>: Open a new tab.
+     * <Ctrl+Shift> / <Shift+MiddleClick>: Open a new tab in background.
+     * <Shift>: Open a new window.
      *
      * @see resource://app/modules/PlacesUIUtils.jsm::markPageAsTyped
      * @see chrome://browser/content/utilityOverlay.js::openUILink

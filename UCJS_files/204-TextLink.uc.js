@@ -9,8 +9,8 @@
 /**
  * @usage A new tab will open in the detected URL when 'double-click' on a
  * URL-like text.
- * @note A text will be only selected (by the Fx default behavior) if
- * 'Shift' or 'Ctrl' keys are being pressed.
+ * @note A text will be only selected (by the Fx default behavior) if <Shift>
+ * or <Ctrl> keys are being pressed.
  */
 
 
@@ -99,7 +99,7 @@ const URLUtil = (function() {
   })();
 
   /**
-   * Tests if a selection text has only ASCII characters.
+   * Tests if a selected text has only ASCII characters.
    *
    * @param aSelection {nsISelection}
    * @return {boolean}

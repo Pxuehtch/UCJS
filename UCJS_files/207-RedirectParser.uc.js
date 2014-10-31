@@ -607,7 +607,7 @@ function handleAttribute(aNode, aName, aValue) {
  *
  * For 'open' action;
  * command: Open a tab.
- * ctrl / middle-click: Open a tab in background.
+ * <Ctrl> / <MiddleClick>: Open a tab in background.
  *
  * For 'copy' action;
  * command: Copy the URL string to clipboard.

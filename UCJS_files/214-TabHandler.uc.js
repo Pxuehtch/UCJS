@@ -72,12 +72,12 @@ const kPref = {
  * @note Bitmask flags.
  */
 const kClickArea = {
-	// On a foreground(selected) tab.
-	foreTab: 1,
-	// On a background tab.
-	backTab: 2,
-	// On the empty area of the tab bar.
-	notTabs: 4
+  // On a foreground(selected) tab.
+  foreTab: 1,
+  // On a background tab.
+  backTab: 2,
+  // On the empty area of the tab bar.
+  notTabs: 4
 };
 
 /**
@@ -114,8 +114,8 @@ const kClickAction = [
       let {shiftKey, ctrlKey} = aState;
 
       // Open home pages.
-      // Shift: The current opened tabs are closed.
-      // Ctrl: Opens only the first one of the multiple homepages.
+      // <Shift>: The current opened tabs are closed.
+      // <Ctrl>: Opens only the first one of the multiple homepages.
       window.ucjsUtil.openHomePages({
         doReplace: shiftKey,
         onlyFirstPage: ctrlKey
@@ -164,7 +164,7 @@ const kClickAction = [
       }
       else {
         // Select the previously selected tab.
-        // Shift: Select/Reopen the *exact* previously selected tab.
+        // <Shift>: Select/Reopen the *exact* previously selected tab.
         let option = shiftKey ? {undoClose: true} : {traceBack: true};
 
         window.ucjsTabEx.selectPrevSelectedTab(target, option);

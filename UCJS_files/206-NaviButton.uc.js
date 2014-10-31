@@ -11,16 +11,16 @@
 
 /**
  * @usage
- * Click: Go back or forward a step if the history exists.
- * Shift+Click: Go to the border of the same domain of the current page.
- * Ctrl+Click: Go to the first or end stop of history.
+ * <Click>: Go back or forward a step if the history exists.
+ * <Shift+Click>: Go to the border of the same domain of the current page.
+ * <Ctrl+Click>: Go to the first or end stop of history.
  * @note A new tab will open in *foreground* by middle-button-click.
  *
  * [Special usage for the back-button with a referrer.]
- * Shift+Ctrl+Click: Select a tab with the referrer URL if already opens, Open
- * a tab in *foreground* otherwise.
+ * <Shift+Ctrl+Click>: Select a tab with the referrer URL if already opens,
+ * Open a tab in *foreground* otherwise.
  * @note The referrer's tab will open in *background* by middle-button-click.
- * @note Does the same action by 'Click' for the back-button without backward
+ * @note Does the same action by <Click> for the back-button without backward
  * history.
  *
  * @see |History.jump()|

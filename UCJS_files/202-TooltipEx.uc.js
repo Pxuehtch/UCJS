@@ -6,10 +6,10 @@
 
 // @require Util.uc.js
 
-// @usage Opens a tooltip panel with 'Ctrl + Alt + MouseMove' on an element
+// @usage Opens a tooltip panel with <Ctrl+Alt+MouseMove> on an element
 // with the attribute for description or URL or event-handler including the
 // ancestor elements.
-// @note You can move the panel with dragging the outer margin of the content.
+// @note You can move the panel with dragging the margin of the content.
 // @note You can select and copy texts. And also can copy the whole data by the
 // 'Copy All' menu item of the context menu.
 
@@ -269,7 +269,7 @@ const TooltipPanel = (function() {
 
   function handleEvent(aEvent) {
     switch (aEvent.type) {
-      // Show the tooltip on a target node in the content area.
+      // Show the tooltip of a target node in the content area.
       case 'mousemove': {
         if (aEvent.altKey && aEvent.ctrlKey) {
           if (isHtmlDocument(aEvent.target.ownerDocument)) {
@@ -280,7 +280,7 @@ const TooltipPanel = (function() {
         break;
       }
 
-      // Clean up when the document is switched.
+      // Close the tooltip when the document is switched.
       case 'select':
       case 'pagehide': {
         // @note |popuphiding| will be dispatched.

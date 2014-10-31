@@ -369,7 +369,7 @@ function log(aMsg) {
 })();
 
 /**
- * Suppress a rapid moving of focuses with holding the TAB key down.
+ * Suppress a rapid moving of focuses with holding the <Tab> key down.
  *
  * @note Applied only in the content area.
  */
@@ -386,14 +386,14 @@ function log(aMsg) {
 })();
 
 /**
- * TAB-key focusing handler.
+ * Handler of focusing by the <Tab> key.
  *
  * @require UI.uc.js
  */
 (function() {
 
   /**
-   * Toggles TAB-key focusing behavior.
+   * Toggles focusing behavior by the <Tab> key.
    */
   // @pref
   // 1: Give focus to text fields only.

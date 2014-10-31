@@ -60,7 +60,7 @@ const kDataKey = {
 
   // Extended property name of a browser for moving tab between windows.
   // @see |MovingTabObserver|
-  tabData: 'ucjs_tabex_tabData',
+  tabData: 'ucjs_TabEx_tabData',
 };
 
 /**

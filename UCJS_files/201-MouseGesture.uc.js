@@ -10,18 +10,19 @@
 
 /**
  * @usage
- * - Normal mode: Gestures or wheel rotations holding down the right mouse
- *   button.
- * - Drag&Drop mode: Gestures dragging a selected text or a link or an image
+ * - Normal mode: Mouse gesture or wheel rotation by holding down the right
+ *   mouse button.
+ * - Drag&Drop mode: Mouse gesture by dragging a selected text or a link or an
+ *   image.
  *
- * - 'Shift' and 'Ctrl' keys are supported.
- *   @note Keys are detected after gestures start.
+ * - <Shift> and <Ctrl> modifier keys are supported in both modes.
+ *   @note The keys are detected after a gesture starts.
  *
- * - You can reset all status of gestures by 'Alt + RightClick' if a problem
+ * - You can reset the state of a gesture by <Alt+RightClick> if a problem
  *   occurs.
  *
- * @note
- * - The gestures is only available within the inner frame of the content area,
+ * @note 
+ * - A gesture is only available within the inner frame of the content area,
  *   and the default width of the frame is 16px.
  *   @see |inGestureArea()|
  * - The max number of signs(directions and wheel rotations) per gesture is 10.
@@ -73,12 +74,12 @@ const kGestureSign = {
   wheelUp: 'W+', wheelDown: 'W-',
   // Target types for the D&D mode.
   text: 'TEXT#', link: 'LINK#', image: 'IMAGE#',
-  // Do action immediately without mouseup when gesture matches.
+  // Do command immediately without mouseup when gesture matches.
   quickShot: '!'
 };
 
 /**
- * Gestures setting.
+ * Gesture setting.
  *
  * @key gestures {string[]}
  *   The combination of values of |kGestureSign|.
@@ -95,7 +96,7 @@ const kGestureSign = {
  */
 const kGestureSet = [
   /**
-   * Navigations
+   * For the page navigation.
    */
   {
     gestures: ['L'],
@@ -164,7 +165,7 @@ const kGestureSet = [
   },
 
   /**
-   * Tabs
+   * For tabs.
    */
   {
     gestures: ['DL'],
@@ -239,7 +240,7 @@ const kGestureSet = [
   },
 
   /**
-   * UI
+   * For the chrome UI.
    */
   {
     gestures: ['RD'],
@@ -273,7 +274,7 @@ const kGestureSet = [
   },
 
   /**
-   * For D&D mode.
+   * For the D&D mode.
    */
   {
     gestures: ['TEXT#L'],
@@ -381,11 +382,15 @@ const kGestureSet = [
 /**
  * Mouse gesture main handler.
  *
- * TODO: Cancel the gesture when enters into a window (always on top) that is
+ * TODO: Cancel the gesture when enters into an always-on-top window that is
  * overwrapped on the gesture area.
  */
 function MouseGesture() {
-  const kState = {READY: 0, GESTURE: 1, DRAG: 2};
+  const kState = {
+    READY: 0,
+    GESTURE: 1,
+    DRAG: 2
+  };
 
   let mState = kState.READY;
   let mMouse = MouseManager();
@@ -415,12 +420,12 @@ function MouseGesture() {
     addEvent(pc, 'drop', onDrop, true);
 
     // WORKAROUND: Observe a XUL popup in the content area for cancelling the
-    // gestures on it.
+    // gestures when the right button is released on it.
     addEvent(window, 'mouseup', onGlobalMouseUp, false);
   }
 
   /**
-   * Event handlers.
+   * Event listeners.
    */
   function onMouseDown(aEvent) {
     let canStart = mMouse.update(aEvent);
@@ -465,7 +470,7 @@ function MouseGesture() {
     }
   }
 
-  // WORKAROUND: Cancel the gestures on a XUL popup.
+  // WORKAROUND: Cancel the gesture on a XUL popup.
   function onGlobalMouseUp(aEvent) {
     if (mState === kState.GESTURE &&
         isPopupNode(aEvent.target)) {
@@ -529,7 +534,7 @@ function MouseGesture() {
     mMouse.update(aEvent);
 
     // The drag operation is terminated;
-    // 1.Cancelled by pressing the ESC key.
+    // 1.Cancelled by pressing the <Esc> key.
     // 2.Dropped in a disallowed area.
     if (mState === kState.DRAG) {
       cancelGesture();
@@ -541,8 +546,8 @@ function MouseGesture() {
       return;
     }
 
-    // Cancel the gesture drag and the default drag works.
-    // @note The default drag is also cancelled by pressing the ESC key.
+    // Cancel our gesture drag but the default drag works.
+    // @note Both drag operations are cancelled by pressing the <Esc> key.
     let forceCancel = aEvent.shiftKey && aEvent.altKey;
 
     if (forceCancel) {
@@ -588,6 +593,7 @@ function MouseGesture() {
    */
   function startGesture(aEvent) {
     mState = kState.GESTURE;
+
     start(aEvent);
   }
 
@@ -607,6 +613,7 @@ function MouseGesture() {
 
   function stopGesture(aEvent) {
     mGesture.evaluate(aEvent);
+
     clear();
   }
 
@@ -616,25 +623,39 @@ function MouseGesture() {
 
   function clear() {
     mState = kState.READY;
+
     mGesture.clear();
   }
 }
 
 /**
- * Mouse events manager.
- * Manages the state of mouse buttons and on/off of the contextmenu popup and
- * the click event.
+ * Mouse event manager.
+ *
+ * 1.Determines whether a gesture can start or stop.
+ * 2.Manages enabling and disabling the context menu and the default click
+ * action of the left/middle button.
  *
  * @return {hash}
  *   @key update {function}
  *
- * TODO: Prevent contextmenu popups when a right mouse button is clicked while
- * dragging.
+ * TODO: Prevent the context menu popup when the right mouse button is clicked
+ * while dragging.
  */
 function MouseManager() {
-  let mRightDown, mElseDown;
-  let mSuppressMenu, mSuppressClick;
+  // Whether the right button is pressed down or not.
+  let mRightDown;
 
+  // Whether the left/middle(wheel) button is pressed down or not.
+  let mElseDown;
+
+  // Whether the context menu is disabled or not.
+  let mSuppressMenu;
+
+  // Whether the default click action of the left/middle(wheel) button is
+  // suppressed or not.
+  let mSuppressClick;
+
+  // Initialize the state.
   clear();
 
   function clear() {
@@ -649,9 +670,9 @@ function MouseManager() {
    *
    * @param aEvent {MouseEvent}
    * @return {boolean|undefined}
-   *   'mousedown' {boolean} Ready or not that a normal mode gesture can start.
-   *   'mouseup' {boolean} Ready or not that a normal mode gesture can stop.
-   *   otherwise {undefined} Unused usually.
+   *   'mousedown' {boolean} Whether a normal mode gesture can start or not.
+   *   'mouseup' {boolean} Whether a normal mode gesture can stop or not.
+   *   @note Returns |undefined| for other events since no use for them.
    */
   function update(aEvent) {
     const {type, button} = aEvent;
@@ -731,14 +752,15 @@ function MouseManager() {
       }
 
       case 'click': {
+        // @see chrome://browser/content/browser.js::contentAreaClick()
+        // @note The right button has no default click action.
         if (button === 2) {
-          // Force to reset all states.
+          // Force to reset the state of a gesture.
           if (aEvent.altKey) {
             clear();
           }
         }
         else {
-          // @see chrome://browser/content/browser.js::contentAreaClick()
           if (mSuppressClick) {
             mSuppressClick = false;
 
@@ -765,7 +787,8 @@ function MouseManager() {
 
 /**
  * Gesture manager.
- * Builds the mouse gestures and performs its command.
+ *
+ * Builds the mouse gesture and performs its command.
  *
  * @return {hash}
  *   @key clear {function}
@@ -791,12 +814,15 @@ function GestureManager() {
   let mMatchItem, mQuickShot;
   let mError;
 
+  // Initialize the state.
   clear();
 
   function clear() {
     clearStatusText();
     clearGesture();
+
     mTracer.clear();
+
     setOverLink(true);
   }
 
@@ -812,6 +838,7 @@ function GestureManager() {
 
   function init(aEvent) {
     setOverLink(false);
+
     mTracer.init(aEvent);
 
     if (aEvent.type === 'dragstart') {
@@ -836,17 +863,17 @@ function GestureManager() {
    *   type: {string}
    *     'text' or 'link' or 'image' of |kGestureSign|.
    *   data: {string}
-   *      Selection text or Link href URL or Image src URL.
+   *     A selected text or a link <href> URL or an image <src> URL.
    *
    * @note Retrieves only one from a composite data;
-   * - A selection text in a link string.
+   * - A selected text in a link string.
    * - A link href URL of a linked image.
    */
   function getDragInfo(aEvent) {
     let node = aEvent.target;
     let type = '', data = '';
 
-    // 1.A selection text.
+    // 1.A selected text.
     if (!type) {
       let text = getSelectionAtCursor({event: aEvent});
 
@@ -1084,7 +1111,7 @@ function GestureManager() {
    * @note This is a workaround for a command error in |doAction|.
    * Show the error status even after the gesture state is cleared. Since the
    * status display is also cleared just after |doAction| is called at the end
-   * of gestures.
+   * of a gesture.
    * @see |MouseGesture.stopGesture()|
    */
   function delayedShowStatusText() {
@@ -1133,7 +1160,8 @@ function GestureManager() {
 
 /**
  * Gesture position tracer.
- * Traces the coordinates of a mouse pointer.
+ *
+ * Traces the coordinates of a mouse cursor.
  *
  * @return {hash}
  *   @key clear {function}
@@ -1148,6 +1176,7 @@ function GestureTracer() {
 
   let mLastX, mLastY;
 
+  // Initialize the state.
   clear();
 
   function clear() {

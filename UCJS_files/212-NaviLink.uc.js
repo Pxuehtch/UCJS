@@ -319,8 +319,8 @@ const MenuUI = (function() {
 
     /**
      * command: Load in current tab.
-     * ctrl / middle-click: Open a new tab.
-     * ctrl+shift / shift+middle-click: Open a new tab in background.
+     * <Ctrl> / <MiddleClick>: Open a new tab.
+     * <Ctrl+Shift> / <Shift+MiddleClick>: Open a new tab in background.
      */
     let {ctrlKey, shiftKey, button} = aEvent;
     let [inTab, inBackground] = [ctrlKey || button === 1,  shiftKey];
