@@ -179,8 +179,8 @@ const TooltipPanel = (function() {
   let mTarget;
 
   function init() {
-    // Create the tooltip panel and observe its closing.
-    addEvent(create(), 'popuphiding', handleEvent, false);
+    // Create the tooltip panel.
+    createPanel();
 
     // Observe the mouse moving to show the tooltip.
     // @note Use the capture mode to surely catch the event in the content
@@ -208,17 +208,7 @@ const TooltipPanel = (function() {
       // Close the tooltip when the document is switched.
       case 'select':
       case 'pagehide': {
-        // @note |popuphiding| will be dispatched.
         hide();
-
-        break;
-      }
-
-      // Clean up when the tooltip closes.
-      case 'popuphiding': {
-        if (aEvent.target === mPanel) {
-          clear();
-        }
 
         break;
       }
@@ -238,7 +228,7 @@ const TooltipPanel = (function() {
     }
   }
 
-  function create() {
+  function createPanel() {
     let panelStyle =
       '-moz-appearance:tooltip;' +
       // @note The inner container |mBox| has 'max-width'.
@@ -281,8 +271,6 @@ const TooltipPanel = (function() {
     }));
 
     mPanel = $ID('mainPopupSet').appendChild(panel);
-
-    return panel;
   }
 
   function show(aEvent) {
@@ -292,35 +280,51 @@ const TooltipPanel = (function() {
       return;
     }
 
-    if (mPanel.state === 'open') {
-      // Leave the tooltip of the same target.
-      if (target === mTarget) {
+    if (target === mTarget) {
+      // Bail out if this known target has no information.
+      if (!mBox.firstChild) {
         return;
       }
 
-      // Close the existing tooltip of the different target.
-      hide();
+      // Leave the showing tooltip of the known target.
+      // @note Reopen the tooltip of the known target if it closed.
+      if (mPanel.state === 'open') {
+        return;
+      }
+    }
+    else {
+      // Close the tooltip of the old target.
+      if (mPanel.state === 'open') {
+        hide();
+      }
+
+      mTarget = target;
+
+      // Build the new tooltip.
+      if (!build()) {
+        return;
+      }
     }
 
-    if (build(target)) {
-      mPanel.openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
-    }
+    mPanel.openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
   }
 
   function hide() {
-    if (mPanel.state !== 'open') {
-      return;
-    }
-
-    // @note |popuphiding| will be dispatched.
     mPanel.hidePopup();
+
+    mTarget = null;
   }
 
-  function build(aNode) {
+  function build() {
+    // Clear existing items.
+    while (mBox.firstChild) {
+      mBox.removeChild(mBox.firstChild);
+    }
+
     let tips = [];
 
     // @note The initial node may be a text node.
-    let node = aNode;
+    let node = mTarget;
 
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
@@ -334,9 +338,6 @@ const TooltipPanel = (function() {
       return false;
     }
 
-    // @note Use the initial |aNode|.
-    mTarget = aNode;
-
     let fragment = window.document.createDocumentFragment();
 
     tips.forEach((tip) => {
@@ -346,14 +347,6 @@ const TooltipPanel = (function() {
     mBox.appendChild(fragment);
 
     return true;
-  }
-
-  function clear() {
-    while (mBox.firstChild) {
-      mBox.removeChild(mBox.firstChild);
-    }
-
-    mTarget = null;
   }
 
   function collectTipData(aNode) {
