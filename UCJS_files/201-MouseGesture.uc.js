@@ -393,42 +393,90 @@ function MouseGesture() {
   };
 
   let mState = kState.READY;
-  let mMouse = MouseEventManager();
+  let mMouseEvent = MouseEventManager();
   let mGesture = GestureManager();
 
-  registerEvents();
+  /**
+   * Register the events to observe that a gesture starts, and it stops.
+   *
+   * @note Use the capture mode to surely catch the event in the content
+   * area.
+   *
+   * @note The events that are necessary only in progress of a gesture are
+   * registered after a gesture starts. And they are unregistered after the
+   * gesture stops.
+   */
+  registerTriggerEvents();
 
-  function registerEvents() {
+  function registerTriggerEvents() {
     let pc = gBrowser.mPanelContainer;
 
-    // @note Use the capture mode to surely catch the event in the content
-    // area.
     addEvent(pc, 'mousedown', onMouseDown, true);
-    addEvent(pc, 'mousemove', onMouseMove, true);
     addEvent(pc, 'mouseup', onMouseUp, true);
-    addEvent(pc, 'wheel', onMouseWheel, true);
-    addEvent(pc, 'keydown', onKeyDown, true);
-    addEvent(pc, 'keyup', onKeyUp, true);
-    addEvent(pc, 'contextmenu', onContextMenu, true);
-    addEvent(pc, 'click', onClick, true);
 
     addEvent(pc, 'dragstart', onDragStart, true);
     addEvent(pc, 'dragend', onDragEnd, true);
-    // @note Use 'dragover' (not 'dragenter') to check the coordinate of a
-    // cursor.
-    addEvent(pc, 'dragover', onDragOver, true);
-    addEvent(pc, 'drop', onDrop, true);
 
-    // WORKAROUND: Observe a XUL popup in the content area for cancelling the
-    // gestures when the right button is released on it.
-    addEvent(window, 'mouseup', onGlobalMouseUp, false);
+    // WORKAROUND: 'contextmenu' event fires after a gesture stops so we can't
+    // add it only in gesturing.
+    addEvent(pc, 'contextmenu', onContextMenu, true);
+
+    // WORKAROUND: We assign it <Alt+RightClick> to reset the state of a
+    // gesture ANYTIME for a problem.
+    addEvent(pc, 'click', onClick, true);
+
+    // WORKAROUND: Make sure to clean up events.
+    addEvent(window, 'unload', removeEvents, false);
+  }
+
+  function addEvents() {
+    let pc = gBrowser.mPanelContainer;
+
+    if (mState === kState.GESTURE) {
+      pc.addEventListener('mousemove', onMouseMove, true);
+      pc.addEventListener('wheel', onMouseWheel, true);
+
+      pc.addEventListener('keydown', onKeyDown, true);
+      pc.addEventListener('keyup', onKeyUp, true);
+
+      // WORKAROUND: Observe a XUL popup in the content area for cancelling the
+      // gesture when the right button is released on it.
+      window.addEventListener('mouseup', onGlobalMouseUp, false);
+    }
+    else if (mState === kState.DRAG) {
+      // @note Use 'dragover' (not 'dragenter') to check the coordinate of a
+      // cursor.
+      pc.addEventListener('dragover', onDragOver, true);
+      pc.addEventListener('drop', onDrop, true);
+
+      pc.addEventListener('keydown', onKeyDown, true);
+      pc.addEventListener('keyup', onKeyUp, true);
+    }
+  }
+
+  function removeEvents() {
+    let pc = gBrowser.mPanelContainer;
+
+    if (mState === kState.GESTURE) {
+      pc.removeEventListener('mousemove', onMouseMove, true);
+      pc.removeEventListener('wheel', onMouseWheel, true);
+      pc.removeEventListener('keydown', onKeyDown, true);
+      pc.removeEventListener('keyup', onKeyUp, true);
+      window.removeEventListener('mouseup', onGlobalMouseUp, false);
+    }
+    else if (mState === kState.DRAG) {
+      pc.removeEventListener('dragover', onDragOver, true);
+      pc.removeEventListener('drop', onDrop, true);
+      pc.removeEventListener('keydown', onKeyDown, true);
+      pc.removeEventListener('keyup', onKeyUp, true);
+    }
   }
 
   /**
    * Event listeners.
    */
   function onMouseDown(aEvent) {
-    let canStart = mMouse.update(aEvent);
+    let canStart = mMouseEvent.update(aEvent);
 
     if (canStart) {
       if (mState === kState.READY) {
@@ -448,9 +496,9 @@ function MouseGesture() {
   }
 
   function onMouseMove(aEvent) {
-    mMouse.update(aEvent);
-
     if (mState === kState.GESTURE) {
+      mMouseEvent.update(aEvent);
+
       if (inGestureArea(aEvent)) {
         progress(aEvent);
       }
@@ -461,7 +509,7 @@ function MouseGesture() {
   }
 
   function onMouseUp(aEvent) {
-    let canStop = mMouse.update(aEvent);
+    let canStop = mMouseEvent.update(aEvent);
 
     if (canStop) {
       if (mState === kState.GESTURE) {
@@ -494,9 +542,9 @@ function MouseGesture() {
   }
 
   function onMouseWheel(aEvent) {
-    mMouse.update(aEvent);
-
     if (mState === kState.GESTURE) {
+      mMouseEvent.update(aEvent);
+
       suppressDefault(aEvent);
       progress(aEvent);
     }
@@ -515,11 +563,11 @@ function MouseGesture() {
   }
 
   function onContextMenu(aEvent) {
-    mMouse.update(aEvent);
+    mMouseEvent.update(aEvent);
   }
 
   function onClick(aEvent) {
-    mMouse.update(aEvent);
+    mMouseEvent.update(aEvent);
   }
 
   function onDragStart(aEvent) {
@@ -531,7 +579,7 @@ function MouseGesture() {
   }
 
   function onDragEnd(aEvent) {
-    mMouse.update(aEvent);
+    mMouseEvent.update(aEvent);
 
     // The drag operation is terminated;
     // 1.Cancelled by pressing the <Esc> key.
@@ -592,14 +640,18 @@ function MouseGesture() {
    * Helper functions.
    */
   function startGesture(aEvent) {
-    mState = kState.GESTURE;
+    if (start(aEvent)) {
+      mState = kState.GESTURE;
 
-    start(aEvent);
+      addEvents();
+    }
   }
 
   function startDrag(aEvent) {
     if (start(aEvent)) {
       mState = kState.DRAG;
+
+      addEvents();
     }
   }
 
@@ -622,6 +674,8 @@ function MouseGesture() {
   }
 
   function clear() {
+    removeEvents();
+
     mState = kState.READY;
 
     mGesture.clear();
@@ -734,13 +788,13 @@ function MouseEventManager() {
         break;
       }
 
+      // @note 'mousemove' and 'wheel' events work only when a gesture is in
+      // progress.
+      // @see |MouseGesture::addEvents|
       case 'mousemove':
       case 'wheel': {
-        // A gesture is in progress.
-        if (mRightDown) {
-          if (!mSuppressMenu) {
-            mSuppressMenu = true;
-          }
+        if (!mSuppressMenu) {
+          mSuppressMenu = true;
         }
 
         break;
