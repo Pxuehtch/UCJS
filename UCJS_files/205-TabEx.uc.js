@@ -1849,26 +1849,36 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 }
 
 /**
- * Patches for the Fx default settings.
+ * Modifies the native preference values to match with our functions.
  */
-function modifySystemSetting() {
-  const prefs = [
+function modifyPreference() {
+  const kPrefSet = [
     // @pref Disable the custom positioning and focusing of tab.
-    {key: 'browser.tabs.insertRelatedAfterCurrent', value: false},
-    {key: 'browser.tabs.selectOwnerOnClose', value: false},
+    {
+      key: 'browser.tabs.insertRelatedAfterCurrent',
+      value: false
+    },
+    {
+      key: 'browser.tabs.selectOwnerOnClose',
+      value: false
+    },
 
-    // @pref Disable loading of the background tabs in restoring startup.
-    {key: 'browser.sessionstore.restore_on_demand', value: true},
-    {key: 'browser.sessionstore.restore_pinned_tabs_on_demand', value: true}
+    // @pref Stop loading of background tabs in restoring startup.
+    {
+      key: 'browser.sessionstore.restore_on_demand',
+      value: true
+    },
+    {
+      key: 'browser.sessionstore.restore_pinned_tabs_on_demand',
+      value: true
+    }
   ];
 
   const {get, set} = Prefs;
 
-  prefs.forEach((pref) => {
-    let value = get(pref.key);
-
-    if (value !== pref.value) {
-      set(pref.key, pref.value);
+  kPrefSet.forEach(({key, value}) => {
+    if (get(key) !== value) {
+      set(key, value);
     }
   });
 }
@@ -1877,7 +1887,7 @@ function modifySystemSetting() {
  * Entry point.
  */
 function TabEx_init() {
-  modifySystemSetting();
+  modifyPreference();
 
   TabOpener.init();
   TabEvent.init();
