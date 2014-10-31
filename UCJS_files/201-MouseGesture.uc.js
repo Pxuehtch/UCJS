@@ -102,7 +102,7 @@ const kGestureSet = [
     gestures: ['L'],
     name: '戻る',
     command: function() {
-      doCmd('Browser:Back');
+      doCommand('Browser:Back');
     }
   },
   {
@@ -116,7 +116,7 @@ const kGestureSet = [
     gestures: ['R'],
     name: '進む',
     command: function() {
-      doCmd('Browser:Forward');
+      doCommand('Browser:Forward');
     }
   },
   {
@@ -138,21 +138,21 @@ const kGestureSet = [
     gestures: ['U'],
     name: 'ページ先頭へ',
     command: function() {
-      doCmd('cmd_scrollTop');
+      doCommand('cmd_scrollTop');
     }
   },
   {
     gestures: ['D'],
     name: 'ページ末尾へ',
     command: function() {
-      doCmd('cmd_scrollBottom');
+      doCommand('cmd_scrollBottom');
     }
   },
   {
     gestures: ['UD'],
     name: '更新/中止',
     command: function() {
-      doCmd(window.XULBrowserWindow.isBusy ?
+      doCommand(window.XULBrowserWindow.isBusy ?
         'Browser:Stop' : 'Browser:Reload');
     }
   },
@@ -160,7 +160,7 @@ const kGestureSet = [
     gestures: ['UDU'],
     name: 'キャッシュも更新',
     command: function() {
-      doCmd('Browser:ReloadSkipCache');
+      doCommand('Browser:ReloadSkipCache');
     }
   },
 
@@ -179,7 +179,7 @@ const kGestureSet = [
     gestures: ['LU'],
     name: '閉じたタブを復元',
     command: function() {
-      doCmd('History:UndoCloseTab');
+      doCommand('History:UndoCloseTab');
     }
   },
   {
@@ -262,14 +262,14 @@ const kGestureSet = [
     gestures: ['!W+'],
     name: '前のタブへ',
     command: function() {
-      doCmd('Browser:PrevTab');
+      doCommand('Browser:PrevTab');
     }
   },
   {
     gestures: ['!W-'],
     name: '次のタブへ',
     command: function() {
-      doCmd('Browser:NextTab');
+      doCommand('Browser:NextTab');
     }
   },
 
@@ -1300,7 +1300,7 @@ function getImageURL(aNode) {
   return null;
 }
 
-function doCmd(aCommand) {
+function doCommand(aCommand) {
   let command = $ID(aCommand);
 
   if (command) {
