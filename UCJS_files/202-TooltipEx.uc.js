@@ -182,25 +182,43 @@ const TooltipPanel = (function() {
     // Create the tooltip panel.
     createPanel();
 
-    // Observe the mouse moving to show the tooltip.
-    // @note Use the capture mode to surely catch the event in the content
-    // area.
-    addEvent(gBrowser.mPanelContainer, 'mousemove', handleEvent, true);
-
     // Close the tooltip when the document is switched.
     addEvent(gBrowser, 'select', handleEvent, false);
     addEvent(gBrowser, 'pagehide', handleEvent, false);
+
+    // Observe mouse moving to show the tooltip only while trigger keys are
+    // down in a HTML document.
+    let isObserving = false;
+    let pc = gBrowser.mPanelContainer;
+
+    // @note Use the capture mode to surely catch the event in the content
+    // area.
+    addEvent(pc, 'keydown', (aEvent) => {
+      let triggerKey = aEvent.ctrlKey && aEvent.altKey;
+
+      if (!isObserving &&
+          triggerKey &&
+          isHTMLDocument(gBrowser.contentDocument)) {
+        isObserving = true;
+
+        pc.addEventListener('mousemove', handleEvent, true);
+
+        // @note Stop observing when any key is up.
+        pc.addEventListener('keyup', function onKeyUp() {
+          isObserving = false;
+
+          pc.removeEventListener('keyup', onKeyUp, true);
+          pc.removeEventListener('mousemove', handleEvent, true);
+        }, true);
+      }
+    }, true);
   }
 
   function handleEvent(aEvent) {
     switch (aEvent.type) {
       // Show the tooltip of a target node in the content area.
       case 'mousemove': {
-        if (aEvent.altKey && aEvent.ctrlKey) {
-          if (isHtmlDocument(aEvent.target.ownerDocument)) {
-            show(aEvent);
-          }
-        }
+        show(aEvent);
 
         break;
       }
@@ -538,7 +556,7 @@ const TooltipPanel = (function() {
   };
 })();
 
-function isHtmlDocument(aDocument) {
+function isHTMLDocument(aDocument) {
   let mime = aDocument.contentType;
 
   return (
