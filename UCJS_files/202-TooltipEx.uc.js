@@ -259,7 +259,10 @@ const TooltipPanel = (function() {
     let panel = $E('panel', {
       id: kUI.panel.id,
       style: panelStyle,
-      backdrag: true
+      backdrag: true,
+      // Close the context menu too.
+      // @note The context menu has to be the first child.
+      onpopuphiding: 'if(event.target===this){this.firstChild.hidePopup();}'
     });
 
     // Make the context menu.
