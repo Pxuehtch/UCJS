@@ -1421,7 +1421,9 @@ const SiblingNavi = (function() {
       }
 
       for (text in getSearchTexts(link)) {
+        // Normalize white-spaces.
         text = trim(text);
+
         score = text && NaviLinkTester.score(text, href);
 
         if (score) {
@@ -1662,23 +1664,27 @@ const NaviLinkTester = (function() {
       let opposite, sign, word;
 
       opposite = (aDirection === 'prev') ? 'next' : 'prev';
+
+      // Set up data for finding a navigation sign.
+      // @note The white-spaces of a test text are normalized.
+      sign = kNaviSign[aDirection];
+      naviSign = RegExp('^(?:' + sign + ')+|(?:' +  sign + ')+$');
       oppositeSign = RegExp(kNaviSign[opposite]);
 
-      sign = kNaviSign[aDirection];
-      naviSign = RegExp('^(?:' + sign + ')+\\s*|\\s*(?:' +  sign + ')+$');
-
-      word = kNaviWord[opposite];
-      oppositeWord = RegExp(word.en + '|' +  word.ja, 'i');;
-
-      // Find a text string or image filename like a navigation.
-      // @note Allows the short leading words before the navigation word for
-      // the ascii characters (e.g. 'Go to next page', 'goto-next-page.png').
+      // Set up data for finding a text string or an image filename like a
+      // navigation.
+      // @note The white-spaces of a test text are normalized.
+      // @note Allows the short leading words before an english navigation
+      // word (e.g. 'Go to next page', 'goto-next-page.png').
       word = kNaviWord[aDirection];
 
-      let en = '(?:^|^.{0,10}[\\s-_])(?:' + word.en + ')(?:$|[\\s-_.])';
+      let en = '(?:^|^[- \\w]{0,10}[-_ ])(?:' + word.en + ')(?:$|[-_. ])';
       let ja = '^(?:' +  word.ja + ')';
 
       naviWord = RegExp(en + '|' +  ja, 'i');
+
+      word = kNaviWord[opposite];
+      oppositeWord = RegExp(word.en + '|' +  word.ja, 'i');;
     }
 
     function score(aText) {
