@@ -1404,7 +1404,7 @@ const SiblingNavi = (function() {
   function guessBySearching(aDirection) {
     let URI = getURI('NO_REF');
 
-    NaviLinkTester.init(URI, aDirection);
+    NaviLinkScorer.init(URI, aDirection);
 
     let entries = getSearchEntries();
     let link, href, text, score;
@@ -1424,7 +1424,7 @@ const SiblingNavi = (function() {
         // Normalize white-spaces.
         text = trim(text);
 
-        score = text && NaviLinkTester.score(text, href);
+        score = text && NaviLinkScorer.score(text, href);
 
         if (score) {
           entries.add(text, href, score);
@@ -1622,11 +1622,8 @@ const SiblingNavi = (function() {
 /**
  * Evaluator of the navigation-like text and URL.
  */
-const NaviLinkTester = (function() {
-  /**
-   * Test for text.
-   */
-  const TextLike = (function() {
+const NaviLinkScorer = (function() {
+  const TextScorer = (function() {
     // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
     // ←:\u2190
     // &rsaquo;(>):\u203a, &raquo;(>>):\u00bb, ＞:\uff1e, ≫:\u226b,
@@ -1650,26 +1647,29 @@ const NaviLinkTester = (function() {
     };
 
     // Score weighting.
-    const kWeight = normalizeWeight({
+    const kScoreWeight = normalizeWeight({
       matchSign: 50,
       matchWord: 50,
-      unmatchOppositeWord: 25,
+      noOppositeWord: 25,
       lessText: 20
     });
 
-    let naviSign = null, oppositeSign = null,
-        naviWord = null, oppositeWord = null;
+    let mNaviSign = null,
+        mNaviWord = null;
 
     function init(aDirection) {
-      let opposite, sign, word;
+      let sign, word;
+      let forward, backward;
 
-      opposite = (aDirection === 'prev') ? 'next' : 'prev';
+      let opposite = (aDirection === 'prev') ? 'next' : 'prev';
 
       // Set up data for finding a navigation sign.
       // @note The white-spaces of a test text are normalized.
       sign = kNaviSign[aDirection];
-      naviSign = RegExp('^(?:' + sign + ')+|(?:' +  sign + ')+$');
-      oppositeSign = RegExp(kNaviSign[opposite]);
+      forward = RegExp('^(?:' + sign + ')+|(?:' +  sign + ')+$');
+      backward = RegExp(kNaviSign[opposite]);
+
+      mNaviSign = initNaviData(forward, backward);
 
       // Set up data for finding a text string or an image filename like a
       // navigation.
@@ -1681,46 +1681,89 @@ const NaviLinkTester = (function() {
       let en = '(?:^|^[- \\w]{0,10}[-_ ])(?:' + word.en + ')(?:$|[-_. ])';
       let ja = '^(?:' +  word.ja + ')';
 
-      naviWord = RegExp(en + '|' +  ja, 'i');
+      forward = RegExp(en + '|' +  ja, 'i');
 
       word = kNaviWord[opposite];
-      oppositeWord = RegExp(word.en + '|' +  word.ja, 'i');;
+      backward = RegExp(word.en + '|' +  word.ja, 'i');
+
+      mNaviWord = initNaviData(forward, backward);
+    }
+
+    function initNaviData(aForward, aBackward) {
+      function hasOpposite(aText) {
+        if (!aText) {
+          return false;
+        }
+
+        return aBackward.test(aText);
+      }
+
+      function match(aText) {
+        if (!aText) {
+          return null;
+        }
+
+        let matches = aForward.exec(aText);
+
+        if (!matches) {
+          return null;
+        }
+
+        return {
+          remainingText: aText.replace(matches[0], '').trim()
+        };
+      }
+
+      return {
+        hasOpposite,
+        match
+      };
     }
 
     function score(aText) {
       let point = 0;
       let match;
 
-      if (!oppositeSign.test(aText) && (match = naviSign.exec(aText))) {
-        point += kWeight.matchSign;
-        aText = removeMatched(aText, match[0]);
-      }
+      // Test signs for navigation.
+      if (!mNaviSign.hasOpposite(aText)) {
+        match = mNaviSign.match(aText);
 
-      if (aText && (match = naviWord.exec(aText))) {
-        point += kWeight.matchWord;
-        aText = removeMatched(aText, match[0]);
+        if (match) {
+          point += kScoreWeight.matchSign;
 
-        if (aText && !oppositeWord.test(aText)) {
-          point += kWeight.unmatchOppositeWord;
+          aText = match.remainingText;
         }
       }
 
+      // Test words for navigation.
+      match = mNaviWord.match(aText);
+
+      if (match) {
+        point += kScoreWeight.matchWord;
+
+        aText = match.remainingText;
+
+        if (!mNaviWord.hasOpposite(aText)) {
+          point += kScoreWeight.noOppositeWord;
+        }
+      }
+
+      // Test the text length.
       if (point) {
         if (aText) {
-          let adjust = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
-          point += (kWeight.lessText * adjust);
+          // The text seems less to be for navigation if more than 10
+          // characters remain.
+          let rate = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
+
+          point += (kScoreWeight.lessText * rate);
         }
         else {
           // Exact match.
-          point += kWeight.lessText;
+          point += kScoreWeight.lessText;
         }
       }
 
       return point;
-    }
-
-    function removeMatched(aText, aMatched) {
-      return aText.replace(aMatched, '').trim();
     }
 
     return {
@@ -1729,47 +1772,98 @@ const NaviLinkTester = (function() {
     };
   })();
 
-  /**
-   * Test for URL.
-   */
-  const URLLike = (function() {
-    const kWeight = normalizeWeight({
-      equalLength: 30,
-      overlapParts: 70
+  const URLScorer = (function() {
+    const kScoreWeight = normalizeWeight({
+      lengthRate: 30,
+      contentRate: 70
     });
 
-    let srcURL = '';
+    let mURLData = null;
 
     function init(aURI) {
-      srcURL = aURI.spec;
+      mURLData = initURLData(aURI);
+    }
+
+    function initURLData(aOriginalURI) {
+      let originalPrePath = aOriginalURI.prePath;
+      let originalPath = aOriginalURI.path;
+
+      let originalURL = createData(originalPath);
+
+      function match(aURL) {
+        // @note A target URL might be including the original URL encoded.
+        aURL = unescURLChar(aURL);
+
+        let index = aURL.indexOf(originalPrePath);
+
+        // No information of the original URL.
+        if (index < 0) {
+          return null;
+        }
+
+        let otherPath = aURL.substr(index + originalPrePath.length);
+
+        // No information for comparison.
+        if (!otherPath || otherPath === '/' || otherPath === originalPath) {
+          return null;
+        }
+
+        return {
+          originalURL,
+          otherURL: createData(otherPath)
+        };
+      }
+
+      function createData(aPath) {
+        return {
+          path: aPath,
+          parts: breakApart(aPath)
+        };
+      }
+
+      function breakApart(aPath) {
+        // Make an array of parts for comparison excluding empty values.
+        return aPath.split(/[-_./?#&=]/).filter(Boolean);
+      }
+
+      return {
+        match
+      };
     }
 
     function score(aURL) {
-      // @note A target URL might be including the original URL encoded.
-      let dstURL = unescURLChar(aURL);
+      let URLData = mURLData.match(aURL);
 
-      return (kWeight.equalLength * getEqualLengthRate(srcURL, dstURL)) +
-             (kWeight.overlapParts * getOverlapPartsRate(srcURL, dstURL));
+      if (!URLData) {
+        return 0;
+      }
+
+      let point = 0;
+
+      point += kScoreWeight.lengthRate * getLengthRate(URLData);
+      point += kScoreWeight.contentRate * getContentRate(URLData);
+
+      return point;
     }
 
-    function getEqualLengthRate(aSrc, aDst) {
-      let sLen = aSrc.length, dLen = aDst.length;
+    function getLengthRate({originalURL, otherURL}) {
+      let originalLength = originalURL.path.length,
+          otherLength = otherURL.path.length;
 
       // Be less than (1.0).
-      return 1 - (Math.abs(sLen - dLen) / (sLen + dLen));
+      return 1 - (Math.abs(originalLength - otherLength) /
+        (originalLength + otherLength));
     }
 
-    function getOverlapPartsRate(aSrc, aDst) {
-      // Make an array of parts for comparison excluding empty values.
-      let breakApart = (aURL) => aURL.split(/[-_./?#&=]/).filter(Boolean);
+    function getContentRate({originalURL, otherURL}) {
+      let originalParts = originalURL.parts,
+          otherParts = otherURL.parts;
 
-      let [sParts, dParts] = [aSrc, aDst].map(breakApart);
-
-      let overlaps = sParts.filter((part) => {
-        let i = dParts.indexOf(part);
+      let matches = originalParts.filter((part) => {
+        let i = otherParts.indexOf(part);
 
         if (i > -1) {
-          delete dParts[i];
+          delete otherParts[i];
 
           return true;
         }
@@ -1778,7 +1872,7 @@ const NaviLinkTester = (function() {
       });
 
       // Be less than (1.0).
-      return overlaps.length / sParts.length;
+      return matches.length / originalParts.length;
     }
 
     return {
@@ -1795,24 +1889,28 @@ const NaviLinkTester = (function() {
       mURL = aURI.spec;
       mDirection = '';
 
-      URLLike.init(aURI);
+      URLScorer.init(aURI);
     }
 
     if (mDirection !== aDirection) {
       mDirection = aDirection;
 
-      TextLike.init(aDirection);
+      TextScorer.init(aDirection);
     }
   }
 
   function score(aText, aURL) {
-    let point = TextLike.score(aText);
+    let point = TextScorer.score(aText);
 
-    if (point > 0) {
-      point += URLLike.score(aURL);
+    if (point) {
+      point += URLScorer.score(aURL);
     }
 
-    return (point > 1.0) ? point : 0;
+    if (point < 1) {
+      return 0;
+    }
+
+    return point;
   }
 
   function normalizeWeight(aWeights) {
