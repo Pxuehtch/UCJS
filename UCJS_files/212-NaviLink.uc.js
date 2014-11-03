@@ -1317,7 +1317,7 @@ const NaviLink = (function() {
  */
 const SiblingNavi = (function() {
   // Max number of links that are scanned to guess the sibling page.
-  const kMaxNumScanningLinks = 400;
+  const kMaxNumScanningLinks = 200;
   // Max number of entries that are scored as the sibling page.
   const kMaxNumScoredEntries = 100;
   // Max number of guessed siblings to display.
