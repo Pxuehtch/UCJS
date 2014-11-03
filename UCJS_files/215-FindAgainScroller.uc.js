@@ -860,6 +860,31 @@ function FoundBlink() {
     steps: 12
   };
 
+  /**
+   * Cancel blinking when a selection is removed by clicking.
+   */
+  const DeselectObserver = {
+    set: function() {
+      // @note A selection is collapsed by 'mousedown' event actually.
+      // @note Use the capture mode to surely catch the event in the content
+      // area.
+      gBrowser.mPanelContainer.addEventListener('mousedown', this, true);
+
+      // Make sure to clean up.
+      window.addEventListener('unload', this, false);
+    },
+
+    clear: function() {
+      gBrowser.mPanelContainer.removeEventListener('mousedown', this, true);
+      window.removeEventListener('unload', this, false);
+    },
+
+    handleEvent: function(aEvent) {
+      // @note |cancel| calls |DeselectObserver.clear|.
+      cancel();
+    }
+  };
+
   const mState = {
     init:  function() {
       let selectionController = TextFinder.selectionController;
@@ -884,16 +909,13 @@ function FoundBlink() {
 
       this.initialized = true;
 
-      // Cancel blinking when the selection is removed by clicking.
-      // @note Use the capture mode to surely catch the event in the content
-      // area.
-      gBrowser.mPanelContainer.addEventListener('mousedown', cancel, true);
+      DeselectObserver.set();
 
       return true;
     },
 
     uninit:  function() {
-      gBrowser.mPanelContainer.removeEventListener('mousedown', cancel, true);
+      DeselectObserver.clear();
 
       this.selectionController = null;
       this.frameAnimator = null;
