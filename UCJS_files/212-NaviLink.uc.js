@@ -1424,8 +1424,9 @@ const SiblingNavi = (function() {
         text = trim(text);
         score = text && NaviLinkTester.score(text, href);
 
-        if (score && isVisible(link)) {
+        if (score) {
           entries.add(text, href, score);
+
           break;
         }
       }
@@ -1530,18 +1531,6 @@ const SiblingNavi = (function() {
       yield image.getAttribute('title');
       yield getLeaf(image.getAttribute('src'));
     }
-  }
-
-  function isVisible(aNode) {
-    if (aNode.hidden) {
-      return false;
-    }
-
-    let style = aNode.ownerDocument.defaultView.
-      getComputedStyle(aNode, '');
-
-    return style.visibility === 'visible' &&
-           style.display !== 'none';
   }
 
   /**
