@@ -1637,10 +1637,14 @@ const NaviLinkTester = (function() {
     // 前:\u524D, 古い:\u53e4\u3044
     // 次:\u6b21, 新し:\u65b0\u3057
     const kNaviWord = {
-      prev: ['prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
-             '\\u524d|\\u53e4\\u3044'],
-      next: ['next|new(?:er)?|forward|more',
-             '\\u6b21|\\u65b0\\u3057']
+      prev: {
+        en: 'prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
+        ja: '\\u524d|\\u53e4\\u3044'
+      },
+      next: {
+        en: 'next|new(?:er)?|forward|more',
+        ja: '\\u6b21|\\u65b0\\u3057'
+      }
     };
 
     // Score weighting.
@@ -1664,14 +1668,17 @@ const NaviLinkTester = (function() {
       naviSign = RegExp('^(?:' + sign + ')+\\s*|\\s*(?:' +  sign + ')+$');
 
       word = kNaviWord[opposite];
-      oppositeWord = RegExp(word[0] + '|' +  word[1], 'i');
+      oppositeWord = RegExp(word.en + '|' +  word.ja, 'i');;
 
-      word = kNaviWord[aDirection];
       // Find a text string or image filename like a navigation.
       // @note Allows the short leading words before the navigation word for
       // the ascii characters (e.g. 'Go to next page', 'goto-next-page.png').
-      naviWord = RegExp('(?:^|^.{0,10}[\\s-_])(?:' + word[0] +
-        ')(?:$|[\\s-_.])|^(?:' +  word[1] + ')', 'i');
+      word = kNaviWord[aDirection];
+
+      let en = '(?:^|^.{0,10}[\\s-_])(?:' + word.en + ')(?:$|[\\s-_.])';
+      let ja = '^(?:' +  word.ja + ')';
+
+      naviWord = RegExp(en + '|' +  ja, 'i');
     }
 
     function score(aText) {
