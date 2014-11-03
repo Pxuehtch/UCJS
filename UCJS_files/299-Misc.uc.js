@@ -376,7 +376,7 @@ function log(aMsg) {
 (function() {
 
   // @note Use the capture mode to surely catch the event in the content area.
-  addEvent(gBrowser.mPanelContainer, 'keypress', (aEvent) => {
+  addEvent(gBrowser.mPanelContainer, 'keydown', (aEvent) => {
     if (aEvent.key === 'Tab' && aEvent.repeat) {
       aEvent.preventDefault();
       aEvent.stopPropagation();
