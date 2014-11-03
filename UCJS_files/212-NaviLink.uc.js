@@ -1760,17 +1760,18 @@ const NaviLinkTester = (function() {
     }
 
     function getOverlapPartsRate(aSrc, aDst) {
-      let [sParts, dParts] = [aSrc, aDst].map((item) => item.split(/[\W_]+/));
+      // Make an array of parts for comparison excluding empty values.
+      let breakApart = (aURL) => aURL.split(/[-_./?#&=]/).filter(Boolean);
+
+      let [sParts, dParts] = [aSrc, aDst].map(breakApart);
 
       let overlaps = sParts.filter((part) => {
-        if (part) {
-          let i = dParts.indexOf(part);
+        let i = dParts.indexOf(part);
 
-          if (i > -1) {
-            dParts[i] = '';
+        if (i > -1) {
+          delete dParts[i];
 
-            return true;
-          }
+          return true;
         }
 
         return false;
