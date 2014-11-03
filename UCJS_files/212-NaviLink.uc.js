@@ -920,14 +920,14 @@ const NaviLink = (function() {
     };
   })();
 
-  let mWorkURL = '';
+  let mURL = '';
   let mNaviList, mSubNaviList, mInfoList;
 
   function init() {
     let URI = getURI();
 
-    if (!URI.isSamePage(mWorkURL)) {
-      mWorkURL = URI.spec;
+    if (!URI.isSamePage(mURL)) {
+      mURL = URI.spec;
       [mNaviList, mSubNaviList, mInfoList] = getLinkList();
     }
   }
@@ -1404,7 +1404,7 @@ const SiblingNavi = (function() {
   function guessBySearching(aDirection) {
     let URI = getURI('NO_REF');
 
-    NaviLinkTester.init(URI.spec, aDirection);
+    NaviLinkTester.init(URI, aDirection);
 
     let entries = getSearchEntries();
     let link, href, text, score;
@@ -1740,11 +1740,12 @@ const NaviLinkTester = (function() {
 
     let srcURL = '';
 
-    function init(aURL) {
-      srcURL = unescURLChar(aURL);
+    function init(aURI) {
+      srcURL = aURI.spec;
     }
 
     function score(aURL) {
+      // @note A target URL might be including the original URL encoded.
       let dstURL = unescURLChar(aURL);
 
       return (kWeight.equalLength * getEqualLengthRate(srcURL, dstURL)) +
@@ -1785,19 +1786,19 @@ const NaviLinkTester = (function() {
     };
   })();
 
-  let mWorkDirection = '',
-      mWorkURL = '';
+  let mURL = '',
+      mDirection = '';
 
-  function init(aURL, aDirection) {
-    if (mWorkURL !== aURL) {
-      mWorkDirection = '';
-      mWorkURL = aURL;
+  function init(aURI, aDirection) {
+    if (!aURI.isSamePage(mURL)) {
+      mURL = aURI.spec;
+      mDirection = '';
 
-      URLLike.init(aURL);
+      URLLike.init(aURI);
     }
 
-    if (mWorkDirection !== aDirection) {
-      mWorkDirection = aDirection;
+    if (mDirection !== aDirection) {
+      mDirection = aDirection;
 
       TextLike.init(aDirection);
     }
