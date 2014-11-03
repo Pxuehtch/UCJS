@@ -189,11 +189,12 @@ const TooltipPanel = (function() {
     // Observe mouse moving to show the tooltip only while trigger keys are
     // down in a HTML document.
     let isObserving = false;
-    let pc = gBrowser.mPanelContainer;
 
     // @note Use the capture mode to surely catch the event in the content
     // area.
-    addEvent(pc, 'keydown', (aEvent) => {
+    // @note The key events are attached to |window| so that we can catch them
+    // when our tooltip panel has a focus.
+    addEvent(window, 'keydown', (aEvent) => {
       let triggerKey = aEvent.ctrlKey && aEvent.altKey;
 
       if (!isObserving &&
@@ -201,15 +202,23 @@ const TooltipPanel = (function() {
           isHTMLDocument(gBrowser.contentDocument)) {
         isObserving = true;
 
+        let pc = gBrowser.mPanelContainer;
+
+        let clear = () => {
+          isObserving = false;
+
+          pc.removeEventListener('mousemove', handleEvent, true);
+          window.removeEventListener('keyup', clear, true);
+          window.removeEventListener('unload', clear, false);
+        };
+
         pc.addEventListener('mousemove', handleEvent, true);
 
         // @note Stop observing when any key is up.
-        pc.addEventListener('keyup', function onKeyUp() {
-          isObserving = false;
+        window.addEventListener('keyup', clear, true);
 
-          pc.removeEventListener('keyup', onKeyUp, true);
-          pc.removeEventListener('mousemove', handleEvent, true);
-        }, true);
+        // Make sure to clean up.
+        window.addEventListener('unload', clear, false);
       }
     }, true);
   }
