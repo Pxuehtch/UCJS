@@ -387,7 +387,7 @@ const MenuUI = (function() {
       return;
     }
 
-    if (!/^(?:https?|ftp|file)$/.test(getURI().scheme)) {
+    if (!/^(?:https?|ftp|file)$/.test(gBrowser.currentURI.scheme)) {
       return;
     }
 
@@ -845,7 +845,7 @@ const PresetNavi = (function() {
   function getData(aDirection) {
     let item;
 
-    let URL = getURI().spec;
+    let URL = URIUtil.getCurrentURI().spec;
 
     for (let i = 0; i < kPresetNavi.length; i++) {
       if (kPresetNavi[i].URL.test(URL)) {
@@ -999,7 +999,7 @@ const NaviLink = (function() {
   let mNaviList, mSubNaviList, mInfoList;
 
   function init() {
-    let URI = getURI();
+    let URI = URIUtil.getCurrentURI();
 
     if (!URI.isSamePage(mURL)) {
       mURL = URI.spec;
@@ -1478,7 +1478,9 @@ const SiblingNavi = (function() {
    * to avoid jumping to the outside by a 'prev/next' command.
    */
   function guessBySearching(aDirection) {
-    let URI = getURI('NO_REF');
+    let URI = URIUtil.createURI(aURI, {
+      hash: false
+    });
 
     NaviLinkScorer.init(URI, aDirection);
 
@@ -1636,7 +1638,9 @@ const SiblingNavi = (function() {
     const kNumEndPath =
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
 
-    let URI = getURI('NO_REF');
+    let URI = URIUtil.createURI(aURI, {
+      hash: false
+    });
 
     if (!URI.hasPath()) {
       return null;
@@ -2027,12 +2031,16 @@ const UpperNavi = (function() {
   function getList() {
     let list = [];
 
-    let URI = getURI('NO_QUERY');
+    let URI = URIUtil.createURI(aURI, {
+      search: false
+    });
+
     let URL;
 
     while ((URL = getParent(URI))) {
       list.push(URL);
-      URI = createURI(URL);
+
+      URI = URIUtil.createURI(URL);
     }
 
     return list.length ? list : null;
@@ -2088,146 +2096,176 @@ const UpperNavi = (function() {
   return {
     getList,
     getParent: function() {
-      return getParent(getURI('NO_QUERY'));
+      return getParent(URIUtil.getCurrentURI({
+        search: false
+      }));
     },
     getTop: function() {
-      return getTop(getURI('NO_QUERY'));
+      return getTop(URIUtil.getCurrentURI({
+        search: false
+      }));
     }
   };
 })();
 
 /**
- * Gets the URI object of the current content.
+ * Custom URI object handler.
  */
-function getURI(aFlag) {
-  return createURI(gBrowser.currentURI, aFlag);
-}
-
-/**
- * URI object wrapper.
- */
-function createURI(aURI, aFlag) {
-  aURI = makeURI(aURI);
-
-  let {scheme, prePath, path, spec} = aURI;
-  let noRefSpec = removeRef(spec);
-  let host = getHost(aURI);
-  let baseDomain = getBaseDomain(aURI);
-
-  switch (aFlag) {
-    case 'NO_QUERY':
-      path = removeQuery(path);
-      spec = removeQuery(spec);
-      // Fall through.
-
-    case 'NO_REF':
-      path = removeRef(path);
-      spec = removeRef(spec);
-      break;
+const URIUtil = (function() {
+  function getCurrentURI(aOption) {
+    return createURI(gBrowser.currentURI, aOption);
   }
 
-  function removeQuery(aTargetURL) {
-    return aTargetURL.replace(/\?.*$/, '');
-  }
+  function createURI(aURI, aOption = {}) {
+    let URI = makeNSIURI(aURI);
 
-  function removeRef(aTargetURL) {
-    return aTargetURL.replace(/#.*$/, '');
-  }
+    let {scheme, prePath, path, spec} = URI;
+    let noHashSpec = trimHash(spec);
+    let host = getHost(URI);
+    let baseDomain = getBaseDomain(URI);
 
-  function hasPath() {
-    return path !== '/';
-  }
+    if (aOption.search === false) {
+      path = trimSearch(path);
+      spec = trimSearch(spec);
+    }
+    else if (aOption.hash === false) {
+      path = trimHash(path);
+      spec = trimHash(spec);
+    }
 
-  function isSamePage(aTargetURL) {
-    return removeRef(aTargetURL) === noRefSpec;
-  }
-
-  function isSameBaseDomain(aTargetURL) {
-    return getBaseDomain(makeURI(aTargetURL)) === baseDomain;
-  }
-
-  return {
-    scheme,
-    host,
-    baseDomain,
-    prePath,
-    path,
-    spec,
-    hasPath,
-    isSamePage,
-    isSameBaseDomain
-  };
-}
-
-function makeURI(aURL) {
-  if (aURL instanceof Ci.nsIURI) {
-    return aURL;
-  }
-
-  try {
-    return Services.io.newURI(aURL, null, null);
-  }
-  catch (ex) {}
-
-  return null;
-}
-
-function getHost(aURI) {
-  if (!aURI) {
-    return '';
-  }
-
-  try {
-    // @note Returns an empty string for the host of 'file:///C:/...'.
-    return aURI.host;
-  }
-  catch (ex) {}
-
-  return aURI.spec.
-    match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
-}
-
-function getBaseDomain(aURI) {
-  if (!aURI) {
-    return '';
+    return {
+      scheme,
+      host,
+      baseDomain,
+      prePath,
+      path,
+      spec,
+      hasPath: hasPath.bind(null, path),
+      isSamePage: isSamePage.bind(null, noHashSpec),
+      isSameBaseDomain: isSameBaseDomain.bind(null, baseDomain)
+    };
   }
 
   /**
-   * WORKAROUND: |nsIEffectiveTLDService::getBaseDomain| returns a wrong value
-   * for a specific host.
-   *
-   * For http://gitbookio.github.io/javascript/
-   * Expected;
-   *   base domain = github.io
-   *   public suffix = io
-   * Actual;
-   *   base domain = gitbookio.github.io
-   *   public suffix = github.io
+   * Binding functions.
    */
-  const kBadHosts = [
-    'github.io'
-  ];
+  function hasPath(aPath) {
+    return aPath !== '/';
+  }
 
-  if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
-    for (let host of kBadHosts) {
-      if (aURI.host.endsWith(host)) {
-        return host;
+  function isSamePage(aNoHashSpec, aTargetURL) {
+    if (!aTargetURL) {
+      return false;
+    }
+
+    return trimHash(aTargetURL) === aNoHashSpec;
+  }
+
+  function isSameBaseDomain(aBaseDomain, aTargetURL) {
+    let targetURI = makeNSIURI(aTargetURL);
+
+    if (!targetURI) {
+      return false;
+    }
+
+    return getBaseDomain(targetURI) === aBaseDomain;
+  }
+
+  /**
+   * Helper functions.
+   */
+  function trimSearch(aURL) {
+    return aURL.replace(/[?#].*$/, '');
+  }
+
+  function trimHash(aURL) {
+    return aURL.replace(/#.*$/, '');
+  }
+
+  function makeNSIURI(aURL) {
+    if (aURL instanceof Ci.nsIURI) {
+      return aURL;
+    }
+
+    // Reform our custom URI object.
+    // TODO: Test by some reliable method.
+    if (aURL.spec) {
+      aURL = aURL.spec;
+    }
+
+    try {
+      return Services.io.newURI(aURL, null, null);
+    }
+    catch (ex) {}
+
+    return null;
+  }
+
+  function getHost(aURI) {
+    if (!aURI) {
+      return '';
+    }
+
+    try {
+      // @note Returns an empty string for the host of 'file:///C:/...'.
+      return aURI.host;
+    }
+    catch (ex) {}
+
+    return aURI.spec.
+      match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
+  }
+
+  function getBaseDomain(aURI) {
+    if (!aURI) {
+      return '';
+    }
+
+    /**
+     * WORKAROUND: |nsIEffectiveTLDService::getBaseDomain| returns a wrong
+     * value for some hosts.
+     *
+     * For http://gitbookio.github.io/javascript/
+     * Expected;
+     *   base domain = github.io
+     *   public suffix = io
+     * Actual;
+     *   base domain = gitbookio.github.io
+     *   public suffix = github.io
+     */
+    const kBadHosts = [
+      'github.io'
+    ];
+
+    if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
+      for (let host of kBadHosts) {
+        if (aURI.host.endsWith(host)) {
+          return host;
+        }
       }
     }
+
+    try {
+      // @note |getBaseDomain| returns a value in ACE format for IDN.
+      let baseDomain = Services.eTLD.getBaseDomain(aURI);
+      let IDNService = Cc['@mozilla.org/network/idn-service;1'].
+        getService(Ci.nsIIDNService);
+
+      return IDNService.convertACEtoUTF8(baseDomain);
+    }
+    catch (ex) {}
+
+    return getHost(aURI);
   }
 
-  try {
-    // @note |getBaseDomain| returns a value in ACE format for IDN.
-    let baseDomain = Services.eTLD.getBaseDomain(aURI);
-    let IDNService = Cc['@mozilla.org/network/idn-service;1'].
-      getService(Ci.nsIIDNService);
-
-    return IDNService.convertACEtoUTF8(baseDomain);
-  }
-  catch (ex) {}
-
-  return getHost(aURI);
-}
+  /**
+   * Expose
+   */
+  return {
+    getCurrentURI,
+    createURI
+  };
+})();
 
 /**
  * Utility functions.
