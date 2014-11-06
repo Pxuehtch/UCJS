@@ -833,6 +833,26 @@ const MenuUI = (function() {
  * Handler of the user preset of the navigation links.
  */
 const PresetNavi = (function() {
+  let mURL;
+  let mData;
+
+  function init(aDirection) {
+    if (aDirection !== 'prev' && aDirection !== 'next') {
+      throw Error('aDirection should be "prev" or "next": ' + aDirection);
+    }
+
+    let URI = URIUtil.getCurrentURI();
+
+    if (!URI.isSamePage(mURL)) {
+      mURL = URI.spec;
+      mData = {};
+    }
+
+    if (!mData[aDirection]) {
+      mData[aDirection] = createData(aDirection, URI);
+    }
+  }
+
   /**
    * Gets the preset data for the previous or next page.
    * @param aDirection {string}
@@ -843,9 +863,24 @@ const PresetNavi = (function() {
    *   URL or formIndex:
    */
   function getData(aDirection) {
+    init(aDirection);
+
+    let data = mData[aDirection];
+
+    if (data && data.error) {
+      log('Match preset: %name%\n%dir%: \'%xpath%\' is not found'.
+        replace('%name%', data.name).
+        replace('%dir%', data.direction).
+        replace('%xpath%', data.xpath));
+    }
+
+    return data;
+  }
+
+  function createData(aDirection, aURI) {
     let item;
 
-    let URL = URIUtil.getCurrentURI().spec;
+    let URL = aURI.spec;
 
     for (let i = 0; i < kPresetNavi.length; i++) {
       if (kPresetNavi[i].URL.test(URL)) {
@@ -890,13 +925,11 @@ const PresetNavi = (function() {
       };
     }
 
-    log('Match preset: %name%\n%dir%: \'%xpath%\' is not found'.
-      replace('%name%', item.name).
-      replace('%dir%', aDirection).
-      replace('%xpath%', item[aDirection]));
-
     return {
-      error: true
+      error: true,
+      name: item.name,
+      direction: aDirection,
+      xpath: item[aDirection]
     };
   }
 
@@ -995,7 +1028,7 @@ const NaviLink = (function() {
     };
   })();
 
-  let mURL = '';
+  let mURL;
   let mNaviList, mSubNaviList, mInfoList;
 
   function init() {
@@ -1003,7 +1036,7 @@ const NaviLink = (function() {
 
     if (!URI.isSamePage(mURL)) {
       mURL = URI.spec;
-      [mNaviList, mSubNaviList, mInfoList] = getLinkList();
+      [mNaviList, mSubNaviList, mInfoList] = createLists();
     }
   }
 
@@ -1065,7 +1098,7 @@ const NaviLink = (function() {
     return mInfoList;
   }
 
-  function getLinkList() {
+  function createLists() {
     let naviList = {},
         subNaviList = {},
         infoList = {};
@@ -1399,6 +1432,26 @@ const SiblingNavi = (function() {
   // Max number of guessed siblings to display.
   const kMaxNumSiblings = 3;
 
+  let mURL;
+  let mResult;
+
+  function init(aDirection) {
+    if (aDirection !== 'prev' && aDirection !== 'next') {
+      throw Error('aDirection should be "prev" or "next": ' + aDirection);
+    }
+
+    let URI = URIUtil.getCurrentURI();
+
+    if (!URI.isSamePage(mURL)) {
+      mURL = URI.spec;
+      mResult = {};
+    }
+
+    if (!mResult[aDirection]) {
+      mResult[aDirection] = createResult(aDirection, URI);
+    }
+  }
+
   /**
    * Retrieves the URL string for the direction.
    *
@@ -1431,17 +1484,23 @@ const SiblingNavi = (function() {
    * {here:, there:, URL:} for a sibling by <numbering>.
    */
   function getResult(aDirection) {
+    init(aDirection);
+
+    return mResult[aDirection];
+  }
+
+  function createResult(aDirection, aURI) {
     let data;
     let scanType;
 
     [
       ['preset', PresetNavi.getData],
       ['official', NaviLink.getData],
-      ['searching', guessBySearching],
-      ['numbering', guessByNumbering]
+      ['searching', guessBySearching, aURI],
+      ['numbering', guessByNumbering, aURI]
     ].
-    some(([type, getter]) => {
-      let result = getter(aDirection);
+    some(([type, getter, URI]) => {
+      let result = getter(aDirection, URI);
 
       if (result) {
         data = result;
@@ -1477,7 +1536,7 @@ const SiblingNavi = (function() {
    * @note Allows only URL that has the same as the base domain of the document
    * to avoid jumping to the outside by a 'prev/next' command.
    */
-  function guessBySearching(aDirection) {
+  function guessBySearching(aDirection, aURI) {
     let URI = URIUtil.createURI(aURI, {
       hash: false
     });
@@ -1624,7 +1683,7 @@ const SiblingNavi = (function() {
    *     there: {string}
    *     URL: {string}
    */
-  function guessByNumbering(aDirection) {
+  function guessByNumbering(aDirection, aURI) {
     /**
      * Patterns like the page numbers in URL.
      *
@@ -1983,13 +2042,13 @@ const NaviLinkScorer = (function() {
     };
   })();
 
-  let mURL = '',
-      mDirection = '';
+  let mURL;
+  let mDirection;
 
   function init(aURI, aDirection) {
     if (!aURI.isSamePage(mURL)) {
       mURL = aURI.spec;
-      mDirection = '';
+      mDirection = null;
 
       URLScorer.init(aURI);
     }
@@ -2042,12 +2101,30 @@ const NaviLinkScorer = (function() {
  * Handler of the links to the upper(top/parent) page.
  */
 const UpperNavi = (function() {
+  let mURL;
+  let mList;
+
+  function init() {
+    let URI = URIUtil.getCurrentURI();
+
+    if (!URI.isSamePage(mURL)) {
+      mURL = URI.spec;
+      mList = createList(URI);
+    }
+  }
+
   /**
    * Gets the list of the upper page URLs from parent to top in order.
    *
    * @return {string[]}
    */
   function getList() {
+    init();
+
+    return mList;
+  }
+
+  function createList(aURI) {
     let list = [];
 
     let URI = URIUtil.createURI(aURI, {
