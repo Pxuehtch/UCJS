@@ -631,6 +631,13 @@ function getAvailableActions() {
   // @see chrome://browser/content/nsContextMenu.js
   const {gContextMenu} = window;
 
+  let isImageDocument = (aDocument) =>
+    aDocument instanceof ImageDocument;
+
+  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
+  let isTextDocument = (aDocument) =>
+    window.mimeTypeIsTextBased(aDocument.contentType);
+
   let actions = [];
 
   let onMedia = false;
@@ -811,15 +818,6 @@ function doAction(aApp, aAction) {
   }
 
   runApp(aApp, targetURL, saveInfo);
-}
-
-function isImageDocument(aDocument) {
-  return aDocument instanceof ImageDocument;
-}
-
-function isTextDocument(aDocument) {
-  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
-  return window.mimeTypeIsTextBased(aDocument.contentType);
 }
 
 /**

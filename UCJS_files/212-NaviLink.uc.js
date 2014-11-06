@@ -226,7 +226,7 @@ const kSiblingScanType = {
 /**
  * Strings format.
  *
- * @note The values is displayed through |F()|.
+ * @note The values is displayed through |MenuUI::F()|.
  */
 const kFormat = {
   // For the main categories.
@@ -777,6 +777,53 @@ const MenuUI = (function() {
     return aType;
   }
 
+  /**
+   * String formatter.
+   *
+   * @param aFormat {string|string[]}
+   *   @see |kFormat| for detail.
+   * @param aReplacement {hash}
+   * @return {string}
+   */
+  function F(aFormat, aReplacement) {
+    // Filter items that its value is |null| or |undefined|.
+    let replacement = {};
+
+    for (let [name, value] in Iterator(aReplacement)) {
+      if (value !== null && value !== undefined) {
+        replacement['%' + name + '%'] = value;
+      }
+    }
+
+    if (!Array.isArray(aFormat)) {
+      aFormat = [aFormat];
+    }
+
+    // Retreive a format that has all aliases of the name of replacements.
+    let format;
+    let names = Object.keys(replacement);
+
+    for (let i = 0, l = aFormat.length; i < l; i++) {
+      if (names.every((name) => aFormat[i].contains(name))) {
+        format = aFormat[i];
+        break;
+      }
+    }
+
+    if (!format) {
+      return aFormat[0];
+    }
+
+    for (let [name, value] in Iterator(replacement)) {
+      format = format.replace(name, value);
+    }
+
+    return format;
+  }
+
+  /**
+   * Expose
+   */
   return {
     init
   };
@@ -851,6 +898,9 @@ const PresetNavi = (function() {
     };
   }
 
+  /**
+   * Expose
+   */
   return {
     getData
   };
@@ -1304,6 +1354,9 @@ const NaviLink = (function() {
     aTypes.sort(comparator);
   }
 
+  /**
+   * Expose
+   */
   return {
     getData,
     getNaviList,
@@ -1608,6 +1661,9 @@ const SiblingNavi = (function() {
     return aList.slice(0, kMaxNumSiblings);
   }
 
+  /**
+   * Expose
+   */
   return {
     getResult,
     getPrev: function() {
@@ -1927,6 +1983,9 @@ const NaviLinkScorer = (function() {
     return aWeights;
   }
 
+  /**
+   * Expose
+   */
   return {
     init,
     score
@@ -2000,6 +2059,9 @@ const UpperNavi = (function() {
     return '';
   }
 
+  /**
+   * Expose
+   */
   return {
     getList,
     getParent: function() {
@@ -2152,49 +2214,8 @@ function getBaseDomain(aURI) {
 }
 
 /**
- * String formatter.
- *
- * @param aFormat {string|string[]}
- *   @see |kFormat| for detail.
- * @param aReplacement {hash}
- * @return {string}
+ * Utility functions.
  */
-function F(aFormat, aReplacement) {
-  // Filter items that its value is |null| or |undefined|.
-  let replacement = {};
-
-  for (let [name, value] in Iterator(aReplacement)) {
-    if (value !== null && value !== undefined) {
-      replacement['%' + name + '%'] = value;
-    }
-  }
-
-  if (!Array.isArray(aFormat)) {
-    aFormat = [aFormat];
-  }
-
-  // Retreive a format that has all aliases of the name of replacements.
-  let format;
-  let names = Object.keys(replacement);
-
-  for (let i = 0, l = aFormat.length; i < l; i++) {
-    if (names.every((name) => aFormat[i].contains(name))) {
-      format = aFormat[i];
-      break;
-    }
-  }
-
-  if (!format) {
-    return aFormat[0];
-  }
-
-  for (let [name, value] in Iterator(replacement)) {
-    format = format.replace(name, value);
-  }
-
-  return format;
-}
-
 function isHTMLDocument(aDocument) {
   if (aDocument instanceof HTMLDocument) {
     let mime = aDocument.contentType;
