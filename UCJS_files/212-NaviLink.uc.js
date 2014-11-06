@@ -1465,8 +1465,8 @@ const SiblingNavi = (function() {
     for (link in getSearchLinks()) {
       href = link.href;
 
-      if (entries.contains(href) ||
-          !href ||
+      if (!href ||
+          entries.has(href) ||
           !/^https?:/.test(href) ||
           URI.isSamePage(href) ||
           !URI.isSameBaseDomain(href)) {
@@ -1510,11 +1510,11 @@ const SiblingNavi = (function() {
         score: aScore
       };
 
-      // Cache for |contains()|.
+      // Cache for |has()|.
       URLs[URLs.length] = aURL;
     }
 
-    function contains(aURL) {
+    function has(aURL) {
       return URLs.indexOf(aURL) > -1;
     }
 
@@ -1546,7 +1546,7 @@ const SiblingNavi = (function() {
 
     return {
       add,
-      contains,
+      has,
       isFull,
       collect
     };
