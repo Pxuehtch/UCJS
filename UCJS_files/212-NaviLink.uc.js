@@ -374,7 +374,7 @@ const MenuUI = (function() {
         }
       }
       else {
-        submit(getDocument());
+        submit(gBrowser.contentDocument);
       }
     }
   }
@@ -391,7 +391,7 @@ const MenuUI = (function() {
       return;
     }
 
-    let isHTML = isHTMLDocument(getDocument());
+    let isHTML = isHTMLDocument(gBrowser.contentDocument);
     let [, eSep] = getSeparators();
 
     [
@@ -858,7 +858,9 @@ const PresetNavi = (function() {
       return null;
     }
 
-    let node = $X1(item[aDirection], getDocument());
+    let contentDocument = gBrowser.contentDocument;
+
+    let node = $X1(item[aDirection], contentDocument);
 
     if (node && node.href) {
       return {
@@ -872,7 +874,7 @@ const PresetNavi = (function() {
     if (node instanceof HTMLInputElement && node.form && node.value) {
       let index = 0;
 
-      for (let form of getDocument().forms) {
+      for (let form of contentDocument.forms) {
         if (node.form === form) {
           break;
         }
@@ -1068,10 +1070,14 @@ const NaviLink = (function() {
         subNaviList = {},
         infoList = {};
 
-    scanMeta(infoList);
-    scanScript(infoList);
+    let contentDocument = gBrowser.contentDocument;
 
-    Array.forEach($S('[rel][href], [rev][href]', getDocument()), (node) => {
+    scanMeta(infoList, contentDocument);
+    scanScript(infoList, contentDocument);
+
+    let links = $S('[rel][href], [rev][href]', contentDocument);
+
+    Array.forEach(links, (node) => {
       let rel = node.rel || node.rev;
 
       if (!rel ||
@@ -1182,9 +1188,8 @@ const NaviLink = (function() {
     return relsList;
   }
 
-  function scanMeta(aList) {
-    let doc = getDocument();
-    let metas = Array.slice(doc.getElementsByTagName('meta'));
+  function scanMeta(aList, aDocument) {
+    let metas = Array.slice(aDocument.getElementsByTagName('meta'));
 
     // Add <content-type> to avoid an empty meta list.
     let empty = !metas.some((meta) =>
@@ -1195,7 +1200,7 @@ const NaviLink = (function() {
     if (empty) {
       metas.unshift({
         httpEquiv: 'Content-Type',
-        content: doc.contentType + ';charset=' + doc.characterSet
+        content: aDocument.contentType + ';charset=' + aDocument.characterSet
       });
     }
 
@@ -1204,10 +1209,8 @@ const NaviLink = (function() {
     });
   }
 
-  function scanScript(aList) {
-    let doc = getDocument();
-
-    Array.forEach(doc.getElementsByTagName('script'), (node) => {
+  function scanScript(aList, aDocument) {
+    Array.forEach(aDocument.getElementsByTagName('script'), (node) => {
       addItem(aList, 'script', node);
     });
   }
@@ -1573,7 +1576,7 @@ const SiblingNavi = (function() {
   }
 
   function getSearchLinks() {
-    let links = getDocument().links;
+    let links = gBrowser.contentDocument.links;
     let count = links.length;
 
     if (kMaxNumScanningLinks < count) {
@@ -2094,17 +2097,10 @@ const UpperNavi = (function() {
 })();
 
 /**
- * Gets the document object of the current content.
- */
-function getDocument() {
-  return gBrowser.contentDocument;
-}
-
-/**
  * Gets the URI object of the current content.
  */
 function getURI(aFlag) {
-  return createURI(getDocument().documentURI, aFlag);
+  return createURI(gBrowser.currentURI, aFlag);
 }
 
 /**
