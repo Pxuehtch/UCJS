@@ -1544,7 +1544,7 @@ const SiblingNavi = (function() {
       hash: false
     });
 
-    NaviLinkScorer.init(URI, aDirection);
+    let naviLinkScorer = NaviLinkScorer.init(URI, aDirection);
 
     let entries = getSearchEntries();
     let link, href, text, score;
@@ -1564,7 +1564,7 @@ const SiblingNavi = (function() {
         // Normalize white-spaces.
         text = trim(text);
 
-        score = text && NaviLinkScorer.score(text, href);
+        score = text && naviLinkScorer.score(text, href);
 
         if (score) {
           entries.add(text, href, score);
@@ -2061,6 +2061,10 @@ const NaviLinkScorer = (function() {
 
       TextScorer.init(aDirection);
     }
+
+    return {
+      score
+    };
   }
 
   function score(aText, aURL) {
@@ -2095,8 +2099,7 @@ const NaviLinkScorer = (function() {
    * Expose
    */
   return {
-    init,
-    score
+    init
   };
 })();
 
