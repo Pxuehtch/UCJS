@@ -1689,16 +1689,23 @@ const SiblingNavi = (function() {
   }
 
   /**
+   * For the exposed functions.
+   */
+  function getCurrentPrev() {
+    return getURLFor('prev');
+  }
+
+  function getCurrentNext() {
+    return getURLFor('next');
+  }
+
+  /**
    * Expose
    */
   return {
     getResult,
-    getPrev: function() {
-      return getURLFor('prev');
-    },
-    getNext: function() {
-      return getURLFor('next');
-    }
+    getPrev: getCurrentPrev,
+    getNext: getCurrentNext
   };
 })();
 
@@ -2091,20 +2098,27 @@ const UpperNavi = (function() {
   }
 
   /**
+   * For the exposed functions.
+   */
+  function getCurrentParent() {
+    return getParent(URIUtil.getCurrentURI({
+      search: false
+    }));
+  }
+
+  function getCurrentTop() {
+    return getTop(URIUtil.getCurrentURI({
+      search: false
+    }));
+  }
+
+  /**
    * Expose
    */
   return {
     getList,
-    getParent: function() {
-      return getParent(URIUtil.getCurrentURI({
-        search: false
-      }));
-    },
-    getTop: function() {
-      return getTop(URIUtil.getCurrentURI({
-        search: false
-      }));
-    }
+    getParent: getCurrentParent,
+    getTop: getCurrentTop
   };
 })();
 
