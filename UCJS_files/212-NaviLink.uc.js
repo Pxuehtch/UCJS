@@ -754,6 +754,9 @@ const MenuUI = (function() {
     return attributes.join(kAttributesDelimiter);
   }
 
+  // TODO: Fix broken tooltip text. False line breaks and the latter text is
+  // cut off. It seems to happen when a long text has '-' and '\n'. The other
+  // characters may break it.
   function formatTooltip(aText, aURL) {
     if (aText && aText !== getLeaf(aURL)) {
       return aText + '\n' + aURL;
