@@ -1736,6 +1736,12 @@ const NaviLinkScorer = (function() {
       }
     };
 
+    // List of text not navigation-like.
+    const kNGList = [
+      // "response anchor" on BBS.
+      /^(?:>|\uff1e){2,}\d+$/
+    ];
+
     // Score weighting.
     const kScoreWeight = normalizeWeight({
       matchSign: 50,
@@ -1757,6 +1763,7 @@ const NaviLinkScorer = (function() {
       // @note The white-spaces of a test text are normalized.
       sign = kNaviSign[aDirection];
       forward = RegExp('^(?:' + sign + ')+|(?:' +  sign + ')+$');
+
       backward = RegExp(kNaviSign[opposite]);
 
       mNaviSign = initNaviData(forward, backward);
@@ -1814,6 +1821,11 @@ const NaviLinkScorer = (function() {
       let point = 0;
       let match;
 
+      // Filter the NG text.
+      if (kNGList.some((ng) => ng.test(aText))) {
+        return 0;
+      }
+
       // Test signs for navigation.
       if (!mNaviSign.hasOpposite(aText)) {
         match = mNaviSign.match(aText);
@@ -1838,8 +1850,8 @@ const NaviLinkScorer = (function() {
         }
       }
 
-      // Test the text length.
-      if (point) {
+      if (point > 0) {
+        // Test the text length.
         if (aText) {
           // The text seems less to be for navigation if more than 10
           // characters remain.
