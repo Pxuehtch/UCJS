@@ -578,6 +578,9 @@ function createParseList(aPreset, aSourceURLType) {
   };
 }
 
+/**
+ * Callback function for |ucjsUtil.createNode|.
+ */
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
     case 'styles': {

@@ -822,6 +822,9 @@ function isTextDocument(aDocument) {
   return window.mimeTypeIsTextBased(aDocument.contentType);
 }
 
+/**
+ * Callback function for |Util.createNode|.
+ */
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'user') {
     aValue.forEach(({key, value}) => {

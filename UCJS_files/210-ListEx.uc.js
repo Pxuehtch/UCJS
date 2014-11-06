@@ -1278,7 +1278,7 @@ const Tooltip = (function() {
 })();
 
 /**
- * Helper functions for DOM.
+ * Callback function for |ucjsUtil.createNode|.
  */
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
@@ -1345,6 +1345,9 @@ function handleAttribute(aNode, aName, aValue) {
   return false;
 }
 
+/**
+ * Helper functions for DOM.
+ */
 function createDocumentFragment() {
   return window.document.createDocumentFragment();
 }

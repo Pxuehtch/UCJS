@@ -382,8 +382,8 @@ const kGestureSet = [
 /**
  * Mouse gesture main handler.
  *
- * TODO: Cancel the gesture when enters into an always-on-top window that is
- * overwrapped on the gesture area.
+ * TODO: Cancel the gesture when enters into an always-on-top window that
+ * overlays on the gesture area.
  */
 function MouseGesture() {
   const kState = {

@@ -568,6 +568,9 @@ const TooltipPanel = (function() {
   };
 })();
 
+/**
+ * Utility functions.
+ */
 function isHTMLDocument(aDocument) {
   if (aDocument instanceof HTMLDocument) {
     let mime = aDocument.contentType;
@@ -604,6 +607,9 @@ function copyToClipboard(aText) {
     copyString(aText);
 }
 
+/**
+ * Callback function for |ucjsUtil.createNode|.
+ */
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'textData') {
     if (aValue) {

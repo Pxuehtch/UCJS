@@ -398,6 +398,9 @@ function getSeparators() {
   ];
 }
 
+/**
+ * Callback function for |ucjsUtil.createNode|.
+ */
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'open') {
     setAttributeForCommand(aNode, aValue);

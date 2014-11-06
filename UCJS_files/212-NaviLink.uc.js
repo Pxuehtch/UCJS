@@ -2151,23 +2151,6 @@ function getBaseDomain(aURI) {
   return getHost(aURI);
 }
 
-function handleAttribute(aNode, aName, aValue) {
-  switch (aName) {
-    // Set the value to a property of the node.
-    case 'open':
-    case 'submit': {
-      if (aValue) {
-        aNode[kID.commandData] = {};
-        aNode[kID.commandData][aName] = aValue;
-      }
-
-      return true;
-    }
-  }
-
-  return false;
-}
-
 /**
  * String formatter.
  *
@@ -2243,6 +2226,26 @@ function trim(aText) {
   }
 
   return '';
+}
+
+/**
+ * Callback function for |ucjsUtil.createNode|.
+ */
+function handleAttribute(aNode, aName, aValue) {
+  switch (aName) {
+    // Set the value to a property of the node.
+    case 'open':
+    case 'submit': {
+      if (aValue) {
+        aNode[kID.commandData] = {};
+        aNode[kID.commandData][aName] = aValue;
+      }
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
