@@ -487,8 +487,7 @@ function log(aMsg) {
   }
 
   function isHtmlDocument(aDocument) {
-    if (aDocument instanceof HTMLDocument &&
-        /^https?/.test(aDocument.documentURI)) {
+    if (aDocument instanceof HTMLDocument) {
       let mime = aDocument.contentType;
 
       return (

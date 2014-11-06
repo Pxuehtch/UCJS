@@ -391,14 +391,14 @@ const MenuUI = (function() {
       return;
     }
 
-    let isHtmlDocument = getDocument() instanceof HTMLDocument;
+    let isHTML = isHTMLDocument(getDocument());
     let [, eSep] = getSeparators();
 
     [
       buildUpperNavi(),
-      isHtmlDocument && buildSiblingNavi('prev'),
-      isHtmlDocument && buildSiblingNavi('next'),
-      isHtmlDocument && buildNaviLink(),
+      isHTML && buildSiblingNavi('prev'),
+      isHTML && buildSiblingNavi('next'),
+      isHTML && buildNaviLink(),
       kPref.showPageInfo && $E('menuseparator', {id: kID.pageInfoSeparator}),
       kPref.showPageInfo && buildPageInfo()
     ].
@@ -2210,6 +2210,21 @@ function F(aFormat, aReplacement) {
   }
 
   return format;
+}
+
+function isHTMLDocument(aDocument) {
+  if (aDocument instanceof HTMLDocument) {
+    let mime = aDocument.contentType;
+
+    return (
+      mime === 'text/html' ||
+      mime === 'text/xml' ||
+      mime === 'application/xml' ||
+      mime === 'application/xhtml+xml'
+    );
+  }
+
+  return false;
 }
 
 function getLeaf(aURL) {

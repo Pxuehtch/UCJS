@@ -569,14 +569,18 @@ const TooltipPanel = (function() {
 })();
 
 function isHTMLDocument(aDocument) {
-  let mime = aDocument.contentType;
+  if (aDocument instanceof HTMLDocument) {
+    let mime = aDocument.contentType;
 
-  return (
-    mime === 'text/html' ||
-    mime === 'text/xml' ||
-    mime === 'application/xml' ||
-    mime === 'application/xhtml+xml'
-  );
+    return (
+      mime === 'text/html' ||
+      mime === 'text/xml' ||
+      mime === 'application/xml' ||
+      mime === 'application/xhtml+xml'
+    );
+  }
+
+  return false;
 }
 
 function isLinkNode(aNode) {
