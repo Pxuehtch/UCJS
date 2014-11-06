@@ -912,18 +912,41 @@ const PresetNavi = (function() {
  * @note [additional] Makes a list of the page information.
  */
 const NaviLink = (function() {
-  const kFeedType = {
-    'application/rss+xml': 'RSS',
-    'application/atom+xml': 'ATOM',
-    'text/xml': 'XML',
-    'application/xml': 'XML',
-    'application/rdf+xml': 'XML'
-  };
-
   /**
    * The max number of the items of each type.
    */
   const kMaxNumItemsOfType = 20;
+
+  /**
+   * Helper handler of RSS feed.
+   */
+  const FeedUtil = (function() {
+    const kFeedType = {
+      'application/rss+xml': 'RSS',
+      'application/atom+xml': 'ATOM',
+      'text/xml': 'XML',
+      'application/xml': 'XML',
+      'application/rdf+xml': 'XML'
+    };
+
+    const {Feeds} = getModule('app/modules/Feeds.jsm');
+
+    function getFeedType(aLink, aIsFeed) {
+      let principal = gBrowser.contentDocument.nodePrincipal;
+
+      let feedType = Feeds.isValidFeed(aLink, principal, aIsFeed);
+
+      if (!feedType) {
+        return null;
+      }
+
+      return kFeedType[feedType] || 'RSS';
+    }
+
+    return {
+      getFeedType
+    };
+  })();
 
   /**
    * Handler of the types of link navigations.
@@ -1195,14 +1218,11 @@ const NaviLink = (function() {
 
     if (aRels.feed ||
         (aNode.type && aRels.alternate && !aRels.stylesheet)) {
-      const {Feeds} = getModule('app/modules/Feeds.jsm');
-
-      let feedType =
-        Feeds.isValidFeed(aNode, getDocument().nodePrincipal, aRels.feed);
+      let feedType = FeedUtil.getFeedType(aNode, aRels.feed);
 
       if (feedType) {
         type = 'feed';
-        attributes.push(['type', kFeedType[feedType] || 'RSS']);
+        attributes.push(['type', feedType]);
       }
     }
     else if (aRels.stylesheet) {
