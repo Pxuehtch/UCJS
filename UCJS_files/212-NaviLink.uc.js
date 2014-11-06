@@ -67,11 +67,14 @@ const kPref = {
  *   A display name in the UI item.
  * @key URL {RegExp}
  *   A URL of a page that should be scan the navigations.
+ *
  * @key prev {XPath}
+ *   A navigation element for the previous page.
  * @key next {XPath}
- *   Set xpath of an element for navigation;
- *   Any element which has <href> attribute: Opens its URL.
- *   <input> element: Submits with its form.
+ *   A navigation element for the next page.
+ *   @note Command actions;
+ *   - Opens the URL for an element which has <href> attribute.
+ *   - Submits with the form for a <input> element.
  */
 const kPresetNavi = [
   {
@@ -1802,7 +1805,7 @@ const NaviLinkScorer = (function() {
     ];
 
     // Score weighting.
-    const kScoreWeight = normalizeWeight({
+    const kScoreWeight = initScoreWeight({
       matchSign: 50,
       matchWord: 50,
       noOppositeWord: 25,
@@ -1934,7 +1937,7 @@ const NaviLinkScorer = (function() {
   })();
 
   const URLScorer = (function() {
-    const kScoreWeight = normalizeWeight({
+    const kScoreWeight = initScoreWeight({
       lengthRate: 30,
       contentRate: 70
     });
@@ -2074,7 +2077,7 @@ const NaviLinkScorer = (function() {
     return point;
   }
 
-  function normalizeWeight(aWeights) {
+  function initScoreWeight(aWeights) {
     let total = 0;
 
     for (let key in aWeights) {
@@ -2125,11 +2128,11 @@ const UpperNavi = (function() {
   }
 
   function createList(aURI) {
-    let list = [];
-
     let URI = URIUtil.createURI(aURI, {
       search: false
     });
+
+    let list = [];
 
     let URL;
 
@@ -2139,7 +2142,11 @@ const UpperNavi = (function() {
       URI = URIUtil.createURI(URL);
     }
 
-    return list.length ? list : null;
+    if (list.length) {
+      return list;
+    }
+
+    return null;
   }
 
   function getParent(aURI) {
@@ -2152,7 +2159,11 @@ const UpperNavi = (function() {
 
       let URL = aURI.prePath + segments.join('/') + '/';
 
-      return (URL !== 'file:///') ? URL : '';
+      if (URL === 'file:///') {
+        return '';
+      }
+
+      return URL;
     }
 
     return getUpperHost(aURI);
@@ -2160,22 +2171,27 @@ const UpperNavi = (function() {
 
   function getTop(aURI) {
     if (aURI.scheme === 'file') {
+      // Test a drive letter.
       let match = /^(file:\/\/\/[a-z]:\/).+/i.exec(aURI.spec);
 
-      return match ? match[1] : '';
+      if (!match) {
+        return '';
+      }
+
+      return match[1];
     }
 
-    return aURI.hasPath() ? aURI.prePath + '/' : getUpperHost(aURI);
+    if (aURI.hasPath()) {
+      return aURI.prePath + '/';
+    }
+
+    return getUpperHost(aURI);
   }
 
   function getUpperHost(aURI) {
     let host = aURI.host;
 
-    if (!host) {
-      return '';
-    }
-
-    if (aURI.baseDomain !== host) {
+    if (host && aURI.baseDomain !== host) {
       let levels = host.split('.');
 
       levels.shift();
