@@ -854,7 +854,7 @@ const PresetNavi = (function() {
       mData = {};
     }
 
-    if (!mData[aDirection]) {
+    if (!(aDirection in mData)) {
       mData[aDirection] = createData(aDirection, URI);
     }
   }
@@ -1453,7 +1453,7 @@ const SiblingNavi = (function() {
       mResult = {};
     }
 
-    if (!mResult[aDirection]) {
+    if (!(aDirection in mResult)) {
       mResult[aDirection] = createResult(aDirection, URI);
     }
   }
