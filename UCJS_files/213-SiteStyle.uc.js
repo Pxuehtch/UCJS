@@ -56,10 +56,9 @@ const kUI = {
 
 /**
  * Key name for storing data.
- *
- * @note Extended property name of a menuitem.
  */
 const kDataKey = {
+  // Extended property name of a menuitem.
   itemIndex: 'ucjs_SiteStyle_itemIndex'
 };
 

@@ -138,6 +138,7 @@ const kUI = {
    * The ellipsis mark.
    */
   get ellipsis() {
+    // @see resource://app/modules/PlacesUIUtils.jsm
     const {PlacesUIUtils} = getModule('app/modules/PlacesUIUtils.jsm');
 
     // Lazy definition.
@@ -149,10 +150,9 @@ const kUI = {
 
 /**
  * Key names for storing data.
- *
- * @note Extended property name of a menuitem.
  */
 const kDataKey = {
+  // Extended property name of a menuitem.
   textData: 'ucjs_TooltipEx_textData'
 };
 

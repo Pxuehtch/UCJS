@@ -243,6 +243,7 @@ const Scratchpad = (function() {
    *   The new window object that holds Scratchpad.
    */
   function open(aState) {
+    // @see resource://app/modules/devtools/scratchpad-manager.jsm
     const {ScratchpadManager} =
       getModule('app/modules/devtools/scratchpad-manager.jsm');
 

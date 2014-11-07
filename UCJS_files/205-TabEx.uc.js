@@ -1780,6 +1780,7 @@ function fetchPageTitle(aURL, aCallback) {
     aCallback(aURL);
   }
 
+  // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   PlacesUtils.promisePlaceInfo(uri).then(

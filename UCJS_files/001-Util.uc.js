@@ -175,8 +175,6 @@ const XPCOM = (function() {
  * Timer handler.
  *
  * @see resource://gre/modules/commonjs/sdk/timers.js
- *
- * TODO: Get lazily.
  */
 const Timer = getModule('sdk/timers');
 
@@ -184,13 +182,13 @@ const Timer = getModule('sdk/timers');
  * Preferences handler.
  *
  * @see resource://gre/modules/commonjs/sdk/preferences/service.js
- *
- * TODO: Get lazily.
  */
 const Prefs = getModule('sdk/preferences/service');
 
 /**
  * JS module loader.
+ *
+ * TODO: Make a lazy getter option.
  */
 function getModule(aResourceURL) {
   // Built-in JS module.
@@ -1077,6 +1075,7 @@ function getPlacesDBResult(aParam) {
     columns
   } = aParam || {};
 
+  // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   let statement =
@@ -1148,6 +1147,7 @@ function promisePlacesDBResult(aParam) {
     columns
   } = aParam || {};
 
+  // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   let statement =
@@ -1223,6 +1223,7 @@ function logMessage(aTargetName, aMessage) {
     aMessage = [aMessage];
   }
 
+  // @see resource://gre/modules/Log.jsm
   const {Log} = getModule('gre/modules/Log.jsm');
 
   let messages = aMessage.map((value) => {

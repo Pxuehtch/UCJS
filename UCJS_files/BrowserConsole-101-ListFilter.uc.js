@@ -71,10 +71,9 @@ const kUI = {
 
 /**
  * Key name for storing data.
- *
- * @note Extended attribute name of an element.
  */
 const kDataKey = {
+  // Extended attribute name of an element.
   // @note The class name prefix of a listview item being filtered by category.
   filteredBy: 'ucjs_ListFilter_filteredBy'
 };

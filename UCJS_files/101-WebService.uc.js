@@ -192,6 +192,7 @@ const RequestHandler = (function() {
 
     // TODO: Implement a canceller.
     setTimeout(() => {
+      // @see resource://gre/modules/Http.jsm
       let {httpRequest} = getModule('gre/modules/Http.jsm');
 
       httpRequest(aURL, aOption);

@@ -70,10 +70,9 @@ const kUI = {
 
 /**
  * Key name for storing data.
- *
- * @note Extended property name of a menuitem.
  */
 const kDataKey = {
+  // Extended property name of a menuitem.
   keyword: 'ucjs_URLbarKeyword_keyword'
 };
 

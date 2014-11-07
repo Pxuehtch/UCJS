@@ -144,10 +144,9 @@ const kUI = {
 
 /**
  * Key names for storing data.
- *
- * @note Extended property name of a menuitem.
  */
 const kDataKey = {
+  // Extended property name of a menuitem.
   commandData: 'ucjs_ListEx_commandData',
   tooltipData: 'ucjs_ListEx_tooltipData'
 };
@@ -1401,6 +1400,7 @@ function limitListRange({index, length, maxNumItems}) {
 }
 
 function fitIntoLabel(aText, aWrapping) {
+  // @see resource://app/modules/PlacesUIUtils.jsm
   const {PlacesUIUtils} = getModule('app/modules/PlacesUIUtils.jsm');
 
   let crop;
@@ -1434,6 +1434,7 @@ function fitIntoLabel(aText, aWrapping) {
 }
 
 function fixFaviconURL(aIconURL) {
+  // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   if (aIconURL) {

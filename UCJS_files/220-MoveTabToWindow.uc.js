@@ -57,10 +57,9 @@ const kUI = {
 
 /**
  * Key name for storing data.
- *
- * @note Extended property name of a menuitem.
  */
 const kDataKey = {
+  // Extended property name of a menuitem.
   windowIndex: 'ucjs_MoveTabToWindow_windowIndex'
 };
 
@@ -83,7 +82,7 @@ const TabContext = {
  * Utility functions for browser windows.
  */
 const WindowUtil = (function() {
-// @see @see resource://gre/modules/commonjs/sdk/window/utils.js
+  // @see resource://gre/modules/commonjs/sdk/window/utils.js
   const utils = getModule('sdk/window/utils');
 
   function getBrowserWindows() {

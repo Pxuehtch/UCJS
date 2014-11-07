@@ -311,10 +311,9 @@ const kUI = {
 
 /**
  * Key names for storing data.
- *
- * @note Extended attribute name of a menuitem.
  */
 const kDataKey = {
+  // Extended attribute name of a menuitem.
   appIndex: 'ucjs_AppLauncher_appIndex',
   action: 'ucjs_AppLauncher_action'
 };

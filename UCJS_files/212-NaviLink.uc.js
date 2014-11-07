@@ -999,6 +999,7 @@ const NaviLink = (function() {
       'application/rdf+xml': 'XML'
     };
 
+    // @see resource://app/modules/Feeds.jsm
     const {Feeds} = getModule('app/modules/Feeds.jsm');
 
     function getFeedType(aLink, aIsFeed) {
@@ -1113,7 +1114,7 @@ const NaviLink = (function() {
    *   list: {<data>[]}
    *     @see |getData()| for detail.
    *   trimmed: {boolean}
-   *     whether a list has been cut because of too much items.
+   *     A list has been limited because of too much items if true.
    */
   function getNaviList() {
     init();
