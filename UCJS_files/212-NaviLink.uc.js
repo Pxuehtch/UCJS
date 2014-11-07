@@ -227,52 +227,73 @@ const kSiblingScanType = {
 };
 
 /**
- * Strings format.
+ * UI settings.
  *
- * @note The values is displayed through |MenuUI::F()|.
+ * @note %template% is formatted by |MenuUI::F()|.
  */
-const kFormat = {
-  // For the main categories.
-  upper: '上の階層',
-  prev: '前ページ - %scanType%',
-  next: '次ページ - %scanType%',
-  naviLink: 'Navi Link',
-  pageInfo: 'Page Info',
+const kUI = {
+  upper: {
+    id: 'ucjs_NaviLink_upper',
+    label: '上の階層'
+  },
 
-  // For the item of <Sibling Navi>.
-  preset: '[%name%] %title%',
-  official: '%title%',
-  searching: '%title% (%score%)',
-  numbering: '%here% -> %there%',
-  // Submit mode warning.
-  submit: '<submit mode>',
+  prev: {
+    id: 'ucjs_NaviLink_prev',
+    label: '前ページ - %scanType%'
+  },
 
-  // For the sub items of <Navi Link>/<Page Info>.
-  tooManyItems: '項目が多いので表示を制限',
-  type: ['%title%', '%title% (%count%)'],
-  item: ['%title%', '%title% [%attributes%]'],
-  meta: '%name%: %content%'
+  next: {
+    id: 'ucjs_NaviLink_next',
+    label: '次ページ - %scanType%'
+  },
+
+  naviLink: {
+    id: 'ucjs_NaviLink_naviLink',
+    label: 'Navi Link'
+  },
+
+  pageInfo: {
+    id: 'ucjs_NaviLink_pageInfo',
+    label: 'Page Info'
+  },
+
+  pageInfoSeparator: {
+    id: 'ucjs_NaviLink_pageInfoSeparator'
+  },
+
+  startSeparator: {
+    id: 'ucjs_NaviLink_startSeparator'
+  },
+
+  endSeparator: {
+    id: 'ucjs_NaviLink_endSeparator'
+  },
+
+  items: {
+    // Items of <Sibling Navi>.
+    preset: '[%name%] %title%',
+    official: '%title%',
+    searching: '%title% (%score%)',
+    numbering: '%here% -> %there%',
+    // Submit mode warning.
+    submit: '<submit mode>',
+
+    // Items of <Navi Link> / <Page Info>.
+    type: ['%title%', '%title% (%count%)'],
+    data: ['%title%', '%title% [%attributes%]'],
+    meta: '%name%: %content%',
+    // Item numbers limitation warning.
+    tooManyItems: '項目が多いので表示を制限'
+  }
 };
 
 /**
- * Identifiers
+ * Key names for storing data.
  */
-const kID = (function() {
-  const prefix = 'ucjs_NaviLink_';
-  const names = [
-    'upper', 'prev', 'next', 'naviLink', 'pageInfo',
-    'startSeparator', 'endSeparator', 'pageInfoSeparator',
-    'commandData'
-  ];
-
-  let hash = {};
-
-  names.forEach((name) => {
-    hash[name] = prefix + name;
-  });
-
-  return hash;
-})();
+const kDataKey = {
+  // Extended property name of a menuitem.
+  commandData: 'ucjs_NaviLink_commandData'
+};
 
 /**
  * Handler of the menu UI settings.
@@ -298,7 +319,7 @@ const MenuUI = (function() {
   function onClick(aEvent) {
     let item = aEvent.target;
 
-    let data = item[kID.commandData];
+    let data = item[kDataKey.commandData];
 
     if (!data) {
       return;
@@ -314,7 +335,7 @@ const MenuUI = (function() {
   function onCommand(aEvent) {
     let item = aEvent.target;
 
-    let data = item[kID.commandData];
+    let data = item[kDataKey.commandData];
 
     if (!data) {
       return;
@@ -402,7 +423,9 @@ const MenuUI = (function() {
       isHTML && buildSiblingNavi('prev'),
       isHTML && buildSiblingNavi('next'),
       isHTML && buildNaviLink(),
-      kPref.showPageInfo && $E('menuseparator', {id: kID.pageInfoSeparator}),
+      kPref.showPageInfo && $E('menuseparator', {
+        id: kUI.pageInfoSeparator.id
+      }),
       kPref.showPageInfo && buildPageInfo()
     ].
     forEach((item) => {
@@ -430,20 +453,20 @@ const MenuUI = (function() {
 
   function setSeparators(aContextMenu) {
     [
-      kID.startSeparator,
-      kID.endSeparator
+      kUI.startSeparator,
+      kUI.endSeparator
     ].
-    forEach((id) => {
+    forEach((aSeparatorName) => {
       aContextMenu.appendChild($E('menuseparator', {
-        id
+        id: aSeparatorName.id
       }));
     });
   }
 
   function getSeparators() {
     return [
-      $ID(kID.startSeparator),
-      $ID(kID.endSeparator)
+      $ID(kUI.startSeparator.id),
+      $ID(kUI.endSeparator.id)
     ];
   }
 
@@ -463,8 +486,8 @@ const MenuUI = (function() {
     }
 
     let menu = $E('menu', {
-      id: kID.upper,
-      label: kFormat.upper,
+      id: kUI.upper.id,
+      label: kUI.upper.label,
       disabled: URLList === null || null
     });
 
@@ -490,7 +513,7 @@ const MenuUI = (function() {
         formatText(data, {
           siblingScanType: scanType
         }),
-        data.URL || kFormat.submit
+        data.URL || kUI.items.submit
       );
 
       node = $E('menuitem', {
@@ -503,7 +526,10 @@ const MenuUI = (function() {
       let popup = $E('menupopup');
 
       list.forEach((data) => {
-        let text = formatText(data, {siblingScanType: scanType});
+        let text = formatText(data, {
+          siblingScanType: scanType
+        });
+
         let URL = data.URL;
 
         popup.appendChild($E('menuitem', {
@@ -518,8 +544,8 @@ const MenuUI = (function() {
     }
 
     $E(node, {
-      id: kID[aDirection],
-      label: F(kFormat[aDirection], {
+      id: kUI[aDirection].id,
+      label: F(kUI[aDirection].label, {
         scanType: kSiblingScanType[scanType]
       })
     });
@@ -583,11 +609,11 @@ const MenuUI = (function() {
           child.appendChild(childPopup);
 
           if (trimmed) {
-            tooltiptext = kFormat.tooManyItems;
+            tooltiptext = kUI.items.tooManyItems;
           }
         }
 
-        let label = F(kFormat.type, {
+        let label = F(kUI.items.type, {
           title: getLabelForType(kNaviLinkType, type),
           count: (list.length > 1) ? list.length : null
         });
@@ -604,8 +630,8 @@ const MenuUI = (function() {
     });
 
     let menu = $E('menu', {
-      id: kID.naviLink,
-      label: kFormat.naviLink
+      id: kUI.naviLink.id,
+      label: kUI.naviLink.label
     });
 
     menu.appendChild(popup);
@@ -628,7 +654,9 @@ const MenuUI = (function() {
       if (type === 'meta') {
         // Only shows <meta> information with no command.
         list.forEach((data) => {
-          let text = formatText(data, {meta: true});
+          let text = formatText(data, {
+            meta: true
+          });
 
           childPopup.appendChild($E('menuitem', {
             closemenu: 'none',
@@ -655,17 +683,17 @@ const MenuUI = (function() {
       child.appendChild(childPopup);
 
       popup.appendChild($E(child, {
-        label: F(kFormat.type, {
+        label: F(kUI.items.type, {
           title: getLabelForType(kPageInfoType, type),
           count: (list.length > 1) ? list.length : null
         }),
-        tooltiptext: trimmed ? kFormat.tooManyItems : null
+        tooltiptext: trimmed ? kUI.items.tooManyItems : null
       }));
     });
 
     let menu = $E('menu', {
-      id: kID.pageInfo,
-      label: kFormat.pageInfo
+      id: kUI.pageInfo.id,
+      label: kUI.pageInfo.label
     });
 
     menu.appendChild(popup);
@@ -679,41 +707,41 @@ const MenuUI = (function() {
     if ('siblingScanType' in aOption) {
       switch (aOption.siblingScanType) {
         case 'preset':
-          return F(kFormat.preset, {
+          return F(kUI.items.preset, {
             name: aData.name,
             title: aData.title
           });
 
         case 'official':
-          return F(kFormat.official, {
+          return F(kUI.items.official, {
             title: aData.title
           });
 
         case 'searching':
-          return F(kFormat.searching, {
+          return F(kUI.items.searching, {
             title: aData.title,
             score: +(aData.score).toFixed(5)
           });
 
         case 'numbering':
-          return F(kFormat.numbering, {
+          return F(kUI.items.numbering, {
             here: aData.here,
             there: aData.there
           });
       }
 
-      // Unreachable here, but avoid warnings.
+      // @note Unreachable here, but avoid warnings.
       return null;
     }
 
     if (aOption.meta) {
-      return F(kFormat.meta, {
+      return F(kUI.items.meta, {
         name: aData.name,
         content: aData.content
       });
     }
 
-    return F(kFormat.item, {
+    return F(kUI.items.data, {
       title: aData.title,
       attributes: formatAttributes(aData.attributes) || null
     });
@@ -787,9 +815,10 @@ const MenuUI = (function() {
    * String formatter.
    *
    * @param aFormat {string|string[]}
-   *   @see |kFormat| for detail.
    * @param aReplacement {hash}
    * @return {string}
+   *
+   * @note The format %template% is defined only in |kUI|.
    */
   function F(aFormat, aReplacement) {
     // Filter items that its value is |null| or |undefined|.
@@ -2440,8 +2469,8 @@ function handleAttribute(aNode, aName, aValue) {
     case 'open':
     case 'submit': {
       if (aValue) {
-        aNode[kID.commandData] = {};
-        aNode[kID.commandData][aName] = aValue;
+        aNode[kDataKey.commandData] = {};
+        aNode[kDataKey.commandData][aName] = aValue;
       }
 
       return true;
