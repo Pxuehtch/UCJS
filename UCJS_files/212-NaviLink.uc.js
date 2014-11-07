@@ -2242,12 +2242,14 @@ const URIUtil = (function() {
   }
 
   function createURI(aURI, aOption = {}) {
+    // @note Returns a valid |nsIURI| object since we always pass a valid
+    // |aURI| for now.
     let URI = makeNSIURI(aURI);
 
     let {scheme, prePath, path, spec} = URI;
     let noHashSpec = trimHash(spec);
     let host = getHost(URI);
-    let baseDomain = getBaseDomain(URI);
+    let baseDomain = getBaseDomain(prePath, host);
 
     if (aOption.search === false) {
       path = trimSearch(path);
@@ -2287,13 +2289,11 @@ const URIUtil = (function() {
   }
 
   function isSameBaseDomain(aBaseDomain, aTargetURL) {
-    let targetURI = makeNSIURI(aTargetURL);
-
-    if (!targetURI) {
+    if (!aTargetURL) {
       return false;
     }
 
-    return getBaseDomain(targetURI) === aBaseDomain;
+    return getBaseDomain(aTargetURL) === aBaseDomain;
   }
 
   /**
@@ -2327,23 +2327,30 @@ const URIUtil = (function() {
   }
 
   function getHost(aURI) {
-    if (!aURI) {
+    if (!aURI || /^file:/.test(aURI.prePath)) {
       return '';
     }
 
     try {
-      // @note Returns an empty string for the host of 'file:///C:/...'.
       return aURI.host;
     }
     catch (ex) {}
 
-    return aURI.spec.
-      match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/)[1];
+    return aURI.prePath.
+      match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?$/)[1];
   }
 
-  function getBaseDomain(aURI) {
-    if (!aURI) {
+  function getBaseDomain(aURL, aHost) {
+    if (!aURL || /^file:/.test(aURL)) {
       return '';
+    }
+
+    if (!aHost) {
+      aHost = getHost(makeNSIURI(aURL));
+
+      if (!aHost) {
+        return '';
+      }
     }
 
     /**
@@ -2358,29 +2365,25 @@ const URIUtil = (function() {
      *   base domain = gitbookio.github.io
      *   public suffix = github.io
      */
-    const kBadHosts = [
+    const kBadBaseDomains = [
       'github.io'
     ];
 
-    if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
-      for (let host of kBadHosts) {
-        if (aURI.host.endsWith(host)) {
-          return host;
-        }
+    for (let item of kBadBaseDomains) {
+      if (aHost.endsWith(item)) {
+        return item;
       }
     }
 
     try {
       // @note |getBaseDomain| returns a value in ACE format for IDN.
-      let baseDomain = Services.eTLD.getBaseDomain(aURI);
-      let IDNService = Cc['@mozilla.org/network/idn-service;1'].
-        getService(Ci.nsIIDNService);
-
-      return IDNService.convertACEtoUTF8(baseDomain);
+      return Cc['@mozilla.org/network/idn-service;1'].
+        getService(Ci.nsIIDNService).
+        convertACEtoUTF8(Services.eTLD.getBaseDomainFromHost(aHost));
     }
     catch (ex) {}
 
-    return getHost(aURI);
+    return aHost;
   }
 
   /**
