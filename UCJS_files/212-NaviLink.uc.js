@@ -1838,7 +1838,7 @@ const NaviLinkScorer = (function() {
     // List of text not navigation-like.
     const kNGList = [
       // "response anchor" on BBS.
-      /^(?:>|\uff1e){2,}\d+$/
+      /^(?:>|\uff1e){2,}[-\d]+$/
     ];
 
     // Score weighting.
