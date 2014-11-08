@@ -8,10 +8,14 @@
 
 // @usage Creates items in the URLbar context menu.
 
-// @note Some functions are exposed (window.ucjsNaviLink.XXX).
+// @note The last computed data is cached and used until the context menu opens
+// in the other URL for performance. So the data may become incorrect when the
+// document is modified in the same URL.
 
 // @note This script scans only the top content document, does not traverse
 // frames.
+
+// @note Some functions are exposed (window.ucjsNaviLink.XXX).
 
 
 const ucjsNaviLink = (function(window, undefined) {
@@ -878,7 +882,7 @@ const PresetNavi = (function() {
 
     let URI = URIUtil.getCurrentURI();
 
-    if (!URI.isSamePage(mURL)) {
+    if (mURL !== URI.spec) {
       mURL = URI.spec;
       mData = {};
     }
@@ -1070,7 +1074,7 @@ const NaviLink = (function() {
   function init() {
     let URI = URIUtil.getCurrentURI();
 
-    if (!URI.isSamePage(mURL)) {
+    if (mURL !== URI.spec) {
       mURL = URI.spec;
       [mNaviList, mSubNaviList, mInfoList] = createLists();
     }
@@ -1478,7 +1482,7 @@ const SiblingNavi = (function() {
 
     let URI = URIUtil.getCurrentURI();
 
-    if (!URI.isSamePage(mURL)) {
+    if (mURL !== URI.spec) {
       mURL = URI.spec;
       mResult = {};
     }
@@ -2082,7 +2086,7 @@ const NaviLinkScorer = (function() {
   let mDirection;
 
   function init(aURI, aDirection) {
-    if (!aURI.isSamePage(mURL)) {
+    if (mURL !== aURI.spec) {
       mURL = aURI.spec;
       mDirection = null;
 
@@ -2146,7 +2150,7 @@ const UpperNavi = (function() {
   function init() {
     let URI = URIUtil.getCurrentURI();
 
-    if (!URI.isSamePage(mURL)) {
+    if (mURL !== URI.spec) {
       mURL = URI.spec;
       mList = createList(URI);
     }
