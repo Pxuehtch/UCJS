@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name NaviLink.uc.js
-// @description Detects the links for navigation.
+// @description Detects the links for navigations.
 // @include main
 // ==/UserScript==
 
@@ -233,7 +233,7 @@ const kSiblingScanType = {
 /**
  * UI settings.
  *
- * @note %template% is formatted by |MenuUI::F()|.
+ * @note %alias% is formatted by |MenuUI::F()|.
  */
 const kUI = {
   upper: {
@@ -819,13 +819,27 @@ const MenuUI = (function() {
    * String formatter.
    *
    * @param aFormat {string|string[]}
+   *   The string including aliases like %foo%.
    * @param aReplacement {hash}
+   *   The key-value items corresponding to the aliases of |aFormat|.
    * @return {string}
    *
-   * @note The format %template% is defined only in |kUI|.
+   * Example for aliases;
+   * aFormat: 'The number of %foo% is %bar%.'
+   * aReplacement: {foo: 'Foo', bar: 3}
+   * Returns 'The number of Foo is 3.'
+   *
+   * @note
+   * 1.If |aFormat| doesn't have all alias keys of |aReplacement|, |aFormat|
+   * string itself returns without replacing.
+   * 2.When an array of strings is passed to |aFormat|, the string that has all
+   * alias keys of |aReplacement| is used for replacing. If no matches, the
+   * first string returns unchanged.
+   *
+   * @see |kUI| for the format strings.
    */
   function F(aFormat, aReplacement) {
-    // Filter items that its value is |null| or |undefined|.
+    // Filter items that the value is |null| or |undefined|.
     let replacement = {};
 
     for (let [name, value] in Iterator(aReplacement)) {
@@ -838,7 +852,7 @@ const MenuUI = (function() {
       aFormat = [aFormat];
     }
 
-    // Retreive a format that has all aliases of the name of replacements.
+    // Retreive the format that has all alias keys of replacement.
     let format;
     let names = Object.keys(replacement);
 
@@ -1992,7 +2006,7 @@ const NaviLinkScorer = (function() {
       let originalURL = createData(originalPath);
 
       function match(aURL) {
-        // @note A target URL might be including the original URL encoded.
+        // @note The target URL might be including the original URL encoded.
         aURL = unescURLChar(aURL);
 
         let index = aURL.indexOf(originalPrePath);
@@ -2064,6 +2078,9 @@ const NaviLinkScorer = (function() {
         let i = otherParts.indexOf(part);
 
         if (i > -1) {
+          // Remove the matched string.
+          // @note |otherParts| is created for the target URL this time so
+          // that changing it has no side effect.
           delete otherParts[i];
 
           return true;
