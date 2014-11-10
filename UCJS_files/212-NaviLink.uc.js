@@ -408,10 +408,9 @@ const MenuUI = (function() {
   }
 
   function onPopupShowing(aEvent) {
-    let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
-    if (menupopup !== contextMenu) {
+    if (aEvent.target !== contextMenu) {
       return;
     }
 
@@ -440,16 +439,15 @@ const MenuUI = (function() {
   }
 
   function onPopupHiding(aEvent) {
-    let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
-    if (menupopup !== contextMenu) {
+    if (aEvent.target !== contextMenu) {
       return;
     }
 
-    // Remove existing items.
     let [sSep, eSep] = getSeparators();
 
+    // Remove existing items.
     for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
       contextMenu.removeChild(item);
     }

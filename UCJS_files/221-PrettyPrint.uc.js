@@ -132,10 +132,9 @@ const Menu = (function() {
   }
 
   function onPopupShowing(aEvent) {
-    let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
-    if (menupopup === contextMenu) {
+    if (aEvent.target === contextMenu) {
       let contentDocument = gBrowser.contentDocument;
       let shouldShow =
         !$ID(kUI.viewSource.id).hidden &&

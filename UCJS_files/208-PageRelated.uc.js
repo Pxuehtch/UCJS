@@ -238,10 +238,9 @@ function createMenu(aContextMenu) {
 }
 
 function onPopupShowing(aEvent) {
-  let menupopup = aEvent.target;
   let contextMenu = aEvent.currentTarget;
 
-  if (menupopup !== contextMenu) {
+  if (aEvent.target !== contextMenu) {
     return;
   }
 

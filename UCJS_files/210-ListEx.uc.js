@@ -268,10 +268,9 @@ const MainMenu = (function() {
   }
 
   function onPopupHiding(aEvent) {
-    let menupopup = aEvent.target;
     let contextMenu = aEvent.currentTarget;
 
-    if (menupopup === contextMenu) {
+    if (aEvent.target === contextMenu) {
       [
         kUI.historyMenu,
         kUI.openedMenu,

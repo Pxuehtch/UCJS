@@ -168,10 +168,9 @@ function createMenu(aContextMenu) {
 }
 
 function onPopupShowing(aEvent) {
-  let menupopup = aEvent.target;
   let contextMenu = aEvent.currentTarget;
 
-  if (menupopup === contextMenu) {
+  if (aEvent.target === contextMenu) {
     // @see chrome://browser/content/nsContextMenu.js
     const {showItem, linkURL, mediaURL} = window.gContextMenu;
 
@@ -185,10 +184,9 @@ function onPopupShowing(aEvent) {
 }
 
 function onPopupHiding(aEvent) {
-  let menupopup = aEvent.target;
   let contextMenu = aEvent.currentTarget;
 
-  if (menupopup === contextMenu) {
+  if (aEvent.target === contextMenu) {
     let menu = $ID(kUI.menu.id);
 
     while (menu.itemCount) {

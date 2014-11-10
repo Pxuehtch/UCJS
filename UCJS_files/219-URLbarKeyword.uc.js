@@ -101,10 +101,9 @@ function handleEvent(aEvent) {
     }
 
     case 'popuphiding': {
-      let menupopup = aEvent.target;
       let contextMenu = aEvent.currentTarget;
 
-      if (menupopup === contextMenu) {
+      if (aEvent.target === contextMenu) {
         let menu = $ID(kUI.menu.id);
 
         while (menu.itemCount) {
