@@ -397,18 +397,13 @@ const MenuUI = (function() {
       return;
     }
 
-    if (!/^(?:https?|ftp|file)$/.test(gBrowser.currentURI.scheme)) {
-      return;
-    }
-
-    let isHTML = isHTMLDocument(gBrowser.contentDocument);
     let [, eSep] = getSeparators();
 
     [
       buildUpperNavi(),
-      isHTML && buildSiblingNavi('prev'),
-      isHTML && buildSiblingNavi('next'),
-      isHTML && buildNaviLink(),
+      buildSiblingNavi('prev'),
+      buildSiblingNavi('next'),
+      buildNaviLink(),
       buildPageInfo()
     ].
     forEach((item) => {
@@ -879,6 +874,13 @@ const PresetNavi = (function() {
 
     let URI = URIUtil.getCurrentURI();
 
+    if (!URI || !isHTMLDocument()) {
+      mURL = null;
+      mData = null;
+
+      return;
+    }
+
     if (mURL !== URI.spec) {
       mURL = URI.spec;
       mData = {};
@@ -900,6 +902,10 @@ const PresetNavi = (function() {
    */
   function getData(aDirection) {
     init(aDirection);
+
+    if (!mData) {
+      return null;
+    }
 
     let data = mData[aDirection];
 
@@ -1068,6 +1074,15 @@ const NaviLink = (function() {
 
   function init() {
     let URI = URIUtil.getCurrentURI();
+
+    if (!URI || !isHTMLDocument()) {
+      mURL = null;
+      mNaviList = null;
+      mSubNaviList = null;
+      mInfoList = null;
+
+      return;
+    }
 
     if (mURL !== URI.spec) {
       mURL = URI.spec;
@@ -1477,6 +1492,13 @@ const SiblingNavi = (function() {
 
     let URI = URIUtil.getCurrentURI();
 
+    if (!URI || !isHTMLDocument()) {
+      mURL = null;
+      mResult = null;
+
+      return;
+    }
+
     if (mURL !== URI.spec) {
       mURL = URI.spec;
       mResult = {};
@@ -1497,7 +1519,11 @@ const SiblingNavi = (function() {
   function getURLFor(aDirection) {
     let result = getResult(aDirection);
 
-    return (result && result.list[0].URL) || '';
+    if (!result) {
+      return '';
+    }
+
+    return result.list[0].URL;
   }
 
   /**
@@ -1520,6 +1546,10 @@ const SiblingNavi = (function() {
    */
   function getResult(aDirection) {
     init(aDirection);
+
+    if (!mResult) {
+      return null;
+    }
 
     return mResult[aDirection];
   }
@@ -2148,6 +2178,13 @@ const UpperNavi = (function() {
   function init() {
     let URI = URIUtil.getCurrentURI();
 
+    if (!URI) {
+      mURL = null;
+      mList = null;
+
+      return;
+    }
+
     if (mURL !== URI.spec) {
       mURL = URI.spec;
       mList = createList(URI);
@@ -2244,15 +2281,27 @@ const UpperNavi = (function() {
    * For the exposed functions.
    */
   function getCurrentParent() {
-    return getParent(URIUtil.getCurrentURI({
+    let URI = URIUtil.getCurrentURI({
       search: false
-    }));
+    });
+
+    if (!URI) {
+      return '';
+    }
+
+    return getParent(URI);
   }
 
   function getCurrentTop() {
-    return getTop(URIUtil.getCurrentURI({
+    let URI = URIUtil.getCurrentURI({
       search: false
-    }));
+    });
+
+    if (!URI) {
+      return '';
+    }
+
+    return getTop(URI);
   }
 
   /**
@@ -2270,7 +2319,13 @@ const UpperNavi = (function() {
  */
 const URIUtil = (function() {
   function getCurrentURI(aOption) {
-    return createURI(gBrowser.currentURI, aOption);
+    let currentURI = gBrowser.currentURI;
+
+    if (!/^(?:https?|ftp|file)$/.test(currentURI.scheme)) {
+      return null;
+    }
+
+    return createURI(currentURI, aOption);
   }
 
   function createURI(aURI, aOption = {}) {
@@ -2430,9 +2485,11 @@ const URIUtil = (function() {
 /**
  * Utility functions.
  */
-function isHTMLDocument(aDocument) {
-  if (aDocument instanceof HTMLDocument) {
-    let mime = aDocument.contentType;
+function isHTMLDocument() {
+  let doc = gBrowser.contentDocument;
+
+  if (doc instanceof HTMLDocument) {
+    let mime = doc.contentType;
 
     return (
       mime === 'text/html' ||
