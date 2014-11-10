@@ -522,6 +522,10 @@ const HistoryList = (function() {
   function asyncBuildRecentHistory(aRefNode, aCallback) {
     PlacesDB.promiseRecentHistory().then(
       function onResolve(aRecentHistory) {
+        if (!isContextMenuOpen()) {
+          return;
+        }
+
         if (aRecentHistory) {
           buildRecentHistory(aRefNode, aRecentHistory);
         }
@@ -529,6 +533,7 @@ const HistoryList = (function() {
         aCallback(!!aRecentHistory);
       }
     ).catch(Cu.reportError);
+  }
 
   function buildRecentHistory(aRefNode, aRecentHistory) {
     let fragment = createDocumentFragment();
@@ -1365,6 +1370,12 @@ function makeDisabledMenuItem(aPopup, aLabel) {
 
 function makeMenuSeparator(aPopup) {
   return aPopup.appendChild($E('menuseparator'));
+}
+
+function isContextMenuOpen() {
+  let contextMenu = contentAreaContextMenu.get();
+
+  return contextMenu.state === 'showing' || contextMenu.state === 'open';
 }
 
 /**

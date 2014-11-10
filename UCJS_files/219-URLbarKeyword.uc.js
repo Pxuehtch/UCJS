@@ -204,6 +204,10 @@ function buildGroup(aRefItem, aData) {
 function asyncBuildGroup(aRefItem, aPromise, aCallback) {
   aPromise.then(
     function onResolve(aData) {
+      if (!isContextMenuOpen()) {
+        return;
+      }
+
       aCallback(buildGroup(aRefItem, aData));
     }
   ).catch(Cu.reportError);
@@ -317,6 +321,12 @@ function insertElement(aRefItem, aElement) {
   }
 
   return popup.insertBefore(aElement, refItem);
+}
+
+function isContextMenuOpen() {
+  let contextMenu = URLBarContextMenu.get();
+
+  return contextMenu.state === 'showing' || contextMenu.state === 'open';
 }
 
 /**
