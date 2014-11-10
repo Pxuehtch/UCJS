@@ -338,7 +338,7 @@ const MenuUI = (function() {
 
     if (data.open) {
       if (!/^(?:https?|ftp|file):/.test(data.open)) {
-        log('Invalid scheme to open:\n' + data.open);
+        warn('Invalid scheme to open:\n' + data.open);
 
         return;
       }
@@ -355,7 +355,7 @@ const MenuUI = (function() {
           aDocument.forms[data.submit].submit();
         }
         catch (ex) {
-          log('Error for a form element:\n' + ex);
+          warn('Error for the <form> element:\n' + ex);
         }
       };
 
@@ -2481,6 +2481,24 @@ function handleAttribute(aNode, aName, aValue) {
   }
 
   return false;
+}
+
+/**
+ * Warning and Log.
+ */
+function warn(aMsg) {
+  const kMaxMessageLength = 200;
+
+  let msg = log(aMsg)
+
+  if (msg.length > kMaxMessageLength) {
+    msg = msg.substr(0, kMaxMessageLength);
+    msg += '\n...(too long and truncated)';
+  }
+
+  msg += '\n[logged in the Browser Console]';
+
+  Services.prompt.alert(null, null, msg);
 }
 
 /**
