@@ -52,19 +52,6 @@ const {
 } = window.ucjsUI;
 
 /**
- * Preference
- */
-const kPref = {
-  // Show the unregistered navigation links.
-  // @see |kNaviLinkType| for the registered types.
-  showSubNaviLinks: true,
-
-  // Show the page information menu.
-  // @see |kPageInfoType|
-  showPageInfo: true
-};
-
-/**
  * User presets.
  *
  * @key name {string}
@@ -261,10 +248,6 @@ const kUI = {
     label: 'Page Info'
   },
 
-  pageInfoSeparator: {
-    id: 'ucjs_NaviLink_pageInfoSeparator'
-  },
-
   startSeparator: {
     id: 'ucjs_NaviLink_startSeparator'
   },
@@ -426,10 +409,7 @@ const MenuUI = (function() {
       isHTML && buildSiblingNavi('prev'),
       isHTML && buildSiblingNavi('next'),
       isHTML && buildNaviLink(),
-      kPref.showPageInfo && $E('menuseparator', {
-        id: kUI.pageInfoSeparator.id
-      }),
-      kPref.showPageInfo && buildPageInfo()
+      buildPageInfo()
     ].
     forEach((item) => {
       if (item) {
@@ -537,13 +517,8 @@ const MenuUI = (function() {
   }
 
   function buildNaviLink() {
-    let naviList, subNaviList;
-
-    naviList = NaviLink.getNaviList();
-
-    if (kPref.showSubNaviLinks) {
-      subNaviList = NaviLink.getSubNaviList();
-    }
+    let naviList = NaviLink.getNaviList();
+    let subNaviList = NaviLink.getSubNaviList();;
 
     if (!naviList && !subNaviList) {
       return null;
