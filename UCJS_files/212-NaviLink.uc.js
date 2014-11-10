@@ -397,20 +397,14 @@ const MenuUI = (function() {
       return;
     }
 
-    let [, eSep] = getSeparators();
-
-    [
-      buildUpperNavi(),
-      buildSiblingNavi('prev'),
-      buildSiblingNavi('next'),
-      buildNaviLink(),
-      buildPageInfo()
-    ].
-    forEach((item) => {
-      if (item) {
-        contextMenu.insertBefore(item, eSep);
-      }
-    });
+    Promise.all([
+      promiseUpperNavi(),
+      promiseSiblingNavi('prev'),
+      promiseSiblingNavi('next'),
+      promiseNaviLink(),
+      promisePageInfo()
+    ]).
+    catch(Cu.reportError);
   }
 
   function onPopupHiding(aEvent) {
@@ -428,30 +422,78 @@ const MenuUI = (function() {
     }
   }
 
+  /**
+   * Create a promise object for building menu items asynchronously.
+   */
+  function createPromiseBuild(aPlaceholder, aBuilder) {
+    let contextMenu = URLBarContextMenu.get();
+    let [, eSep] = getSeparators();
+
+    contextMenu.insertBefore(aPlaceholder, eSep);
+
+    return new Promise(() => {
+      let item = aBuilder();
+
+      if (contextMenu.state !== 'showing' && contextMenu.state !== 'open') {
+        return;
+      }
+
+      if (item) {
+        contextMenu.replaceChild(item, aPlaceholder);
+      }
+    });
+  }
+
+  /**
+   * UpperNavi builder.
+   */
+  function promiseUpperNavi() {
+    let placeholder = $E('menu', {
+      id: kUI.upper.id,
+      label: kUI.upper.label,
+      disabled: true
+    });
+
+    return createPromiseBuild(placeholder, buildUpperNavi);
+  }
+
   function buildUpperNavi() {
     let URLList = UpperNavi.getList();
 
+    if (!URLList) {
+      return null;
+    }
+
     let popup = $E('menupopup');
 
-    if (URLList) {
-      URLList.forEach((URL) => {
-        popup.appendChild($E('menuitem', {
-          crop: 'start',
-          label: URL,
-          'open': URL
-        }));
-      });
-    }
+    URLList.forEach((URL) => {
+      popup.appendChild($E('menuitem', {
+        crop: 'start',
+        label: URL,
+        'open': URL
+      }));
+    });
 
     let menu = $E('menu', {
       id: kUI.upper.id,
-      label: kUI.upper.label,
-      disabled: URLList === null || null
+      label: kUI.upper.label
     });
 
     menu.appendChild(popup);
 
     return menu;
+  }
+
+  /**
+   * SiblingNavi builder.
+   */
+  function promiseSiblingNavi(aDirection) {
+    let placeholder = $E('menuitem', {
+      id: kUI[aDirection].id,
+      hidden: true
+    });
+
+    return createPromiseBuild(placeholder, () => buildSiblingNavi(aDirection));
   }
 
   function buildSiblingNavi(aDirection) {
@@ -509,6 +551,19 @@ const MenuUI = (function() {
     });
 
     return node;
+  }
+
+  /**
+   * NaviLink builder.
+   */
+  function promiseNaviLink() {
+    let placeholder = $E('menu', {
+      id: kUI.naviLink.id,
+      label: kUI.naviLink.label,
+      disabled: true
+    });
+
+    return createPromiseBuild(placeholder, buildNaviLink);
   }
 
   function buildNaviLink() {
@@ -590,6 +645,19 @@ const MenuUI = (function() {
     menu.appendChild(popup);
 
     return menu;
+  }
+
+  /**
+   * PageInfo builder.
+   */
+  function promisePageInfo() {
+    let placeholder = $E('menu', {
+      id: kUI.pageInfo.id,
+      label: kUI.pageInfo.label,
+      disabled: true
+    });
+
+    return createPromiseBuild(placeholder, buildPageInfo);
   }
 
   function buildPageInfo() {
