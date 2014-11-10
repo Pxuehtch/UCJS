@@ -423,7 +423,7 @@ const TooltipPanel = (function() {
     });
 
     for (let name in attributes) {
-      // <event> attributes.
+      // The attribute for event.
       if (/^on/.test(name)) {
         data.push(makeTipData($attr(name), attributes[name], true));
       }

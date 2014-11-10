@@ -82,7 +82,7 @@ const kAppList = [
   {
     name: 'WMP',
 
-    // @note If <type> is 'file', you should also set <extensions> to describe
+    // @note If |type| is 'file', you should also set |extensions| to describe
     // the file extensions of a link URL that is passed to the application.
     type: 'file',
     extensions: ['asx', 'wax', 'wvx'],

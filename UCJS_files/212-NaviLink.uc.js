@@ -70,15 +70,15 @@ const kPref = {
  * @key name {string}
  *   A display name in the UI item.
  * @key URL {RegExp}
- *   A URL of a page that should be scan the navigations.
+ *   A URL of a page that has the navigations.
  *
  * @key prev {XPath}
  *   A navigation element for the previous page.
  * @key next {XPath}
  *   A navigation element for the next page.
  *   @note Command actions;
- *   - Opens the URL for an element which has <href> attribute.
- *   - Submits with the form for a <input> element.
+ *   - Opens the URL for an element which has 'href' attribute.
+ *   - Submits with the form for an <input> element.
  */
 const kPresetNavi = [
   {
@@ -100,14 +100,14 @@ const kPresetNavi = [
  * Types of the link navigations.
  *
  * @key type {string}
- *   The value of <rel> attribute of an element that has <href> (e.g. <link>,
- *   <a>).
+ *   The value of 'rel' attribute of an element that has 'href' attribute (e.g.
+ *   <link>, <a>).
  * @key synonym {string} [optional]
- *   The synonymous value that is converted to <type>.
+ *   The synonymous value that is converted to |type|.
  *   @note The values can be combined with '|'.
  * @key label {string} [optional]
  *   A displayed string.
- *   @note A capitalized text of <type> will be displayed if <label> is empty.
+ *   @note A capitalized text of |type| will be displayed if |label| is empty.
  *
  * @note Displayed in the declared order.
  */
@@ -191,7 +191,7 @@ const kNaviLinkType = [
  * @key type {string}
  * @key label {string} [optional]
  *   A displayed string.
- *   @note A capitalized text of <type> will be displayed if <label> is empty.
+ *   @note A capitalized text of |type| will be displayed if |label| is empty.
  *
  * @note Displayed in the declared order.
  */
@@ -274,7 +274,7 @@ const kUI = {
   },
 
   items: {
-    // Items of <Sibling Navi>.
+    // Items of |SiblingNavi|.
     preset: '[%name%] %title%',
     official: '%title%',
     searching: '%title% (%score%)',
@@ -282,7 +282,7 @@ const kUI = {
     // Submit mode warning.
     submit: '<submit mode>',
 
-    // Items of <Navi Link> / <Page Info>.
+    // Items of |NaviLink| / |PageInfo|.
     type: ['%title%', '%title% (%count%)'],
     data: ['%title%', '%title% [%attributes%]'],
     meta: '%name%: %content%',
@@ -453,25 +453,6 @@ const MenuUI = (function() {
     for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
       contextMenu.removeChild(item);
     }
-  }
-
-  function setSeparators(aContextMenu) {
-    [
-      kUI.startSeparator,
-      kUI.endSeparator
-    ].
-    forEach((aSeparatorName) => {
-      aContextMenu.appendChild($E('menuseparator', {
-        id: aSeparatorName.id
-      }));
-    });
-  }
-
-  function getSeparators() {
-    return [
-      $ID(kUI.startSeparator.id),
-      $ID(kUI.endSeparator.id)
-    ];
   }
 
   function buildUpperNavi() {
@@ -705,6 +686,9 @@ const MenuUI = (function() {
     return menu;
   }
 
+  /**
+   * String format functions.
+   */
   function formatText(aData, aOption) {
     aOption = aOption || {};
 
@@ -734,7 +718,7 @@ const MenuUI = (function() {
           });
       }
 
-      // @note Unreachable here, but avoid warnings.
+      // @note Unreachable here usually.
       return null;
     }
 
@@ -752,7 +736,7 @@ const MenuUI = (function() {
   }
 
   /**
-   * Attributes formatter.
+   * Attribute formatter.
    *
    * @param aAttributes {array}
    *   [['name', 'value'], ..., ['rel', ['value', 'value', ...]]]
@@ -786,9 +770,13 @@ const MenuUI = (function() {
     return attributes.join(kAttributesDelimiter);
   }
 
-  // TODO: Fix broken tooltip text. False line breaks and the latter text is
-  // cut off. It seems to happen when a long text has '-' and '\n'. The other
-  // characters may break it.
+  /**
+   * Tooltip text formatter.
+   *
+   * TODO: Fix broken tooltip text. Sometimes text wrapping breaks and the
+   * latter text is cut off. It seems to happen when a long text has '-' and
+   * '\n'. The other characters may break it.
+   */
   function formatTooltip(aText, aURL) {
     if (aText && aText !== getLeaf(aURL)) {
       return aText + '\n' + aURL;
@@ -816,7 +804,7 @@ const MenuUI = (function() {
   }
 
   /**
-   * String formatter.
+   * Alias formatter.
    *
    * @param aFormat {string|string[]}
    *   The string including aliases like %foo%.
@@ -825,16 +813,16 @@ const MenuUI = (function() {
    * @return {string}
    *
    * Example for aliases;
-   * aFormat: 'The number of %foo% is %bar%.'
+   * aFormat: 'The number of %foo% is %bar%!'
    * aReplacement: {foo: 'Foo', bar: 3}
-   * Returns 'The number of Foo is 3.'
+   * Returns 'The number of Foo is 3!'
    *
    * @note
    * 1.If |aFormat| doesn't have all alias keys of |aReplacement|, |aFormat|
    * string itself returns without replacing.
    * 2.When an array of strings is passed to |aFormat|, the string that has all
    * alias keys of |aReplacement| is used for replacing. If no matches, the
-   * first string returns unchanged.
+   * first string returns unreplaced.
    *
    * @see |kUI| for the format strings.
    */
@@ -872,6 +860,28 @@ const MenuUI = (function() {
     }
 
     return format;
+  }
+
+  /**
+   * Get/Set the menu separators.
+   */
+  function setSeparators(aContextMenu) {
+    [
+      kUI.startSeparator,
+      kUI.endSeparator
+    ].
+    forEach((aSeparatorName) => {
+      aContextMenu.appendChild($E('menuseparator', {
+        id: aSeparatorName.id
+      }));
+    });
+  }
+
+  function getSeparators() {
+    return [
+      $ID(kUI.startSeparator.id),
+      $ID(kUI.endSeparator.id)
+    ];
   }
 
   /**
@@ -995,14 +1005,12 @@ const PresetNavi = (function() {
 })();
 
 /**
- * Handler of the official navigation links according to the <rel> attribute.
+ * Handler of the official navigation links according to the 'rel' attribute.
  *
  * @note [additional] Makes a list of the page information.
  */
 const NaviLink = (function() {
-  /**
-   * The max number of the items of each type.
-   */
+  // The max number of the items of each type.
   const kMaxNumItemsOfType = 20;
 
   /**
@@ -1238,7 +1246,7 @@ const NaviLink = (function() {
   function testUniqueData(aArray, aData) {
     return aArray.every((data) => {
       for (let key in data) {
-        // <attributes> is {array}, the others are {string}.
+        // |attributes| is {array}, the others are {string}.
         if (key === 'attributes') {
           if (data[key].join() !== aData[key].join()) {
             return true;
@@ -1530,12 +1538,12 @@ const SiblingNavi = (function() {
    *     @see |kSiblingScanType| for detail.
    *
    * <data> has the proper members assigned to |kSiblingScanType|.
-   * {name:, title:, URL:} for a <preset>.
-   * {name:, title:, formIndex:} for a submit <preset>.
-   * {name:, content:} for a meta of <official>.
-   * {title:, attributes:, URL:} for a script or rel of <official>.
-   * {title:, score:, URL:} for a sibling by <searching>.
-   * {here:, there:, URL:} for a sibling by <numbering>.
+   * {name:, title:, URL:} for a |preset|.
+   * {name:, title:, formIndex:} for a submit |preset|.
+   * {name:, content:} for a meta of |official|.
+   * {title:, attributes:, URL:} for a script or rel of |official|.
+   * {title:, score:, URL:} for a sibling by |searching|.
+   * {here:, there:, URL:} for a sibling by |numbering|.
    */
   function getResult(aDirection) {
     init(aDirection);
@@ -1588,7 +1596,7 @@ const SiblingNavi = (function() {
    *   URL: {string}
    *
    * @note Allows only URL that has the same as the base domain of the document
-   * to avoid jumping to the outside by a 'prev/next' command.
+   * to avoid jumping to the outside by a |prev|/|next| command.
    */
   function guessBySearching(aDirection, aURI) {
     let URI = URIUtil.createURI(aURI, {
