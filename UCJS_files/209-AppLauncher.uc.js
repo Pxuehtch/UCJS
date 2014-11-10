@@ -1171,7 +1171,7 @@ function getPrivacyContextFor(aDocument) {
 }
 
 function warn(aTitle, aMsg) {
-  const kMaxLen = 200;
+  const kMaxMessageLength = 200;
 
   if (!Array.isArray(aMsg)) {
     aMsg = [aMsg];
@@ -1179,9 +1179,12 @@ function warn(aTitle, aMsg) {
 
   let msg = log(['Error: ' + aTitle, aMsg.join('\n')]);
 
-  if (msg.length > kMaxLen) {
-    msg = msg.substr(0, kMaxLen) + '\n...(see console log)';
+  if (msg.length > kMaxMessageLength) {
+    msg = msg.substr(0, kMaxMessageLength);
+    msg += '\n...(too long and truncated)';
   }
+
+  msg += '\n[logged in the Browser Console]';
 
   Services.prompt.alert(null, null, msg);
 }
