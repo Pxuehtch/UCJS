@@ -528,8 +528,7 @@ const HistoryList = (function() {
 
         aCallback(!!aRecentHistory);
       }
-    ).then(null, Cu.reportError);
-  }
+    ).catch(Cu.reportError);
 
   function buildRecentHistory(aRefNode, aRecentHistory) {
     let fragment = createDocumentFragment();
@@ -574,7 +573,7 @@ const HistoryList = (function() {
       function onResolve(aResult) {
         aCallback(aResult);
       }
-    ).then(null, Cu.reportError);
+    ).catch(Cu.reportError);
   }
 
   return {

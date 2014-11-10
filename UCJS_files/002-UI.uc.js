@@ -700,7 +700,7 @@ const StatusField = (function() {
 
       // Make |this| to refer to |window.XULBrowserWindow|.
       }.bind(this)).
-      then(null, Cu.reportError);
+      catch(Cu.reportError);
     };
 
     /**

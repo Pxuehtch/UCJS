@@ -206,7 +206,7 @@ function asyncBuildGroup(aRefItem, aPromise, aCallback) {
     function onResolve(aData) {
       aCallback(buildGroup(aRefItem, aData));
     }
-  ).then(null, Cu.reportError);
+  ).catch(Cu.reportError);
 }
 
 function getRestrictKeywordData() {

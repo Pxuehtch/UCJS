@@ -1790,7 +1790,7 @@ function fetchPageTitle(aURL, aCallback) {
     function onReject(aReason) {
       aCallback(aURL);
     }
-  ).then(null, Cu.reportError);
+  ).catch(Cu.reportError);
 }
 
 function makeURI(aURL) {
