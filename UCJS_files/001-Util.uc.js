@@ -1126,7 +1126,7 @@ function getPlacesDBResult(aParam) {
  *   columns: {array}
  *     The column names.
  * @return {Promise}
- *   onFulFill: {hash[]|null}
+ *   onResolve: {hash[]|null}
  *     Resolved with an array of {column-name: value, ...}, or null if no
  *     result.
  *   onReject: {Error}

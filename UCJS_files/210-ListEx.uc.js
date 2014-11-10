@@ -521,7 +521,7 @@ const HistoryList = (function() {
 
   function asyncBuildRecentHistory(aRefNode, aCallback) {
     PlacesDB.promiseRecentHistory().then(
-      function onFulFill(aRecentHistory) {
+      function onResolve(aRecentHistory) {
         if (aRecentHistory) {
           buildRecentHistory(aRefNode, aRecentHistory);
         }
@@ -571,7 +571,7 @@ const HistoryList = (function() {
 
   function asyncGetTimeAndIcon(aURL, aCallback) {
     PlacesDB.promiseTimeAndIcon(aURL).then(
-      function onFulFill(aResult) {
+      function onResolve(aResult) {
         aCallback(aResult);
       }
     ).then(null, Cu.reportError);

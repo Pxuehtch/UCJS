@@ -1784,7 +1784,7 @@ function fetchPageTitle(aURL, aCallback) {
   const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
   PlacesUtils.promisePlaceInfo(uri).then(
-    function onFulfill(aPlaceInfo) {
+    function onResolve(aPlaceInfo) {
       aCallback(aPlaceInfo.title || aURL);
     },
     function onReject(aReason) {

@@ -203,7 +203,7 @@ function buildGroup(aRefItem, aData) {
 
 function asyncBuildGroup(aRefItem, aPromise, aCallback) {
   aPromise.then(
-    function onFulFill(aData) {
+    function onResolve(aData) {
       aCallback(buildGroup(aRefItem, aData));
     }
   ).then(null, Cu.reportError);
