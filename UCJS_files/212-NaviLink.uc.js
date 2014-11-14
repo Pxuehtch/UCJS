@@ -744,7 +744,7 @@ const MenuUI = (function() {
         case 'searching':
           return F(kUI.items.searching, {
             title: aData.title,
-            score: +(aData.score).toFixed(5)
+            score: formatScore(aData.score)
           });
 
         case 'numbering':
@@ -896,6 +896,13 @@ const MenuUI = (function() {
     }
 
     return format;
+  }
+
+  /**
+   * Score formatter.
+   */
+  function formatScore(aScore) {
+    return aScore.toFixed(3);
   }
 
   /**
