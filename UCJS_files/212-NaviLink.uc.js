@@ -2111,7 +2111,7 @@ const NaviLinkScorer = (function() {
         let otherPath = aURL.substr(index + originalPrePath.length);
 
         // No information for comparison.
-        if (!otherPath || otherPath === '/' || otherPath === originalPath) {
+        if (!otherPath || otherPath === '/') {
           return null;
         }
 
