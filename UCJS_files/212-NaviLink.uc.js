@@ -2093,6 +2093,11 @@ const NaviLinkScorer = (function() {
       let originalURL = createData(originalPath);
 
       function match(aURL) {
+        // No information for comparison.
+        if (originalPath === '/') {
+          return null;
+        }
+
         // @note The target URL might be including the original URL encoded.
         aURL = unescURLChar(aURL);
 
@@ -2160,6 +2165,10 @@ const NaviLinkScorer = (function() {
     function getContentRate({originalURL, otherURL}) {
       let originalParts = originalURL.parts,
           otherParts = otherURL.parts;
+
+      if (!originalParts.length) {
+        return 0;
+      }
 
       let matches = originalParts.filter((part) => {
         let i = otherParts.indexOf(part);
