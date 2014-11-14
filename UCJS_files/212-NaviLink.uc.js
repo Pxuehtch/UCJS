@@ -432,11 +432,11 @@ const MenuUI = (function() {
     contextMenu.insertBefore(aPlaceholder, eSep);
 
     return new Promise(() => {
-      let item = aBuilder();
-
       if (contextMenu.state !== 'showing' && contextMenu.state !== 'open') {
         return;
       }
+
+      let item = aBuilder();
 
       if (item) {
         contextMenu.replaceChild(item, aPlaceholder);
@@ -961,6 +961,7 @@ const PresetNavi = (function() {
 
   /**
    * Gets the preset data for the previous or next page.
+   *
    * @param aDirection {string}
    *   'prev' or 'next'.
    * @return {hash|null}
