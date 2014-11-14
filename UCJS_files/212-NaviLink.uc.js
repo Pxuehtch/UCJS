@@ -2215,10 +2215,10 @@ const NaviLinkScorer = (function() {
       point += URLScorer.score(aURL);
     }
 
-    if (point < 1) {
-      return 0;
-    }
-
+    // Integer range;
+    // Text score: [0,1]
+    // URL score:  [0,1]
+    // Text + URL: [0,2]
     return point;
   }
 
