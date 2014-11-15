@@ -1937,9 +1937,9 @@ const NaviLinkScorer = (function() {
     };
 
     // List of text not navigation-like.
-    const kNGList = [
+    const kNGTextList = [
       // "response anchor" on BBS.
-      /^(?:>|\uff1e){2,}[-\d]+$/
+      /^(?:>|\uff1e){2,}[-\d ]+$/
     ];
 
     // Score weighting.
@@ -2022,7 +2022,7 @@ const NaviLinkScorer = (function() {
       let match;
 
       // Filter the NG text.
-      if (kNGList.some((ng) => ng.test(aText))) {
+      if (kNGTextList.some((ng) => ng.test(aText))) {
         return 0;
       }
 
