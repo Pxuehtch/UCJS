@@ -2077,7 +2077,7 @@ const NaviLinkScorer = (function() {
   const URLScorer = (function() {
     const kScoreWeight = initScoreWeight({
       lengthRate: 30,
-      contentRate: 70
+      intersectionRate: 70
     });
 
     let mURLData = null;
@@ -2093,7 +2093,7 @@ const NaviLinkScorer = (function() {
       let originalURL = createData(originalPath);
 
       function match(aURL) {
-        // No information for comparison.
+        // No path for comparison.
         if (originalPath === '/') {
           return null;
         }
@@ -2110,7 +2110,7 @@ const NaviLinkScorer = (function() {
 
         let otherPath = aURL.substr(index + originalPrePath.length);
 
-        // No information for comparison.
+        // No path for comparison.
         if (!otherPath || otherPath === '/') {
           return null;
         }
@@ -2148,46 +2148,56 @@ const NaviLinkScorer = (function() {
       let point = 0;
 
       point += kScoreWeight.lengthRate * getLengthRate(URLData);
-      point += kScoreWeight.contentRate * getContentRate(URLData);
+      point += kScoreWeight.intersectionRate * getIntersectionRate(URLData);
 
       return point;
     }
 
     function getLengthRate({originalURL, otherURL}) {
-      let originalLength = originalURL.path.length,
-          otherLength = otherURL.path.length;
+      let originalLength = originalURL.path.length;
+      let otherLength = otherURL.path.length;
 
       // Be less than (1.0).
       return 1 - (Math.abs(originalLength - otherLength) /
         (originalLength + otherLength));
     }
 
-    function getContentRate({originalURL, otherURL}) {
-      let originalParts = originalURL.parts,
-          otherParts = otherURL.parts;
+    function getIntersectionRate({originalURL, otherURL}) {
+      let originalParts = originalURL.parts;
 
-      if (!originalParts.length) {
+      // @note We will destruct the array |otherParts|, but |otherURL.parts| is
+      // created only for this function this time so that we don't have to copy
+      // the array.
+      // let otherParts = otherURL.parts.slice();
+      let otherParts = otherURL.parts;
+
+      let originalLength = originalParts.length;
+
+      if (!originalLength || !otherParts.length) {
         return 0;
       }
 
-      let matches = originalParts.filter((part) => {
-        let i = otherParts.indexOf(part);
+      let matches = 0;
 
-        if (i > -1) {
-          // Remove the matched string.
-          // @note |otherParts| is created for the target URL this time so
-          // that changing it has no side effect.
-          delete otherParts[i];
+      for (let i = 0; i < originalLength; i++) {
+        let matchIndex = otherParts.indexOf(originalParts[i]);
 
-          return true;
+        if (matchIndex > -1) {
+          matches++;
+
+          // Remove the matched item to avoid matching with the same value of
+          // the other item of the original parts.
+          delete otherParts[matchIndex];
+
+          if (!otherParts.length) {
+            break;
+          }
         }
-
-        return false;
-      });
+      }
 
       // Be less than (1.0).
-      return matches.length / originalParts.length;
-    }
+      return matches / originalLength;
+   }
 
     return {
       init,
