@@ -2101,6 +2101,9 @@ const NaviLinkScorer = (function() {
         // @note The target URL might be including the original URL encoded.
         aURL = unescURLChar(aURL);
 
+        // Search the same pre path as the original in the target URL;
+        // 1.The target pre path equals the original.
+        // 2.The target path has a pre path that equals the original.
         let index = aURL.indexOf(originalPrePath);
 
         // No information of the original URL.
@@ -2197,7 +2200,7 @@ const NaviLinkScorer = (function() {
 
       // Be less than (1.0).
       return matches / originalLength;
-   }
+    }
 
     return {
       init,
