@@ -783,7 +783,7 @@ const StatusField = (function() {
         return Promise.resolve(null);
       }
 
-      let SQLExp = [
+      let sql = [
         "SELECT h.visit_date",
         "FROM moz_historyvisits h",
         "JOIN moz_places p ON p.id = h.place_id",
@@ -793,17 +793,17 @@ const StatusField = (function() {
       ].join(' ');
 
       return promisePlacesDBResult({
-        expression: SQLExp,
+        sql,
         params: {'url': aURL},
         columns: ['visit_date']
       }).
-      // Resolved with the date or null.
+      // Resolved with the date, or null if no data.
       // @note We ordered a single row.
       then((aRows) => aRows ? aRows[0].visit_date : null);
     }
 
     function checkBookmarked(aURL) {
-      let SQLExp = [
+      let sql = [
         "SELECT b.id",
         "FROM moz_bookmarks b",
         "JOIN moz_places p ON p.id = b.fk",
@@ -812,7 +812,7 @@ const StatusField = (function() {
       ].join(' ');
 
       return promisePlacesDBResult({
-        expression: SQLExp,
+        sql,
         params: {'url': aURL},
         columns: ['id']
       }).

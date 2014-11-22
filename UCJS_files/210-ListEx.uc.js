@@ -369,7 +369,7 @@ const HistoryList = (function() {
   const PlacesDB = (function() {
     function promiseRecentHistory() {
       // Query history entries in thier visited date order from newest.
-      let SQLExp = [
+      let sql = [
         "SELECT p.title, p.url, h.visit_date time, f.url icon",
         "FROM moz_places p",
         "JOIN moz_historyvisits h ON p.id = h.place_id",
@@ -386,7 +386,7 @@ const HistoryList = (function() {
       let limit = (maxNumItems > 0) ? maxNumItems : -1;
 
       return promisePlacesDBResult({
-        expression: SQLExp,
+        sql,
         params: {'limit': limit},
         columns: ['title', 'url', 'time', 'icon']
       });
@@ -395,11 +395,12 @@ const HistoryList = (function() {
     function promiseTimeAndIcon(aURL) {
       // Don't query schemes which are excluded from history in Places DB.
       if (!/^(?:https?|ftp|file):/.test(aURL)) {
+        // Resolved with an empty hash.
         return Promise.resolve({});
       }
 
       // Query a newest item with the URL.
-      let SQLExp = [
+      let sql = [
         "SELECT h.visit_date time, f.url icon",
         "FROM moz_places p",
         "JOIN moz_historyvisits h ON p.id = h.place_id",
@@ -410,11 +411,13 @@ const HistoryList = (function() {
       ].join(' ');
 
       return promisePlacesDBResult({
-        expression: SQLExp,
+        sql,
         params: {'url': aURL},
         columns: ['time', 'icon']
       }).
-      // We ordered a single row.
+      // Resolved with the hash including time and icon, or empty hash if no
+      // data.
+      // @note We ordered a single row.
       then((aRows) => aRows ? aRows[0] : {});
     }
 

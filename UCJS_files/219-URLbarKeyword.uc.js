@@ -258,7 +258,7 @@ function getSearchEngineKeywordData() {
 }
 
 function getBookmarkKeywordData() {
-  let SQLExp = [
+  let sql = [
     'SELECT b.title, k.keyword, p.url',
     'FROM moz_bookmarks b',
     'JOIN moz_keywords k ON k.id = b.keyword_id',
@@ -266,7 +266,7 @@ function getBookmarkKeywordData() {
   ].join(' ');
 
   return promisePlacesDBResult({
-    expression: SQLExp,
+    sql,
     columns: ['title', 'keyword', 'url']
   }).
   then((aRows) => {

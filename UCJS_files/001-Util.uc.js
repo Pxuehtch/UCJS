@@ -1119,97 +1119,54 @@ function getPlacesDBResult(aParam) {
  * Query the Places database asynchronously.
  *
  * @param aParam {hash}
- *   expression: {string}
- *     A SQL expression.
+ *   sql: {string}
+ *     A SQL statement to execute.
  *   params: {hash} [optional]
  *     The binding parameters.
  *   columns: {array}
  *     The column names.
  * @return {Promise}
  *   onResolve: {hash[]|null}
- *     Resolved with an array of {column-name: value, ...}, or null if no
- *     result.
+ *     Resolved with an array of name-value hashes whose names are associated
+ *     with |columns|, or null if no result.
  *   onReject: {Error}
  *     Rejected with an error object.
  *
- * TODO: Use |createAsyncStatement|.
- * I'm not sure why it doesn't work well.
- *
- * TODO: Handle cancelling.
- *
- * TODO: Use a reliable built-in module.
- * e.g. resource://gre/modules/Sqlite.jsm
+ * TODO: Handle cancelling by user.
  */
 function promisePlacesDBResult(aParam) {
   const {
-    expression,
+    sql,
     params,
     columns
   } = aParam || {};
 
-  // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
+  return Task.spawn(function*() {
+    // @see resource://gre/modules/PlacesUtils.jsm
+    const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
-  let statement =
-    PlacesUtils.history.DBConnection.createStatement(expression);
+    let dbConnection = yield PlacesUtils.promiseDBConnection();
 
-  for (let key in statement.params) {
-    if (!(key in params)) {
-      statement.finalize();
+    let rows = yield dbConnection.executeCached(sql, params);
 
-      throw Error('parameter is not defined: ' + key);
+    let result = [];
+
+    for (let row of rows) {
+      let values = {};
+
+      columns.forEach((aName) => {
+        values[aName] = row.getResultByName(aName);
+      });
+
+      result.push(values);
     }
 
-    statement.params[key] = params[key];
-  }
-
-  let deferred = Promise.defer();
-
-  statement.executeAsync({
-    rows: [],
-    error: null,
-
-    handleResult: function(aResultSet) {
-      let row;
-
-      if (!aResultSet) {
-        return;
-      }
-
-      while ((row = aResultSet.getNextRow())) {
-        let result = {};
-
-        columns.forEach((name) => {
-          result[name] = row.getResultByName(name);
-        });
-
-        this.rows.push(result);
-      }
-    },
-
-    handleError: function(aError) {
-      this.error = aError;
-    },
-
-    handleCompletion: function(aReason) {
-      statement.finalize();
-
-      switch (aReason) {
-        case Ci.mozIStorageStatementCallback.REASON_FINISHED:
-          deferred.resolve(this.rows.length ? this.rows : null);
-          break;
-
-        case Ci.mozIStorageStatementCallback.REASON_ERROR:
-          deferred.reject(this.error);
-          break;
-
-        case Ci.mozIStorageStatementCallback.REASON_CANCELED:
-          break;
-      }
+    if (!result.length) {
+      return null;
     }
+
+    return result;
   });
-
-  return deferred.promise;
 }
 
 /**
