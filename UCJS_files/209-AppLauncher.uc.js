@@ -73,7 +73,8 @@ const kAppList = [
     // [optional] Commandline arguments.
     // @note %URL% is replaced with the proper URL of each action.
     // @note If absent or empty array, it equals to <args: ['%URL%']>.
-    // @note If launched as tool, an argument that contains %URL% is ignored.
+    // @note If launched as a stand-alone tool, an argument that contains %URL%
+    // is ignored.
     args: ['-new', '%URL%'],
 
     // [optional] This item is disabled.
@@ -717,11 +718,12 @@ function getAvailableActions() {
     }
   }
 
-  actions.push('launchTool');
-
-  if (actions.length === 1) {
+  if (!actions.length) {
     actions.push('noActions');
   }
+
+  // Always enable the action to launch stand-alone tools.
+  actions.push('launchTool');
 
   return actions;
 }
@@ -737,6 +739,7 @@ function doAction(aApp, aAction) {
 
   switch (FileExtUtil.getBaseAction(aAction)) {
     case 'launchTool':
+      targetURL = null;
       break;
 
     case 'openPage':
