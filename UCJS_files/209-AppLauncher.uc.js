@@ -37,7 +37,7 @@
 const {
   checkApp,
   runApp,
-  makeURIURL,
+  extractFileName,
   getNodesByXPath: $X,
   contentAreaContextMenu,
   // For debugging.
@@ -331,23 +331,25 @@ const FileExtUtil = {
   },
 
   updateFileExt: function(aExtArray) {
-    // Add new extensions.
+    // Add new extensions to the array of file extentions.
     let fileExts = kLinkExtension['file'].concat(aExtArray);
 
-    // Update array with the unique extensions.
+    // Filter the array with unique extensions.
     kLinkExtension['file'] =
-    fileExts.filter((ext, i, array) => array.indexOf(ext) === i);
+      fileExts.filter((ext, i, array) => array.indexOf(ext) === i);
   },
 
   matchExt: function(aURL, aType) {
-    let URL = aURL && makeURIURL(aURL);
+    let result = extractFileName(aURL);
 
-    if (URL) {
-      let ext = URL.fileExtension;
+    if (!result) {
+      return null;
+    }
 
-      if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
-        return ext;
-      }
+    let ext = result.extension;
+
+    if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
+      return ext;
     }
 
     return null;
@@ -371,7 +373,7 @@ function initAppList() {
     if (!disabled && name && type && path) {
       // 2.Valid action type.
       if (kTypeAction.some((item) => item.type === type)) {
-        // 3.Required 'extentions' property if type is 'file'.
+        // 3.Required 'extensions' property if type is 'file'.
         if (type !== 'file' || (extensions && extensions.length)) {
           // 4.Valid application.
           if (checkApp(app)) {
@@ -1052,9 +1054,13 @@ function getSaveFilePath(aURI, aDocument) {
 }
 
 function makeFileName(aURI, aDocument) {
-  const kMaxFileNameLen = 32;
+  if (!aURI) {
+    return null;
+  }
+
+  const kDataImageBaseName = 'data_image';
+  const kMaxBaseNameLen = 32;
   const kEllipsis = '__';
-  const kDataImageFileName = 'data_image';
 
   let trim = (aStr) =>
     aStr.trim().
@@ -1062,55 +1068,80 @@ function makeFileName(aURI, aDocument) {
     replace(/_\W_/g, '_').
     replace(/^_|_$/g, '');
 
-  let fileName, extension;
+  let baseName, extension;
 
   if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
-    // @see chrome://global/content/contentAreaUtils.js::getDefaultFileName()
-    fileName = window.getDefaultFileName('', aURI, aDocument);
+    let result = extractFileName(aURI, aDocument);
 
-    // @see chrome://global/content/contentAreaUtils.js::getDefaultExtension()
-    let contentType = aDocument ? aDocument.contentType : null;
-
-    extension = window.getDefaultExtension('', aURI, contentType);
-
-    if (extension && fileName.endsWith('.' + extension)) {
-      // @see chrome://global/content/contentAreaUtils.js::getFileBaseName()
-      fileName = window.getFileBaseName(fileName);
-    }
-
-    if (!extension && aDocument && /^https?$/.test(aURI.scheme)) {
-      extension = 'htm';
+    if (result) {
+      baseName = result.baseName;
+      extension = result.extension;
     }
   }
   else if (/^data$/.test(aURI.scheme)) {
     let match = /^image\/([a-z]+);/.exec(aURI.path);
 
     if (match) {
-      fileName = kDataImageFileName;
+      baseName = kDataImageBaseName;
       extension = match[1];
     }
   }
 
-  if (!fileName) {
+  if (!baseName) {
     return null;
   }
 
-  if (fileName.length > kMaxFileNameLen) {
-    let half = Math.floor(kMaxFileNameLen / 2);
+  if (baseName.length > kMaxBaseNameLen) {
+    let half = Math.floor(kMaxBaseNameLen / 2);
 
-    fileName =
-      [fileName.substr(0, half), fileName.substr(-half)].
+    baseName = [baseName.substr(0, half), baseName.substr(-half)].
       map(trim).join(kEllipsis);
   }
   else {
-    fileName = trim(fileName);
+    baseName = trim(baseName);
   }
 
   if (extension) {
-    fileName += '.' + extension;
+    return baseName + '.' + extension;
   }
 
-  return fileName;
+  return baseName;
+}
+
+function extractFileName(aURI, aDocument) {
+  if (!(aURI instanceof Ci.nsIURI)) {
+    aURI = makeURI(aURI);
+
+    if (!aURI) {
+      return null;
+    }
+  }
+
+  // @see chrome://global/content/contentAreaUtils.js::getDefaultFileName()
+  let baseName = window.getDefaultFileName('', aURI, aDocument) || null;
+
+  let contentType = aDocument ? aDocument.contentType : null;
+
+  // @see chrome://global/content/contentAreaUtils.js::getDefaultExtension()
+  let extension = window.getDefaultExtension('', aURI, contentType) || null;
+
+  if (extension && baseName.endsWith('.' + extension)) {
+    // @see chrome://global/content/contentAreaUtils.js::getFileBaseName()
+    baseName = window.getFileBaseName(baseName);
+  }
+
+  if (!baseName) {
+    return null;
+  }
+
+  if (!extension && aDocument && /^https?$/.test(aURI.scheme)) {
+    extension = 'htm';
+  }
+
+  return {
+    baseName,
+    extension
+  };
 }
 
 function getAppArgs(aArgs, aURL) {
@@ -1138,12 +1169,8 @@ function getSpecialDirectory(aAlias) {
 function makeURI(aURL, aDocument) {
   let characterSet = aDocument ? aDocument.characterSet : null;
 
-  return Services.io.newURI(aURL, characterSet, null);
-}
-
-function makeURIURL(aURL) {
   try {
-    return makeURI(aURL).QueryInterface(Ci.nsIURL);
+    return Services.io.newURI(aURL, characterSet, null);
   }
   catch (ex) {}
 
@@ -1199,7 +1226,7 @@ function log(aMsg) {
 return {
   checkApp,
   runApp,
-  makeURIURL,
+  extractFileName,
 
   createNode: window.ucjsUtil.createNode,
   getNodesByXPath: window.ucjsUtil.getNodesByXPath,
