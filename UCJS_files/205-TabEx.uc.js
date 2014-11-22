@@ -510,9 +510,12 @@ const TabOpener = {
 
       TabData.set(newTab, 'openInfo', openInfo);
 
-      let event = document.createEvent('Events');
+      let event = new CustomEvent(kEventType.TabOpen, {
+        // @note Listen the event on |gBrowser.tabContainer|.
+        // @see |TabEvent::init|
+        bubbles: true
+      });
 
-      event.initEvent(kEventType.TabOpen, true, false);
       newTab.dispatchEvent(event);
 
       return newTab;
