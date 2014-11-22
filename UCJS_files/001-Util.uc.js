@@ -1054,68 +1054,6 @@ function normalizeCSS(aCSS) {
 }
 
 /**
- * Query the Places database.
- *
- * @param aParam {hash}
- *   expression: {string}
- *     A SQL expression.
- *   params: {hash} [optional]
- *     The binding parameters.
- *   columns: {array}
- *     The column names.
- * @return {hash[]|null}
- *   The array of {column name: value, ...}, or null if no result.
- *
- * TODO: Unite with |promisePlacesDBResult|.
- */
-function getPlacesDBResult(aParam) {
-  const {
-    expression,
-    params,
-    columns
-  } = aParam || {};
-
-  // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
-
-  let statement =
-    PlacesUtils.history.DBConnection.createStatement(expression);
-
-  for (let key in statement.params) {
-    if (!(key in params)) {
-      statement.finalize();
-
-      throw Error('parameter is not defined: ' + key);
-    }
-
-    statement.params[key] = params[key];
-  }
-
-  let rows = [];
-
-  try {
-    while (statement.executeStep()) {
-      let result = {};
-
-      columns.forEach((name) => {
-        result[name] = statement.row[name];
-      });
-
-      rows.push(result);
-    }
-  }
-  finally {
-    statement.finalize();
-  }
-
-  if (rows.length) {
-    return rows;
-  }
-
-  return null;
-}
-
-/**
  * Query the Places database asynchronously.
  *
  * @param aParam {hash}
@@ -1245,7 +1183,6 @@ return {
   removeGlobalStyleSheet,
   setChromeStyleSheet,
   setContentStyleSheet,
-  getPlacesDBResult,
   promisePlacesDBResult,
 
   logMessage

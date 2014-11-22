@@ -780,6 +780,7 @@ const StatusField = (function() {
       // Don't query a URL which cannot be recorded about its visit date in the
       // places DB.
       if (!/^(?:https?|ftp|file):/.test(aURL)) {
+        // Resolved with |null| as no data available.
         return Promise.resolve(null);
       }
 

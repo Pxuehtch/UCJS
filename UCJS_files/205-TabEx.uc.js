@@ -36,7 +36,7 @@ const {
   addEvent,
   openTab,
   removeTab,
-  getPlacesDBResult
+  promisePlacesDBResult
 } = window.ucjsUtil;
 
 // For debugging.
@@ -67,7 +67,7 @@ const kDataKey = {
  * Custom event type.
  */
 const kEventType = {
-  TabOpen: 'ucjs_TabEx_TabOpen',
+  TabOpenInfoSet: 'ucjs_TabEx_TabOpenInfoSet',
   LoadedBrowserOpen: 'ucjs_TabEx_LoadedBrowserOpen'
 };
 
@@ -419,107 +419,126 @@ const TabOpener = {
     // @modified chrome://browser/content/tabbrowser.xml::addTab
     const $addTab = gBrowser.addTab;
 
-    gBrowser.addTab = function ucjsTabEx_addTab(
-      aURI, // {string}
-      aReferrerURI, // {nsIURI}
-      aCharset,
-      aPostData,
-      aOwner,
-      aAllowThirdPartyFixup
-    ) {
-      let newTab = $addTab.apply(this, arguments);
+    gBrowser.addTab = function ucjsTabEx_addTab(...aParams) {
+      let newTab = $addTab.apply(this, aParams);
 
-      // @note The data of duplicated/undo-closed tab will be restored.
       if (SessionStore.isRestoring) {
+        // Mark a duplicated or undo-closed tab to be properly handled on tab
+        // events.
+        // @see |TabEvent::onTabSelect|, |TabEvent::onSSTabRestored|
+        // @note The tab data will be restored automatically.
         TabData.set(newTab, 'restoring', true);
-
-        return newTab;
-      }
-
-      let aRelatedToCurrent, aFromExternal, aAllowMixedContent;
-
-      if (arguments.length === 2 &&
-          typeof arguments[1] === 'object' &&
-          !(arguments[1] instanceof Ci.nsIURI)) {
-        let params = arguments[1];
-
-        aReferrerURI          = params.referrerURI;
-        aCharset              = params.charset;
-        aAllowThirdPartyFixup = params.allowThirdPartyFixup;
-        aFromExternal         = params.fromExternal;
-        aRelatedToCurrent     = params.relatedToCurrent;
-        aAllowMixedContent    = params.allowMixedContent;
-      }
-
-      let openInfo;
-
-      if (!aURI || aURI === 'about:blank') {
-        openInfo = {
-          URL: 'about:blank',
-          flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
-        };
       }
       else {
-        // convert |nsIURI| into a URL string.
-        aReferrerURI = aReferrerURI && aReferrerURI.spec;
-
-        let fromVisit;
-
-        if (!aReferrerURI) {
-          let testHTTP = (value) => /^https?:/.test(value);
-
-          if (aRelatedToCurrent) {
-            let currentURL = gBrowser.currentURI.spec;
-
-            fromVisit = testHTTP(currentURL) && currentURL;
-          }
-          else {
-            // TODO: I want to make asynchronous |getFromVisit|. But I don't
-            // know how to handle it in this native function |addTab|.
-            fromVisit = testHTTP(aURI) && Referrer.getFromVisit(aURI);
-          }
-        }
-
-        let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
-
-        if (aAllowThirdPartyFixup) {
-          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
-          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FIXUP_SCHEME_TYPOS;
-        }
-
-        if (aFromExternal) {
-          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-        }
-
-        if (aAllowMixedContent) {
-          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
-        }
-
-        // TODO: Handle the POST data.
-        // @note |aPostData| is a |nsIInputStream| object that JSON does not
-        // support.
-        openInfo = {
-          URL: aURI,
-          flags,
-          referrerURL: aReferrerURI || undefined,
-          charset: aCharset || undefined,
-          relatedToCurrent: aRelatedToCurrent || undefined,
-          fromVisit: fromVisit || undefined
-        };
+        // Set 'openInfo' data of a tab.
+        // @note This dispatches the custom event 'TabOpenInfoSet' and then the
+        // other tab data will be newly set.
+        setOpenInfo(newTab, aParams);
       }
-
-      TabData.set(newTab, 'openInfo', openInfo);
-
-      let event = new CustomEvent(kEventType.TabOpen, {
-        // @note Listen the event on |gBrowser.tabContainer|.
-        // @see |TabEvent::init|
-        bubbles: true
-      });
-
-      newTab.dispatchEvent(event);
 
       return newTab;
     };
+
+    function setOpenInfo(aTab, aParams) {
+      Task.spawn(function*() {
+        let aURI, // {string}
+            aReferrerURI, // {nsIURI}
+            aCharset,
+            aAllowThirdPartyFixup,
+            aRelatedToCurrent,
+            aFromExternal,
+            aAllowMixedContent;
+
+        if (aParams.length === 2 &&
+            typeof aParams[1] === 'object' &&
+            !(aParams[1] instanceof Ci.nsIURI)) {
+          aURI                  = aParams[0];
+          aReferrerURI          = aParams[1].referrerURI;
+          aCharset              = aParams[1].charset;
+          aAllowThirdPartyFixup = aParams[1].allowThirdPartyFixup;
+          aRelatedToCurrent     = aParams[1].relatedToCurrent;
+          aFromExternal         = aParams[1].fromExternal;
+          aAllowMixedContent    = aParams[1].allowMixedContent;
+        }
+        else {
+          aURI                  = aParams[0];
+          aReferrerURI          = aParams[1];
+          aCharset              = aParams[2];
+          // aParams[3]: the POST data.
+          // aParams[4]: the owner tab.
+          aAllowThirdPartyFixup = aParams[5];
+        }
+
+        let openInfo;
+
+        if (!aURI || aURI === 'about:blank') {
+          openInfo = {
+            URL: 'about:blank',
+            flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
+          };
+        }
+        else {
+          // convert |nsIURI| into a URL string.
+          aReferrerURI = aReferrerURI && aReferrerURI.spec;
+
+          let fromVisit;
+
+          if (!aReferrerURI) {
+            let testHTTP = (value) => /^https?:/.test(value);
+
+            if (aRelatedToCurrent) {
+              let currentURL = gBrowser.currentURI.spec;
+
+              if (testHTTP(currentURL)) {
+                fromVisit = currentURL;
+              }
+            }
+            else {
+              if (testHTTP(aURI)) {
+                fromVisit = yield Referrer.promiseFromVisit(aURI);
+              }
+            }
+          }
+
+          let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
+
+          if (aAllowThirdPartyFixup) {
+            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
+            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FIXUP_SCHEME_TYPOS;
+          }
+
+          if (aFromExternal) {
+            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
+          }
+
+          if (aAllowMixedContent) {
+            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
+          }
+
+          // @note Set |undefined| not to record a falsy value.
+          // TODO: Handle the POST data.
+          openInfo = {
+            URL: aURI,
+            flags,
+            referrerURL: aReferrerURI || undefined,
+            charset: aCharset || undefined,
+            relatedToCurrent: aRelatedToCurrent || undefined,
+            fromVisit: fromVisit || undefined
+          };
+        }
+
+        TabData.set(aTab, 'openInfo', openInfo);
+
+        let event = new CustomEvent(kEventType.TabOpenInfoSet, {
+          // @note Listen the event on |gBrowser.tabContainer|.
+          // @see |TabEvent::init|
+          bubbles: true
+        });
+
+        aTab.dispatchEvent(event);
+      }).
+      catch(Cu.reportError);
+    }
   },
 
   set: function(aTab, aType) {
@@ -612,13 +631,14 @@ const Referrer = {
     return !!(referrerURL || (relatedToCurrent && fromVisit));
   },
 
-  getFromVisit: function(aURL) {
+  promiseFromVisit: function(aURL) {
     if (!aURL) {
-      return null;
+      // Resolved with |null| as no data available.
+      return Promise.resolve(null);
     }
 
-    // @see http://www.forensicswiki.org/wiki/Mozilla_Firefox_3_History_File_Format
-    let SQLExp = [
+    // @see https://wiki.mozilla.org/Places:Design_Overview#Models
+    let sql = [
       "SELECT p1.url",
       "FROM moz_places p1",
       "JOIN moz_historyvisits h1 ON h1.place_id = p1.id",
@@ -629,19 +649,14 @@ const Referrer = {
       "LIMIT 1"
     ].join(' ');
 
-    // TODO: Async-query Places DB.
-    let resultRows = getPlacesDBResult({
-      expression: SQLExp,
+    return promisePlacesDBResult({
+      sql,
       params: {'url': aURL},
       columns: ['url']
-    });
-
-    if (resultRows) {
-      // @note We ordered a single row.
-      return resultRows[0].url;
-    }
-
-    return null;
+    }).
+    // Resolved with the URL, or null if no data.
+    // @note We ordered a single row.
+    then((aRows) => aRows ? aRows[0].url : null);
   }
 };
 
@@ -1102,7 +1117,7 @@ const TabEvent = {
   init: function() {
     let tc = gBrowser.tabContainer;
 
-    addEvent(tc, kEventType.TabOpen, this, false);
+    addEvent(tc, kEventType.TabOpenInfoSet, this, false);
     addEvent(tc, 'TabSelect', this, false);
     addEvent(tc, 'TabClose', this, false);
     addEvent(tc, 'SSTabRestored', this, false);
@@ -1112,7 +1127,7 @@ const TabEvent = {
     let tab = aEvent.originalTarget;
 
     switch (aEvent.type) {
-      case kEventType.TabOpen:
+      case kEventType.TabOpenInfoSet:
         this.onTabOpen(tab);
         break;
 
