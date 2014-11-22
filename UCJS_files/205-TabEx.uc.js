@@ -1794,6 +1794,10 @@ function fetchPageTitle(aURL, aCallback) {
 }
 
 function makeURI(aURL) {
+  if (!aURL) {
+    return null;
+  }
+
   try {
     // @see chrome://global/content/contentAreaUtils.js::makeURI
     return window.makeURI(aURL);

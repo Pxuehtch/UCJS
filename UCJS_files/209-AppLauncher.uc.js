@@ -958,12 +958,12 @@ function execute(aApp, aTargetURL) {
 
 function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
   let {sourceDocument, targetDocument} = aSaveInfo;
-  let sourceURI, saveFilePath, saveFile, privacyContext;
+  let targetURI, saveFilePath, saveFile, privacyContext;
   let persist;
 
   try {
-    sourceURI = makeURI(aTargetURL);
-    saveFilePath = getSaveFilePath(sourceURI, targetDocument);
+    targetURI = makeURI(aTargetURL);
+    saveFilePath = getSaveFilePath(targetURI, targetDocument);
     saveFile = makeFile(saveFilePath);
   }
   catch (ex) {
@@ -1022,7 +1022,7 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     onSecurityChange: function() {}
   };
 
-  persist.saveURI(sourceURI, null, null, null, null, saveFile,
+  persist.saveURI(targetURI, null, null, null, null, saveFile,
     privacyContext);
 }
 
@@ -1166,11 +1166,14 @@ function getSpecialDirectory(aAlias) {
   return Services.dirsvc.get(aAlias, Ci.nsIFile);
 }
 
-function makeURI(aURL, aDocument) {
-  let characterSet = aDocument ? aDocument.characterSet : null;
+function makeURI(aURL) {
+  if (!aURL) {
+    return null;
+  }
 
   try {
-    return Services.io.newURI(aURL, characterSet, null);
+    // @see chrome://global/content/contentAreaUtils.js::makeURI
+    return window.makeURI(aURL);
   }
   catch (ex) {}
 
