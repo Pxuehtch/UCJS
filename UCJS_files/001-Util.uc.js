@@ -940,9 +940,10 @@ function registerGlobalStyleSheet(aCSS, aType, aOption) {
   }
 
   let URI;
+
   try {
-    URI = XPCOM.$S('io').
-      newURI('data:text/css,' + encodeURIComponent(css), null, null);
+    // @see chrome://global/content/contentAreaUtils.js::makeURI
+    URI = window.makeURI('data:text/css,' + encodeURIComponent(css));
   }
   catch (ex) {
     return;

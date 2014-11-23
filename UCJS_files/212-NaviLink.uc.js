@@ -2504,7 +2504,8 @@ const URIUtil = (function() {
     }
 
     try {
-      return Services.io.newURI(aURL, null, null);
+      // @see chrome://global/content/contentAreaUtils.js::makeURI
+      return window.makeURI(aURL);
     }
     catch (ex) {}
 
