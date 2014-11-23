@@ -981,22 +981,20 @@ function setChromeStyleSheet(aCSS) {
     return;
   }
 
+  let doc = window.document;
+
   let dataURI = 'data:text/css,' + encodeURIComponent(css);
 
-  if (Array.some(
-    window.document.styleSheets,
-    (styleSheet) => styleSheet.href === dataURI
-  )) {
+  if (Array.some(doc.styleSheets, (sheet) => sheet.href === dataURI)) {
     return;
   }
 
-  let newStyleSheet = window.document.createProcessingInstruction(
+  let newStyleSheet = doc.createProcessingInstruction(
     'xml-stylesheet',
     'type="text/css" href="%dataURI%"'.replace('%dataURI%', dataURI)
   );
 
-  return window.document.
-    insertBefore(newStyleSheet, window.document.documentElement);
+  return doc.insertBefore(newStyleSheet, doc.documentElement);
 }
 
 function setContentStyleSheet(aCSS, aOption) {
