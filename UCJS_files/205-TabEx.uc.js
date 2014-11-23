@@ -478,7 +478,7 @@ const TabOpener = {
           };
         }
         else {
-          // convert |nsIURI| into a URL string.
+          // Convert |nsIURI| into a URL string.
           aReferrerURI = aReferrerURI && aReferrerURI.spec;
 
           let fromVisit;
@@ -1732,7 +1732,7 @@ function closeReadTabs() {
  */
 function getTabs(aStatement, aEssentialTab) {
   let statement = StatementParser(aStatement, ',');
-  let all =  !!statement.matchKey(['all']),
+  let all = !!statement.matchKey(['all']),
       pinned = !!statement.matchKey(['pinned']),
       active = !!statement.matchKey(['active']);
 

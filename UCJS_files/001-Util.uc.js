@@ -651,6 +651,7 @@ function checkSecurity(aURL, aOption) {
 }
 
 function unescapeURLCharacters(aURL) {
+  // Special characters for URL.
   const kURLChars = {
     "21":"!", "23":"#", "24":"$", "25":"%", "26":"&",
     "27":"'", "28":"(", "29":")", "2a":"*", "2b":"+",

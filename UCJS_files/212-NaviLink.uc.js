@@ -33,7 +33,7 @@ const {
   getNodesBySelector: $S,
   getFirstNodeByXPath: $X1,
   openURL,
-  unescapeURLCharacters: unescURLChar
+  unescapeURLCharacters: unescURLChars
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {
@@ -2099,7 +2099,8 @@ const NaviLinkScorer = (function() {
         }
 
         // @note The target URL might be including the original URL encoded.
-        aURL = unescURLChar(aURL);
+        // @note Decode only special characters for URL.
+        aURL = unescURLChars(aURL);
 
         // Search the same pre path as the original in the target URL;
         // 1.The target pre path equals the original.

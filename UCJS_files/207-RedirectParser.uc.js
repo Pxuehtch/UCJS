@@ -364,6 +364,7 @@ function getParseListByPreset(aSourceURL) {
       preset.items.forEach(({replacement}) => {
         let matchURL = sourceURL.replace(testerRE, replacement);
 
+        // @note Decode only special characters for URL.
         parseList.add(unescURLChars(matchURL));
       });
 
@@ -388,6 +389,7 @@ function getParseListByScan(aSourceURL) {
   while (URLs.length) {
     parseList.markAsNewURL();
 
+    // @note Decode only special characters for URL.
     let baseURL = unescURLChars(URLs.shift());
 
     if (URLs.length) {
@@ -467,8 +469,8 @@ function sliceScheme(aString) {
   // The leading marks are invalid for scheme.
   const leadingMarksRE = /^(?:[0-9+-.]|%(?:25)?(?:2B|2D|2E))+/i;
 
-  // @note  Be care for changing the value of a loop index for using it
-  // outside of loop.
+  // @note Take care of changing the value of a loop index for using it outside
+  // of loop.
   let index = aString.length - 1;
 
   while (true) {
