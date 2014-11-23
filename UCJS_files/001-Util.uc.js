@@ -652,12 +652,13 @@ function checkSecurity(aURL, aOption) {
 
 function unescapeURLCharacters(aURL) {
   // Special characters for URL.
+  // @see http://tools.ietf.org/html/rfc3986#section-2
   const kURLChars = {
     "21":"!", "23":"#", "24":"$", "25":"%", "26":"&",
     "27":"'", "28":"(", "29":")", "2a":"*", "2b":"+",
     "2c":",", "2d":"-", "2e":".", "2f":"/", "3a":":",
-    "3b":";", "3d":"=", "3f":"?", "40":"@", "5f":"_",
-    "7e":"~"
+    "3b":";", "3d":"=", "3f":"?", "40":"@", "5b":"[",
+    "5d":"]", "5f":"_", "7e":"~"
   };
 
   if (!aURL) {
