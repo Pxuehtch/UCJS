@@ -366,15 +366,23 @@ function testExtension(aExtensions, aURL) {
     return false;
   }
 
-  let targets = [];
-  let pattern = /[\w\-]+\.([a-z]{2,5})(?=[?#]|$)/ig, match;
+  /**
+   * RegExp pattern for file extensions.
+   *
+   * For http://www.example.com/path/file1.ext?key=file2.ext
+   * Tests 'file2.ext' and then 'file1.ext'.
+   *
+   * @note Must specify the global flag 'g'.
+   */
+  const kExtensionRE = /[\w-]+\.([a-z]{2,5})(?=[?#]|$)/ig;
 
-  while ((match = pattern.exec(aURL))) {
+  let targets = [];
+  let match;
+
+  while ((match = kExtensionRE.exec(aURL))) {
     targets.unshift(match[1]);
   }
 
-  // Case: http://www.example.com/path/file1.ext?key=file2.ext
-  // Examines 'file2.ext', and then 'file1.ext'.
   return targets.some((item) => aExtensions.indexOf(item) > -1);
 }
 

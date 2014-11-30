@@ -1826,17 +1826,17 @@ const SiblingNavi = (function() {
    */
   function guessByNumbering(aDirection, aURI) {
     /**
-     * Patterns like the page numbers in URL.
+     * RegExp patterns for string like the page numbers in URL.
      *
-     * @const kNumQuery {RegExp}
-     *   Query with a numeric value; [?&]page=123 or [?&]123
-     * @const kNumEndPath {RegExp}
-     *   Path ended with numbers; (abc)123 or (abc)123.jpg or (abc)123/
+     * @note Must specify the global flag 'g'.
      */
-    const kNumQuery =
-      /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig;
-    const kNumEndPath =
-      /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig;
+    const kNumberRE = [
+      // Parameter with a numeric value; [?&]page=123 or [?&]123
+      /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig,
+
+      // Path ended with numbers; (abc)123 or (abc)123.jpg or (abc)123/
+      /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
+    ];
 
     let URI = URIUtil.createURI(aURI, {
       hash: false
@@ -1849,7 +1849,7 @@ const SiblingNavi = (function() {
     let direction = (aDirection === 'next') ? 1 : -1;
     let list = [];
 
-    [kNumQuery, kNumEndPath].forEach((pattern) => {
+    kNumberRE.forEach((pattern) => {
       let URL = URI.spec;
       let matches;
 

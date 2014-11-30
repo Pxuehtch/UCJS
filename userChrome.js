@@ -484,9 +484,13 @@ function UserScript(aFile) {
 function UserScript_scanMetaData(aFile) {
   const {readFile} = Util;
 
-  const META_DATA_RE =
+  // The meta data block.
+  const kMetaDataBlockRE =
     /^\s*\/\/\s*==UserScript==\s*\n(?:.*\n)*?\s*\/\/\s*==\/UserScript==\s*\n/m;
-  const META_ENTRY_RE =
+
+  // Each meta data.
+  // @note Must specify the global flag 'g'.
+  const kMetaDataRe =
     /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
 
   /**
@@ -501,10 +505,10 @@ function UserScript_scanMetaData(aFile) {
     'exclude': []
   };
 
-  let meta = (readFile(aFile).match(META_DATA_RE) || [''])[0];
+  let meta = (readFile(aFile).match(kMetaDataBlockRE) || [''])[0];
   let matches, key, value;
 
-  while ((matches = META_ENTRY_RE.exec(meta))) {
+  while ((matches = kMetaDataRe.exec(meta))) {
     [, key, value] = matches;
 
     if (key in data) {
