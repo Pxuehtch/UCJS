@@ -1623,7 +1623,7 @@ const SiblingNavi = (function() {
   }
 
   function createResult(aDirection, aURI) {
-    let data;
+    let list;
     let scanType;
 
     [
@@ -1633,10 +1633,10 @@ const SiblingNavi = (function() {
       ['numbering', guessByNumbering, aURI]
     ].
     some(([type, getter, URI]) => {
-      let result = getter(aDirection, URI);
+      let data = getter(aDirection, URI);
 
-      if (result) {
-        data = result;
+      if (data) {
+        list = data;
         scanType = type;
 
         return true;
@@ -1645,14 +1645,14 @@ const SiblingNavi = (function() {
       return false;
     });
 
-    if (data) {
-      return {
-        list: Array.isArray(data) ? data : [data],
-        scanType
-      };
+    if (!list) {
+      return null;
     }
 
-    return null;
+    return {
+      list: Array.isArray(list) ? list : [list],
+      scanType
+    };
   }
 
   /**
@@ -1869,11 +1869,11 @@ const SiblingNavi = (function() {
       }
     });
 
-    if (list.length) {
-      return trimSiblingsList(list);
+    if (!list.length) {
+      return null;
     }
 
-    return null;
+    return trimSiblingsList(list);
   }
 
   function trimSiblingsList(aList) {
@@ -2300,19 +2300,19 @@ const UpperNavi = (function() {
 
     let list = [];
 
-    let URL;
+    let parentURL;
 
-    while ((URL = getParent(URI))) {
-      list.push(URL);
+    while ((parentURL = getParent(URI))) {
+      list.push(parentURL);
 
-      URI = URIUtil.createURI(URL);
+      URI = URIUtil.createURI(parentURL);
     }
 
-    if (list.length) {
-      return list;
+    if (!list.length) {
+      return null;
     }
 
-    return null;
+    return list;
   }
 
   function getParent(aURI) {
@@ -2357,15 +2357,15 @@ const UpperNavi = (function() {
   function getUpperHost(aURI) {
     let host = aURI.host;
 
-    if (host && aURI.baseDomain !== host) {
-      let levels = host.split('.');
-
-      levels.shift();
-
-      return aURI.scheme + '://' + levels.join('.') + '/';
+    if (!host || aURI.baseDomain === host) {
+      return '';
     }
 
-    return '';
+    let levels = host.split('.');
+
+    levels.shift();
+
+    return aURI.scheme + '://' + levels.join('.') + '/';
   }
 
   /**
@@ -2595,21 +2595,21 @@ function isHTMLDocument() {
 }
 
 function getLeaf(aURL) {
-  if (aURL) {
-    let lastSlash = aURL.replace(/[?#].*$/, '').lastIndexOf('/');
-
-    return aURL.slice(lastSlash + 1) || aURL;
+  if (!aURL) {
+    return '';
   }
 
-  return '';
+  let lastSlash = aURL.replace(/[?#].*$/, '').lastIndexOf('/');
+
+  return aURL.slice(lastSlash + 1) || aURL;
 }
 
 function trim(aText) {
-  if (aText) {
-    return aText.trim().replace(/\s+/g, ' ');
+  if (!aText) {
+    return '';
   }
 
-  return '';
+  return aText.trim().replace(/\s+/g, ' ');
 }
 
 /**
