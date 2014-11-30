@@ -983,16 +983,7 @@ const PresetNavi = (function() {
       return null;
     }
 
-    let data = mData[aDirection];
-
-    if (data && data.error) {
-      log('Match preset: %name%\n%dir%: \'%xpath%\' is not found'.
-        replace('%name%', data.name).
-        replace('%dir%', data.direction).
-        replace('%xpath%', data.xpath));
-    }
-
-    return data;
+    return mData[aDirection];
   }
 
   function createData(aDirection, aURI) {
@@ -1043,12 +1034,13 @@ const PresetNavi = (function() {
       };
     }
 
-    return {
-      error: true,
-      name: item.name,
-      direction: aDirection,
-      xpath: item[aDirection]
-    };
+    // A preset element not found.
+    log('Preset: %name%\n%dir%: \'%xpath%\' is not found'.
+        replace('%name%', item.name).
+        replace('%dir%', aDirection).
+        replace('%xpath%', item[aDirection]));
+
+    return null;
   }
 
   /**
@@ -1653,7 +1645,7 @@ const SiblingNavi = (function() {
       return false;
     });
 
-    if (data && !data.error) {
+    if (data) {
       return {
         list: Array.isArray(data) ? data : [data],
         scanType
