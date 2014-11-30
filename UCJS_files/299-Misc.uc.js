@@ -231,8 +231,8 @@ function log(aMsg) {
       style: 'color:blue;background-color:lightgray;'
     },
     {
-      // Parameter delimiters.
-      pattern: /[?#]/g,
+      // Parameter names.
+      pattern: /(?:[?#&]|%(?:25)*(?:3f|23|26))[\w-]+(?:=|%(?:25)*3d)/ig,
       style: 'background-color:pink;'
     }//,
   ];
