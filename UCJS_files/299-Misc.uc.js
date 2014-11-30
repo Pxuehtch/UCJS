@@ -219,6 +219,24 @@ function log(aMsg) {
  */
 (function() {
 
+  /**
+   * Preset for styling of the accent portion of URL.
+   *
+   * @note A higher item takes priority to be styled.
+   */
+  const kAccentPreset = [
+    {
+      // HTTP domains.
+      pattern: /https?(?::|%(?:25)*3a)(?:\/|%(?:25)*2f){2}[\w-.]+/ig,
+      style: 'color:blue;background-color:lightgray;'
+    },
+    {
+      // Parameter delimiters.
+      pattern: /[?#]/g,
+      style: 'background-color:pink;'
+    }//,
+  ];
+
   let mTooltip = $ID('mainPopupSet').appendChild(
     $E('tooltip', {
       id: 'ucjs_Misc_URLTooltip',
@@ -265,33 +283,8 @@ function log(aMsg) {
     clearTooltip();
   };
 
-  function fillInTooltip(aURL) {
-    // @note |pattern| tests an HTML-escaped URL string.
-    const kAccent = [
-      {
-        // HTTP domains.
-        pattern: /https?(?::|%(?:25)*3a)(?:\/|%(?:25)*2f){2}[\w-.]+/ig,
-        style: 'color:blue;background-color:lightgray;'
-      },
-      {
-        // Parameter delimiters.
-        pattern: /[?#]/g,
-        style: 'background-color:pink;'
-      }
-    ];
-
-    let $label = (aValue) =>
-      '<label>%value%</label>'.replace('%value%', htmlEscape(aValue));
-
-    // An inline element for styling of a text.
-    let $span = (aStyle) =>
-      '<html:span style="%style%">$&</html:span>'.replace('%style%', aStyle);
-
-    let html = $label(aURL);
-
-    for (let {pattern, style} of kAccent) {
-      html = html.replace(pattern, $span(style));
-    }
+  function fillInTooltip(aUrl) {
+    let html = '<label>%value%</label>'.replace('%value%', buildAccent(aUrl));
 
     mTooltip.insertAdjacentHTML('afterbegin', html);
   }
@@ -300,6 +293,90 @@ function log(aMsg) {
     while (mTooltip.hasChildNodes()) {
       mTooltip.removeChild(mTooltip.firstChild);
     }
+  }
+
+  function buildAccent(aUrl) {
+    let offsets = parseAccent(aUrl);
+
+    if (!offsets) {
+      return htmlWrap(aUrl);
+    }
+
+    // Sort in descending.
+    offsets.sort((a, b) => b.from - a.from);
+
+    let segments = [];
+
+    offsets.forEach(({index, from, to}) => {
+      // A trailing string outside the range, which needs no styling.
+      segments.unshift(htmlWrap(aUrl.substring(to + 1)));
+
+      // A string to be styled.
+      segments.unshift(htmlWrap(aUrl.substring(from, to + 1), index));
+
+      // Cut off the processed string.
+      aUrl = aUrl.substring(0, from);
+    });
+
+    // Complement the remaining string.
+    segments.unshift(htmlWrap(aUrl));
+
+    return segments.join('');
+  }
+
+  function parseAccent(aUrl) {
+    let offsets = [];
+
+    let add = (aIndex, aMatch) => {
+      let from = aMatch.index;
+      let to = from + aMatch[0].length - 1
+
+      // Check whether the match string falls in a free range.
+      if (!offsets.every((offset) => offset.to < from || to < offset.from)) {
+        return;
+      }
+
+      offsets.push({
+        index: aIndex,
+        from,
+        to
+      });
+    };
+
+    kAccentPreset.forEach(({pattern}, i) => {
+      let match;
+
+      if (pattern.global) {
+        while ((match = pattern.exec(aUrl))) {
+          add(i, match);
+        }
+      }
+      else {
+        match = pattern.exec(aUrl);
+
+        if (match) {
+          add(i, match);
+        }
+      }
+    });
+
+    if (!offsets.length) {
+      return null;
+    }
+
+    return offsets;
+  }
+
+  function htmlWrap(aValue, aIndex) {
+    // A text node without styling.
+    if (aIndex === undefined) {
+      return htmlEscape(aValue);
+    }
+
+    // An inline element for styling.
+    return '<html:span style="%style%">%value%</html:span>'.
+      replace('%style%', kAccentPreset[aIndex].style).
+      replace('%value%', htmlEscape(aValue));
   }
 
   function htmlEscape(aString) {
