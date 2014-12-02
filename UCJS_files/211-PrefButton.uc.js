@@ -206,8 +206,8 @@ function PrefButton_init() {
   }, false);
 }
 
-function updateState(aOption) {
-  let {tabMode} = aOption || {};
+function updateState(aOption = {}) {
+  let {tabMode} = aOption;
 
   kItemList.forEach((item, i) => {
     if (item.disabled || (tabMode && !item.tabMode)) {

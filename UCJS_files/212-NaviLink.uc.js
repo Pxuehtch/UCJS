@@ -725,9 +725,7 @@ const MenuUI = (function() {
   /**
    * String format functions.
    */
-  function formatText(aData, aOption) {
-    aOption = aOption || {};
-
+  function formatText(aData, aOption = {}) {
     if ('siblingScanType' in aOption) {
       switch (aOption.siblingScanType) {
         case 'preset':

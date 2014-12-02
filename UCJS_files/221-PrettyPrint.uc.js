@@ -185,14 +185,14 @@ const Scratchpad = (function() {
    *
    * TODO: Do better check of parameters.
    */
-  function prettify(aState) {
+  function prettify(aState = {}) {
     let {
       filename,
       type,
       text,
       editorOptions,
       prettifierOptions
-    } = aState || {};
+    } = aState;
 
     if (!type) {
       prompt('Error: unsupported text type');
@@ -339,9 +339,7 @@ const Prettifier = (function() {
    *   @see |kOptionList|
    * @return {hash}
    */
-  function fixupOptions(aOptions) {
-    aOptions = aOptions || {};
-
+  function fixupOptions(aOptions = {}) {
     let options = {};
 
     for (let [key, setting] in Iterator(kOptionList)) {
@@ -532,10 +530,10 @@ function getTextType(aDocument) {
   return null;
 }
 
-function prompt(aMessage, aOption) {
+function prompt(aMessage, aOption = {}) {
   let {
     doConfirm
-  } = aOption || {};
+  } = aOption;
 
   const {confirm, alert} = Services.prompt;
 

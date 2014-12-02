@@ -571,7 +571,7 @@ const History = {
 /**
  * Helper function.
  */
-function selectOrOpen(aURL, aOption) {
+function selectOrOpen(aURL, aOption = {}) {
   function getURL(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
 
@@ -580,7 +580,7 @@ function selectOrOpen(aURL, aOption) {
     return browser.userTypedValue || browser.currentURI.spec;
   }
 
-  let {inBackground} = aOption || {};
+  let {inBackground} = aOption;
 
   let tabs = gBrowser.visibleTabs;
 

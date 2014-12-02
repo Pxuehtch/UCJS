@@ -146,10 +146,10 @@ const PopupMenuHandler = (function() {
    * @return {hash}
    *   @key register {function}
    */
-  function HandlerManager(aTargetGetter, aOption) {
+  function HandlerManager(aTargetGetter, aOption = {}) {
     const {
       observeUICustomization
-    } = aOption || {};
+    } = aOption;
 
     let setTarget = () => aTargetGetter();
 
@@ -158,6 +158,7 @@ const PopupMenuHandler = (function() {
     let mOnCreateHandlers = [];
     let mOnDestroyHandlers = [];
 
+    // Initialize
     init();
 
     function init() {

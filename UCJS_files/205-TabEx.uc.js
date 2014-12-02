@@ -704,8 +704,8 @@ const TabSelector = {
     this.update(aTab);
   },
 
-  update: function(aTab, aOption) {
-    let {reset, read} = aOption || {};
+  update: function(aTab, aOption = {}) {
+    let {reset, read} = aOption;
 
     if (reset) {
       TabData.set(aTab, 'selectTime', null);
@@ -1490,8 +1490,8 @@ function selectOpenerTab(aBaseTab, aOption) {
   return selectTab(getOpenerTab(aBaseTab, aOption));
 }
 
-function getOpenerTab(aBaseTab, aOption) {
-  let {undoClose} = aOption || {};
+function getOpenerTab(aBaseTab, aOption = {}) {
+  let {undoClose} = aOption;
 
   let baseTab = aBaseTab || gBrowser.selectedTab;
 
@@ -1550,8 +1550,8 @@ function selectPrevSelectedTab(aBaseTab, aOption) {
   return selectTab(getPrevSelectedTab(aBaseTab, aOption));
 }
 
-function getPrevSelectedTab(aBaseTab, aOption) {
-  let {traceBack, undoClose} = aOption || {};
+function getPrevSelectedTab(aBaseTab, aOption = {}) {
+  let {traceBack, undoClose} = aOption;
 
   let baseTab = aBaseTab || gBrowser.selectedTab;
 
@@ -1608,8 +1608,8 @@ function selectOldestUnreadTab(aOption) {
   return selectTab(getOldestUnreadTab(aOption));
 }
 
-function getOldestUnreadTab(aOption) {
-  let {includePinned} = aOption || {};
+function getOldestUnreadTab(aOption = {}) {
+  let {includePinned} = aOption;
 
   let tabs = getTabs(includePinned ? 'active, pinned' : 'active');
 
@@ -1839,6 +1839,7 @@ function makeURI(aURL) {
 function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
   let mKeys;
 
+  // Initialize
   init();
 
   function init() {

@@ -253,13 +253,13 @@ function addEvent(aTarget, aType, aListener, aCapture) {
  * WORKAROUND: Rescan ranges with the client coordinates instead of the range
  * offset.
  */
-function getSelectionAtCursor(aOption) {
+function getSelectionAtCursor(aOption = {}) {
   const kMaxCharLen = 150;
 
   let {
     event,
     charLen
-  } = aOption || {};
+  } = aOption;
 
   let node, rangeParent, rangeOffset;
 
@@ -528,11 +528,11 @@ function getFirstNodeByXPath(aXPath, aContext) {
   return result ? result.singleNodeValue : null;
 }
 
-function getNodesByXPath(aXPath, aContext, aOption) {
+function getNodesByXPath(aXPath, aContext, aOption = {}) {
   let {
     ordered,
     toArray
-  } = aOption || {};
+  } = aOption;
 
   let type = ordered ?
     XPathResult.ORDERED_NODE_SNAPSHOT_TYPE :
@@ -632,11 +632,11 @@ function fixNamespacePrefixForXPath(aXPath, aPrefix) {
 /**
  * Functions for Tab / Window.
  */
-function checkSecurity(aURL, aOption) {
+function checkSecurity(aURL, aOption = {}) {
   let {
     trustURL,
     allowImageData
-  } = aOption || {};
+  } = aOption;
 
   if (!trustURL && allowImageData) {
     trustURL = /^data:image\/(?:gif|jpg|png);base64,/.test(aURL);
@@ -702,11 +702,11 @@ function resolveURL(aURL, aBaseURL) {
   return null;
 }
 
-function openHomePages(aOption) {
+function openHomePages(aOption = {}) {
   let {
     doReplace,
     onlyFirstPage
-  } = aOption || {};
+  } = aOption;
 
   // @see chrome://browser/content/browser.js::gHomeButton
   let homePages = window.gHomeButton.getHomePage().split('|');
@@ -721,7 +721,7 @@ function openHomePages(aOption) {
   });
 }
 
-function openTabs(aURLs, aOption) {
+function openTabs(aURLs, aOption = {}) {
   if (typeof aURLs === 'string') {
     aURLs = aURLs.split('|');
   }
@@ -733,7 +733,7 @@ function openTabs(aURLs, aOption) {
   let {
     inBackground,
     doReplace
-  } = aOption || {};
+  } = aOption;
 
   let firstTabAdded;
 
@@ -760,10 +760,10 @@ function openTabs(aURLs, aOption) {
   }
 }
 
-function openURL(aURL, aOption) {
+function openURL(aURL, aOption = {}) {
   let {
     inTab
-  } = aOption || {};
+  } = aOption;
 
   if (inTab) {
     return openTab(aURL, aOption);
@@ -772,7 +772,7 @@ function openURL(aURL, aOption) {
   return loadPage(aURL, aOption);
 }
 
-function openTab(aURL, aOption) {
+function openTab(aURL, aOption = {}) {
   let URL = resolveURL(aURL);
 
   if (!URL) {
@@ -784,7 +784,7 @@ function openTab(aURL, aOption) {
     skipSecurityCheck,
     trustURL,
     allowImageData
-  } = aOption || {};
+  } = aOption;
 
   if (!skipSecurityCheck) {
     checkSecurity(URL, {
@@ -796,13 +796,12 @@ function openTab(aURL, aOption) {
   // @note Set |inBackground| to explicit |false| to open in a foreground tab.
   // Since it will default to the |browser.tabs.loadInBackground| preference in
   // |gBrowser.loadOneTab| if |undefined|.
-  aOption = aOption || {};
   aOption.inBackground = inBackground === true;
 
   return gBrowser.loadOneTab(URL, aOption);
 }
 
-function loadPage(aURL, aOption) {
+function loadPage(aURL, aOption = {}) {
   let URL = resolveURL(aURL);
 
   if (!URL) {
@@ -819,7 +818,7 @@ function loadPage(aURL, aOption) {
     skipSecurityCheck,
     trustURL,
     allowImageData
-  } = aOption || {};
+  } = aOption;
 
   if (!skipSecurityCheck) {
     checkSecurity(URL, {
@@ -853,10 +852,10 @@ function loadPage(aURL, aOption) {
  *
  * @see chrome://browser/content/tabbrowser.xml::removeTab
  */
-function removeTab(aTab, aOption) {
+function removeTab(aTab, aOption = {}) {
   let {
     safeClose
-  } = aOption || {};
+  } = aOption;
 
   if (safeClose) {
     // Do not close;
@@ -902,8 +901,10 @@ function removeAllTabsBut(aTab) {
 /**
  * Miscellaneous functions.
  */
-function restartFx(aOption) {
-  let {purgeCaches} = aOption || {}
+function restartFx(aOption = {}) {
+  let {
+    purgeCaches
+  } = aOption;
 
   // @see chrome://global/content/globalOverlay.js::canQuitApplication
   if (!window.canQuitApplication('restart')) {
@@ -930,10 +931,10 @@ function removeGlobalStyleSheet(aCSS, aType) {
   return registerGlobalStyleSheet(aCSS, aType, {remove: true});
 }
 
-function registerGlobalStyleSheet(aCSS, aType, aOption) {
+function registerGlobalStyleSheet(aCSS, aType, aOption = {}) {
   let {
     remove
-  } = aOption || {};
+  } = aOption;
 
   let css = normalizeCSS(aCSS);
 
@@ -999,11 +1000,11 @@ function setChromeStyleSheet(aCSS) {
   return doc.insertBefore(newStyleSheet, doc.documentElement);
 }
 
-function setContentStyleSheet(aCSS, aOption) {
+function setContentStyleSheet(aCSS, aOption = {}) {
   let {
     document,
     id
-  } = aOption || {};
+  } = aOption;
 
   let css = normalizeCSS(aCSS);
 
@@ -1073,12 +1074,12 @@ function normalizeCSS(aCSS) {
  *
  * TODO: Handle cancelling by user.
  */
-function promisePlacesDBResult(aParam) {
+function promisePlacesDBResult(aParam = {}) {
   const {
     sql,
     params,
     columns
-  } = aParam || {};
+  } = aParam;
 
   return Task.spawn(function*() {
     // @see resource://gre/modules/PlacesUtils.jsm

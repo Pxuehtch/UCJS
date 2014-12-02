@@ -346,7 +346,7 @@ function inputAndSubmit(aForm, aData) {
   }
 }
 
-function updateFormInput(aData, aOption) {
+function updateFormInput(aData, aOption = {}) {
   const kInputType = {
     exclude: './/input[@type="password"]|.//textarea',
     include: './/input[not(@disabled or @hidden or @readonly) and @type="text"]'
@@ -359,7 +359,7 @@ function updateFormInput(aData, aOption) {
   let {
     lessData,
     doSubmit
-  } = aOption || {};
+  } = aOption;
 
   let textForm = null,
       textInput = null;

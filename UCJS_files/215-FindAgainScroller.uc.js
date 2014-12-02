@@ -1017,8 +1017,8 @@ function FrameAnimator(aCallback, aOption) {
 
   init(aCallback, aOption);
 
-  function init(aCallback, aOption) {
-    let {interval} = aOption || {};
+  function init(aCallback, aOption = {}) {
+    let {interval} = aOption;
 
     mCallback = aCallback;
 
