@@ -945,7 +945,7 @@ function execute(aApp, aTargetURL) {
   let appFile = getAppFile(aApp.path);
 
   if (!appFile) {
-    warn('not executed', ['the application is not available now', aApp.path]);
+    warn('Not executed', ['The application is not available now.', aApp.path]);
 
     return;
   }
@@ -970,7 +970,7 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     saveFile = makeFile(saveFilePath);
   }
   catch (ex) {
-    warn('not downloaded', [ex.message, aTargetURL]);
+    warn('Not downloaded', [ex.message, aTargetURL]);
 
     return;
   }
@@ -1002,15 +1002,15 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
           }
 
           if (!requestSucceeded) {
-            warn('not downloaded',
-              ['HTTP status ' + responseStatus, aRequest.name]);
+            warn('Not downloaded',
+              ['HTTP status = ' + responseStatus, aRequest.name]);
 
             return;
           }
         }
 
         if (!saveFile || !saveFile.exists()) {
-          warn('not downloaded', ['something wrong', aRequest.name]);
+          warn('Not downloaded', ['Unknown error occured.', aRequest.name]);
 
           return;
         }
@@ -1035,7 +1035,7 @@ function getSaveFilePath(aURI, aDocument) {
   let fileName = makeFileName(aURI, aDocument);
 
   if (!fileName) {
-    throw Error('invalid URL for download');
+    throw Error('Invalid URL for download.');
   }
 
   fileName = kFileNameForm.replace('%FILENAME%', fileName);

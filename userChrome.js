@@ -738,11 +738,10 @@ function Util() {
  * @return {hash}
  */
 function Log(aEnabled) {
-  function noop() {
-    return function(){};
-  }
+  let noop = () => function(){};
 
-  // @note Overwrite with valid functions in the 'Exports' section below.
+  // @note Overwrite with the same name functions in the 'Exports' section
+  // below.
   let exports = {
     list: noop,
     counter: noop
@@ -808,8 +807,6 @@ function Log(aEnabled) {
    * Exports
    *
    * @note Overwrite the functions that are defined in |exports| above.
-   * TODO: Prevent overwrapped management of function names. It can cause
-   * errors.
    */
   exports.list = (aCaption, ...aValues) => {
     aValues.unshift(format('%caption% ----------', {
