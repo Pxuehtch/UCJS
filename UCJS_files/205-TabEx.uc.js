@@ -1698,7 +1698,7 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
   }
 
   for (let i = last; i >= top ; i--) {
-    removeTab(tabs[i], {safeBlock: true});
+    removeTab(tabs[i], {safeClose: true});
   }
 }
 
@@ -1711,7 +1711,7 @@ function closeReadTabs() {
     tab = tabs[i];
 
     if (TabData.get(tab, 'read')) {
-      removeTab(tab, {safeBlock: true});
+      removeTab(tab, {safeClose: true});
     }
   }
 }
