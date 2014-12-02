@@ -38,15 +38,12 @@ const {
   checkApp,
   runApp,
   extractFileName,
+  createNode: $E,
   getNodesByXPath: $X,
   contentAreaContextMenu,
   // For debugging.
   log
 } = Util;
-
-function $E(aTag, aAttribute) {
-  return Util.createNode(aTag, aAttribute, handleAttribute);
-}
 
 /**
  * Application list.
@@ -543,16 +540,8 @@ function addMenuItem(aPopup, aParam) {
   let item = $E('menuitem', {
     label: makeMenuItemLabel(aParam),
     disabled: appIndex < 0 || null,
-    user: [
-      {
-        key: kDataKey.appIndex,
-        value: appIndex
-      },
-      {
-        key: kDataKey.action,
-        value: action
-      }
-    ]
+    [kDataKey.appIndex]: appIndex,
+    [kDataKey.action]: action,
   });
 
   aPopup.appendChild(item);
@@ -822,23 +811,6 @@ function doAction(aApp, aAction) {
   }
 
   runApp(aApp, targetURL, saveInfo);
-}
-
-/**
- * Callback function for |Util.createNode|.
- */
-function handleAttribute(aNode, aName, aValue) {
-  if (aName === 'user') {
-    aValue.forEach(({key, value}) => {
-      if (value !== null && value !== undefined) {
-        aNode.setAttribute(key, value);
-      }
-    });
-
-    return true;
-  }
-
-  return false;
 }
 
 /**
