@@ -842,36 +842,30 @@ const StatusField = (function() {
     /**
      * Register the appearance.
      */
-    registerCSS();
-
-    function registerCSS() {
-      const css = '\
-        .statuspanel-label{\
-          font-weight:bolder!important;\
-        }\
-        statuspanel:not([%%kStatusAttribute.LINKSTATE%%]) label{\
-          color:brown!important;\
-        }\
-        statuspanel[%%kStatusAttribute.LINKSTATE%%="bookmarked"] label{\
-          color:green!important;\
-        }\
-        statuspanel[%%kStatusAttribute.LINKSTATE%%="visited"] label{\
-          color:purple!important;\
-        }\
-        statuspanel[%%kStatusAttribute.LINKSTATE%%="unknown"] label{\
-          color:red!important;\
-        }\
-        statuspanel[%%kStatusAttribute.MESSAGE%%] label{\
-          color:blue!important;\
-        }\
-        statuspanel[inactive],\
-        statuspanel[label=""]{\
-          visibility:collapse!important;\
-        }\
-      ';
-
-      setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
-    }
+    setCSS(`
+      .statuspanel-label {
+        font-weight: bolder !important;
+      }
+      statuspanel:not([${kStatusAttribute.LINKSTATE}]) label {
+        color: brown !important;
+      }
+      statuspanel[${kStatusAttribute.LINKSTATE}="bookmarked"] label {
+        color: green !important;
+      }
+      statuspanel[${kStatusAttribute.LINKSTATE}="visited"] label {
+        color: purple !important;
+      }
+      statuspanel[${kStatusAttribute.LINKSTATE}="unknown"] label {
+        color: red !important;
+      }
+      statuspanel[${kStatusAttribute.MESSAGE}] label {
+        color: blue !important;
+      }
+      statuspanel[inactive],
+      statuspanel[label=""] {
+        visibility: collapse !important;
+      }
+    `);
 
     /**
      * Expose

@@ -274,41 +274,39 @@ function makeButtons() {
 
 function setStyleSheet() {
   // @note The styles are adjusted to the themes of my Firefox and OS.
-  let css = '\
-    #%%kUI.container.id%% {\
-      margin: 3px 0 3px 2px;\
-    }\
-    .%%kUI.button.id%% {\
-      -moz-user-focus: ignore;\
-      -moz-appearance: none;\
-      min-width: 20px;\
-      height: 16px;\
-      margin: 0 2px 0 0;\
-      padding: 0;\
-      border: 1px solid #999;\
-      -moz-border-top-colors: none;\
-      -moz-border-right-colors: none;\
-      -moz-border-bottom-colors: none;\
-      -moz-border-left-colors: none;\
-      background: transparent none center center no-repeat;\
-      font: 8px "Arial";\
-    }\
-    .%%kUI.button.id%%:active,\
-    .%%kUI.button.id%%[checked=true]{\
-      border: 1px inset #ccc;\
-      background-color: #ffcccc;\
-    }\
-    .%%kUI.button.id%%:hover{\
-      cursor: pointer;\
-      opacity: .6;\
-    }\
-    .%%kUI.button.id%% > hbox{\
-      border: none;\
-      padding: 0;\
-    }\
-  ';
-
-  setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
+  setCSS(`
+    #${kUI.container.id} {
+      margin: 3px 0 3px 2px;
+    }
+    .${kUI.button.id} {
+      -moz-user-focus: ignore;
+      -moz-appearance: none;
+      min-width: 20px;
+      height: 16px;
+      margin: 0 2px 0 0;
+      padding: 0;
+      border: 1px solid #999;
+      -moz-border-top-colors: none;
+      -moz-border-right-colors: none;
+      -moz-border-bottom-colors: none;
+      -moz-border-left-colors: none;
+      background: transparent none center center no-repeat;
+      font: 8px "Arial";
+    }
+    .${kUI.button.id}:active,
+    .${kUI.button.id}[checked=true] {
+      border: 1px inset #ccc;
+      background-color: #ffcccc;
+    }
+    .${kUI.button.id}:hover {
+      cursor: pointer;
+      opacity: .6;
+    }
+    .${kUI.button.id} > hbox {
+      border: none;
+      padding: 0;
+    }
+  `);
 }
 
 /**

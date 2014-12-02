@@ -994,7 +994,7 @@ function setChromeStyleSheet(aCSS) {
 
   let newStyleSheet = doc.createProcessingInstruction(
     'xml-stylesheet',
-    'type="text/css" href="%dataURI%"'.replace('%dataURI%', dataURI)
+    `type="text/css" href="${dataURI}"`
   );
 
   return doc.insertBefore(newStyleSheet, doc.documentElement);

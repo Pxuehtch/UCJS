@@ -248,87 +248,91 @@ const kSiteList = [
       })();
 
       // Common styles.
-      let css = '\
-        /* Block items. */\
-        .nrgt>tbody>tr>td,.ts>tbody>tr>td{\
-          float:left!important;\
-          width:auto!important;\
-        }\
-        /* Sub contents items. */\
-        .nrgt,.nrgt *,.r~div{\
-          width:auto!important;\
-          margin-top:0!important;\
-          margin-left:0!important;\
-          padding-top:0!important;\
-          padding-left:0!important;\
-        }\
-        .nrgt .l{\
-          font-size:small!important;\
-        }\
-        /* Footer navi. */\
-        #foot{\
-          width:auto!important;\
-          margin:0!important;\
-        }';
+      let css = `
+        /* Block items. */
+        .nrgt > tbody > tr > td, .ts > tbody > tr >td {
+          float: left !important;
+          width: auto !important;
+        }
+        /* Sub contents items. */
+        .nrgt, .nrgt *, .r ~ div {
+          width: auto !important;
+          margin-top: 0 !important;
+          margin-left: 0 !important;
+          padding-top: 0 !important;
+          padding-left: 0 !important;
+        }
+        .nrgt .l {
+          font-size: small !important;
+        }
+        /* Footer navi. */
+        #foot {
+          width: auto !important;
+          margin: 0 !important;
+        }
+      `;
 
       // Workaround for broken styles.
       // Except for images, shopping.
       if (!testMode('isch|shop')) {
-        css += '\
-          /* Content area container */\
-          .col{\
-            float:none!important;\
-            width:auto!important;\
-          }';
+        css += `
+          /* Content area container */
+          .col {
+            float: none !important;
+            width: auto !important;
+          }
+        `;
       }
 
       // Each item styles.
       // Except for images, shopping, application, books.
       if (!testMode('isch|shop|app|bks')) {
-        css += '\
-          .ucjs_SiteStyle_sameHost cite::before{\
-            content:"=";\
-            font-weight:bold;\
-            color:red;\
-            margin-right:2px;\
-          }\
-          #res .ucjs_SiteStyle_weaken h3{\
-            font-size:small!important;\
-          }\
-          .ucjs_SiteStyle_weaken h3~*{\
-            opacity:.3!important;\
-          }\
-          .ucjs_SiteStyle_weaken:hover *{\
-            opacity:1!important;\
-            transition:opacity .5s!important;\
-          }';
+        css += `
+          .ucjs_SiteStyle_sameHost cite::before {
+            content: "=";
+            font-weight: bold;
+            color: red;
+            margin-right: 2px;
+          }
+          #res .ucjs_SiteStyle_weaken h3{
+            font-size: small !important;
+          }
+          .ucjs_SiteStyle_weaken h3 ~ * {
+            opacity: .3 !important;
+          }
+          .ucjs_SiteStyle_weaken:hover * {
+            opacity: 1 !important;
+            transition: opacity .5s !important;
+          }
+        `;
       }
 
       // Multi column.
       // Except for images, shopping.
       if (!testMode('isch|shop')) {
-        css += '\
-          /* hide right pane */\
-          #rhs,#rhscol,#leftnav+td+td{\
-            display:none!important;\
-          }\
-          #cnt,#res,.s,#mn{\
-            max-width:100%!important;\
-            width:auto!important;\
-            margin:0!important;\
-            padding:0!important;\
-          }\
-          #leftnav+td{\
-            width:100%!important;\
-          }\
-          #center_col{\
-            width:auto!important;\
-            margin:0 2em!important;\
-          }\
-          h2.hd+div>ol,#mn #ires>ol{\
-            -moz-column-count:2;\
-            -moz-column-gap:1em;\
-          }';
+        css += `
+          /* hide right pane */
+          #rhs, #rhscol, #leftnav + td + td {
+            display: none !important;
+          }
+          #cnt, #res, .s, #mn {
+            max-width: 100% !important;
+            width: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          #leftnav + td {
+            width: 100% !important;
+          }
+          #center_col {
+            width: auto !important;
+            margin: 0 2em !important;
+          }
+          h2.hd + div > ol, #mn #ires > ol {
+            -moz-column-count: 2;
+            -moz-column-gap: 1em;
+          }
+        `;
       }
 
       return css;
@@ -367,20 +371,21 @@ const kSiteList = [
       });
     },
     style(aDocument) {
-      let css = '\
-        /* Custom class. */\
-        .ucjs_SiteStyle_weaken h3{\
-          font-size:small!important;\
-        }\
-        .ucjs_SiteStyle_weaken .hd~*,\
-        .ucjs_SiteStyle_weaken h3~*\
-        {\
-          opacity:.3!important;\
-        }\
-        .ucjs_SiteStyle_weaken:hover *{\
-          opacity:1!important;\
-          transition:opacity .5s!important;\
-        }';
+      let css = `
+        /* Custom class. */
+        .ucjs_SiteStyle_weaken h3 {
+          font-size: small !important;
+        }
+        .ucjs_SiteStyle_weaken .hd ~ *,
+        .ucjs_SiteStyle_weaken h3 ~ *
+        {
+          opacity: .3 !important;
+        }
+        .ucjs_SiteStyle_weaken:hover * {
+          opacity: 1 !important;
+          transition: opacity .5s !important;
+        }
+      `;
 
       return css;
     }
@@ -389,19 +394,20 @@ const kSiteList = [
     name: 'Wikipedia Article',
     include: '||wikipedia.org/wiki/',
     style(aDocument) {
-      let css = '\
-        /* Popup reference. */\
-        .references li{\
-          list-style-type:none;\
-        }\
-        .references li:target{\
-          position:fixed;\
-          left:170px;\
-          right:13px;\
-          bottom:0;\
-          border:1px solid black;\
-          background-color:khaki!important;\
-        }';
+      let css = `
+        /* Popup reference. */
+        .references li {
+          list-style-type: none;
+        }
+        .references li:target {
+          position: fixed;
+          left: 170px;
+          right: 13px;
+          bottom: 0;
+          border: 1px solid black;
+          background-color: khaki !important;
+        }
+      `;
 
       return css;
     }

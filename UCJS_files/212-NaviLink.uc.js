@@ -1033,10 +1033,11 @@ const PresetNavi = (function() {
     }
 
     // A preset element not found.
-    log('Preset: %name%\n%dir%: \'%xpath%\' is not found'.
-        replace('%name%', item.name).
-        replace('%dir%', aDirection).
-        replace('%xpath%', item[aDirection]));
+    log([
+      'A navigation element is not found.',
+      `Preset: ${item.name}`,
+      `${aDirection}: '${item[aDirection]}'`
+    ]);
 
     return null;
   }

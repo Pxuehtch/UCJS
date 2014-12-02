@@ -93,7 +93,7 @@ function ListFilter_init() {
 
 function setStyleSheet() {
   // The class names of items being filtered by category.
-  let filteredCategory =
+  let filteredBy =
     kItemList.map(({category}) => '.' + kDataKey.filteredBy + category).
     join(',');
 
@@ -101,36 +101,37 @@ function setStyleSheet() {
   // native 'menu-button' type button.
   // @note I use the light theme.
   // @see chrome://browser/skin/devtools/light-theme.css
-  let css = '\
-    %%filteredCategory%% {\
-      display: none;\
-    }\
-    .%%kUI.button.id%% {\
-      margin: 2px 0 2px 2px !important;\
-      padding: 1px 1px 1px 0 !important;\
-    }\
-    .%%kUI.button.id%%:not(:hover) {\
-      background-color: transparent !important;\
-    }\
-    .theme-light .%%kUI.button.id%%[checked] {\
-      background-color: rgba(76, 158, 217, .2) !important;\
-    }\
-    .theme-light .%%kUI.button.id%%[checked]:hover {\
-      background-color: rgba(76, 158, 217, .4) !important;\
-    }\
-    /*\
-    .theme-dark .%%kUI.button.id%%[checked] {\
-      background-color: rgba(29, 79, 115, .7) !important;\
-      color: #f5f7fa !important;\
-    }\
-    .theme-dark .%%kUI.button.id%%[checked]:hover {\
-      background-color: rgba(29, 79, 115, .8) !important;\
-      color: #f5f7fa !important;\
-    }\
-    */\
-  ';
+  setCSS(`
+    ${filteredBy} {
+      display: none;
+    }
+    .${kUI.button.id} {
+      margin: 2px 0 2px 2px !important;
+      padding: 1px 1px 1px 0 !important;
+    }
+    .${kUI.button.id}:not(:hover) {
+      background-color: transparent !important;
+    }
+    .theme-light .${kUI.button.id}[checked] {
+      background-color: rgba(76, 158, 217, .2) !important;
+    }
+    .theme-light .${kUI.button.id}[checked]:hover {
+      background-color: rgba(76, 158, 217, .4) !important;
+    }
+  `);
 
-  setCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
+  /**
+   * For the dark theme.
+   *
+    .theme-dark .${kUI.button.id}[checked] {
+      background-color: rgba(29, 79, 115, .7) !important;
+      color: #f5f7fa !important;
+    }
+    .theme-dark .${kUI.button.id}[checked]:hover {
+      background-color: rgba(29, 79, 115, .8) !important;
+      color: #f5f7fa !important;
+    }
+   */
 }
 
 function makeUI() {

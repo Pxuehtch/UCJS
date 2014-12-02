@@ -284,7 +284,7 @@ function log(aMsg) {
   };
 
   function fillInTooltip(aUrl) {
-    let html = '<label>%value%</label>'.replace('%value%', buildAccent(aUrl));
+    let html = `<label>${buildAccent(aUrl)}</label>`;
 
     mTooltip.insertAdjacentHTML('afterbegin', html);
   }
@@ -374,9 +374,10 @@ function log(aMsg) {
     }
 
     // An inline element for styling.
-    return '<html:span style="%style%">%value%</html:span>'.
-      replace('%style%', kAccentPreset[aIndex].style).
-      replace('%value%', htmlEscape(aValue));
+    let style = kAccentPreset[aIndex].style;
+    let value = htmlEscape(aValue);
+
+    return `<html:span style="${style}">${value}</html:span>`;
   }
 
   function htmlEscape(aString) {
@@ -409,23 +410,23 @@ function log(aMsg) {
 (function relocateTabbarScrollButtons() {
 
   // @note The margin of a pinned tab is set to 3px.
-  setChromeCSS('\
-    .tabbrowser-arrowscrollbox>.arrowscrollbox-scrollbox{\
-      -moz-box-ordinal-group:1;\
-    }\
-    .tabbrowser-arrowscrollbox>.scrollbutton-up{\
-      -moz-box-ordinal-group:2;\
-    }\
-    .tabbrowser-arrowscrollbox>.scrollbutton-down{\
-      -moz-box-ordinal-group:3;\
-    }\
-    .tabbrowser-arrowscrollbox>.scrollbutton-up{\
-      margin-left:3px!important;\
-    }\
-    .tabbrowser-tab[pinned]{\
-      margin-right:3px!important;\
-    }\
-  ');
+  setChromeCSS(`
+    .tabbrowser-arrowscrollbox > .arrowscrollbox-scrollbox {
+      -moz-box-ordinal-group: 1;
+    }
+    .tabbrowser-arrowscrollbox > .scrollbutton-up {
+      -moz-box-ordinal-group: 2;
+    }
+    .tabbrowser-arrowscrollbox > .scrollbutton-down {
+      -moz-box-ordinal-group: 3;
+    }
+    .tabbrowser-arrowscrollbox > .scrollbutton-up {
+      margin-left: 3px !important;
+    }
+    .tabbrowser-tab[pinned] {
+      margin-right: 3px !important;
+    }
+  `);
 
   // @modified chrome://browser/content/tabbrowser.xml::_positionPinnedTabs
   Function('gBrowser.tabContainer._positionPinnedTabs =' +
@@ -484,18 +485,16 @@ function log(aMsg) {
     setPref(kPrefTabFocus, defaultTabFocus);
   }, false);
 
-  let command = '\
-    (function(state) {\
-      state = ucjsUtil.Prefs.get("%kPrefTabFocus%") !== 1 ? 1 : 7;\
-      ucjsUtil.Prefs.set("%kPrefTabFocus%", state);\
-      ucjsUI.StatusField.showMessage("TAB focus: " + (state === 1 ?\
-      "text fields only" : "text fields, form elements, and links"));\
-    })();\
-  ';
+  let command = `
+    (function(state) {
+      state = ucjsUtil.Prefs.get("${kPrefTabFocus}") !== 1 ? 1 : 7;
+      ucjsUtil.Prefs.set("${kPrefTabFocus}", state);
+      ucjsUI.StatusField.showMessage("TAB focus: " + (state === 1 ?
+      "text fields only" : "text fields, form elements, and links"));
+    })();
+  `;
 
-  command = command.
-    trim().replace(/\s+/g, ' ').
-    replace(/%kPrefTabFocus%/g, kPrefTabFocus);
+  command = command.trim().replace(/\s+/g, ' ');
 
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_toggleTabFocus',
@@ -731,40 +730,38 @@ function log(aMsg) {
     }
   }
 
-  const css = '\
-    #main-window:not([inFullscreen]) statuspanel[%%kState.hidden%%]{\
-      visibility:collapse!important;\
-    }\
-    #main-window:not([inFullscreen]) statuspanel{\
-      position:fixed!important;\
-      margin:0!important;\
-      padding:0!important;\
-      max-width:none!important;\
-      border-radius:1.5px!important;\
-      background-color:hsl(0,0%,90%)!important;\
-      z-index:2!important;\
-    }\
-    #main-window:not([inFullscreen]) .statuspanel-inner{\
-      margin:0!important;\
-      padding:0!important;\
-      height:1em!important;\
-    }\
-    #main-window:not([inFullscreen]) .statuspanel-inner:before{\
-      display:inline-block;\
-      content:">";\
-      color:gray;\
-      font-weight:bold;\
-      margin:0 2px;\
-    }\
-    #main-window:not([inFullscreen]) .statuspanel-label{\
-      margin:0!important;\
-      padding:0!important;\
-      border:none!important;\
-      background:none transparent!important;\
-    }\
-  ';
-
-  setChromeCSS(css.replace(/%%(.+?)%%/g, ($0, $1) => eval($1)));
+  setChromeCSS(`
+    #main-window:not([inFullscreen]) statuspanel[%%kState.hidden%%] {
+      visibility: collapse !important;
+    }
+    #main-window:not([inFullscreen]) statuspanel {
+      position: fixed !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      max-width: none !important;
+      border-radius: 1.5px !important;
+      background-color: hsl(0,0%,90%) !important;
+      z-index: 2 !important;
+    }
+    #main-window:not([inFullscreen]) .statuspanel-inner {
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 1em !important;
+    }
+    #main-window:not([inFullscreen]) .statuspanel-inner:before {
+      display: inline-block;
+      content: ">";
+      color: gray;
+      font-weight: bold;
+      margin: 0 2px;
+    }
+    #main-window:not([inFullscreen]) .statuspanel-label {
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      background: none transparent !important;
+    }
+  `);
 
 })();
 
@@ -777,36 +774,36 @@ function log(aMsg) {
 (function() {
 
   // Clear scrollbar.
-  setGlobalAgentCSS('\
-    scrollbar {\
-      -moz-appearance:none!important;\
-      background-image:\
-        linear-gradient(to bottom,hsl(0,0%,80%),hsl(0,0%,90%))!important;\
-    }\
-    scrollbar[orient="vertical"] {\
-      -moz-appearance:none!important;\
-      background-image:\
-        linear-gradient(to right,hsl(0,0%,80%),hsl(0,0%,90%))!important;\
-    }\
-    thumb {\
-      -moz-appearance:none!important;\
-      background-image:\
-        linear-gradient(to bottom,hsl(0,0%,60%),hsl(0,0%,90%))!important;\
-    }\
-    thumb[orient="vertical"] {\
-      -moz-appearance:none!important;\
-      background-image:\
-        linear-gradient(to right,hsl(0,0%,60%),hsl(0,0%,90%))!important;\
-    }\
-  ');
+  setGlobalAgentCSS(`
+    scrollbar {
+      -moz-appearance: none !important;
+      background-image: linear-gradient(to bottom, hsl(0, 0%, 80%),
+        hsl(0, 0%, 90%)) !important;
+    }
+    scrollbar[orient="vertical"] {
+      -moz-appearance: none !important;
+      background-image: linear-gradient(to right, hsl(0, 0%, 80%),
+        hsl(0, 0%, 90%)) !important;
+    }
+    thumb {
+      -moz-appearance: none !important;
+      background-image: linear-gradient(to bottom, hsl(0, 0%, 60%),
+        hsl(0, 0%, 90%)) !important;
+    }
+    thumb[orient="vertical"] {
+      -moz-appearance: none !important;
+      background-image: linear-gradient(to right, hsl(0, 0%, 60%),
+        hsl(0, 0%, 90%)) !important;
+    }
+  `);
 
   // Tooltip with tight text wrapping.
-  setGlobalAgentCSS('\
-    .tooltip-label {\
-      word-break:break-all!important;\
-      word-wrap:break-word!important;\
-    }\
-  ');
+  setGlobalAgentCSS(`
+    .tooltip-label {
+      word-break: break-all !important;
+      word-wrap: break-word !important;
+    }
+  `);
 
 })();
 
