@@ -46,7 +46,7 @@ const TextFinder = {
     return this.finder._fastFind;
   },
 
-  removeSelection: function() {
+  removeSelection() {
     this.finder.removeSelection();
   }
 };

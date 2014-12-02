@@ -1325,7 +1325,7 @@ const NaviLink = (function() {
     });
 
     Object.defineProperty(relsList, 'exceptFor', {
-      value: function(aSourceValue) {
+      value(aSourceValue) {
         if (rels.length > 1) {
           return rels.filter((aValue) => aValue !== aSourceValue);
         }

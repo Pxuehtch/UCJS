@@ -472,7 +472,7 @@ const FindBar = (function() {
       }
     },
 
-    focus: function() {
+    focus() {
       if (!gFindBar.hidden) {
         UI.textBox.focus();
         UI.textBox.select();
@@ -901,7 +901,7 @@ const Menuitem = {
    * function.
    * @require TabEx.uc.js
    */
-  setStateForUnreadTab: function(aMenuitem, aTab) {
+  setStateForUnreadTab(aMenuitem, aTab) {
     const kATTR_UNREADTAB = 'ucjs_UI_Menuitem_unreadTab';
 
     if (window.ucjsTabEx) {

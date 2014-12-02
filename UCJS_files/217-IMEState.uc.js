@@ -112,12 +112,12 @@ const SignPanel = (function() {
    * very end of a series of calls until the delay period expires.
    */
   const ShowingManager = {
-    set: function() {
+    set() {
       this.clear();
       this.timerID = setTimeout(show, 100);
     },
 
-    clear: function() {
+    clear() {
       if (this.timerID) {
         clearTimeout(this.timerID);
         this.timerID = null;

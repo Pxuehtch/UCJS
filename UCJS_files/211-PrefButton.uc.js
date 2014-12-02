@@ -94,7 +94,7 @@ const kItemList = [
       return !this.documentViewer.authorStyleDisabled;
     },
 
-    command: function() {
+    command() {
       this.documentViewer.authorStyleDisabled = this.checked;
     }
   },
@@ -124,7 +124,7 @@ const kItemList = [
       return getPref(key, value.linkOrImage) !== value.never;
     },
 
-    command: function() {
+    command() {
       let {key, value} = this.pref;
 
       setPref(key, this.checked ? value.never : value.linkOrImage);
@@ -156,7 +156,7 @@ const kItemList = [
       return getPref(key, value.normal) !== value.none;
     },
 
-    command: function() {
+    command() {
       let {key, value} = this.pref;
 
       setPref(key, this.checked ? value.none : value.normal);
@@ -175,7 +175,7 @@ const kItemList = [
  * Progress listener.
  */
 const BrowserProgressListener = {
-  onStateChange: function(aWebProgress, aRequest, aFlags, aStatus) {
+  onStateChange(aWebProgress, aRequest, aFlags, aStatus) {
     const {STATE_STOP, STATE_IS_WINDOW} = Ci.nsIWebProgressListener;
 
     if (aFlags & STATE_STOP &&
@@ -185,10 +185,10 @@ const BrowserProgressListener = {
     }
   },
 
-  onLocationChange: function() {},
-  onProgressChange: function() {},
-  onStatusChange: function() {},
-  onSecurityChange: function() {}
+  onLocationChange() {},
+  onProgressChange() {},
+  onStatusChange() {},
+  onSecurityChange() {}
 };
 
 function PrefButton_init() {

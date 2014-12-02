@@ -378,7 +378,7 @@ const TabData = (function () {
      * @return {}
      * @see |data|
      */
-    getData: function(aTab, aKey) {
+    getData(aTab, aKey) {
       return get(aTab, aKey);
     },
 
@@ -388,7 +388,7 @@ const TabData = (function () {
      * @param aTab {Element}
      * @return {boolean}
      */
-    isRead: function(aTab) {
+    isRead(aTab) {
       return get(aTab, 'read');
     },
 
@@ -398,7 +398,7 @@ const TabData = (function () {
      * @param aTab {Element}
      * @return {boolean}
      */
-    isSuspended: function(aTab) {
+    isSuspended(aTab) {
       return get(aTab, 'suspended');
     }
   };
@@ -415,7 +415,7 @@ const TabData = (function () {
  * Tab opening handler.
  */
 const TabOpener = {
-  init: function() {
+  init() {
     // @modified chrome://browser/content/tabbrowser.xml::addTab
     const $addTab = gBrowser.addTab;
 
@@ -541,7 +541,7 @@ const TabOpener = {
     }
   },
 
-  set: function(aTab, aType) {
+  set(aTab, aType) {
     switch (aType) {
       case 'StartupTab': {
         let browser = gBrowser.getBrowserForTab(aTab);
@@ -591,7 +591,7 @@ const TabOpener = {
  * Tab referrer handler.
  */
 const Referrer = {
-  getURL: function(aTab) {
+  getURL(aTab) {
     let openInfo = TabData.get(aTab, 'openInfo');
 
     if (!openInfo) {
@@ -603,7 +603,7 @@ const Referrer = {
     return referrerURL || fromVisit;
   },
 
-  fetchInfo: function(aTab, aCallback) {
+  fetchInfo(aTab, aCallback) {
     let URL = this.getURL(aTab);
 
     // The document title is fetched by async history API.
@@ -615,11 +615,11 @@ const Referrer = {
     });
   },
 
-  exists: function(aTab) {
+  exists(aTab) {
     return !!this.getURL(aTab);
   },
 
-  isRelatedToCurrent: function(aTab) {
+  isRelatedToCurrent(aTab) {
     let openInfo = TabData.get(aTab, 'openInfo');
 
     if (!openInfo) {
@@ -631,7 +631,7 @@ const Referrer = {
     return !!(referrerURL || (relatedToCurrent && fromVisit));
   },
 
-  promiseFromVisit: function(aURL) {
+  promiseFromVisit(aURL) {
     if (!aURL) {
       // Resolved with |null| as no data available.
       return Promise.resolve(null);
@@ -667,7 +667,7 @@ const TabSelector = {
   prevSelectedTime: 0,
   currentSelectedTime: 0,
 
-  set: function(aTab) {
+  set(aTab) {
     // TODO: Clear the interval timer in the proper way.
     // The timer is cleared every |onTabSelect| for now. This is on the premise
     // that the other tab is *surely* selected after the tab is closed.
@@ -680,14 +680,14 @@ const TabSelector = {
     }, kPref.SELECTED_DELAY, aTab);
   },
 
-  clear: function() {
+  clear() {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
   },
 
-  select: function(aTab) {
+  select(aTab) {
     // A tab in loading yet.
     if (aTab && aTab.hasAttribute('busy')) {
       return;
@@ -704,7 +704,7 @@ const TabSelector = {
     this.update(aTab);
   },
 
-  update: function(aTab, aOption = {}) {
+  update(aTab, aOption = {}) {
     let {reset, read} = aOption;
 
     if (reset) {
@@ -735,7 +735,7 @@ const TabSelector = {
 const TabSuspender = {
   timers: {},
 
-  set: function(aTab, aDelay) {
+  set(aTab, aDelay) {
     let timer = setTimeout((tab) => {
       this.stop(tab);
     }, aDelay, aTab);
@@ -744,7 +744,7 @@ const TabSuspender = {
     this.timers[TabData.get(aTab, 'openTime')] = timer;
   },
 
-  clear: function(aTab) {
+  clear(aTab) {
     let id = aTab && TabData.get(aTab, 'openTime');
     let timer = id && this.timers[id];
 
@@ -756,7 +756,7 @@ const TabSuspender = {
     }
   },
 
-  stop: function(aTab) {
+  stop(aTab) {
     this.clear(aTab);
 
     // Cancel suspending the tab when is removed or selected while the timer
@@ -794,7 +794,7 @@ const TabSuspender = {
     }
   },
 
-  reload: function(aTab) {
+  reload(aTab) {
     this.clear(aTab);
 
     // Pass only the visible and suspended tab.
@@ -829,7 +829,7 @@ const TabSuspender = {
     }
   },
 
-  getBrowserForTab: function(aTab) {
+  getBrowserForTab(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
     let loadingURL;
     let openInfo;
@@ -863,7 +863,7 @@ const SessionStore = {
   // Whether a duplicated or undo-closed tab is in restoring.
   isRestoring: false,
 
-  init: function() {
+  init() {
     this.SS = Cc['@mozilla.org/browser/sessionstore;1'].
       getService(Ci.nsISessionStore);
 
@@ -876,7 +876,7 @@ const SessionStore = {
     }, false);
   },
 
-  persistTabAttribute: function() {
+  persistTabAttribute() {
     let savedAttributes = [
       kDataKey.openInfo,
       kDataKey.openTime,
@@ -890,7 +890,7 @@ const SessionStore = {
     });
   },
 
-  getClosedTabList: function() {
+  getClosedTabList() {
     if (this.SS.getClosedTabCount(window) > 0) {
       return JSON.parse(this.SS.getClosedTabData(window));
     }
@@ -903,7 +903,7 @@ const SessionStore = {
  * Startup handler.
  */
 const Startup = {
-  init: function() {
+  init() {
     /**
      * Execute processing just after all tabs open at startup.
      *
@@ -924,7 +924,7 @@ const Startup = {
      * node in arguments has no loading tab.)
      */
     const LoadEvents = {
-      add: function(aTarget, aType) {
+      add(aTarget, aType) {
         if (!this.events) {
           this.events = new Map();
         }
@@ -934,7 +934,7 @@ const Startup = {
         aTarget.addEventListener(aType, this, false);
       },
 
-      clear: function() {
+      clear() {
         for (let [target, type] of this.events) {
           target.removeEventListener(type, this, false);
         }
@@ -943,7 +943,7 @@ const Startup = {
         delete this.events;
       },
 
-      handleEvent: function (aEvent) {
+      handleEvent(aEvent) {
         this.clear();
 
         Startup.setStartupTabs();
@@ -993,7 +993,7 @@ const Startup = {
     }, false);
   },
 
-  setStartupTabs: function() {
+  setStartupTabs() {
     // Scan all tabs (including hidden tabs).
     Array.forEach(gBrowser.tabs, (tab) => {
       // A boot startup tab (e.g. homepage).
@@ -1017,7 +1017,7 @@ const Startup = {
  * Observer of moving tab between windows.
  */
 const MovingTabObserver = {
-  init: function() {
+  init() {
     // Observe a tab that moves to the other window.
     // @note The event fires on both our browser and the other browser;
     // 1.|originalTarget| = our browser, |detail| = the other browser.
@@ -1031,7 +1031,7 @@ const MovingTabObserver = {
     addEvent(gBrowser.tabContainer, 'TabBecomingWindow', this, false);
   },
 
-  handleEvent: function(aEvent) {
+  handleEvent(aEvent) {
     switch (aEvent.type) {
       case 'SwapDocShells': {
         let originalBrowser = aEvent.originalTarget;
@@ -1092,7 +1092,7 @@ const MovingTabObserver = {
     }
   },
 
-  getTabFor: function(aBrowser) {
+  getTabFor(aBrowser) {
     let tabBrowser = aBrowser.getTabBrowser();
 
     if (tabBrowser) {
@@ -1102,7 +1102,7 @@ const MovingTabObserver = {
     return null;
   },
 
-  getTabData: function(aTab) {
+  getTabData(aTab) {
     return {
       openInfo: TabData.get(aTab, 'openInfo'),
       suspended: TabData.get(aTab, 'suspended')
@@ -1114,7 +1114,7 @@ const MovingTabObserver = {
  * Tab event handler.
  */
 const TabEvent = {
-  init: function() {
+  init() {
     let tc = gBrowser.tabContainer;
 
     addEvent(tc, kEventType.TabOpenInfoSet, this, false);
@@ -1123,7 +1123,7 @@ const TabEvent = {
     addEvent(tc, 'SSTabRestored', this, false);
   },
 
-  handleEvent: function(aEvent) {
+  handleEvent(aEvent) {
     let tab = aEvent.originalTarget;
 
     switch (aEvent.type) {
@@ -1145,7 +1145,7 @@ const TabEvent = {
     }
   },
 
-  onTabOpen: function(aTab) {
+  onTabOpen(aTab) {
     TabOpener.set(aTab, 'NewTab');
 
     if (kPref.SUSPEND_LOADING) {
@@ -1160,7 +1160,7 @@ const TabEvent = {
     moveTabTo(aTab, openPos);
   },
 
-  onTabSelect: function(aTab) {
+  onTabSelect(aTab) {
     // 1.Do not pass a duplicated/undo-closed tab. handle it in
     // |onSSTabRestored|.
     // 2.Pass a startup restored tab.
@@ -1183,7 +1183,7 @@ const TabEvent = {
     }
   },
 
-  onTabClose: function(aTab) {
+  onTabClose(aTab) {
     if (kPref.SUSPEND_LOADING) {
       TabSuspender.clear(aTab);
     }
@@ -1198,7 +1198,7 @@ const TabEvent = {
     }
   },
 
-  onSSTabRestored: function(aTab) {
+  onSSTabRestored(aTab) {
     // 1.Pass a duplicated/undo-closed tab.
     // 2.Do not pass a startup restored tab. no relocation needed.
     if (!TabData.get(aTab, 'restoring')) {

@@ -110,7 +110,7 @@ const kClickAction = [
     area: kClickArea.notTabs,
     button: 0,
     clicks: 2,
-    command: function(aState) {
+    command(aState) {
       let {shiftKey, ctrlKey} = aState;
 
       // Open home pages.
@@ -127,7 +127,7 @@ const kClickAction = [
     area: kClickArea.foreTab | kClickArea.notTabs,
     button: 0,
     clicks: 3,
-    command: function(aState) {
+    command(aState) {
       let {shiftKey} = aState;
 
       // Fail safe.
@@ -144,7 +144,7 @@ const kClickAction = [
     area: kClickArea.notTabs,
     button: 1,
     clicks: 1,
-    command: function(aState) {
+    command(aState) {
       // Reopen a previously closed tab.
       // @see chrome://browser/content/browser.js::undoCloseTab
       window.undoCloseTab();
@@ -155,7 +155,7 @@ const kClickAction = [
     area: kClickArea.foreTab,
     button: 0,
     clicks: 1,
-    command: function(aState) {
+    command(aState) {
       let {target, shiftKey, ctrlKey} = aState;
 
       if (ctrlKey) {
@@ -176,7 +176,7 @@ const kClickAction = [
     area: kClickArea.foreTab,
     button: 0,
     clicks: 2,
-    command: function(aState) {
+    command(aState) {
       let {target} = aState;
 
       // Pin/Unpin the tab.
@@ -193,7 +193,7 @@ const kClickAction = [
     area: kClickArea.backTab,
     button: 0,
     clicks: 1,
-    command: function(aState) {
+    command(aState) {
       let {target} = aState;
 
       // Select the tab.
@@ -205,7 +205,7 @@ const kClickAction = [
     area: kClickArea.foreTab | kClickArea.backTab,
     button: 1,
     clicks: 1,
-    command: function(aState) {
+    command(aState) {
       let {target} = aState;
 
       // Close the tab.
@@ -263,14 +263,14 @@ const TabBarClickEvent = {
     return !!this.state.target;
   },
 
-  stopObserving: function() {
+  stopObserving() {
     this.isMouseDownIdling = false;
     this.isMouseUpIdling = false;
 
     this.clearState();
   },
 
-  clearState: function() {
+  clearState() {
     this.state.target   = null;
     this.state.area     = null;
     this.state.button   = null;
@@ -280,7 +280,7 @@ const TabBarClickEvent = {
     this.state.altKey   = null;
   },
 
-  init: function() {
+  init() {
     this.state = {};
     this.clearState();
 
@@ -293,7 +293,7 @@ const TabBarClickEvent = {
     addEvent(tc, 'dblclick', this, true);
   },
 
-  handleEvent: function(aEvent) {
+  handleEvent(aEvent) {
     // Bail out for native actions;
     // 1.A context menu.
     // 2.A UI element (button, menu).
@@ -328,7 +328,7 @@ const TabBarClickEvent = {
     }
   },
 
-  onMouseDown: function(aEvent) {
+  onMouseDown(aEvent) {
     if (this.isObserving) {
       // Two buttons are pressed down.
       if (this.isMouseDownIdling) {
@@ -366,7 +366,7 @@ const TabBarClickEvent = {
     }
   },
 
-  onMouseUp: function(aEvent) {
+  onMouseUp(aEvent) {
     if (!this.isObserving) {
       return;
     }
@@ -383,7 +383,7 @@ const TabBarClickEvent = {
     this.state.clicks++;
   },
 
-  getTargetArea: function(aEvent) {
+  getTargetArea(aEvent) {
     let {target, originalTarget} = aEvent;
 
     // Ignore a UI element to let its native action work.
@@ -407,7 +407,7 @@ const TabBarClickEvent = {
     return null;
   },
 
-  doAction: function() {
+  doAction() {
     kClickAction.some(({area, button, clicks, command}) => {
       if (this.state.area & area &&
           this.state.button === button &&
@@ -426,7 +426,7 @@ const TabBarClickEvent = {
  * Handler of the mouse-wheel event on the tab bar.
  */
 const TabBarWheelEvent = {
-  init: function() {
+  init() {
     // @note Use the capture mode to catch the event before the default event.
     addEvent(gBrowser.tabContainer, 'wheel', (aEvent) => {
       this.scrollTabs(aEvent) || this.switchTabs(aEvent);
@@ -441,7 +441,7 @@ const TabBarWheelEvent = {
    * Scroll the tab bar by one tab when it overflows and the wheel event works
    * on the scroll buttons.
    */
-  scrollTabs: function(aEvent) {
+  scrollTabs(aEvent) {
     if (!gBrowser.tabContainer.hasAttribute('overflow')) {
       return false;
     }
@@ -464,7 +464,7 @@ const TabBarWheelEvent = {
   /**
    * Switch tabs by one.
    */
-  switchTabs: function(aEvent) {
+  switchTabs(aEvent) {
     // @see chrome://global/content/bindings/tabbox.xml::advanceSelectedTab
     let direction = (aEvent.deltaY < 0) ? -1 : 1;
 

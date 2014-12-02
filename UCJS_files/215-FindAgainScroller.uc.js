@@ -589,7 +589,7 @@ function SmoothScroll() {
   };
 
   const mState = {
-    init: function({node, start, goal}) {
+    init({node, start, goal}) {
       if (!node || !start || !goal) {
         return false;
       }
@@ -618,7 +618,7 @@ function SmoothScroll() {
       return true;
     },
 
-    uninit: function() {
+    uninit() {
       this.view = null;
       this.width = null;
       this.height = null;
@@ -864,7 +864,7 @@ function FoundBlink() {
    * Cancel blinking when a selection is removed by clicking.
    */
   const DeselectObserver = {
-    set: function() {
+    set() {
       // @note A selection is collapsed by 'mousedown' event actually.
       // @note Use the capture mode to surely catch the event in the content
       // area.
@@ -874,19 +874,19 @@ function FoundBlink() {
       window.addEventListener('unload', this, false);
     },
 
-    clear: function() {
+    clear() {
       gBrowser.mPanelContainer.removeEventListener('mousedown', this, true);
       window.removeEventListener('unload', this, false);
     },
 
-    handleEvent: function(aEvent) {
+    handleEvent(aEvent) {
       // @note |cancel| calls |DeselectObserver.clear|.
       cancel();
     }
   };
 
   const mState = {
-    init:  function() {
+    init() {
       let selectionController = TextFinder.selectionController;
 
       if (!selectionController) {
@@ -914,7 +914,7 @@ function FoundBlink() {
       return true;
     },
 
-    uninit:  function() {
+    uninit() {
       DeselectObserver.clear();
 
       this.selectionController = null;

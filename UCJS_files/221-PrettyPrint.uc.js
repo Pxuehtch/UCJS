@@ -256,7 +256,7 @@ const Scratchpad = (function() {
       scratchpadWindow.removeEventListener('load', onLoad, false);
 
       scratchpadWindow.Scratchpad.addObserver({
-        onReady: function(aScratchpad) {
+        onReady(aScratchpad) {
           aScratchpad.removeObserver(this);
 
           aScratchpad.setFilename(aState.filename);
@@ -305,7 +305,7 @@ const Prettifier = (function() {
     indentSize: {
       type: 'number',
       defaultValue: 2,
-      validate: function(aValue) {
+      validate(aValue) {
         return (aValue <= 0) ? this.defaultValue : aValue;
       }
     },
@@ -316,7 +316,7 @@ const Prettifier = (function() {
     indentChar: {
       type: 'string',
       defaultValue: ' ',
-      validate: function(aValue) {
+      validate(aValue) {
         return (aValue === '') ? this.defaultValue : aValue.charAt(0);
       }
     },

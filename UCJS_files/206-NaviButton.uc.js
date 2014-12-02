@@ -111,7 +111,7 @@ const UI = {
  * Handler of a navigation button.
  */
 const Button = {
-  init: function(aButton) {
+  init(aButton) {
     if (!aButton) {
       return;
     }
@@ -127,7 +127,7 @@ const Button = {
     aButton.addEventListener('click', this, false);
   },
 
-  uninit: function(aButton) {
+  uninit(aButton) {
     if (!aButton) {
       return;
     }
@@ -137,7 +137,7 @@ const Button = {
     aButton.removeEventListener('click', this, false);
   },
 
-  handleEvent: function(aEvent) {
+  handleEvent(aEvent) {
     switch (aEvent.type) {
       case 'mouseover': {
         Tooltip.show(aEvent);
@@ -163,7 +163,7 @@ const Button = {
     }
   },
 
-  preventDefaultCommand: function(aButton) {
+  preventDefaultCommand(aButton) {
     let command =
       (aButton === UI.backButton) ? 'BrowserBack' : 'BrowserForward';
 
@@ -188,7 +188,7 @@ const Button = {
  * @see |NaviButton_init()|
  */
 const BrowserProgressListener = {
-  onLocationChange: function(aWebProgress, aRequest, aLocation, aFlag) {
+  onLocationChange(aWebProgress, aRequest, aLocation, aFlag) {
     let backButton = UI.backButton;
     let referrerKey = kDataKey.referrer;
 
@@ -200,10 +200,10 @@ const BrowserProgressListener = {
     }
   },
 
-  onProgressChange: function() {},
-  onStateChange: function() {},
-  onStatusChange: function() {},
-  onSecurityChange: function() {}
+  onProgressChange() {},
+  onStateChange() {},
+  onStatusChange() {},
+  onSecurityChange() {}
 };
 
 /**
@@ -221,7 +221,7 @@ const Referrer = {
       window.ucjsTabEx.referrer;
   },
 
-  exists: function() {
+  exists() {
     if (this.referrer) {
       return this.referrer.exists(gBrowser.selectedTab);
     }
@@ -229,7 +229,7 @@ const Referrer = {
     return false;
   },
 
-  fetchInfo: function(aCallback) {
+  fetchInfo(aCallback) {
     this.referrer.fetchInfo(gBrowser.selectedTab, aCallback);
   }
 };
@@ -238,19 +238,19 @@ const Referrer = {
  * Tooltip handler.
  */
 const Tooltip = {
-  init: function() {
+  init() {
     this.tooltip = $ID('mainPopupSet').appendChild($E('tooltip', {
       id: kUI.tooltip.id
     }));
   },
 
-  delayShow: function(aEvent) {
+  delayShow(aEvent) {
     const kTooltipShowDelay = 500; // [millisecond]
 
     this.timer = setTimeout(this.show.bind(this), kTooltipShowDelay, aEvent);
   },
 
-  hide: function(aEvent) {
+  hide(aEvent) {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
@@ -259,7 +259,7 @@ const Tooltip = {
     this.tooltip.hidePopup();
   },
 
-  show: function(aEvent) {
+  show(aEvent) {
     let button = aEvent.target;
 
     let backward = button === UI.backButton;
@@ -277,7 +277,7 @@ const Tooltip = {
     });
   },
 
-  build: function(aData) {
+  build(aData) {
     let tooltip = this.tooltip;
 
     while (tooltip.hasChildNodes()) {
@@ -334,7 +334,7 @@ const Tooltip = {
     }
   },
 
-  formatData: function(aData, aKey) {
+  formatData(aData, aKey) {
     let backward = aData.backward;
     let {title, URL, distance} = aData[aKey];
     let dir = '';
@@ -399,14 +399,14 @@ const Tooltip = {
  * Session history handler.
  */
 const History = {
-  scan: function(aParam, aCallback) {
+  scan(aParam, aCallback) {
     this.initData(aParam, (aData) => {
       this.updateData(aParam, aData);
       aCallback(aData);
     });
   },
 
-  initData: function(aParam, aCallback) {
+  initData(aParam, aCallback) {
     function Entry() {
       return {
         title: '',
@@ -441,7 +441,7 @@ const History = {
     aCallback(this.data);
   },
 
-  updateData: function(aParam, aData) {
+  updateData(aParam, aData) {
     let {backward, disabled} = aParam;
 
     if (disabled) {
@@ -485,7 +485,7 @@ const History = {
     });
   },
 
-  getSessionHistory: function() {
+  getSessionHistory() {
     let sh = gBrowser.sessionHistory;
 
     if (sh) {
@@ -527,7 +527,7 @@ const History = {
     }
   },
 
-  jump: function(aEvent) {
+  jump(aEvent) {
     let {shiftKey, ctrlKey, button} = aEvent;
 
     let referrer = this.data.referrer.URL;

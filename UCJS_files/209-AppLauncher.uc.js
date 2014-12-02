@@ -323,15 +323,15 @@ const kDataKey = {
  * Utility for the file extensions.
  */
 const FileExtUtil = {
-  makeFileAction: function(aAction, aExt) {
+  makeFileAction(aAction, aExt) {
     return aAction + '_' + aExt;
   },
 
-  getBaseAction: function(aAction) {
+  getBaseAction(aAction) {
     return aAction.replace(/_.+$/, '');
   },
 
-  updateFileExt: function(aExtArray) {
+  updateFileExt(aExtArray) {
     // Add new extensions to the array of file extentions.
     let fileExts = kLinkExtension['file'].concat(aExtArray);
 
@@ -340,7 +340,7 @@ const FileExtUtil = {
       fileExts.filter((ext, i, array) => array.indexOf(ext) === i);
   },
 
-  matchExt: function(aURL, aType) {
+  matchExt(aURL, aType) {
     let result = extractFileName(aURL);
 
     if (!result) {
@@ -984,7 +984,7 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     Ci.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
 
   persist.progressListener = {
-    onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+    onStateChange(aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
         if (/^(?:https?|ftp):/.test(aRequest.name)) {
           let httpChannel, requestSucceeded, responseStatus;
@@ -1019,10 +1019,10 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
       }
     },
 
-    onProgressChange: function() {},
-    onLocationChange: function() {},
-    onStatusChange: function() {},
-    onSecurityChange: function() {}
+    onProgressChange() {},
+    onLocationChange() {},
+    onStatusChange() {},
+    onSecurityChange() {}
   };
 
   persist.saveURI(targetURI, null, null, null, null, saveFile,

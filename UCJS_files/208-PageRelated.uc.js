@@ -109,7 +109,7 @@ const kPreset = [
     items: [
       {
         name: 'はてなブックマーク',
-        URL: function(aPageInfo) {
+        URL(aPageInfo) {
           let entryURL = 'http://b.hatena.ne.jp/entry/';
 
           if (/^https:/.test(aPageInfo.URL)) {

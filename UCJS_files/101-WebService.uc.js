@@ -60,7 +60,7 @@ const kPresets = [
     name: 'HatenaBookmarkCounter',
     // @see http://developer.hatena.ne.jp/ja/documents/bookmark/apis/getcount
     URL: 'http://api.b.st-hatena.com/entry.count?url=%ENC%',
-    parse: function(aResponseText) {
+    parse(aResponseText) {
       return aResponseText || 0;
     }
   },
@@ -171,7 +171,7 @@ const RequestHandler = (function() {
   const RequestTime = {
     mRequestTimeList: {},
 
-    update: function(aURL) {
+    update(aURL) {
       // @note No error checks due to supposing that |URL| of an item of
       // |kPreset| is valid.
       let host = (/^https?:\/\/([^\/]+)/.exec(aURL))[1];
@@ -270,7 +270,7 @@ function get(aParams) {
   }
 
   let options = {
-    onLoad: function(aResponseText, aXHR) {
+    onLoad(aResponseText, aXHR) {
       if (result.parse) {
         aResponseText = result.parse(aResponseText, aXHR);
       }
@@ -279,7 +279,7 @@ function get(aParams) {
         result.onLoad(aResponseText, aXHR);
       }
     },
-    onError: function(aErrorText, aResponseText, aXHR) {
+    onError(aErrorText, aResponseText, aXHR) {
       if (result.onError) {
         result.onError(aErrorText, aResponseText, aXHR);
       }

@@ -192,7 +192,7 @@ const kSiteList = [
   {
     name: 'Google Result',
     include: '||google.tld/*q=',
-    script: function(aDocument) {
+    script(aDocument) {
       // Sanitize links.
       Array.forEach($S('li.g a', aDocument), (link) => {
         link.removeAttribute('onmousedown');
@@ -232,7 +232,7 @@ const kSiteList = [
         }
       });
     },
-    style: function(aDocument) {
+    style(aDocument) {
       let testMode = (function() {
         let params = aDocument.location.hash || aDocument.location.search;
         let [, mode] = /[?&#]tb[ms]=([^&]+)/.exec(params) || [];
@@ -337,7 +337,7 @@ const kSiteList = [
   {
     name: 'Yahoo!JAPAN Result',
     include: '|search.yahoo.co.jp/search',
-    script: function(aDocument) {
+    script(aDocument) {
       // Sanitize links.
       Array.forEach($S('#contents a'), (link) => {
         link.removeAttribute('onmousedown');
@@ -366,7 +366,7 @@ const kSiteList = [
         }
       });
     },
-    style: function(aDocument) {
+    style(aDocument) {
       let css = '\
         /* Custom class. */\
         .ucjs_SiteStyle_weaken h3{\
@@ -388,7 +388,7 @@ const kSiteList = [
   {
     name: 'Wikipedia Article',
     include: '||wikipedia.org/wiki/',
-    style: function(aDocument) {
+    style(aDocument) {
       let css = '\
         /* Popup reference. */\
         .references li{\
@@ -409,7 +409,7 @@ const kSiteList = [
   {
     name: 'Youtube Player',
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|channel|user)/,
-    quickScript: function(aDocument) {
+    quickScript(aDocument) {
       let location = aDocument.location;
 
       // WORKAROUND: Changes a parameter key for the start time of a video page
@@ -423,7 +423,7 @@ const kSiteList = [
 
       return true;
     },
-    script: function(aDocument) {
+    script(aDocument) {
       // Excluding the playlist mode.
       if (!/[?&]list=/.test(aDocument.location.search)) {
         preventAutoplay(aDocument);
@@ -682,7 +682,7 @@ const PageObserver = (function() {
   let mBrowserState = new WeakMap();
 
   const mProgressListener = {
-    init: function() {
+    init() {
       addEvent(gBrowser.tabContainer, 'TabClose', (aEvent) => {
         let browser = gBrowser.getBrowserForTab(aEvent.target);
 
@@ -696,8 +696,7 @@ const PageObserver = (function() {
       }, false);
     },
 
-    onLocationChange: function(
-      aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
+    onLocationChange(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
       let URL = aLocation.spec;
 
       if (!/^https?/.test(URL)) {
@@ -737,8 +736,7 @@ const PageObserver = (function() {
       }
     },
 
-    onStateChange: function(
-      aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
+    onStateChange(aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
       let URL = aBrowser.currentURI.spec;
 
       if (!/^https?/.test(URL)) {
@@ -770,11 +768,11 @@ const PageObserver = (function() {
       }
     },
 
-    onProgressChange: function() {},
-    onSecurityChange: function() {},
-    onStatusChange: function() {},
-    onRefreshAttempted: function() {},
-    onLinkIconAvailable: function() {}
+    onProgressChange() {},
+    onSecurityChange() {},
+    onStatusChange() {},
+    onRefreshAttempted() {},
+    onLinkIconAvailable() {}
   };
 
   /**

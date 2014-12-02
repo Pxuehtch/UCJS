@@ -113,7 +113,7 @@ const kPreset = [
     types: ['PAGE'],
     label: '%TYPE%の はてなブックマーク (-)',
 
-    URL: function(aData) {
+    URL(aData) {
       let entryURL = 'http://b.hatena.ne.jp/entry/';
 
       if (/^https:/.test(aData)) {
@@ -123,7 +123,7 @@ const kPreset = [
       return entryURL + '%SCHEMELESS%';
     },
 
-    command: function(aParams) {
+    command(aParams) {
       let {menuitem, data} = aParams;
 
       function updateLabel(text) {
@@ -148,10 +148,10 @@ const kPreset = [
       window.ucjsWebService.get({
         name: 'HatenaBookmarkCounter',
         data,
-        onLoad: function(aResponseText) {
+        onLoad(aResponseText) {
           updateLabel(aResponseText);
         },
-        onError: function() {
+        onError() {
           updateLabel('error');
         }
       });

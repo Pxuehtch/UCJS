@@ -101,35 +101,35 @@ const kGestureSet = [
   {
     gestures: ['L'],
     name: '戻る',
-    command: function() {
+    command() {
       doCommand('Browser:Back');
     }
   },
   {
     gestures: ['S&L'],
     name: '前のページへ',
-    command: function() {
+    command() {
       window.ucjsUtil.loadPage(window.ucjsNaviLink.getPrev());
     }
   },
   {
     gestures: ['R'],
     name: '進む',
-    command: function() {
+    command() {
       doCommand('Browser:Forward');
     }
   },
   {
     gestures: ['S&R'],
     name: '次のページへ',
-    command: function() {
+    command() {
       window.ucjsUtil.loadPage(window.ucjsNaviLink.getNext());
     }
   },
   {
     gestures: ['!LW-', '!RW-'],
     name: 'ページの履歴',
-    command: function({event}) {
+    command({event}) {
       $ID('backForwardMenu').
         openPopupAtScreen(event.screenX + 5, event.screenY + 5, false);
     }
@@ -137,21 +137,21 @@ const kGestureSet = [
   {
     gestures: ['U'],
     name: 'ページ先頭へ',
-    command: function() {
+    command() {
       doCommand('cmd_scrollTop');
     }
   },
   {
     gestures: ['D'],
     name: 'ページ末尾へ',
-    command: function() {
+    command() {
       doCommand('cmd_scrollBottom');
     }
   },
   {
     gestures: ['UD'],
     name: '更新/中止',
-    command: function() {
+    command() {
       doCommand(window.XULBrowserWindow.isBusy ?
         'Browser:Stop' : 'Browser:Reload');
     }
@@ -159,7 +159,7 @@ const kGestureSet = [
   {
     gestures: ['UDU'],
     name: 'キャッシュも更新',
-    command: function() {
+    command() {
       doCommand('Browser:ReloadSkipCache');
     }
   },
@@ -170,7 +170,7 @@ const kGestureSet = [
   {
     gestures: ['DL'],
     name: 'タブを複製',
-    command: function() {
+    command() {
       // @see chrome://browser/content/browser.js::duplicateTabIn
       window.duplicateTabIn(gBrowser.selectedTab, 'tab');
     }
@@ -178,63 +178,63 @@ const kGestureSet = [
   {
     gestures: ['LU'],
     name: '閉じたタブを復元',
-    command: function() {
+    command() {
       doCommand('History:UndoCloseTab');
     }
   },
   {
     gestures: ['DR'],
     name: 'タブを閉じる',
-    command: function() {
+    command() {
       window.ucjsUtil.removeTab(gBrowser.selectedTab, {safeClose: true});
     }
   },
   {
     gestures: ['S&C&DR'],
     name: '強制的にタブを閉じる',
-    command: function() {
+    command() {
       window.ucjsUtil.removeTab(gBrowser.selectedTab);
     }
   },
   {
     gestures: ['S&DRL', 'DRLW+', 'DRLW-'],
     name: '既読のタブを閉じる',
-    command: function() {
+    command() {
       window.ucjsTabEx.closeReadTabs();
     }
   },
   {
     gestures: ['S&DRDL', 'DRDLW+', 'DRDLW-'],
     name: '左側のタブを閉じる',
-    command: function() {
+    command() {
       window.ucjsTabEx.closeLeftTabs();
     }
   },
   {
     gestures: ['S&DRDR', 'DRDRW+', 'DRDRW-'],
     name: '右側のタブを閉じる',
-    command: function() {
+    command() {
       window.ucjsTabEx.closeRightTabs();
     }
   },
   {
     gestures: ['S&DRU', 'DRUW+', 'DRUW-'],
     name: '他のタブを閉じる',
-    command: function() {
+    command() {
       window.ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
     }
   },
   {
     gestures: ['S&DURD', 'DURDW+', 'DURDW-'], // shape of 'h'
     name: 'ホームだけにする',
-    command: function() {
+    command() {
       window.ucjsUtil.openHomePages({doReplace: true});
     }
   },
   {
     gestures: ['DURD'], // Shape of 'h'.
     name: 'ホームを開く',
-    command: function() {
+    command() {
       window.ucjsUtil.openHomePages();
     }
   },
@@ -245,7 +245,7 @@ const kGestureSet = [
   {
     gestures: ['RD'],
     name: '履歴を開閉',
-    command: function() {
+    command() {
       // @see chrome://browser/content/browser.js::toggleSidebar
       window.toggleSidebar('viewHistorySidebar');
     }
@@ -253,7 +253,7 @@ const kGestureSet = [
   {
     gestures: ['LD'],
     name: 'ブックマークを開閉',
-    command: function() {
+    command() {
       // @see chrome://browser/content/browser.js::toggleSidebar
       window.toggleSidebar('viewBookmarksSidebar');
     }
@@ -261,14 +261,14 @@ const kGestureSet = [
   {
     gestures: ['!W+'],
     name: '前のタブへ',
-    command: function() {
+    command() {
       doCommand('Browser:PrevTab');
     }
   },
   {
     gestures: ['!W-'],
     name: '次のタブへ',
-    command: function() {
+    command() {
       doCommand('Browser:NextTab');
     }
   },
@@ -279,28 +279,28 @@ const kGestureSet = [
   {
     gestures: ['TEXT#L'],
     name: 'Weblio',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsWebService.open({name: 'Weblio', data: dragData});
     }
   },
   {
     gestures: ['S&TEXT#L'],
     name: 'Google翻訳',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsWebService.open({name: 'GoogleTranslation', data: dragData});
     }
   },
   {
     gestures: ['TEXT#R'],
     name: 'Google検索',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsWebService.open({name: 'GoogleSearch', data: dragData});
     }
   },
   {
     gestures: ['S&TEXT#R'],
     name: 'Google検索 site:',
-    command: function({dragData}) {
+    command({dragData}) {
       dragData += ' site:' + gBrowser.currentURI.spec;
 
       window.ucjsWebService.open({name: 'GoogleSearch', data: dragData});
@@ -309,7 +309,7 @@ const kGestureSet = [
   {
     gestures: ['TEXT#D'],
     name: 'ページ内検索',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsUI.FindBar.find(dragData, {
         doHighlight: true
       });
@@ -318,7 +318,7 @@ const kGestureSet = [
   {
     gestures: ['TEXT#UR'],
     name: '加えて再検索 (Focus)',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsWebService.updateFormInput(dragData, {
         moreData: true,
         doFocus: true
@@ -328,7 +328,7 @@ const kGestureSet = [
   {
     gestures: ['S&TEXT#UR'],
     name: '加えて再検索 (Submit)',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsWebService.updateFormInput(dragData, {
         moreData: true,
         doSubmit: true
@@ -338,7 +338,7 @@ const kGestureSet = [
   {
     gestures: ['TEXT#DR'],
     name: '除いて再検索 (Focus)',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsWebService.updateFormInput(dragData, {
         lessData: true,
         doFocus: true
@@ -348,7 +348,7 @@ const kGestureSet = [
   {
     gestures: ['S&TEXT#DR'],
     name: '除いて再検索 (Submit)',
-    command: function({dragData}) {
+    command({dragData}) {
       window.ucjsWebService.updateFormInput(dragData, {
         lessData: true,
         doSubmit: true
@@ -358,7 +358,7 @@ const kGestureSet = [
   {
     gestures: ['LINK#U', 'IMAGE#U'],
     name: '新タブに開く',
-    command: function({dragData}) {
+    command({dragData}) {
       openTab(dragData, {
         inBackground: false,
         relatedToCurrent: true,
@@ -369,7 +369,7 @@ const kGestureSet = [
   {
     gestures: ['LINK#D', 'IMAGE#D'],
     name: '裏タブで開く',
-    command: function({dragData}) {
+    command({dragData}) {
       openTab(dragData, {
         inBackground: true,
         relatedToCurrent: true,
