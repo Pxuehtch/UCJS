@@ -195,13 +195,13 @@ const Scratchpad = (function() {
     } = aState;
 
     if (!type) {
-      prompt('Error: unsupported text type');
+      prompt('Error: Unsupported text type.');
 
       return;
     }
 
     if (!text) {
-      prompt('Error: no content');
+      prompt('Error: No content.');
 
       return;
     }
@@ -224,7 +224,7 @@ const Scratchpad = (function() {
     };
 
     if (!open(state)) {
-      prompt('Error: cannot open Scratchpad');
+      prompt('Error: Cannot open Scratchpad.');
 
       return;
     }

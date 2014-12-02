@@ -251,7 +251,7 @@ function log(aMsg) {
   // TODO: In Fx29, a URL tooltip shows even if the first URL does not overflow
   // at startup. And leave |gURLBar._contentIsCropped| to true until a long URL
   // newly loads.
-  // WORKAROUND: Reset to false here, but it may be wrong timing.
+  // WORKAROUND: Reset to false here.
   gURLBar._contentIsCropped = false;
 
   // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
@@ -667,6 +667,9 @@ function log(aMsg) {
     }
   };
 
+  /**
+   * Observe the URL bar for the status visibility by UI actions.
+   */
   observeURLBar();
 
   function observeURLBar() {
@@ -696,7 +699,11 @@ function log(aMsg) {
     }
   }
 
-  // @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
+  /**
+   * Patches the native function.
+   *
+   * @modified chrome://browser/content/browser.js::XULBrowserWindow::updateStatusField
+   */
   const $updateStatusField = window.XULBrowserWindow.updateStatusField;
 
   window.XULBrowserWindow.updateStatusField =
@@ -730,6 +737,9 @@ function log(aMsg) {
     }
   }
 
+  /**
+   * Register the appearance.
+   */
   setChromeCSS(`
     #main-window:not([inFullscreen]) statuspanel[%%kState.hidden%%] {
       visibility: collapse !important;

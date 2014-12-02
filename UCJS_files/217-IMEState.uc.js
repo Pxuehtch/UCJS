@@ -74,8 +74,8 @@ function handleEvent(aEvent) {
       // found for closing IME in my case ('Hiragana' is detected).
       //
       // TODO: In Fx33, some key values are considered deprecated and warned
-      // in the web console. They will be changed in Fx34 to comply with the
-      // latest DOM3 spec.
+      // in the web console. They will be changed in the future to comply with
+      // the latest DOM3 spec.
       // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1024864
       // @see https://bugzilla.mozilla.org/show_bug.cgi?id=900372
       let IMEkeys = [
