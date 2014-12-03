@@ -741,7 +741,7 @@ function log(aMsg) {
    * Register the appearance.
    */
   setChromeCSS(`
-    #main-window:not([inFullscreen]) statuspanel[%%kState.hidden%%] {
+    #main-window:not([inFullscreen]) statuspanel[${kState.hidden}] {
       visibility: collapse !important;
     }
     #main-window:not([inFullscreen]) statuspanel {
