@@ -541,7 +541,7 @@ function addMenuItem(aPopup, aParam) {
     label: makeMenuItemLabel(aParam),
     disabled: appIndex < 0 || null,
     [kDataKey.appIndex]: appIndex,
-    [kDataKey.action]: action,
+    [kDataKey.action]: action
   });
 
   aPopup.appendChild(item);
