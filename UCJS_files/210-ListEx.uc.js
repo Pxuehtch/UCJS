@@ -1449,15 +1449,17 @@ function fixFaviconURL(aIconURL) {
   // @see resource://gre/modules/PlacesUtils.jsm
   const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
-  if (aIconURL) {
-    if (/^https?:/.test(aIconURL)) {
-      aIconURL = 'moz-anno:favicon:' + aIconURL;
-    }
-
-    return aIconURL;
+  if (!aIconURL) {
+    aIconURL = PlacesUtils.favicons.defaultFavicon.spec;
   }
 
-  return PlacesUtils.favicons.defaultFavicon.spec;
+  aIconURL = PlacesUtils.getImageURLForResolution(window, aIconURL);
+
+  if (/^https?:/.test(aIconURL)) {
+    aIconURL = 'moz-anno:favicon:' + aIconURL;
+  }
+
+  return aIconURL;
 }
 
 function formatTime(aMicroSeconds) {
