@@ -194,7 +194,7 @@ const kSiteList = [
     include: '||google.tld/*q=',
     script(aDocument) {
       // Sanitize links.
-      Array.forEach($S('li.g a', aDocument), (link) => {
+      [...$S('li.g a', aDocument)].forEach((link) => {
         link.removeAttribute('onmousedown');
 
         let url =
@@ -209,7 +209,7 @@ const kSiteList = [
 
       let lastHost = null;
 
-      Array.forEach($S('li.g', aDocument), (item) => {
+      [...$S('li.g', aDocument)].forEach((item) => {
         let link = $S1('.r>a, .ts a', item);
 
         if (!link) {
@@ -343,7 +343,7 @@ const kSiteList = [
     include: '|search.yahoo.co.jp/search',
     script(aDocument) {
       // Sanitize links.
-      Array.forEach($S('#contents a'), (link) => {
+      [...$S('#contents a')].forEach((link) => {
         link.removeAttribute('onmousedown');
 
         let url =
@@ -357,7 +357,7 @@ const kSiteList = [
       });
 
       // Process items.
-      Array.forEach($S('.w,.cmm'), (item) => {
+      [...$S('.w, .cmm')].forEach((item) => {
         let link = $S1('.hd>h3>a', item);
 
         if (!link) {

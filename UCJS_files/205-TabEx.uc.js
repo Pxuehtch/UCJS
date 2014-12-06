@@ -995,7 +995,7 @@ const Startup = {
 
   setStartupTabs() {
     // Scan all tabs (including hidden tabs).
-    Array.forEach(gBrowser.tabs, (tab) => {
+    [...gBrowser.tabs].forEach((tab) => {
       // A boot startup tab (e.g. homepage).
       if (!TabData.get(tab, 'openInfo')) {
         TabOpener.set(tab, 'StartupTab');
@@ -1737,10 +1737,10 @@ function getTabs(aStatement, aEssentialTab) {
       active = !!statement.matchKey(['active']);
 
   if (all) {
-    return Array.from(gBrowser.tabs);
+    return [...gBrowser.tabs];
   }
 
-  return Array.filter(gBrowser.tabs, (tab) => {
+  return [...gBrowser.tabs].filter((tab) => {
     if (aEssentialTab && tab === aEssentialTab) {
       return true;
     }

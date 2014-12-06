@@ -552,6 +552,8 @@ function log(aMsg) {
       if (view.frameElement instanceof HTMLFrameElement) {
         let target = link.target;
 
+        // @note [...window.frames] doesn't work since |window.frames| doesn't
+        // have '@@iterator'.
         hasTargetFrame =
           Array.some(view.top.frames, (frame) => frame.name === target);
       }
@@ -909,7 +911,7 @@ function log(aMsg) {
       return;
     }
 
-    Array.forEach(popup.childNodes, (menuitem) => {
+    [...popup.childNodes].forEach((menuitem) => {
       if (menuitem.tab) {
         setStateForUnreadTab(menuitem, menuitem.tab);
       }

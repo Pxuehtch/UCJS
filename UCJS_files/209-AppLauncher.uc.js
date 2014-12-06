@@ -593,7 +593,7 @@ function doBrowse(aPopup) {
   let uselessSeparator = 'xul:menuseparator[not(preceding-sibling::*[not(@hidden)]) or not(following-sibling::*[not(@hidden)]) or local-name(following-sibling::*[not(@hidden)])="menuseparator"]';
 
   // Hide all menu items and show the others.
-  Array.forEach(aPopup.childNodes, (node) => {
+  [...aPopup.childNodes].forEach((node) => {
     let hidden = node.localName === 'menuitem';
 
     if (node.hidden !== hidden) {

@@ -364,7 +364,7 @@ function updateFormInput(aData, aOption = {}) {
   let textForm = null,
       textInput = null;
 
-  Array.some(gBrowser.contentDocument.forms, (form) => {
+  [...gBrowser.contentDocument.forms].some((form) => {
     let input =
       !$X1(kInputType.exclude, form) &&
       $X1(kInputType.include, form);

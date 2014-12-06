@@ -1225,9 +1225,7 @@ const NaviLink = (function() {
     scanMeta(infoList, contentDocument);
     scanScript(infoList, contentDocument);
 
-    let links = $S('[rel][href], [rev][href]', contentDocument);
-
-    Array.forEach(links, (node) => {
+    [...$S('[rel][href], [rev][href]', contentDocument)].forEach((node) => {
       let rel = node.rel || node.rev;
 
       if (!rel ||
@@ -1339,7 +1337,7 @@ const NaviLink = (function() {
   }
 
   function scanMeta(aList, aDocument) {
-    let metas = Array.slice(aDocument.getElementsByTagName('meta'));
+    let metas = [...aDocument.getElementsByTagName('meta')];
 
     // Add <content-type> to avoid an empty meta list.
     let empty = !metas.some((meta) =>
@@ -1360,7 +1358,7 @@ const NaviLink = (function() {
   }
 
   function scanScript(aList, aDocument) {
-    Array.forEach(aDocument.getElementsByTagName('script'), (node) => {
+    [...aDocument.getElementsByTagName('script')].forEach((node) => {
       addItem(aList, 'script', node);
     });
   }

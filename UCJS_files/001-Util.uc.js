@@ -988,7 +988,7 @@ function setChromeStyleSheet(aCSS) {
 
   let dataURI = 'data:text/css,' + encodeURIComponent(css);
 
-  if (Array.some(doc.styleSheets, (sheet) => sheet.href === dataURI)) {
+  if ([...doc.styleSheets].some((sheet) => sheet.href === dataURI)) {
     return;
   }
 

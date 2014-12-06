@@ -387,7 +387,7 @@ const TooltipPanel = (function() {
     let data = [];
     let attributes = {};
 
-    Array.forEach(aNode.attributes, (attribute) => {
+    [...aNode.attributes].forEach((attribute) => {
       attributes[attribute.localName] = attribute.value;
     });
 
@@ -552,7 +552,7 @@ const TooltipPanel = (function() {
   function copyAllData() {
     let data = [];
 
-    Array.forEach(mBox.childNodes, (node) => {
+    [...mBox.childNodes].forEach((node) => {
       let textData = node[kDataKey.textData];
 
       if (textData) {

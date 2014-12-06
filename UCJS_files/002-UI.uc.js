@@ -435,7 +435,7 @@ const FindBar = (function() {
 
       if (onCreate) {
         // Apply the init handler to existing findbars (including hidden tabs).
-        Array.forEach(gBrowser.tabs, (tab) => {
+        [...gBrowser.tabs].forEach((tab) => {
           if (gBrowser.isFindBarInitialized(tab)) {
             onCreate(HandlerParam({
               tab
