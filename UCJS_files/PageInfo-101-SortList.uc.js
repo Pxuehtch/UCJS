@@ -70,11 +70,11 @@ window.pageInfoTreeView.prototype.cycleHeader =
 
   // Store the natural order at the first time.
   if (!state.naturalData) {
-    state.naturalData = this.data.concat();
+    state.naturalData = this.data.slice();
   }
 
   if (direction === 'natural') {
-    this.data = state.naturalData.concat();
+    this.data = state.naturalData.slice();
   }
   else {
     sort(this.data, aColumn.index, direction === 'ascending');

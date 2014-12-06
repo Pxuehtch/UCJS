@@ -116,7 +116,7 @@ const AliasFixup = (function() {
   const kAliasPattern = RegExp('%([a-z_' + kAliasSplitter + ']+)%', 'ig');
 
   function create(aText, aData) {
-    let dataArray = !Array.isArray(aData) ? [aData] : aData.concat();
+    let dataArray = !Array.isArray(aData) ? [aData] : aData.slice();
 
     return aText.replace(kAliasPattern, (match, alias) => {
       if (!dataArray.length) {
