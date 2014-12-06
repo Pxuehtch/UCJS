@@ -123,7 +123,7 @@ const AliasFixup = (function() {
         return match;
       }
 
-      let data = String(dataArray.shift());
+      let data = dataArray.shift() + '';
 
       alias.split(kAliasSplitter).forEach((modifier) => {
         data = fixupModifier(data, modifier);

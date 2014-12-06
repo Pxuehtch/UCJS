@@ -759,7 +759,7 @@ function Log(aEnabled) {
 
   let format = (aForm, aAttribute) => {
     for (let [name, value] in Iterator(aAttribute)) {
-      aForm = aForm.replace('%' + name + '%', String(value));
+      aForm = aForm.replace('%' + name + '%', value + '');
     }
 
     return aForm;

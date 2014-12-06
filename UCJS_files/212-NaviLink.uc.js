@@ -1848,7 +1848,7 @@ const SiblingNavi = (function() {
         let newNum = parseInt(oldNum, 10) + direction;
 
         if (newNum > 0) {
-          newNum = String(newNum);
+          newNum = newNum + '';
 
           while (newNum.length < oldNum.length) {
             newNum = '0' + newNum;
