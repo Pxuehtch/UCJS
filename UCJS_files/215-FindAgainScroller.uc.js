@@ -178,7 +178,7 @@ const FindAgainCommand = (function() {
     const $onFindAgainCommand = gFindBar.onFindAgainCommand;
 
     gFindBar.onFindAgainCommand =
-    function ucjsFindAgainScroller_onFindAgainCommand(aFindPrevious) {
+    function ucjsFindAgainScroller_onFindAgainCommand(...aParams) {
       // Terminate the active processing.
       if (mSmoothScroll) {
         mSmoothScroll.cancel();
@@ -190,7 +190,7 @@ const FindAgainCommand = (function() {
 
       // Apply only the native processing for a short time repeating command.
       if (isRepeatingCommand()) {
-        $onFindAgainCommand.apply(this, arguments);
+        $onFindAgainCommand.apply(this, aParams);
 
         return;
       }
@@ -199,7 +199,7 @@ const FindAgainCommand = (function() {
       mScrollObserver.attach();
 
       do {
-        $onFindAgainCommand.apply(this, arguments);
+        $onFindAgainCommand.apply(this, aParams);
       } while (mSkipInvisible && mSkipInvisible.test());
 
       if (TextFinder.isResultFound) {

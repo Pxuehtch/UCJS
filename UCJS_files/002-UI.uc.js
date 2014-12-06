@@ -693,8 +693,8 @@ const StatusField = (function() {
         // Disable the delayed showing while over link.
         this.hideOverLinkImmediately = true;
 
-        // @note Use |call| for the updated |newURL|.
-        $setOverLink.call(this, newURL, anchorElt);
+        // @note Pass the updated |newURL|.
+        $setOverLink.apply(this, [newURL, anchorElt]);
 
         // Restore the delayed showing.
         this.hideOverLinkImmediately = false;
@@ -836,7 +836,7 @@ const StatusField = (function() {
         return;
       }
 
-      $updateStatusField.apply(this, arguments);
+      $updateStatusField.apply(this);
     };
 
     /**

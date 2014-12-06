@@ -177,7 +177,7 @@ const Button = {
         return;
       }
 
-      $func.apply(this, arguments);
+      $func.apply(this, [aEvent]);
     };
   }
 };

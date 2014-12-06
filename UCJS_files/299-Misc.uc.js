@@ -710,7 +710,7 @@ function log(aMsg) {
 
   window.XULBrowserWindow.updateStatusField =
   function ucjsMisc_showStatusToURLBar_updateStatusField() {
-    $updateStatusField.apply(this, arguments);
+    $updateStatusField.apply(this);
 
     // TODO: Should I change the timing of updating the size in order to just
     // fit the position?
