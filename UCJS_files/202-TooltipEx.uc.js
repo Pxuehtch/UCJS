@@ -598,7 +598,7 @@ function isLinkNode(aNode) {
 function splitURL(aURL) {
   let colon = aURL.indexOf(':') + 1;
 
-  return [aURL.substring(0, colon), aURL.substring(colon)];
+  return [aURL.slice(0, colon), aURL.slice(colon)];
 }
 
 function copyToClipboard(aText) {

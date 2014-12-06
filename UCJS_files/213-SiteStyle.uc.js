@@ -588,7 +588,7 @@ const URLFilter = (function() {
       ].
       some(([symbol, re]) => {
         if (item.startsWith(symbol)) {
-          item = item.substring(symbol.length);
+          item = item.slice(symbol.length);
 
           prefix = /^\w+:/.test(item) ? '^' : re.source;
 

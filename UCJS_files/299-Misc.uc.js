@@ -309,13 +309,13 @@ function log(aMsg) {
 
     offsets.forEach(({index, from, to}) => {
       // A trailing string outside the range, which needs no styling.
-      segments.unshift(htmlWrap(aUrl.substring(to + 1)));
+      segments.unshift(htmlWrap(aUrl.slice(to + 1)));
 
       // A string to be styled.
-      segments.unshift(htmlWrap(aUrl.substring(from, to + 1), index));
+      segments.unshift(htmlWrap(aUrl.slice(from, to + 1), index));
 
       // Cut off the processed string.
-      aUrl = aUrl.substring(0, from);
+      aUrl = aUrl.slice(0, from);
     });
 
     // Complement the remaining string.
