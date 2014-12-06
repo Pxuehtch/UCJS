@@ -1092,21 +1092,17 @@ function extractFileName(aURI, aDocument) {
     }
   }
 
+  // @note |getDefaultFileName| always returns a string not empty.
   // @see chrome://global/content/contentAreaUtils.js::getDefaultFileName()
-  let baseName = window.getDefaultFileName('', aURI, aDocument) || null;
-
-  let contentType = aDocument ? aDocument.contentType : null;
+  let baseName = window.getDefaultFileName('', aURI, aDocument);
 
   // @see chrome://global/content/contentAreaUtils.js::getDefaultExtension()
-  let extension = window.getDefaultExtension('', aURI, contentType) || null;
+  let extension = window.getDefaultExtension('', aURI,
+    aDocument ? aDocument.contentType : null);
 
   if (extension && baseName.endsWith('.' + extension)) {
     // @see chrome://global/content/contentAreaUtils.js::getFileBaseName()
     baseName = window.getFileBaseName(baseName);
-  }
-
-  if (!baseName) {
-    return null;
   }
 
   if (!extension && aDocument && /^https?$/.test(aURI.scheme)) {
