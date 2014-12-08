@@ -728,12 +728,10 @@ function MouseEventManager() {
    * @return {boolean|undefined}
    *   'mousedown' {boolean} Whether a normal mode gesture can start or not.
    *   'mouseup' {boolean} Whether a normal mode gesture can stop or not.
-   *   @note Returns |undefined| for other events since no use for them.
+   *   @note Returns |undefined| for other cases since no use for them.
    */
   function update(aEvent) {
     const {type, button} = aEvent;
-
-    let canGestureStart, canGestureStop;
 
     switch (type) {
       case 'mousedown': {
@@ -747,7 +745,7 @@ function MouseEventManager() {
           }
 
           // Allow a gesture starts.
-          canGestureStart = !mOtherDown;
+          return !mOtherDown;
         }
         else {
           mOtherDown = true;
@@ -774,7 +772,7 @@ function MouseEventManager() {
           mRightDown = false;
 
           // Allow a gesture stops.
-          canGestureStop = !mOtherDown;
+          return !mOtherDown;
         }
         else {
           mOtherDown = false;
@@ -833,8 +831,6 @@ function MouseEventManager() {
         break;
       }
     }
-
-    return canGestureStart || canGestureStop;
   }
 
   return {
