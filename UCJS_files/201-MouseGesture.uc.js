@@ -152,12 +152,14 @@ const kGestureSet = [
     gestures: ['UD'],
     name: '更新/中止',
     command() {
-      doCommand(window.XULBrowserWindow.isBusy ?
-        'Browser:Stop' : 'Browser:Reload');
+      // @see chrome://browser/content/browser.js::XULBrowserWindow
+      let isBusy = window.XULBrowserWindow.isBusy;
+
+      doCommand(isBusy ? 'Browser:Stop' : 'Browser:Reload');
     }
   },
   {
-    gestures: ['UDU'],
+    gestures: ['S&UD'],
     name: 'キャッシュも更新',
     command() {
       doCommand('Browser:ReloadSkipCache');
@@ -190,7 +192,7 @@ const kGestureSet = [
     }
   },
   {
-    gestures: ['S&C&DR'],
+    gestures: ['S&DR'],
     name: '強制的にタブを閉じる',
     command() {
       window.ucjsUtil.removeTab(gBrowser.selectedTab);
@@ -421,8 +423,8 @@ function MouseGesture() {
     // add it only in gesturing.
     addEvent(pc, 'contextmenu', onContextMenu, true);
 
-    // WORKAROUND: We assign it <Alt+RightClick> to reset the state of a
-    // gesture ANYTIME for a problem.
+    // WORKAROUND: We assign <Alt+RightClick> to reset the state of a gesture
+    // ANYTIME for a problem.
     addEvent(pc, 'click', onClick, true);
 
     // WORKAROUND: Make sure to clean up events.
