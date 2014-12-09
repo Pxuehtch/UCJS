@@ -103,14 +103,6 @@ const XPCOM = (function() {
     return mServices[aName];
   }
 
-  function getInstance(aName, aCIDParams) {
-    if (!kInstances.hasOwnProperty(aName)) {
-      throw Error('instance is not defined: ' + aName);
-    }
-
-    return create(kInstances[aName], aCIDParams, 'createInstance');
-  }
-
   function create(aItem, aCIDParams, aMethod) {
     let {CID, IID} = aItem;
 
@@ -149,8 +141,7 @@ const XPCOM = (function() {
   }
 
   return {
-    $S: getService,
-    $I: getInstance
+    $S: getService
   };
 })();
 
@@ -329,12 +320,13 @@ function getSelectedTextInRange(aRange) {
     return '';
   }
 
-  let type = 'text/plain';
-  let encoder = XPCOM.$I('DocumentEncoder', {type});
+  let encoder =
+    Cc['@mozilla.org/layout/documentEncoder;1?type=text/plain'].
+    createInstance(Ci.nsIDocumentEncoder);
 
   encoder.init(
     aRange.startContainer.ownerDocument,
-    type,
+    'text/plain',
     encoder.OutputLFLineBreak | encoder.SkipInvisibleContent
   );
 
