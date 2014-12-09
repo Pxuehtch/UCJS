@@ -134,7 +134,8 @@ const LinkInfoView = (function() {
     let row = [];
 
     // Set data in the column's order of the tree view.
-    // @note Not test the falsy value 'number 0' since it isn't given for now.
+    // @note No test for the falsy value {number} 0 since it isn't given for
+    // now.
     for (let key of Object.keys(kUI.column)) {
       if (aItem[key]) {
         row.push(aItem[key]);
@@ -236,7 +237,7 @@ function grabLink(aNode) {
     });
   }
   else if (aNode instanceof HTMLLinkElement && aNode.href) {
-    let target = aNode.rel || aNode.rev || '';
+    let target = aNode.rel || aNode.rev;
 
     addItem({
       name: getText(aNode, target),
@@ -257,7 +258,7 @@ function grabLink(aNode) {
         name += kUI.note.image;
       }
 
-      name += getText(aNode, aNode.alt || aNode.value || kUI.type.submit);
+      name += getText(aNode, aNode.value || kUI.type.submit);
 
       if (aNode.form) {
         address = aNode.form.action;
@@ -318,11 +319,18 @@ function grabLink(aNode) {
   return NodeFilter.FILTER_ACCEPT;
 }
 
-// @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
 function getText(aNode, aDefault) {
-  let text = window.getValueText(aNode) || aNode.title || aDefault || '';
+  const kMaxTextLength = 40;
 
-  return text.substr(0, 50);
+  // @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
+  let text = window.getValueText(aNode) ||
+    aNode.title || aNode.alt || aDefault || '';
+
+  if (text.length > kMaxTextLength) {
+    return text.substr(0, kMaxTextLength);
+  }
+
+  return text;
 }
 
 /**
