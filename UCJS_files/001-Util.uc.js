@@ -21,129 +21,56 @@ const ucjsUtil = (function(window, undefined) {
 
 
 /**
- * XPCOM handler.
+ * Initialize XPCOM handler.
  *
- * @note This handler should be defined at the top of this common utility file,
- * |Util.uc.js|, because the access to XPCOM modules with the global property
- * is ensured here and this access is often used by the following functions.
- * @see |ensureAccessToModules()|
+ * @note This function must run at the top of this common utility file,
+ * |Util.uc.js|, because it ensures the access to XPCOM modules as the global
+ * property and the access is often used by the following functions.
  */
-const XPCOM = (function() {
+initializeXPCOM();
+
+function initializeXPCOM() {
   /**
-   * ID List of extra services.
+   * The extra services for |window.Services|.
    */
-  const kServices = {
-    'StyleSheetService': {
+  const kServices = [
+    {
+      name: 'StyleSheetService',
       CID: '@mozilla.org/content/style-sheet-service;1',
       IID: 'nsIStyleSheetService'
     },
-    'TextToSubURI': {
+    {
+      name: 'TextToSubURI',
       CID: '@mozilla.org/intl/texttosuburi;1',
       IID: 'nsITextToSubURI'
     }//,
-  };
+  ];
 
-  /**
-   * ID List of extra instances.
-   */
-  const kInstances = {
-    'DocumentEncoder': {
-      CID: '@mozilla.org/layout/documentEncoder;1',
-      IID: 'nsIDocumentEncoder'
-    }//,
-  };
-
-  /**
-   * References to extra services.
-   *
-   * @note Initialized in |getService()|.
-   */
-  let mServices = {};
-
-  XPCOM_init();
-
-  function XPCOM_init() {
-    ensureAccessToModules()
-  }
-
-  /**
-   * Ensures access to the XPCOM module with the global property.
-   *
-   * @note Applied to any window that includes this file |Util.uc.js|.
-   */
-  function ensureAccessToModules() {
-    // Access to the modules of |window.Components|.
-    [
-      ['Cc', 'classes'],
-      ['Ci', 'interfaces'],
-      ['Cu', 'utils']
-    ].forEach(([alias, key]) => {
-      if (!window[alias]) {
-        window[alias] = window.Components[key];
-      }
-    });
-
-    // Access to |window.Services|.
-    Cu.import('resource://gre/modules/Services.jsm');
-  }
-
-  function getService(aName, aCIDParams) {
-    if (Services.hasOwnProperty(aName)) {
-      return Services[aName];
+  // Ensure access to the modules of |window.Components|.
+  [
+    ['Cc', 'classes'],
+    ['Ci', 'interfaces'],
+    ['Cu', 'utils']
+  ].
+  forEach(([alias, key]) => {
+    if (!window[alias]) {
+      window[alias] = window.Components[key];
     }
+  });
 
-    if (!kServices.hasOwnProperty(aName)) {
-      throw Error('service is not defined: ' + aName);
+  // Ensure access to |window.Services|.
+  Cu.import('resource://gre/modules/Services.jsm');
+
+  // Append extra services to |window.Services|.
+  // @see resource://gre/modules/XPCOMUtils.jsm
+  const {XPCOMUtils} = getModule('gre/modules/XPCOMUtils.jsm');
+
+  kServices.forEach(({name, CID, IID}) => {
+    if (!Services.hasOwnProperty(name)) {
+      XPCOMUtils.defineLazyServiceGetter(Services, name, CID, IID);
     }
-
-    if (!mServices[aName]) {
-      mServices[aName] = create(kServices[aName], aCIDParams, 'getService');
-    }
-
-    return mServices[aName];
-  }
-
-  function create(aItem, aCIDParams, aMethod) {
-    let {CID, IID} = aItem;
-
-    CID = fixupCID(CID, aCIDParams);
-
-    if (!Array.isArray(IID)) {
-      IID = [IID];
-    }
-
-    try {
-      let result = Cc[CID][aMethod]();
-
-      IID.forEach((id) => {
-        result.QueryInterface(Ci[id]);
-      });
-
-      return result;
-    }
-    catch (ex) {}
-
-    return null;
-  }
-
-  function fixupCID(aCID, aCIDParams) {
-    if (aCIDParams) {
-      let params = [];
-
-      for (let [name, value] in Iterator(aCIDParams)) {
-        params.push(name + '=' + value);
-      }
-
-      aCID += '?' + params.join('&');
-    }
-
-    return aCID;
-  }
-
-  return {
-    $S: getService
-  };
-})();
+  });
+}
 
 /**
  * Timer handler.
@@ -654,7 +581,7 @@ function unescapeURLForUI(aURL, aCharset) {
 
   let charset = aCharset || getFocusedDocument().characterSet;
 
-  return XPCOM.$S('TextToSubURI').unEscapeURIForUI(charset, aURL);
+  return Services.TextToSubURI.unEscapeURIForUI(charset, aURL);
 }
 
 function resolveURL(aURL, aBaseURL) {
@@ -887,14 +814,14 @@ function restartFx(aOption = {}) {
   }
 
   if (purgeCaches) {
-    XPCOM.$S('appinfo').invalidateCachesOnRestart();
+    Services.appinfo.invalidateCachesOnRestart();
   }
 
   // WORKAROUND: In Fx30, the browser cannot often restart on resume startup,
   // so set the preference to force to restore the session.
   Prefs.set('browser.sessionstore.resume_session_once', true);
 
-  XPCOM.$S('startup').
+  Services.startup.
     quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
 }
 
@@ -927,7 +854,7 @@ function registerGlobalStyleSheet(aCSS, aType, aOption = {}) {
     return;
   }
 
-  const styleSheetService = XPCOM.$S('StyleSheetService');
+  const styleSheetService = Services.StyleSheetService;
 
   let type;
 
@@ -1117,7 +1044,7 @@ function logMessage(aTargetName, aMessage) {
 
   // Output to the browser console.
   // @note No outputs to the web console.
-  XPCOM.$S('console').logStringMessage(output);
+  Services.console.logStringMessage(output);
 
   return output;
 }
@@ -1130,7 +1057,6 @@ function log(aMessage) {
  * Export
  */
 return {
-  XPCOM,
   Timer,
   Prefs,
 
