@@ -26,6 +26,7 @@
 const {
   getFirstNodeByXPath: $X1,
   addEvent,
+  getTextInRange,
   openTab
 } = window.ucjsUtil;
 
@@ -118,7 +119,7 @@ const URLUtil = (function() {
    *   |null| if no matches.
    */
   function extract(aRange) {
-    return match(encodeToPlain(aRange));
+    return match(getTextInRange(aRange));
   }
 
   /**
@@ -297,22 +298,6 @@ function findBorder(aXPath, aNode, aTextLength) {
     borderNode,
     textLength
   };
-}
-
-function encodeToPlain(aRange) {
-  let encoder =
-    Cc['@mozilla.org/layout/documentEncoder;1?type=text/plain'].
-    createInstance(Ci.nsIDocumentEncoder);
-
-  encoder.init(
-    aRange.startContainer.ownerDocument,
-    'text/plain',
-    encoder.OutputLFLineBreak | encoder.SkipInvisibleContent
-  );
-
-  encoder.setRange(aRange);
-
-  return encoder.encodeToString();
 }
 
 function isTextDocument(aDocument) {

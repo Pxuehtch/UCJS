@@ -264,7 +264,7 @@ function getSelectionAtCursor(aOption = {}) {
     range = selection.getRangeAt(i);
 
     if (range.isPointInRange(rangeParent, rangeOffset)) {
-      text = getSelectedTextInRange(range);
+      text = getTextInRange(range);
       break;
     }
   }
@@ -280,7 +280,7 @@ function getSelectionAtCursor(aOption = {}) {
 
       if (rect.left <= x && x <= rect.right &&
           rect.top <= y && y <= rect.bottom) {
-        text = getSelectedTextInRange(range);
+        text = getTextInRange(range);
         break;
       }
     }
@@ -315,7 +315,7 @@ function getSelectionController(aNode) {
   return win.getSelection();
 }
 
-function getSelectedTextInRange(aRange) {
+function getTextInRange(aRange) {
   if (!aRange.toString()) {
     return '';
   }
@@ -1008,9 +1008,11 @@ function setContentStyleSheet(aCSS, aOption = {}) {
   let style = doc.createElement('style');
 
   style.type = 'text/css';
+
   if (id) {
     style.id = id;
   }
+
   style.textContent = css;
 
   return doc.head.appendChild(style);
@@ -1136,6 +1138,7 @@ return {
 
   addEvent,
   getSelectionAtCursor,
+  getTextInRange,
   createNode,
   getNodeById,
   getNodeByAnonid,
