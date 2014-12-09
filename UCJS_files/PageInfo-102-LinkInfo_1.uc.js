@@ -266,7 +266,7 @@ function grabLink(aNode) {
       }
     }
 
-    if (name) {
+    if (address) {
       addItem({
         name,
         address,
@@ -306,11 +306,13 @@ function grabLink(aNode) {
     }
     catch (ex) {}
 
-    addItem({
-      name: getText(aNode),
-      address,
-      type: kUI.type.XLink
-    });
+    if (address) {
+      addItem({
+        name: getText(aNode),
+        address,
+        type: kUI.type.XLink
+      });
+    }
   }
   else {
     return NodeFilter.FILTER_SKIP;
