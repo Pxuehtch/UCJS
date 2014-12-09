@@ -111,22 +111,6 @@ const XPCOM = (function() {
     return create(kInstances[aName], aCIDParams, 'createInstance');
   }
 
-  function getConstructor(aName, aCIDParams) {
-    if (!kInstances.hasOwnProperty(aName)) {
-      throw Error('instance is not defined: ' + aName);
-    }
-
-    let {CID, IID} = kInstances[aName];
-
-    CID = fixupCID(CID, aCIDParams);
-
-    if (Array.isArray(IID)) {
-      throw Error('multiple IID is not allowed');
-    }
-
-    return window.Components.Constructor(Cc[CID], Ci[IID]);
-  }
-
   function create(aItem, aCIDParams, aMethod) {
     let {CID, IID} = aItem;
 
@@ -166,8 +150,7 @@ const XPCOM = (function() {
 
   return {
     $S: getService,
-    $I: getInstance,
-    $C: getConstructor
+    $I: getInstance
   };
 })();
 
