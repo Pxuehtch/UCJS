@@ -291,18 +291,16 @@ function grabLink(aNode) {
       type: kUI.type[aNode.localName]
     });
   }
-  else if (aNode.hasAttributeNS(XLinkNS, 'href')) {
+  // @see chrome://browser/content/pageinfo/pageInfo.js::XLinkNS
+  else if (aNode.hasAttributeNS(window.XLinkNS, 'href')) {
     let address;
-    let href = aNode.getAttributeNS(XLinkNS, 'href');
+    let href = aNode.getAttributeNS(window.XLinkNS, 'href');
     let charset = aNode.ownerDocument.characterSet;
 
-    const {Services} = Components.utils.
-      import('resource://gre/modules/Services.jsm', {});
-
     try {
-      let baseURI = Services.io.newURI(aNode.baseURI, charset, null);
-
-      address = Services.io.newURI(href, charset, baseURI).spec;
+      // @see chrome://global/content/contentAreaUtils.js::makeURI
+      address = window.makeURI(href, charset,
+        window.makeURI(aNode.baseURI, charset)).spec;
     }
     catch (ex) {}
 
