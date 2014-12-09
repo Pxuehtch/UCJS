@@ -954,15 +954,12 @@ const ClosedList = (function() {
    * Utility functions for session store.
    */
   const SessionStore = (function() {
-    const SS = Cc['@mozilla.org/browser/sessionstore;1'].
-      getService(Ci.nsISessionStore);
-
     function getClosedTabs() {
       try {
-        if (SS.getClosedTabCount(window) > 0) {
+        if (Service.SessionStore.getClosedTabCount(window) > 0) {
           // Array of the data of closed tabs in thier closed date order from
           // last to first.
-          let data = JSON.parse(SS.getClosedTabData(window));
+          let data = JSON.parse(Service.SessionStore.getClosedTabData(window));
 
           let maxNumItems = kPref.maxNumListItems.closedTabs;
 
@@ -975,10 +972,10 @@ const ClosedList = (function() {
 
     function getClosedWindows() {
       try {
-        if (SS.getClosedWindowCount() > 0) {
+        if (Service.SessionStore.getClosedWindowCount() > 0) {
           // Array of the data of closed windows in thier closed date order
           // from last to first.
-          let data = JSON.parse(SS.getClosedWindowData());
+          let data = JSON.parse(Service.SessionStore.getClosedWindowData());
 
           let maxNumItems = kPref.maxNumListItems.closedWindows;
 

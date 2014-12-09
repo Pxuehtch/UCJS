@@ -35,6 +35,21 @@ function initializeXPCOM() {
    */
   const kServices = [
     {
+      name: 'ClipboardHelper',
+      CID: '@mozilla.org/widget/clipboardhelper;1',
+      IID: 'nsIClipboardHelper'
+    },
+    {
+      name: 'SessionStartup',
+      CID: '@mozilla.org/browser/sessionstartup;1',
+      IID: 'nsISessionStartup'
+    },
+    {
+      name: 'SessionStore',
+      CID: '@mozilla.org/browser/sessionstore;1',
+      IID: 'nsISessionStore'
+    },
+    {
       name: 'StyleSheetService',
       CID: '@mozilla.org/content/style-sheet-service;1',
       IID: 'nsIStyleSheetService'

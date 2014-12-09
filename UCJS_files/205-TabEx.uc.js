@@ -864,9 +864,6 @@ const SessionStore = {
   isRestoring: false,
 
   init() {
-    this.SS = Cc['@mozilla.org/browser/sessionstore;1'].
-      getService(Ci.nsISessionStore);
-
     addEvent(window, 'SSWindowStateBusy', () => {
       this.isRestoring = true;
     }, false);
@@ -886,13 +883,13 @@ const SessionStore = {
     ];
 
     savedAttributes.forEach((key) => {
-      this.SS.persistTabAttribute(key);
+      Services.SessionStore.persistTabAttribute(key);
     });
   },
 
   getClosedTabList() {
-    if (this.SS.getClosedTabCount(window) > 0) {
-      return JSON.parse(this.SS.getClosedTabData(window));
+    if (Services.SessionStore.getClosedTabCount(window) > 0) {
+      return JSON.parse(Services.SessionStore.getClosedTabData(window));
     }
 
     return null;
@@ -951,10 +948,7 @@ const Startup = {
       }
     };
 
-    let isResumeStartup =
-      Cc['@mozilla.org/browser/sessionstartup;1'].
-      getService(Ci.nsISessionStartup).
-      doRestore();
+    let isResumeStartup = Services.SessionStartup.doRestore();
 
     if (isResumeStartup) {
       LoadEvents.add(gBrowser.tabContainer, 'SSTabRestored');

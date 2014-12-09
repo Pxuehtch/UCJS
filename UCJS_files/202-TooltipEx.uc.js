@@ -602,9 +602,7 @@ function splitURL(aURL) {
 }
 
 function copyToClipboard(aText) {
-  Cc['@mozilla.org/widget/clipboardhelper;1'].
-    getService(Ci.nsIClipboardHelper).
-    copyString(aText);
+  Services.ClipboardHelper.copyString(aText);
 }
 
 /**

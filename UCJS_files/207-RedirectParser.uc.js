@@ -637,9 +637,7 @@ function setAttributeForCommand(aNode, aActionData) {
     }
 
     case 'copy': {
-      command =
-        'Cc["@mozilla.org/widget/clipboardhelper;1"].' +
-        'getService(Ci.nsIClipboardHelper).copyString("%URL%");';
+      command = 'Services.ClipboardHelper.copyString("%URL%");';
 
       break;
     }
