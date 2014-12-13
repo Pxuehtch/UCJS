@@ -23,7 +23,8 @@ const {
   },
   addEvent,
   createNode: $E,
-  getNodeById: $ID
+  getNodeById: $ID,
+  setChromeStyleSheet: setCSS
 } = window.ucjsUtil;
 
 // For debugging.
@@ -106,7 +107,42 @@ function handleEvent(aEvent) {
  */
 const SignPanel = (function() {
   /**
-   * Debounced showing manager.
+   * Animation manager.
+   *
+   * Accentuates a panel for clear visibility.
+   */
+  const Animation = {
+    init() {
+      let css = `
+        #${kUI.signPanel.id} {
+          animation: ucjs_IMEState_panelAnimation 1s infinite alternate;
+        }
+        @keyframes ucjs_IMEState_panelAnimation {
+          from {
+            color: rgba(255, 0, 0, 0.2);
+          }
+          to {
+            color: rgba(255, 0, 0, 0.8);
+          }
+        }
+      `;
+
+      setCSS(css);
+    },
+
+    start() {
+      // Start animation from the beginning.
+      getPanel().style.animation = '';
+    },
+
+    stop() {
+      // Suppress animation.
+      getPanel().style.animation = 'none';
+    }
+  };
+
+  /**
+   * Debounce showing manager.
    *
    * Guarantees that a callback function |show()| is executed only once at the
    * very end of a series of calls until the delay period expires.
@@ -132,6 +168,8 @@ const SignPanel = (function() {
       return panel;
     }
 
+    Animation.init();
+
     return $ID('mainPopupSet').appendChild($E('tooltip', {
       id: kUI.signPanel.id
     }));
@@ -156,17 +194,25 @@ const SignPanel = (function() {
   function show() {
     let target = getTargetElement();
 
-    if (target) {
-      let panel = getPanel();
-
-      panel.label = kUI.IMESign[isIMEActive(target) ? 'ON' : 'OFF'];
-
-      panel.openPopup(target, 'before_start');
+    if (!target) {
+      return;
     }
+
+    let panel = getPanel();
+
+    panel.label = kUI.IMESign[isIMEActive(target) ? 'ON' : 'OFF'];
+
+    panel.openPopup(target, 'before_start');
+
+    Animation.start();
   }
 
   function hide() {
-    getPanel().hidePopup();
+    let panel = getPanel();
+
+    panel.hidePopup();
+
+    Animation.stop();
   }
 
   function getTargetElement() {
