@@ -1557,7 +1557,7 @@ const SiblingNavi = (function() {
 
     let URI = URIUtil.getCurrentURI();
 
-    if (!URI || !isHTMLDocument()) {
+    if (!URI) {
       mURL = null;
       mResult = null;
 
@@ -1667,6 +1667,10 @@ const SiblingNavi = (function() {
    * to avoid jumping to the outside by a |prev|/|next| command.
    */
   function guessBySearching(aDirection, aURI) {
+    if (!isHTMLDocument()) {
+      return null;
+    }
+
     let URI = URIUtil.createURI(aURI, {
       hash: false
     });
