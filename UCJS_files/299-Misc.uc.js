@@ -1053,10 +1053,11 @@ function log(aMsg) {
             isUpdated = true;
           }
 
-          // Find again;
-          // 1. With the new string when a tab is selected.
-          // 2. With the same string when a new document loads.
-          if (isUpdated || aEvent.type === 'pageshow') {
+          // 1.Find again with the new string when a tab is selected.
+          // 2.Find again with the same string when a new document loads in a
+          //   tab.
+          // @note Do nothing for a history cache to retain the last view.
+          if (isUpdated || (aEvent.type === 'pageshow' && !aEvent.persisted)) {
             gFindBar.onFindAgainCommand();
           }
         }
