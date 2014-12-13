@@ -1040,12 +1040,6 @@ function log(aMsg) {
           break;
         }
 
-        let lockButton = UI.lockButton;
-
-        if (lockButton && lockButton.checked !== mIsLocked) {
-          lockButton.checked = mIsLocked;
-        }
-
         if (mIsLocked) {
           // @note The focus does not move to the findbar.
           gFindBar.open(gFindBar.FIND_NORMAL);
@@ -1065,6 +1059,12 @@ function log(aMsg) {
           if (isUpdated || aEvent.type === 'pageshow') {
             gFindBar.onFindAgainCommand();
           }
+        }
+
+        let lockButton = UI.lockButton;
+
+        if (lockButton && lockButton.checked !== mIsLocked) {
+          lockButton.checked = mIsLocked;
         }
 
         break;
