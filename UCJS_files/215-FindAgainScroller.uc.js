@@ -906,7 +906,11 @@ function FoundBlink() {
       this.param = {
         duration,
         blinks: 0,
-        range: TextFinder.selectionRange
+        range: TextFinder.selectionRange,
+
+        uninit() {
+          delete this.range;
+        }
       };
 
       this.initialized = true;
@@ -921,6 +925,7 @@ function FoundBlink() {
 
       this.selectionController = null;
       this.frameAnimator = null;
+      this.param.uninit();
       this.param = null;
       this.initialized = null;
     }
