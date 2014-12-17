@@ -621,6 +621,8 @@ function SmoothScroll() {
     },
 
     uninit() {
+      this.initialized = null;
+
       this.view = null;
       this.width = null;
       this.height = null;
@@ -629,7 +631,6 @@ function SmoothScroll() {
       this.goal = null;
       this.frameAnimator = null;
       this.param = null;
-      this.initialized = null;
     }
   };
 
@@ -913,21 +914,22 @@ function FoundBlink() {
         }
       };
 
-      this.initialized = true;
-
       DeselectObserver.set();
+
+      this.initialized = true;
 
       return true;
     },
 
     uninit() {
+      this.initialized = null;
+
       DeselectObserver.clear();
 
       this.selectionController = null;
       this.frameAnimator = null;
       this.param.uninit();
       this.param = null;
-      this.initialized = null;
     }
   };
 
