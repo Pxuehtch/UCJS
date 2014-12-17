@@ -402,16 +402,17 @@ function getNodeByAnonid(aId, aContext) {
  * Gets the focused window.
  *
  * @return {Window}
- *   @note Returns a (top or frame) content window when in the main browser
- *   window.
+ *
+ * @note Returns a (top or frame) content window when the current window is the
+ * browser window.
  */
 function getFocusedWindow() {
-  let focusedWindow = window.document.commandDispatcher.focusedWindow;
+  let {focusedWindow} = Services.focus;
 
   if (window.document.documentElement.getAttribute('windowtype') ===
       'navigator:browser') {
     if (!focusedWindow || focusedWindow === window) {
-      focusedWindow = window.content;
+      return window.content;
     }
   }
 
