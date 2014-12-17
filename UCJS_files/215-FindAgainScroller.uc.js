@@ -978,8 +978,9 @@ function FoundBlink() {
 
   function isRangeIntoView(aRange) {
     let {top, bottom} = aRange.getBoundingClientRect();
+    let view = aRange.commonAncestorContainer.ownerDocument.defaultView;
 
-    return 0 <= top && bottom <= window.innerHeight;
+    return 0 <= top && bottom <= view.innerHeight;
   }
 
   function setDisplay(aDoShow) {
