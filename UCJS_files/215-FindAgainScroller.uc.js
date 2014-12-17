@@ -955,6 +955,7 @@ function FoundBlink() {
     if (blinks > 0 || isRangeIntoView(range)) {
       // Show the selection when |blinks| is odd, not when even (including 0).
       setDisplay(!!(blinks % 2));
+
       mState.param.blinks++;
     }
 
@@ -990,10 +991,12 @@ function FoundBlink() {
 
     let type = aDoShow ? SELECTION_ON : SELECTION_OFF;
 
+    let selectionController = mState.selectionController;
+
     try {
-      if (mState.selectionController.getDisplaySelection() !== type) {
-        mState.selectionController.setDisplaySelection(type);
-        mState.selectionController.repaintSelection(SELECTION_NORMAL);
+      if (selectionController.getDisplaySelection() !== type) {
+        selectionController.setDisplaySelection(type);
+        selectionController.repaintSelection(SELECTION_NORMAL);
       }
     }
     catch (ex) {}
