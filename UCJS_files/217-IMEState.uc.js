@@ -37,7 +37,8 @@ function log(aMsg) {
  */
 const kUI = {
   signPanel: {
-    id: 'ucjs_IMEState_panel'
+    id: 'ucjs_IMEState_panel',
+    animationName: 'ucjs_IMEState_panelAnimation'
   },
 
   IMESign: {
@@ -113,11 +114,13 @@ const SignPanel = (function() {
    */
   const Animation = {
     init() {
-      let css = `
-        #${kUI.signPanel.id} {
-          animation: ucjs_IMEState_panelAnimation 1s infinite alternate;
+      let {id, animationName} = kUI.signPanel;
+
+      setCSS(`
+        #${id} {
+          animation: ${animationName} 1s infinite alternate;
         }
-        @keyframes ucjs_IMEState_panelAnimation {
+        @keyframes ${animationName} {
           from {
             color: rgba(255, 0, 0, 0.2);
           }
@@ -125,9 +128,7 @@ const SignPanel = (function() {
             color: rgba(255, 0, 0, 0.8);
           }
         }
-      `;
-
-      setCSS(css);
+      `);
     },
 
     start() {
@@ -162,7 +163,9 @@ const SignPanel = (function() {
   };
 
   function getPanel() {
-    let panel = $ID(kUI.signPanel.id);
+    let {id} = kUI.signPanel;
+
+    let panel = $ID(id);
 
     if (panel) {
       return panel;
@@ -171,7 +174,7 @@ const SignPanel = (function() {
     Animation.init();
 
     return $ID('mainPopupSet').appendChild($E('tooltip', {
-      id: kUI.signPanel.id
+      id
     }));
   }
 
