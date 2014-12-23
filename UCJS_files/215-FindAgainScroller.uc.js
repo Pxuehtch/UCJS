@@ -1159,16 +1159,15 @@ function FoundHighlight() {
  *
  * @note Used in |SmoothScroll|.
  */
-function FrameAnimator(aCallback, aOption) {
+function FrameAnimator(aCallback) {
   let mCallback;
   let mTime;
   let mRequestID;
 
-  init(aCallback, aOption);
+  // Initialize
+  init(aCallback);
 
-  function init(aCallback, aOption = {}) {
-    let {interval} = aOption;
-
+  function init(aCallback) {
     mCallback = aCallback;
 
     let now = window.performance.now();
@@ -1176,8 +1175,7 @@ function FrameAnimator(aCallback, aOption) {
     mTime = {
       start: now,
       last: now,
-      current: now,
-      interval: interval || 0
+      current: now
     };
   }
 
@@ -1194,13 +1192,11 @@ function FrameAnimator(aCallback, aOption) {
   function onEnterFrame(aTimeStamp) {
     mTime.current = aTimeStamp;
 
-    if (!mTime.interval || aTimeStamp - mTime.last >= mTime.interval) {
-      if (!mCallback(mTime)) {
-        return;
-      }
-
-      mTime.last = aTimeStamp;
+    if (!mCallback(mTime)) {
+      return;
     }
+
+    mTime.last = aTimeStamp;
 
     mRequestID = window.requestAnimationFrame(onEnterFrame);
   }
@@ -1211,6 +1207,9 @@ function FrameAnimator(aCallback, aOption) {
     uninit();
   }
 
+  /**
+   * Expose
+   */
   return {
     request,
     cancel
