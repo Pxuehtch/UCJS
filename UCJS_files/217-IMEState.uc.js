@@ -88,9 +88,9 @@ function handleEvent(aEvent) {
         'Hiragana'
       ];
 
-      let doClear = IMEkeys.indexOf(aEvent.key) < 0;
-
-      SignPanel.update(doClear);
+      SignPanel.update({
+        doClear: IMEkeys.indexOf(aEvent.key) < 0
+      });
 
       break;
     }
@@ -179,14 +179,18 @@ const SignPanel = (function() {
   }
 
   function uninit() {
-    ShowingManager.clear();
+    update({
+      doClear: true
+    });
   }
 
-  function update(aDoClear) {
+  function update(aOption = {}) {
+    let {doClear} = aOption;
+
     // Hide an existing panel.
     hide();
 
-    if (aDoClear) {
+    if (doClear) {
       ShowingManager.clear();
     }
     else {
