@@ -20,7 +20,14 @@
  * Imports
  */
 const {
-  getNodesByXPath: $X
+  Timer: {
+    setTimeout,
+    clearTimeout
+  },
+  createNode: $E,
+  getNodeById: $ID,
+  getNodesByXPath: $X,
+  setChromeStyleSheet: setCSS
 } = window.ucjsUtil;
 
 // For debugging.
@@ -31,6 +38,16 @@ function log(aMsg) {
 const {
   FindBar
 } = window.ucjsUI;
+
+/**
+ * UI setting.
+ */
+const kUI = {
+  highlightBox: {
+    id: 'ucjs_FindAgainScroller_highlightBox',
+    animationName: 'ucjs_FindAgainScroller_highlightAnimation'
+  }
+};
 
 /**
  * Custom event type.
@@ -71,19 +88,15 @@ const kPref = {
    * Scroll smoothly to a found text.
    *
    * @value {boolean}
-   *
-   * @note |SmoothScroll| has the detail setting.
    */
   smoothScroll: true,
 
   /**
-   * Blink a found text.
+   * Highlight a found text.
    *
    * @value {boolean}
-   *
-   * @note |FoundBlink| has the detail setting.
    */
-  foundBlink: true
+  foundHighlight: true
 };
 
 /**
@@ -177,7 +190,7 @@ const FindAgainCommand = (function() {
   let mSkipInvisible = kPref.skipInvisible && SkipInvisible();
   let mHCentered = kPref.horizontalCentered && HorizontalCentered();
   let mSmoothScroll = kPref.smoothScroll && SmoothScroll();
-  let mFoundBlink = kPref.foundBlink && FoundBlink();
+  let mFoundHighlight = kPref.foundHighlight && FoundHighlight();
 
   function init() {
     // Customize the native function.
@@ -191,8 +204,8 @@ const FindAgainCommand = (function() {
         mSmoothScroll.cancel();
       }
 
-      if (mFoundBlink) {
-        mFoundBlink.cancel();
+      if (mFoundHighlight) {
+        mFoundHighlight.cancel();
       }
 
       // Apply only the native processing for a short time repeating command.
@@ -226,8 +239,8 @@ const FindAgainCommand = (function() {
           }
         }
 
-        if (mFoundBlink) {
-          mFoundBlink.start();
+        if (mFoundHighlight) {
+          mFoundHighlight.start();
         }
       }
 
@@ -513,7 +526,7 @@ function SkipInvisible() {
 }
 
 /**
- * Handler for the centering horizontally of a found text.
+ * Handler for horizontally centering a found text.
  *
  * @return {hash}
  *   align: {function}
@@ -572,7 +585,7 @@ function HorizontalCentered() {
 }
 
 /**
- * Handler for scrolling an element smoothly.
+ * Handler for smoothly scrolling an element.
  *
  * @return {hash}
  *   start: {function}
@@ -836,52 +849,59 @@ function SmoothScroll() {
 }
 
 /**
- * Blinking a found text between on and off a selection.
+ * Handler for highlighting a found text for clear visibility.
  *
  * @return {hash}
  *   start: {function}
  *   cancel: {function}
- *
- * @note The blinking color set is the normal selection style (default: white
- * text on blue back).
- * @note The selection becomes harder to see accoding to a page style. So I
- * have set the selection style in <userContent.css>;
- *   ::-moz-selection {
- *     color: white !important;
- *     background: blue !important;
- *   }
- *
- * TODO: use |nsISelectionController::SELECTION_ATTENTION|.
- * If the style of a found text selection (default: white text on green back)
- * is overwritten by a page style, I don't know how to fix it because
- * <::-moz-selection> is not applied to it.
- * WORKAROUND: I use |SELECTION_NORMAL| so that the blinking color set can be
- * restyled by <::-moz-selection> for now.
  */
-function FoundBlink() {
+function FoundHighlight() {
   const kOption = {
     /**
-     * Duration of time for blinks.
+     * Duration time of highlighting.
      *
      * @value {integer} [millisecond]
-     *
-     * @note A blinking will be cancelled when the duration is expired.
      */
     duration: 2000,
 
     /**
-     * Number of times to blink.
+     * Setting of the blinking border of the highlight box.
      *
-     * @value {integer}
+     * interval: {integer} [millisecond]
+     *   Interval time for one blink.
+     * width: {integer} [px]
+     * color: {string} [CSS color]
      *
-     * @note Set to EVEN number.
-     * @note 6 steps mean 'on->off->on->off->on->off->on'.
+     * @note Another bright color border is added outside of this border for
+     * clear visibility against dark background.
+     * @see |HighlightBox()|
      */
-    steps: 12
+    blink: {
+      interval: 200,
+      width: 2,
+      color: 'red'
+    }
   };
 
   /**
-   * Cancel blinking when a selection is removed by clicking.
+   * Terminates highlighting when the duration period expires.
+   */
+  const DurationObserver = {
+    set() {
+      // @note |cancel| calls |DurationObserver.clear|.
+      this.timerId = setTimeout(cancel, kOption.duration);
+    },
+
+    clear() {
+      if (this.timerId) {
+        clearTimeout(this.timerId);
+        this.timerId = null;
+      }
+    }
+  };
+
+  /**
+   * Terminates highlighting when a selection is removed by clicking.
    */
   const DeselectObserver = {
     set() {
@@ -905,33 +925,56 @@ function FoundBlink() {
     }
   };
 
+  /**
+   * Updates the position of highlight to follow a selection each time
+   * scrolling of view.
+   */
+  const ScrollObserver = {
+    set() {
+      gBrowser.addEventListener(kEventType.SmoothScroll, this, false);
+
+      // Make sure to clean up.
+      window.addEventListener('unload', this, false);
+    },
+
+    clear() {
+      gBrowser.removeEventListener(kEventType.SmoothScroll, this, false);
+      window.removeEventListener('unload', this, false);
+    },
+
+    handleEvent(aEvent) {
+      switch (aEvent.type) {
+        case kEventType.SmoothScroll: {
+          update();
+
+          break;
+        }
+        case 'unload': {
+          // @note |cancel| calls |ScrollObserver.clear|.
+          cancel();
+
+          break;
+        }
+      }
+    }
+  };
+
   const mState = {
     init() {
-      let selectionController = TextFinder.selectionController;
+      let selectionRange = TextFinder.selectionRange;
 
-      if (!selectionController) {
+      if (!selectionRange) {
         return false;
       }
 
-      this.selectionController = selectionController;
+      this.range = selectionRange;
+      this.view = this.range.commonAncestorContainer.ownerDocument.defaultView;
 
-      let {duration, steps} = kOption;
+      this.highlightBox = HighlightBox();
 
-      this.frameAnimator = FrameAnimator(onEnterFrame, {
-        interval: parseInt(duration / steps, 10)
-      });
-
-      this.param = {
-        duration,
-        blinks: 0,
-        range: TextFinder.selectionRange,
-
-        uninit() {
-          delete this.range;
-        }
-      };
-
+      DurationObserver.set();
       DeselectObserver.set();
+      ScrollObserver.set();
 
       this.initialized = true;
 
@@ -941,12 +984,15 @@ function FoundBlink() {
     uninit() {
       this.initialized = null;
 
+      DurationObserver.clear();
       DeselectObserver.clear();
+      ScrollObserver.clear();
 
-      this.selectionController = null;
-      this.frameAnimator = null;
-      this.param.uninit();
-      this.param = null;
+      this.highlightBox.clear();
+      this.highlightBox = null;
+
+      this.range = null;
+      this.view = null;
     }
   };
 
@@ -955,29 +1001,7 @@ function FoundBlink() {
       return;
     }
 
-    mState.frameAnimator.request();
-  }
-
-  function onEnterFrame(aTime) {
-    let {duration, blinks, range} = mState.param;
-
-    // The duration is expired. Stop blinking.
-    if (aTime.current - aTime.start > duration) {
-      cancel();
-
-      return false;
-    }
-
-    // Do not blink until the selection comes into the view.
-    if (blinks > 0 || isRangeIntoView(range)) {
-      // Show the selection when |blinks| is odd, not when even (including 0).
-      setDisplay(!!(blinks % 2));
-
-      mState.param.blinks++;
-    }
-
-    // Ready for the next frame.
-    return true;
+    update();
   }
 
   function cancel() {
@@ -985,39 +1009,136 @@ function FoundBlink() {
       return;
     }
 
-    mState.frameAnimator.cancel();
-
-    // Ensure the selection is shown.
-    setDisplay(true);
-
     mState.uninit();
   }
 
-  function isRangeIntoView(aRange) {
-    let {top, bottom} = aRange.getBoundingClientRect();
-    let view = aRange.commonAncestorContainer.ownerDocument.defaultView;
+  function update() {
+    // Bail out when the range is out of view.
+    if (!isRangeInView()) {
+      return;
+    }
 
-    return 0 <= top && bottom <= view.innerHeight;
+    mState.highlightBox.update();
   }
 
-  function setDisplay(aDoShow) {
-    const {
-      SELECTION_NORMAL,
-      SELECTION_OFF,
-      SELECTION_ON
-    } = Ci.nsISelectionController;
+  function isRangeInView() {
+    let {top, bottom} = mState.range.getBoundingClientRect();
 
-    let type = aDoShow ? SELECTION_ON : SELECTION_OFF;
+    return 0 <= top && bottom <= mState.view.innerHeight;
+  }
 
-    let selectionController = mState.selectionController;
+  function HighlightBox() {
+    /**
+     * The outermost border for clear visibility against dark background.
+     * 
+     * width: {integer} [px]
+     * color: {string} [CSS color]
+     *   @note Set a bright color.
+     */
+    const kOuterBorder = {
+      width: 2,
+      color: 'white'
+    };
 
-    try {
-      if (selectionController.getDisplaySelection() !== type) {
-        selectionController.setDisplaySelection(type);
-        selectionController.repaintSelection(SELECTION_NORMAL);
+    let box = getBox();
+
+    let innerScreenY = mState.view.mozInnerScreenY;
+    let fullZoom = mState.view.getInterface(Ci.nsIDOMWindowUtils).fullZoom;
+    let borderWidth = kOption.blink.width + kOuterBorder.width;
+
+    // Initialize
+    init();
+
+    function init() {
+      let {screenX, width} = gBrowser.selectedBrowser.boxObject;
+      let {height} = mState.range.getBoundingClientRect();
+
+      box.left = screenX;
+      box.width = width;
+      box.height = (height * fullZoom) + (borderWidth * 2);
+    }
+
+    function update() {
+      let {top} = mState.range.getBoundingClientRect();
+
+      let x = box.left;
+      let y = ((top + innerScreenY) * fullZoom) - borderWidth;
+
+      if (box.state !== 'open') {
+        box.openPopupAtScreen(x, y);
+
+        // Start animation from the beginning.
+        box.style.animation = '';
+      }
+      else {
+        box.moveTo(x, y);
       }
     }
-    catch (ex) {}
+
+    function clear() {
+      box.hidePopup();
+
+      // Suppress animation.
+      box.style.animation = 'none';
+
+      box = null;
+    }
+
+    function getBox() {
+      let {id, animationName} = kUI.highlightBox;
+
+      let box = $ID(id);
+
+      if (box) {
+        return box;
+      }
+
+      let {interval, width: innerWidth, color: innerColor} = kOption.blink;
+      let {width: outerWidth, color: outerColor} = kOuterBorder;
+
+      let borderWidth = innerWidth + outerWidth;
+      let borderColors =
+        Array(outerWidth).fill(outerColor).concat(innerColor).join(' ');
+
+      setCSS(`
+        #${id} {
+          -moz-appearance: none !important;
+          margin: 0;
+          padding: 0;
+          max-width: none;
+          background: transparent;
+          border: ${borderWidth}px solid transparent;
+          border-left: none;
+          border-right: none;
+          -moz-border-top-colors: ${borderColors};
+          -moz-border-bottom-colors: ${borderColors};
+          animation: ${animationName} ${interval}ms infinite alternate;
+        }
+        @keyframes ${animationName} {
+          from {
+            opacity: .2;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `);
+
+      // WORKAROUND: Use <tooltip> instead of <panel> since the transparent
+      // background becomes black in using <panel>.
+      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=436003
+      return $ID('mainPopupSet').appendChild($E('tooltip', {
+        id
+      }));
+    }
+
+    /**
+     * Expose
+     */
+    return {
+      update,
+      clear
+    };
   }
 
   /**
@@ -1036,9 +1157,7 @@ function FoundBlink() {
  *   request: {function}
  *   cancel: {function}
  *
- * @note Used in |SmoothScroll| and |FoundBlink|.
- * TODO: Should I make this function as a class for creating multiple
- * instances?
+ * @note Used in |SmoothScroll|.
  */
 function FrameAnimator(aCallback, aOption) {
   let mCallback;
