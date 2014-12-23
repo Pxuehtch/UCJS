@@ -33,6 +33,13 @@ const {
 } = window.ucjsUI;
 
 /**
+ * Custom event type.
+ */
+const kEventType = {
+  SmoothScroll: 'ucjs_FindAgainScroller_SmoothScroll'
+};
+
+/**
  * Preferences
  */
 const kPref = {
@@ -743,6 +750,8 @@ function SmoothScroll() {
       mState.node.scrollLeft = aPosition.x;
       mState.node.scrollTop  = aPosition.y;
     }
+
+    dispatchEvent();
   }
 
   function doScrollBy(aPosition) {
@@ -753,6 +762,14 @@ function SmoothScroll() {
       mState.node.scrollLeft += aPosition.x;
       mState.node.scrollTop  += aPosition.y;
     }
+
+    dispatchEvent();
+  }
+
+  function dispatchEvent() {
+    let event = new CustomEvent(kEventType.SmoothScroll);
+
+    gBrowser.dispatchEvent(event);
   }
 
   function testScrollable(aNode) {
