@@ -262,7 +262,7 @@ const SignPanel = (function() {
    */
   function isIMEActive(aNode) {
     let imeMode = aNode.ownerDocument.defaultView.
-      getComputedStyle(aNode, null).imeMode;
+      getComputedStyle(aNode).imeMode;
 
     let utils = window.
       QueryInterface(Ci.nsIInterfaceRequestor).

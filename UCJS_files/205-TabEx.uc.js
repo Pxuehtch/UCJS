@@ -8,7 +8,7 @@
 
 // @note Some functions are exported (window.ucjsTabEx.XXX).
 
-// @note Some about:config preferences are changed (see @pref). 
+// @note Some about:config preferences are changed (see @pref).
 // @note A native function |gBrowser.addTab| is modified (see @modified).
 
 // @note The custom attributes of tabs are saved in the session store file.

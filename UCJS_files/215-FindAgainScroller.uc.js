@@ -61,14 +61,9 @@ const kEventType = {
  */
 const kPref = {
   /**
-   * Skip a found result that a user can not see (e.g. a text in a folded
-   * dropdown menu).
+   * Skip a found text that a user can not see.
    *
    * @value {boolean}
-   *
-   * @note If a document has only invisible results, they will be selected.
-   * @note This is a workaround for Fx default behavior.
-   * @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
    */
   skipInvisible: true,
 
@@ -76,11 +71,6 @@ const kPref = {
    * Center a found text horizontally.
    *
    * @value {boolean}
-   *
-   * @note The result is scrolled *vertically* centered by Fx default behavior,
-   * but not *horizontally*.
-   * @see [vertically] https://bugzilla.mozilla.org/show_bug.cgi?id=171237
-   * @see [horizontally] https://bugzilla.mozilla.org/show_bug.cgi?id=743103
    */
   horizontalCentered: true,
 
@@ -164,7 +154,7 @@ const FindAgainCommand = (function() {
    * quick repeating (e.g. holding F3 key down) because an observation of
    * scrolling and animations are useless when they are reset in a short time.
    */
-  let isRepeatingCommand = (function() {
+  let isRepeating = (function() {
     /**
      * Max threshold interval time for a repeating command.
      *
@@ -209,7 +199,7 @@ const FindAgainCommand = (function() {
       }
 
       // Apply only the native processing for a short time repeating command.
-      if (isRepeatingCommand()) {
+      if (isRepeating()) {
         $onFindAgainCommand.apply(this, aParams);
 
         return;
@@ -411,11 +401,22 @@ function ScrollObserver() {
 }
 
 /**
- * Handler for skipping a found result that a user can not see.
+ * Handler for skipping a found text that a user can not see.
  *
  * @return {hash}
  *   test: {function}
  *
+ * @note Skip an entirely invisible text that is out of view by being extreme
+ * positioned.
+ * @note A text that is transparent or same color as background isn't skipped.
+ * @note If a document has only invisible found texts, they will be selected.
+ *
+ * @note |test()| must be called as the loop condition in |onFindAgainCommand|
+ * until it returns false to clear all state of |SkipInvisible|.
+ *
+ * @note This is a workaround for Fx default behavior.
+ * @see https://bugzilla.mozilla.org/show_bug.cgi?id=407817
+ * @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
  * @note |test| is called as the loop condition in |onFindAgainCommand|.
  */
 function SkipInvisible() {
@@ -530,6 +531,11 @@ function SkipInvisible() {
  *
  * @return {hash}
  *   align: {function}
+ *
+ * @note The result is scrolled *vertically* centered by Fx default behavior,
+ * but not *horizontally*.
+ * @see [vertically] https://bugzilla.mozilla.org/show_bug.cgi?id=171237
+ * @see [horizontally] https://bugzilla.mozilla.org/show_bug.cgi?id=743103
  */
 function HorizontalCentered() {
   function align({node}) {
@@ -1030,7 +1036,7 @@ function FoundHighlight() {
   function HighlightBox() {
     /**
      * The outermost border for clear visibility against dark background.
-     * 
+     *
      * width: {integer} [px]
      * color: {string} [CSS color]
      *   @note Set a bright color.

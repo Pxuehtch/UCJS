@@ -21,7 +21,7 @@
  * - You can reset the state of a gesture by <Alt+RightClick> if a problem
  *   occurs.
  *
- * @note 
+ * @note
  * - A gesture is only available within the inner frame of the content area,
  *   and the default width of the frame is 16px.
  *   @see |inGestureArea()|
