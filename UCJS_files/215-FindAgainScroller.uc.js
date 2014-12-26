@@ -511,38 +511,66 @@ function SkipInvisible() {
   }
 
   function isInvisible(aRange) {
-    // The initial node is a text node.
-    let node = aRange.commonAncestorContainer;
+    let ownerText = aRange.commonAncestorContainer;
+    let ownerElement = ownerText.parentNode;
+    let ownerDocument = ownerText.ownerDocument;
 
-    let view = node.ownerDocument.defaultView;
+    // @note The selection range in a textbox exists in a child container
+    // <div.anonymous-div> that Fx puts inside the textbox.
+    if (ownerElement.parentNode instanceof Ci.nsIDOMNSEditableElement) {
+      ownerElement = ownerElement.parentNode;
+    }
+
+    let rangeRect = aRange.getBoundingClientRect();
+
+    // Determine if the range is actually invisible at all corner points.
+    let rangePoints = [
+      [rangeRect.left, rangeRect.top],
+      [rangeRect.right, rangeRect.top],
+      [rangeRect.right, rangeRect.bottom],
+      [rangeRect.left, rangeRect.bottom]
+    ];
+
+    let isAllPointsInvisible = rangePoints.every(([x, y]) => {
+      let element = ownerDocument.elementFromPoint(x, y);
+
+      return !(element && ownerElement.contains(element));
+    });
+
+    if (isAllPointsInvisible) {
+      return true;
+    }
+
+
+    // Determine if the range entirely overflows in the container.
+    // Start from the closest element which contains the text node.
+    let node = ownerElement;
 
     while (node) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.hidden || node.collapsed) {
-          return false;
-        }
+      let style = ownerDocument.defaultView.getComputedStyle(node);
 
-        let style = view.getComputedStyle(node);
+      if (style.overflow === 'hidden') {
+        let containerRect = node.getBoundingClientRect();
+        let borderWidth = {
+          top: parseInt(style.borderTopWidth, 10),
+          right: parseInt(style.borderRightWidth, 10),
+          bottom: parseInt(style.borderBottomWidth, 10),
+          left: parseInt(style.borderLeftWidth, 10)
+        };
 
-        if (
-          style.visibility !== 'visible' ||
-          style.display === 'none' ||
-
-          // TODO: Ensure to detect the position hacks to hide the content.
-          (/absolute|fixed/.test(style.position) &&
-           (parseInt(style.left, 10) < 0 ||
-            parseInt(style.top, 10) < 0 ||
-            parseInt(style.right, 10) <= -999)) ||
-          style.textIndent === '100%' ||
-          parseInt(style.textIndent, 10) <= -999
-        ) {
-          return true;
+        if (containerRect.right - borderWidth.right <= rangeRect.left ||
+            containerRect.bottom - borderWidth.bottom <= rangeRect.top ||
+            rangeRect.right <= containerRect.left + borderWidth.left ||
+            rangeRect.bottom <= containerRect.top + borderWidth.top) {
+          return true
         }
       }
 
-      node = node.parentNode;
+      // Get the closest positioned containing element.
+      node = node.parentOffset;
     }
 
+    // The range is visible.
     return false;
   }
 
