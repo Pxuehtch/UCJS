@@ -407,7 +407,7 @@ function ScrollObserver() {
  *   test: {function}
  *
  * @note Skip an entirely invisible text that is out of view by being extreme
- * positioned.
+ * positioned or overflowed.
  * @note A text that is transparent or same color as background isn't skipped.
  * @note If a document has only invisible found texts, they will be selected.
  *
@@ -438,7 +438,34 @@ function SkipInvisible() {
     }
   };
 
-  let mFirstInvisible = null;
+  let mFirstInvisible = {
+    set(aRange) {
+      this.startContainer = aRange.startContainer;
+      this.startOffset = aRange.startOffset;
+      this.endContainer = aRange.endContainer;
+      this.endOffset = aRange.endOffset;
+    },
+
+    clear() {
+      this.startContainer = null;
+      this.startOffset = null;
+      this.endContainer = null;
+      this.endOffset = null;
+    },
+
+    exists() {
+      return !!this.startContainer;
+    },
+
+    equals(aRange) {
+      return (
+        this.startContainer === aRange.startContainer &&
+        this.startOffset === aRange.startOffset &&
+        this.endContainer === aRange.endContainer &&
+        this.endOffset === aRange.endOffset
+      );
+    }
+  };
 
   function test() {
     // Check the loop counter.
@@ -448,23 +475,29 @@ function SkipInvisible() {
       return false;
     }
 
-    let invisible = getInvisibleResult();
+    let selectionRange = TextFinder.selectionRange;
 
-    if (invisible) {
-      // The first test passed.
-      if (!mFirstInvisible) {
-        mFirstInvisible = invisible;
+    if (!selectionRange) {
+      clear();
+
+      return false;
+    }
+
+    if (isInvisible(selectionRange)) {
+      // The first invisible result is found.
+      if (!mFirstInvisible.exists()) {
+        mFirstInvisible.set(selectionRange);
 
         return true;
       }
 
-      // Got a result that is tested at the first time.
-      if (mFirstInvisible !== invisible) {
+      // This result is another new one.
+      if (!mFirstInvisible.equals(selectionRange)) {
         return true;
       }
     }
 
-    // Not found.
+    // Not found;
     // 1.No invisible result is found.
     // 2.An invisible result is found but it has been tested ever.
     clear();
@@ -474,34 +507,14 @@ function SkipInvisible() {
 
   function clear() {
     mTestCounter.clear();
-    mFirstInvisible = null;
+    mFirstInvisible.clear();
   }
 
-  function getInvisibleResult() {
-    let selectionRange = TextFinder.selectionRange;
-
-    if (!selectionRange) {
-      return null;
-    }
-
-    // Get the text node that contains the find range object.
-    let result = selectionRange.commonAncestorContainer;
-
-    // A visible result is found.
-    if (isVisible(result)) {
-      return null;
-    }
-
-    // Found an invisible result.
-    return result;
-  }
-
-  function isVisible(aNode) {
-    let getComputedStyle = aNode.ownerDocument.defaultView.getComputedStyle;
-    let style;
-
+  function isInvisible(aRange) {
     // The initial node is a text node.
-    let node = aNode;
+    let node = aRange.commonAncestorContainer;
+
+    let view = node.ownerDocument.defaultView;
 
     while (node) {
       if (node.nodeType === Node.ELEMENT_NODE) {
@@ -509,7 +522,7 @@ function SkipInvisible() {
           return false;
         }
 
-        style = getComputedStyle(node, '');
+        let style = view.getComputedStyle(node);
 
         if (
           style.visibility !== 'visible' ||
@@ -523,14 +536,14 @@ function SkipInvisible() {
           style.textIndent === '100%' ||
           parseInt(style.textIndent, 10) <= -999
         ) {
-          return false;
+          return true;
         }
       }
 
       node = node.parentNode;
     }
 
-    return true;
+    return false;
   }
 
   /**
