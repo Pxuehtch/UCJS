@@ -417,22 +417,33 @@ function ScrollObserver() {
  * @note This is a workaround for Fx default behavior.
  * @see https://bugzilla.mozilla.org/show_bug.cgi?id=407817
  * @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
- * @note |test| is called as the loop condition in |onFindAgainCommand|.
  */
 function SkipInvisible() {
-  // WORKAROUND: A fail-safe option to avoid an infinite loop for when a
-  // document has only invisible results, in addition, when the comparing
-  // check of nodes does not work.
-  const kMaxTestCount = 50;
+  /**
+   * A fail-safe counter to avoid an infinite loop of testing.
+   *
+   * This is a workaround for when a document has only invisible found results
+   * and some trouble happens in finding.
+   */
+  let mTestCounter = {
+    maxCount: 50,
+    count: 0,
 
-  let mTestCount = 0;
+    clear() {
+      this.count = 0;
+    },
+
+    isExpired() {
+      return ++this.count > this.maxCount;
+    }
+  };
+
   let mFirstInvisible = null;
 
   function test() {
-    // WORKAROUND: Force to exit from a loop of testing.
-    if (++mTestCount > kMaxTestCount) {
-      mTestCount = 0;
-      mFirstInvisible = null;
+    // Check the loop counter.
+    if (mTestCounter.isExpired()) {
+      clear();
 
       return false;
     }
@@ -456,10 +467,14 @@ function SkipInvisible() {
     // Not found.
     // 1.No invisible result is found.
     // 2.An invisible result is found but it has been tested ever.
-    mTestCount = 0;
-    mFirstInvisible = null;
+    clear();
 
     return false;
+  }
+
+  function clear() {
+    mTestCounter.clear();
+    mFirstInvisible = null;
   }
 
   function getInvisibleResult() {
