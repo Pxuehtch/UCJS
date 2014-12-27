@@ -541,7 +541,6 @@ function SkipInvisible() {
       return true;
     }
 
-
     // Determine if the range entirely overflows in the container.
     // Start from the closest element which contains the text node.
     let node = ownerElement;
@@ -967,17 +966,21 @@ function FoundHighlight() {
    */
   const DeselectObserver = {
     set() {
-      // @note A selection is collapsed by 'mousedown' event actually.
+      // @note Actually a selection is collapsed by 'mousedown' event.
       // @note Use the capture mode to surely catch the event in the content
       // area.
-      gBrowser.mPanelContainer.addEventListener('mousedown', this, true);
+      // @note Add the event on |window| to cancel by click on wherever in the
+      // browser window.
+      // TODO: Fix disabled text selecting by drag with holding the mouse down
+      // in the highlight box.
+      window.addEventListener('mousedown', this, true);
 
       // Make sure to clean up.
       window.addEventListener('unload', this, false);
     },
 
     clear() {
-      gBrowser.mPanelContainer.removeEventListener('mousedown', this, true);
+      window.removeEventListener('mousedown', this, true);
       window.removeEventListener('unload', this, false);
     },
 
