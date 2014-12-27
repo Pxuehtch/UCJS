@@ -1071,8 +1071,13 @@ function FoundHighlight() {
   }
 
   function update() {
-    // Bail out when the range is out of view.
+    // Don't highlight when the range is out of view.
     if (!isRangeInView()) {
+      // Hide existing highlight.
+      if (mState.highlightBox.isOpened()) {
+        cancel();
+      }
+
       return;
     }
 
@@ -1116,13 +1121,17 @@ function FoundHighlight() {
       box.height = (height * fullZoom) + (borderWidth * 2);
     }
 
+    function isOpened() {
+      return box.state === 'open';
+    }
+
     function update() {
       let {top} = mState.range.getBoundingClientRect();
 
       let x = box.left;
       let y = ((top + innerScreenY) * fullZoom) - borderWidth;
 
-      if (box.state !== 'open') {
+      if (!isOpened()) {
         box.openPopupAtScreen(x, y);
 
         // Start animation from the beginning.
@@ -1194,6 +1203,7 @@ function FoundHighlight() {
      * Expose
      */
     return {
+      isOpened,
       update,
       clear
     };
