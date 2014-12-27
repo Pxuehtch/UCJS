@@ -50,13 +50,6 @@ const kUI = {
 };
 
 /**
- * Custom event type.
- */
-const kEventType = {
-  SmoothScroll: 'ucjs_FindAgainScroller_SmoothScroll'
-};
-
-/**
  * Preferences
  */
 const kPref = {
@@ -824,8 +817,6 @@ function SmoothScroll() {
       mState.node.scrollLeft = aPosition.x;
       mState.node.scrollTop  = aPosition.y;
     }
-
-    dispatchEvent();
   }
 
   function doScrollBy(aPosition) {
@@ -836,14 +827,6 @@ function SmoothScroll() {
       mState.node.scrollLeft += aPosition.x;
       mState.node.scrollTop  += aPosition.y;
     }
-
-    dispatchEvent();
-  }
-
-  function dispatchEvent() {
-    let event = new CustomEvent(kEventType.SmoothScroll);
-
-    gBrowser.dispatchEvent(event);
   }
 
   function testScrollable(aNode) {
@@ -998,25 +981,28 @@ function FoundHighlight() {
   };
 
   /**
-   * Updates the position of highlight to follow a selection each time
+   * Updates the position of highlight to follow a found text each time
    * scrolling of view.
    */
   const ScrollObserver = {
     set() {
-      gBrowser.addEventListener(kEventType.SmoothScroll, this, false);
+      // @note Use the capture mode to surely catch the event in the content
+      // area.
+      // TODO: Catch the scroll event on the highlight box.
+      gBrowser.mPanelContainer.addEventListener('scroll', this, true);
 
       // Make sure to clean up.
       window.addEventListener('unload', this, false);
     },
 
     clear() {
-      gBrowser.removeEventListener(kEventType.SmoothScroll, this, false);
+      gBrowser.mPanelContainer.removeEventListener('scroll', this, true);
       window.removeEventListener('unload', this, false);
     },
 
     handleEvent(aEvent) {
       switch (aEvent.type) {
-        case kEventType.SmoothScroll: {
+        case 'scroll': {
           update();
 
           break;
