@@ -962,10 +962,11 @@ function FoundHighlight() {
   };
 
   /**
-   * Terminates highlighting when a selection is removed by clicking.
+   * Cancels useless highlighting.
    */
-  const DeselectObserver = {
+  const CancelObserver = {
     set() {
+      // Cancel when a selection is removed by click.
       // @note Actually a selection is collapsed by 'mousedown' event.
       // @note Use the capture mode to surely catch the event in the content
       // area.
@@ -975,17 +976,23 @@ function FoundHighlight() {
       // in the highlight box.
       window.addEventListener('mousedown', this, true);
 
+      // Cancel when the document is switched.
+      gBrowser.addEventListener('select', this, false);
+      gBrowser.addEventListener('pagehide', this, false);
+
       // Make sure to clean up.
       window.addEventListener('unload', this, false);
     },
 
     clear() {
       window.removeEventListener('mousedown', this, true);
+      gBrowser.removeEventListener('select', this, false);
+      gBrowser.removeEventListener('pagehide', this, false);
       window.removeEventListener('unload', this, false);
     },
 
     handleEvent(aEvent) {
-      // @note |cancel| calls |DeselectObserver.clear|.
+      // @note |cancel| calls |CancelObserver.clear|.
       cancel();
     }
   };
@@ -1038,7 +1045,7 @@ function FoundHighlight() {
       this.highlightBox = HighlightBox();
 
       DurationObserver.set();
-      DeselectObserver.set();
+      CancelObserver.set();
       ScrollObserver.set();
 
       this.initialized = true;
@@ -1050,7 +1057,7 @@ function FoundHighlight() {
       this.initialized = null;
 
       DurationObserver.clear();
-      DeselectObserver.clear();
+      CancelObserver.clear();
       ScrollObserver.clear();
 
       this.highlightBox.clear();
