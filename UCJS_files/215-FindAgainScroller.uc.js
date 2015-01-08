@@ -1221,6 +1221,14 @@ function FoundHighlight() {
 /**
  * Handler of the frame animation.
  *
+ * @param aCallback {function}
+ *   The processing function for one frame.
+ *   @param aTime {hash}
+ *     start: {DOMHighResTimeStamp}
+ *     current: {DOMHighResTimeStamp}
+ *   @return {boolean}
+ *     Should return |true| in order to request the next frame, |false| to stop
+ *     animation.
  * @return {hash}
  *   request: {function}
  *   cancel: {function}
@@ -1242,7 +1250,6 @@ function FrameAnimator(aCallback) {
 
     mTime = {
       start: now,
-      last: now,
       current: now
     };
   }
@@ -1260,13 +1267,9 @@ function FrameAnimator(aCallback) {
   function onEnterFrame(aTimeStamp) {
     mTime.current = aTimeStamp;
 
-    if (!mCallback(mTime)) {
-      return;
+    if (mCallback(mTime)) {
+      mRequestID = window.requestAnimationFrame(onEnterFrame);
     }
-
-    mTime.last = aTimeStamp;
-
-    mRequestID = window.requestAnimationFrame(onEnterFrame);
   }
 
   function cancel() {
