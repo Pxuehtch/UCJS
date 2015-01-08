@@ -715,7 +715,7 @@ function SmoothScroll() {
 
     doScrollTo(mState.start);
 
-    mState.frameAnimator.request();
+    mState.frameAnimator.start();
   }
 
   function onEnterFrame(aTime) {
@@ -837,7 +837,7 @@ function SmoothScroll() {
     if (aNode instanceof Window ||
         aNode instanceof HTMLHtmlElement ||
         aNode instanceof HTMLBodyElement) {
-      view = getWindow(aNode);
+      view = getView(aNode);
 
       scrollable = view.scrollMaxX || view.scrollMaxY;
 
@@ -868,7 +868,7 @@ function SmoothScroll() {
     return null;
   }
 
-  function getWindow(aNode) {
+  function getView(aNode) {
     if (aNode instanceof Window) {
       return aNode;
     }
@@ -1230,7 +1230,7 @@ function FoundHighlight() {
  *     Should return |true| in order to request the next frame, |false| to stop
  *     animation.
  * @return {hash}
- *   request: {function}
+ *   start: {function}
  *   cancel: {function}
  *
  * @note Used in |SmoothScroll|.
@@ -1260,7 +1260,7 @@ function FrameAnimator(aCallback) {
     mRequestID = null;
   }
 
-  function request() {
+  function start() {
     mRequestID = window.requestAnimationFrame(onEnterFrame);
   }
 
@@ -1282,7 +1282,7 @@ function FrameAnimator(aCallback) {
    * Expose
    */
   return {
-    request,
+    start,
     cancel
   };
 }
