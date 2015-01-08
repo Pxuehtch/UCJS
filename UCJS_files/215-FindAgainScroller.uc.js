@@ -134,14 +134,14 @@ const TextFinder = {
 };
 
 /**
- * Handler of a custom find-again command.
+ * Handler of custom <Find again> command.
  *
  * @return {hash}
  *   init: {function}
  */
 const FindAgainCommand = (function() {
   /**
-   * Detects a short time interval of calls of a find-again command.
+   * Detects a short time interval of calls of <Find again> command.
    *
    * @note Perform only the native processing when the command is called in
    * quick repeating (e.g. holding F3 key down) because an observation of
@@ -415,8 +415,7 @@ function SkipInvisible() {
   /**
    * A fail-safe counter to avoid an infinite loop of testing.
    *
-   * This is a workaround for when a document has only invisible found results
-   * and some trouble happens in finding.
+   * This is a workaround for when some trouble happens in processing.
    */
   let mTestCounter = {
     maxCount: 50,
@@ -477,22 +476,21 @@ function SkipInvisible() {
     }
 
     if (isInvisible(selectionRange)) {
-      // The first invisible result is found.
+      // The first invisible range is found.
       if (!mFirstInvisible.exists()) {
         mFirstInvisible.set(selectionRange);
 
         return true;
       }
 
-      // This result is another new one.
+      // Another new invisible range is found.
       if (!mFirstInvisible.equals(selectionRange)) {
         return true;
       }
     }
 
-    // Not found;
-    // 1.No invisible result is found.
-    // 2.An invisible result is found but it has been tested ever.
+    // 1.No invisible ranges are found.
+    // 2.An invisible range is found but it is the known one in wrapped-find.
     clear();
 
     return false;
@@ -580,8 +578,8 @@ function SkipInvisible() {
  * @return {hash}
  *   align: {function}
  *
- * @note The result is scrolled *vertically* centered by Fx default behavior,
- * but not *horizontally*.
+ * @note The found text is scrolled *vertically* centered by Fx default
+ * behavior, but not *horizontally*.
  * @see [vertically] https://bugzilla.mozilla.org/show_bug.cgi?id=171237
  * @see [horizontally] https://bugzilla.mozilla.org/show_bug.cgi?id=743103
  */
@@ -639,7 +637,7 @@ function HorizontalCentered() {
 }
 
 /**
- * Handler for smoothly scrolling an element.
+ * Handler for smoothly scrolling a found text.
  *
  * @return {hash}
  *   start: {function}
@@ -893,7 +891,7 @@ function SmoothScroll() {
 }
 
 /**
- * Handler for highlighting a found text for clear visibility.
+ * Handler for highlighting a found text.
  *
  * @return {hash}
  *   start: {function}
@@ -955,8 +953,7 @@ function FoundHighlight() {
       // area.
       // @note Add the event on |window| to cancel by click on wherever in the
       // browser window.
-      // TODO: Fix disabled text selecting by drag with holding the mouse down
-      // in the highlight box.
+      // TODO: Fix disabled text selecting by drag in the highlight box.
       window.addEventListener('mousedown', this, true);
 
       // Cancel when the document is switched.
@@ -988,7 +985,7 @@ function FoundHighlight() {
     set() {
       // @note Use the capture mode to surely catch the event in the content
       // area.
-      // TODO: Catch the scroll event on the highlight box.
+      // TODO: Fix disabled mousewheel on the highlight box.
       gBrowser.mPanelContainer.addEventListener('scroll', this, true);
 
       // Make sure to clean up.
