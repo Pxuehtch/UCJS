@@ -1090,7 +1090,7 @@ const MovingTabObserver = {
     let tabBrowser = aBrowser.getTabBrowser();
 
     if (tabBrowser) {
-      return tabBrowser._getTabForBrowser(aBrowser);
+      return tabBrowser.getTabForBrowser(aBrowser);
     }
 
     return null;
