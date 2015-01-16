@@ -956,10 +956,11 @@ const ClosedList = (function() {
   const SessionStore = (function() {
     function getClosedTabs() {
       try {
-        if (Service.SessionStore.getClosedTabCount(window) > 0) {
+        if (Services.SessionStore.getClosedTabCount(window) > 0) {
           // Array of the data of closed tabs in thier closed date order from
           // last to first.
-          let data = JSON.parse(Service.SessionStore.getClosedTabData(window));
+          let data =
+            JSON.parse(Services.SessionStore.getClosedTabData(window));
 
           let maxNumItems = kPref.maxNumListItems.closedTabs;
 
@@ -972,10 +973,10 @@ const ClosedList = (function() {
 
     function getClosedWindows() {
       try {
-        if (Service.SessionStore.getClosedWindowCount() > 0) {
+        if (Services.SessionStore.getClosedWindowCount() > 0) {
           // Array of the data of closed windows in thier closed date order
           // from last to first.
-          let data = JSON.parse(Service.SessionStore.getClosedWindowData());
+          let data = JSON.parse(Services.SessionStore.getClosedWindowData());
 
           let maxNumItems = kPref.maxNumListItems.closedWindows;
 
