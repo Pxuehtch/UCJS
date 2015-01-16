@@ -421,9 +421,9 @@ const Prettifier = (function() {
   }
 
   /**
-   * Add an extra line after a block end ('}' or '},' or '};') in case of
-   *   the following line is not empty, and
-   *   being not the last block end in a nesting block or in a block comment.
+   * Add an extra line after a block end ('}' or '},' or '};') in case of;
+   * 1.the following line is not empty, and
+   * 2.being not the last block end in a nesting block or in a block comment.
    *
    * @param aText {string}
    * return {string}
@@ -462,6 +462,20 @@ const Prettifier = (function() {
     };
 
     const {css} = getModule('devtools/jsbeautify');
+
+    /**
+     * WORKAROUND: Fix missing 'at-rule' variables.
+     * @note Fixed in the newer version [11 Nov 2013].
+     * @see https://github.com/beautify-web/js-beautify/commit/184492f63aeb5b4ecee16f5b98b61f56efc73549
+     */
+
+    // Make regexp expression for all at-rules.
+    // @note Must escape '-' in '@font-face'.
+    let rules = RegExp(Object.keys(css.NESTED_AT_RULE).join('|').
+      replace(/-/g, '\\-'), 'g');
+
+    // Append a space to at-rules so that the beautifier can find them.
+    aText = aText.replace(rules, '$& ');
 
     return css(aText, options);
   }
