@@ -75,9 +75,12 @@ const kSystem = {
 /**
  * Common utilities.
  */
-let Util = Util();
-// Console logger.
-let Log = Log(kSystem.logging);
+const Util = UtilManager();
+
+/**
+ * Console logger.
+ */
+const Log = LogManager(kSystem.logging);
 
 /**
  * Main function.
@@ -607,7 +610,7 @@ function UserScript_getURL(aFile, aType) {
  *
  * @return {hash}
  */
-function Util() {
+function UtilManager() {
   const {classes: Cc, interfaces: Ci} = window.Components;
 
   let $S = (aCID, aIID) => Cc[aCID].getService(Ci[aIID]);
@@ -737,7 +740,7 @@ function Util() {
  * @param aEnabled {boolean} Whether output or not.
  * @return {hash}
  */
-function Log(aEnabled) {
+function LogManager(aEnabled) {
   let noop = () => function(){};
 
   // @note Overwrite with the same name functions in the 'Exports' section
