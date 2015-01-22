@@ -166,10 +166,10 @@ function makeUI() {
 
 function setObserver() {
   function observeMessageAdded(aBrowserConsole) {
-    aBrowserConsole.ui.on('messages-added', onMessageAdded);
+    aBrowserConsole.ui.on('new-messages', onMessageAdded);
 
     addEvent(window, 'unload', () => {
-      aBrowserConsole.ui.off('messages-added', onMessageAdded);
+      aBrowserConsole.ui.off('new-messages', onMessageAdded);
     }, false);
   }
 
@@ -234,14 +234,16 @@ function onCommand(aEvent) {
  * outputs.
  * !!! WARNING !!!
  */
-function onMessageAdded(aEvent, aMessageNodes) {
-  if (!aMessageNodes) {
+function onMessageAdded(aEvent, aNewMessages) {
+  if (!aNewMessages) {
     return;
   }
 
   kItemList.forEach(({category, condition}) => {
     if (FilteredCategory[category]) {
-      for (let node of aMessageNodes) {
+      for (let message of aNewMessages) {
+        let node = message.node;
+
         /* logOnMessageAdded(node, 'message added'); */
 
         if ($X1('.' + condition, node)) {
@@ -255,10 +257,10 @@ function onMessageAdded(aEvent, aMessageNodes) {
 }
 
 function logOnMessageAdded(aMessageNode, aOutput) {
-  // TODO: Ensure making a unique id.
+  // Put a mark to our logging string to prevent a recursive output.
+  // TODO: Ensure a unique id.
   const kLogMark = '(log in onMessageAdded)';
 
-  // Prevent recursion with the browser console.
   if (aMessageNode.textContent.contains(kLogMark)) {
     return;
   }
