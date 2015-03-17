@@ -553,7 +553,7 @@ function log(aMsg) {
         let target = link.target;
 
         // @note [...window.frames] doesn't work since |window.frames| doesn't
-        // have '@@iterator'.
+        // have [Symbol.iterator].
         hasTargetFrame =
           Array.some(view.top.frames, (frame) => frame.name === target);
       }

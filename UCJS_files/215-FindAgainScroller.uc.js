@@ -258,7 +258,7 @@ function ScrollObserver() {
   function scanScrollables(aWindow) {
     if (aWindow.frames) {
       // @note [...window.frames] doesn't work since |window.frames| doesn't
-      // have '@@iterator'.
+      // have [Symbol.iterator].
       Array.forEach(aWindow.frames, (frame) => {
         // Recursively scan for a frame window.
         scanScrollables(frame);
