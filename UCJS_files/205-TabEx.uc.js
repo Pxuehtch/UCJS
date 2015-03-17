@@ -9,7 +9,7 @@
 // @note Some functions are exported (window.ucjsTabEx.XXX).
 
 // @note Some about:config preferences are changed (see @pref).
-// @note A native function |gBrowser.addTab| is modified (see @modified).
+// @note Some native functions are modified (see @modified).
 
 // @note The custom attributes of tabs are saved in the session store file.
 // @see |SessionStore.persistTabAttribute|
@@ -68,7 +68,8 @@ const kDataKey = {
  */
 const kEventType = {
   TabOpenInfoSet: 'ucjs_TabEx_TabOpenInfoSet',
-  LoadedBrowserOpen: 'ucjs_TabEx_LoadedBrowserOpen'
+  LoadedBrowserOpen: 'ucjs_TabEx_LoadedBrowserOpen',
+  TabBecomingWindow: 'ucjs_TabEx_TabBecomingWindow'
 };
 
 /**
@@ -416,6 +417,7 @@ const TabData = (function () {
  */
 const TabOpener = {
   init() {
+    // Patch the native function.
     // @modified chrome://browser/content/tabbrowser.xml::addTab
     const $addTab = gBrowser.addTab;
 
@@ -1021,8 +1023,30 @@ const MovingTabObserver = {
 
     // Observe a tab that becomes a new window.
     // @note 'SwapDocShells' event fires after 'TabBecomingWindow' event.
-    // @see chrome://browser/content/tabbrowser.xml::replaceTabWithWindow
-    addEvent(gBrowser.tabContainer, 'TabBecomingWindow', this, false);
+    // @note We add this custom event to |gBrowser.replaceTabWithWindow|.
+    addEvent(gBrowser, kEventType.TabBecomingWindow, this, false);
+
+    // Patch the native function.
+    // @modified chrome://browser/content/tabbrowser.xml::replaceTabWithWindow
+    const $replaceTabWithWindow = gBrowser.replaceTabWithWindow;
+
+    gBrowser.replaceTabWithWindow =
+    function ucjsTabEx_replaceTabWithWindow(...aParams) {
+      if (this.tabs.length === 1) {
+        return null;
+      }
+
+      // Dispatch our custom event.
+      let event = new CustomEvent(kEventType.TabBecomingWindow, {
+        detail: {
+          tab: aParams[0]
+        }
+      });
+
+      gBrowser.dispatchEvent(event);
+
+      return $replaceTabWithWindow.apply(this, aParams);
+    };
   },
 
   handleEvent(aEvent) {
@@ -1069,8 +1093,8 @@ const MovingTabObserver = {
         break;
       }
 
-      case 'TabBecomingWindow': {
-        let originalTab = aEvent.target;
+      case kEventType.TabBecomingWindow: {
+        let originalTab = aEvent.detail.tab;
 
         // Evacuate the tab data in the browser. We can refer to it on
         // 'SwapDocShells' event that fires after a new browser opens. At that
