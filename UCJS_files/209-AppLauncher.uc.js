@@ -13,6 +13,8 @@
 // @note A resource file that is passed to an application will be saved in
 // your temporary folder if download needed.
 // @see |doAction()|, |Util::getSaveFilePath()|
+// @note This download is recorded to the download history if not in private
+// mode.
 
 
 /**
@@ -722,7 +724,6 @@ function doAction(aApp, aAction) {
   const {gContextMenu} = window;
 
   let save = false;
-  let sourceDocument = gContextMenu.target.ownerDocument;
   let targetDocument;
   let targetURL;
 
@@ -742,12 +743,12 @@ function doAction(aApp, aAction) {
       break;
 
     case 'openFrame':
-      targetURL = sourceDocument.documentURI;
+      targetURL = gContextMenu.target.ownerDocument.documentURI;
       break;
 
     case 'viewFrameSource':
       save = true;
-      targetDocument = sourceDocument;
+      targetDocument = gContextMenu.target.ownerDocument;
       targetURL = targetDocument.documentURI;
       break;
 
@@ -782,7 +783,7 @@ function doAction(aApp, aAction) {
         targetURL = gContextMenu.target.toDataURL();
       }
       else {
-        targetURL = sourceDocument.documentURI;
+        targetURL = gContextMenu.target.ownerDocument.documentURI;
       }
       break;
 
@@ -805,7 +806,6 @@ function doAction(aApp, aAction) {
 
   if (save) {
     saveInfo = {
-      sourceDocument,
       targetDocument
     };
   }
@@ -932,14 +932,11 @@ function execute(aApp, aTargetURL) {
 }
 
 function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
-  let {sourceDocument, targetDocument} = aSaveInfo;
-  let targetURI, saveFilePath, saveFile, privacyContext;
-  let persist;
+  let {targetDocument} = aSaveInfo;
+  let saveFilePath;
 
   try {
-    targetURI = makeURI(aTargetURL);
-    saveFilePath = getSaveFilePath(targetURI, targetDocument);
-    saveFile = makeFile(saveFilePath);
+    saveFilePath = getSaveFilePath(makeURI(aTargetURL), targetDocument);
   }
   catch (ex) {
     warn('Not downloaded', [ex.message, aTargetURL]);
@@ -947,58 +944,25 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     return;
   }
 
-  privacyContext = getPrivacyContextFor(sourceDocument);
+  // @see resource://gre/modules/Downloads.jsm
+  const {Downloads} = getModule('gre/modules/Downloads.jsm');
+  // @see resource://gre/modules/commonjs/sdk/window/utils.js
+  const {isWindowPrivate} = getModule('sdk/window/utils');
 
-  persist = WebBrowserPersist();
-
-  persist.persistFlags =
-    Ci.nsIWebBrowserPersist.PERSIST_FLAGS_CLEANUP_ON_FAILURE |
-    Ci.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
-
-  persist.progressListener = {
-    onStateChange(aWebProgress, aRequest, aStateFlags, aStatus) {
-      if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
-        if (/^(?:https?|ftp):/.test(aRequest.name)) {
-          let httpChannel, requestSucceeded, responseStatus;
-
-          try {
-            httpChannel = aRequest.QueryInterface(Ci.nsIHttpChannel);
-            requestSucceeded = httpChannel.requestSucceeded;
-            responseStatus = httpChannel.responseStatus;
-          }
-          catch (ex) {
-            // Nothing to do.
-            //
-            // @throw |NS_ERROR_NOT_AVAILABLE|
-            //   |requestSucceeded| throws when an invalid URL is requested.
-          }
-
-          if (!requestSucceeded) {
-            warn('Not downloaded',
-              ['HTTP status = ' + responseStatus, aRequest.name]);
-
-            return;
-          }
-        }
-
-        if (!saveFile || !saveFile.exists()) {
-          warn('Not downloaded', ['Unknown error occured.', aRequest.name]);
-
-          return;
-        }
-
-        execute(aApp, saveFilePath);
-      }
+  Downloads.fetch(
+    aTargetURL,
+    saveFilePath,
+    {
+      isPrivate: isWindowPrivate(window)
+    }
+  ).then(
+    function onResolve() {
+      execute(aApp, saveFilePath);
     },
-
-    onProgressChange() {},
-    onLocationChange() {},
-    onStatusChange() {},
-    onSecurityChange() {}
-  };
-
-  persist.saveURI(targetURI, null, null, null, null, saveFile,
-    privacyContext);
+    function onReject(aError) {
+      warn('Not downloaded', [aError.message, aTargetURL]);
+    }
+  ).catch(Cu.reportError);
 }
 
 function getSaveFilePath(aURI, aDocument) {
@@ -1159,18 +1123,6 @@ function makeFile(aFilePath) {
   return file;
 }
 
-function getPrivacyContextFor(aDocument) {
-  try {
-    return aDocument.defaultView.
-      QueryInterface(Ci.nsIInterfaceRequestor).
-      getInterface(Ci.nsIWebNavigation).
-      QueryInterface(Ci.nsILoadContext);
-  }
-  catch (ex) {}
-
-  return null;
-}
-
 function warn(aTitle, aMsg) {
   const kMaxMessageLength = 200;
 
@@ -1188,6 +1140,10 @@ function warn(aTitle, aMsg) {
   msg += '\n[logged in the Browser Console]';
 
   Services.prompt.alert(null, null, msg);
+}
+
+function getModule(aResourceURL) {
+  return window.ucjsUtil.getModule(aResourceURL);
 }
 
 function log(aMsg) {
