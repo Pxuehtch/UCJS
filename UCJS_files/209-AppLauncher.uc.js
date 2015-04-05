@@ -860,10 +860,6 @@ let LocalFile = () =>
 let Process = () =>
   $I('@mozilla.org/process/util;1', 'nsIProcess');
 
-let WebBrowserPersist = () =>
-  $I('@mozilla.org/embedding/browser/nsWebBrowserPersist;1',
-     'nsIWebBrowserPersist');
-
 function checkApp(aApp) {
   let path = aApp.path.replace(/[/]/g, '\\');
 
