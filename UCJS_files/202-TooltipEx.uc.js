@@ -138,8 +138,8 @@ const kUI = {
    * The ellipsis mark.
    */
   get ellipsis() {
-    // @see resource://app/modules/PlacesUIUtils.jsm
-    const {PlacesUIUtils} = getModule('app/modules/PlacesUIUtils.jsm');
+    // @see resource:///modules/PlacesUIUtils.jsm
+    const {PlacesUIUtils} = getModule('/modules/PlacesUIUtils.jsm');
 
     // Lazy definition.
     delete this.ellipsis

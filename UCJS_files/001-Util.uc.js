@@ -109,7 +109,7 @@ const Prefs = getModule('sdk/preferences/service');
 function getModule(aResourceURL) {
   // Built-in JS module.
   if (/\.jsm$/.test(aResourceURL)) {
-    if (/^(?:gre|app)\//.test(aResourceURL)) {
+    if (/^(?:gre|app)?\//.test(aResourceURL)) {
       aResourceURL = 'resource://' + aResourceURL;
     }
 

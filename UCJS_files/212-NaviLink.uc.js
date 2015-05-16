@@ -1071,8 +1071,8 @@ const NaviLink = (function() {
       'application/rdf+xml': 'XML'
     };
 
-    // @see resource://app/modules/Feeds.jsm
-    const {Feeds} = getModule('app/modules/Feeds.jsm');
+    // @see resource:///modules/Feeds.jsm
+    const {Feeds} = getModule('/modules/Feeds.jsm');
 
     function getFeedType(aLink, aIsFeed) {
       let principal = gBrowser.contentDocument.nodePrincipal;

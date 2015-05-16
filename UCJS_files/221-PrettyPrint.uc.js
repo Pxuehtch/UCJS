@@ -44,7 +44,7 @@ const {
  * the Scratchpad editor.
  */
 const kTextType = (function() {
-  // @see resource://app/modules/devtools/sourceeditor/editor.js
+  // @see resource:///modules/devtools/sourceeditor/editor.js
   const {modes} = getModule('devtools/sourceeditor/editor');
 
   return {
@@ -57,7 +57,7 @@ const kTextType = (function() {
  * Optional settings for the CodeMirror editor.
  *
  * Initial settings;
- * @see resource://app/modules/devtools/sourceeditor/editor.js::Editor
+ * @see resource:///modules/devtools/sourceeditor/editor.js::Editor
  * @see chrome://browser/content/devtools/scratchpad.js::Scratchpad::onLoad
  *
  * Available options in the built-in version;
@@ -242,9 +242,9 @@ const Scratchpad = (function() {
    *   The new window object that holds Scratchpad.
    */
   function open(aState) {
-    // @see resource://app/modules/devtools/scratchpad-manager.jsm
+    // @see resource:///modules/devtools/scratchpad-manager.jsm
     const {ScratchpadManager} =
-      getModule('app/modules/devtools/scratchpad-manager.jsm');
+      getModule('/modules/devtools/scratchpad-manager.jsm');
 
     let scratchpadWindow = ScratchpadManager.openScratchpad();
 

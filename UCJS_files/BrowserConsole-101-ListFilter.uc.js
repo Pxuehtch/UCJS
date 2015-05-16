@@ -8,7 +8,7 @@
 
 // @usage Adds toggle buttons on the toolbar.
 
-// @see resource://app/modules/devtools/webconsole/webconsole.js
+// @see resource:///modules/devtools/webconsole/webconsole.js
 
 
 (function(window, undefined) {
@@ -173,7 +173,7 @@ function setObserver() {
     }, false);
   }
 
-  // @see resource://app/modules/devtools/webconsole/hudservice.js
+  // @see resource:///modules/devtools/webconsole/hudservice.js
   const HUDService = getModule('devtools/webconsole/hudservice');
 
   let browserConsole = HUDService.getBrowserConsole();

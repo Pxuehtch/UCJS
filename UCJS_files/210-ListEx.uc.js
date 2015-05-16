@@ -341,7 +341,7 @@ const HistoryList = (function() {
      * <Ctrl+Shift> / <Shift+MiddleClick>: Open a new tab in background.
      * <Shift>: Open a new window.
      *
-     * @see resource://app/modules/PlacesUIUtils.jsm::markPageAsTyped
+     * @see resource:///modules/PlacesUIUtils.jsm::markPageAsTyped
      * @see chrome://browser/content/utilityOverlay.js::openUILink
      * @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
      */
@@ -1410,8 +1410,8 @@ function limitListRange({index, length, maxNumItems}) {
 }
 
 function fitIntoLabel(aText, aWrapping) {
-  // @see resource://app/modules/PlacesUIUtils.jsm
-  const {PlacesUIUtils} = getModule('app/modules/PlacesUIUtils.jsm');
+  // @see resource:///modules/PlacesUIUtils.jsm
+  const {PlacesUIUtils} = getModule('/modules/PlacesUIUtils.jsm');
 
   let crop;
 
