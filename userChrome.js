@@ -707,9 +707,13 @@ function UtilManager() {
   function log(aMessage) {
     const kLogFormat = '[%loaderName%]\n%message%';
 
+    if (!Array.isArray(aMessage)) {
+      aMessage = [aMessage];
+    }
+
     let output = kLogFormat.
       replace('%loaderName%', kSystem.loaderName).
-      replace('%message%', aMessage);
+      replace('%message%', aMessage.join('\n'));
 
     // WORKAROUND: In Fx38, |nsIConsoleService::logStringMessage| doesn't wrap
     // an output string by '\n'. But |logMessage| does.
@@ -769,7 +773,7 @@ function LogManager(aEnabled) {
   let output = (aValue) => {
     const {log} = Util;
 
-    log(Array.isArray(aValue) ? aValue.join('\n') : aValue);
+    log(aValue);
   };
 
   let format = (aForm, aAttribute) => {
