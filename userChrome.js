@@ -707,12 +707,24 @@ function UtilManager() {
   function log(aMessage) {
     const kLogFormat = '[%loaderName%]\n%message%';
 
-    let str = kLogFormat.
+    let output = kLogFormat.
       replace('%loaderName%', kSystem.loaderName).
       replace('%message%', aMessage);
 
+    // WORKAROUND: In Fx38, |nsIConsoleService::logStringMessage| doesn't wrap
+    // an output string by '\n'. But |logMessage| does.
+    let scriptError = $I('@mozilla.org/scripterror;1', 'nsIScriptError');
+
+    // TODO: Fix up all parameters.
+    scriptError.init(output,
+      null, null, // sourceName, sourceLine
+      null, null, // lineNumber, columnNumber
+      0x8, // flags: just a log message
+      'chrome javascript' // category
+    );
+
     $S('@mozilla.org/consoleservice;1', 'nsIConsoleService').
-      logStringMessage(str);
+      logMessage(scriptError);
   }
 
   /**

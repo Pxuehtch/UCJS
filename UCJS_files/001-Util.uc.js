@@ -1060,7 +1060,21 @@ function logMessage(aTargetName, aMessage) {
 
   // Output to the browser console.
   // @note No outputs to the web console.
-  Services.console.logStringMessage(output);
+
+  // WORKAROUND: In Fx38, |nsIConsoleService::logStringMessage| doesn't wrap
+  // an output string by '\n'. But |logMessage| does.
+  let scriptError =
+    Cc['@mozilla.org/scripterror;1'].createInstance(Ci.nsIScriptError);
+
+  // TODO: Fix up all parameters.
+  scriptError.init(output,
+    null, null, // sourceName, sourceLine
+    null, null, // lineNumber, columnNumber
+    0x8, // flags: just a log message
+    'chrome javascript' // category
+  );
+
+  Services.console.logMessage(scriptError);
 
   return output;
 }
