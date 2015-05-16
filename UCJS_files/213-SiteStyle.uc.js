@@ -749,7 +749,7 @@ const PageObserver = (function() {
         return;
       }
 
-      let state = mBrowserState.get(aBrowser, null);
+      let state = mBrowserState.get(aBrowser);
 
       if (!state || state.URL !== URL) {
         return;
