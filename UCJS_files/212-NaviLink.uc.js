@@ -33,16 +33,13 @@ const {
   getNodesBySelector: $S,
   getFirstNodeByXPath: $X1,
   openURL,
-  unescapeURLCharacters: unescURLChars
+  unescapeURLCharacters: unescURLChars,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('NaviLink.uc.js', aMsg);
 }
 
 const {
@@ -2636,19 +2633,19 @@ function handleAttribute(aNode, aName, aValue) {
 /**
  * Warning and Log.
  */
-function warn(aMsg) {
+function warn(aMessage) {
   const kMaxMessageLength = 200;
 
-  let msg = log(aMsg)
+  let message = log(aMessage, Components.stack.caller)
 
-  if (msg.length > kMaxMessageLength) {
-    msg = msg.substr(0, kMaxMessageLength);
-    msg += '\n...(too long and truncated)';
+  if (message.length > kMaxMessageLength) {
+    message = message.substr(0, kMaxMessageLength);
+    message += '\n...(too long and truncated)';
   }
 
-  msg += '\n[logged in the Browser Console]';
+  message += '\n[logged in the Browser Console]';
 
-  Services.prompt.alert(null, null, msg);
+  Services.prompt.alert(null, null, message);
 }
 
 /**

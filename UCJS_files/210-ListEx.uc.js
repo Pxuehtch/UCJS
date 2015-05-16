@@ -23,16 +23,13 @@ const {
   getModule,
   getNodeById: $ID,
   addEvent,
-  promisePlacesDBResult
+  promisePlacesDBResult,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('ListEx.uc.js', aMsg);
 }
 
 const {

@@ -33,13 +33,10 @@ const {
   createNode: $E,
   getNodeById: $ID,
   addEvent,
-  setChromeStyleSheet: setCSS
+  setChromeStyleSheet: setCSS,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('PrefButton.uc.js', aMsg);
-}
 
 /**
  * UI setting.

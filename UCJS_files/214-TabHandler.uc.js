@@ -22,13 +22,10 @@ const {
     setTimeout,
     clearTimeout
   },
-  addEvent
+  addEvent,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TabHandler.uc.js', aMsg);
-}
 
 /**
  * Preference

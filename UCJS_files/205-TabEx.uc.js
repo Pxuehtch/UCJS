@@ -36,13 +36,10 @@ const {
   addEvent,
   openTab,
   removeTab,
-  promisePlacesDBResult
+  promisePlacesDBResult,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TabEx.uc.js', aMsg);
-}
 
 /**
  * Key name for storing data.

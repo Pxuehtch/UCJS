@@ -27,13 +27,10 @@ const {
   getFirstNodeByXPath: $X1,
   addEvent,
   getTextInRange,
-  openTab
+  openTab,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TextLink.uc.js', aMsg);
-}
 
 /**
  * Helper functions for URL-like strings.

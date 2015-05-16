@@ -30,13 +30,10 @@ const {
   getNodesBySelector: $S,
   getFirstNodeBySelector: $S1,
   addEvent,
-  setContentStyleSheet
+  setContentStyleSheet,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('SiteStyle.uc.js', aMsg);
-}
 
 /**
  * UI settings.

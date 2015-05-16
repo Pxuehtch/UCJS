@@ -28,16 +28,13 @@ const {
   getNodeById: $ID,
   addEvent,
   unescapeURLForUI,
-  resolveURL
+  resolveURL,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {
   return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('TooltipEx.uc.js', aMsg);
 }
 
 /**

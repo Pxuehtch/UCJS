@@ -31,13 +31,10 @@ const {
   addEvent,
   resolveURL,
   setChromeStyleSheet: setCSS,
-  promisePlacesDBResult
+  promisePlacesDBResult,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('UI.uc.js', aMsg);
-}
 
 /**
  * Popup menu handler.

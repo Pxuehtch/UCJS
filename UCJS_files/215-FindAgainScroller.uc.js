@@ -27,13 +27,10 @@ const {
   createNode: $E,
   getNodeById: $ID,
   getNodesByXPath: $X,
-  setChromeStyleSheet: setCSS
+  setChromeStyleSheet: setCSS,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('FindAgainScroller.uc.js', aMsg);
-}
 
 const {
   FindBar

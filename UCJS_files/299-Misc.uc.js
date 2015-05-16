@@ -28,16 +28,13 @@ const {
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
   addEvent,
-  setChromeStyleSheet: setChromeCSS
+  setChromeStyleSheet: setChromeCSS,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
 
 function setGlobalAgentCSS(aCSS) {
   return window.ucjsUtil.setGlobalStyleSheet(aCSS, 'AGENT_SHEET');
-}
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('Misc.uc.js', aMsg);
 }
 
 /**

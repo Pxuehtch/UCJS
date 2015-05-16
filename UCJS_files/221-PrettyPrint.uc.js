@@ -23,13 +23,10 @@ const {
   getModule,
   createNode: $E,
   getNodeById: $ID,
-  addEvent
+  addEvent,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('PrettyPrint.uc.js', aMsg);
-}
 
 const {
   ContentArea: {

@@ -704,27 +704,40 @@ function UtilManager() {
     return RegExp(pattern).test(aURL);
   }
 
-  function log(aMessage) {
-    const kLogFormat = '[%loaderName%]\n%message%';
+  function log(aMessage, aCaller) {
+    const kLogFormat = '[%file%]\n::%function%\n%message%';
+
+    if (!aCaller) {
+      aCaller = Components.stack.caller;
+    }
 
     if (!Array.isArray(aMessage)) {
       aMessage = [aMessage];
     }
 
+    let getFileName = (aURL) =>
+      aURL.replace(/[?#].*$/, '').replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
+
     let output = kLogFormat.
-      replace('%loaderName%', kSystem.loaderName).
+      replace('%file%', getFileName(aCaller.filename)).
+      replace('%function%', aCaller.name || '(anonymous function)').
       replace('%message%', aMessage.join('\n'));
 
-    // WORKAROUND: In Fx38, |nsIConsoleService::logStringMessage| doesn't wrap
-    // an output string by '\n'. But |logMessage| does.
     let scriptError = $I('@mozilla.org/scripterror;1', 'nsIScriptError');
 
-    // TODO: Fix up all parameters.
-    scriptError.init(output,
-      null, null, // sourceName, sourceLine
-      null, null, // lineNumber, columnNumber
-      0x8, // flags: just a log message
-      'chrome javascript' // category
+    scriptError.init(
+      output,
+      aCaller.filename,
+      aCaller.sourceLine,
+      aCaller.lineNumber,
+      // Column number
+      null,
+      // Flags
+      // TODO: Set |Ci.nsIScriptError.infoFlag| when implemented.
+      null,
+      // Category
+      // The browser console displays, but the web console does not.
+      'chrome javascript'
     );
 
     $S('@mozilla.org/consoleservice;1', 'nsIConsoleService').
@@ -770,10 +783,10 @@ function LogManager(aEnabled) {
     return exports;
   }
 
-  let output = (aValue) => {
+  let output = (aValue, aCaller) => {
     const {log} = Util;
 
-    log(aValue);
+    log(aValue, aCaller);
   };
 
   let format = (aForm, aAttribute) => {
@@ -832,7 +845,9 @@ function LogManager(aEnabled) {
       'caption': aCaption
     }));
 
-    output(aValues.map((value, i) => addIndent(value, i)));
+    let message = aValues.map((value, i) => addIndent(value, i));
+
+    output(message, Components.stack.caller);
   };
 
   exports.counter = (aHeader) => {
@@ -843,10 +858,12 @@ function LogManager(aEnabled) {
     let count = 0;
 
     return (aValue) => {
-      output(format(form, {
+      let message = format(form, {
         'count': ++count,
         'value': aValue
-      }));
+      });
+
+      output(message, Components.stack.caller);
     };
   };
 

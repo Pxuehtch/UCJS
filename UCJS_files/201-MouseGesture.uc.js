@@ -44,13 +44,10 @@ const {
   addEvent,
   getSelectionAtCursor,
   resolveURL,
-  openTab
+  openTab,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('MouseGesture.uc.js', aMsg);
-}
 
 const {
   ContentArea: {

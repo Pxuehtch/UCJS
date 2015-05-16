@@ -19,16 +19,13 @@
  * Imports
  */
 const {
-  getNodeById: $ID
+  getNodeById: $ID,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
 
 function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
-}
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('PageRelated.uc.js', aMsg);
 }
 
 const {

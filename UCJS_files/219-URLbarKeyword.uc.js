@@ -27,13 +27,10 @@ const {
   },
   createNode: $E,
   getNodeById: $ID,
-  promisePlacesDBResult
+  promisePlacesDBResult,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('URLbarKeyword.uc.js', aMsg);
-}
 
 const {
   URLBar: {

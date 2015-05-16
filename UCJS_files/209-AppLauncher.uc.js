@@ -43,7 +43,7 @@ const {
   createNode: $E,
   getNodesByXPath: $X,
   contentAreaContextMenu,
-  // For debugging.
+  // Log to console for debug.
   log
 } = Util;
 
@@ -1119,31 +1119,36 @@ function makeFile(aFilePath) {
   return file;
 }
 
-function warn(aTitle, aMsg) {
-  const kMaxMessageLength = 200;
+function warn(aTitle, aMessage) {
+  const kMaxOutputLength = 200;
 
-  if (!Array.isArray(aMsg)) {
-    aMsg = [aMsg];
+  if (!Array.isArray(aMessage)) {
+    aMessage = [aMessage];
   }
 
-  let msg = log(['Error: ' + aTitle, aMsg.join('\n')]);
+  let caller = Components.stack.caller;
+  let output = log(['Error: ' + aTitle, aMessage.join('\n')], caller);
 
-  if (msg.length > kMaxMessageLength) {
-    msg = msg.substr(0, kMaxMessageLength);
-    msg += '\n...(too long and truncated)';
+  if (output.length > kMaxOutputLength) {
+    output = output.substr(0, kMaxOutputLength);
+    output += '\n...(Too long and truncated)';
   }
 
-  msg += '\n[logged in the Browser Console]';
+  output += '\n[Logged in the Browser Console]';
 
-  Services.prompt.alert(null, null, msg);
+  Services.prompt.alert(null, null, output);
 }
 
 function getModule(aResourceURL) {
   return window.ucjsUtil.getModule(aResourceURL);
 }
 
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('AppLauncher.uc.js', aMsg);
+function log(aMessage, aCaller) {
+  if (!aCaller) {
+    aCaller = Components.stack.caller;
+  }
+
+  return window.ucjsUtil.logMessage(aMessage, aCaller);
 }
 
 /**

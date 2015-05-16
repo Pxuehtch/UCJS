@@ -24,13 +24,10 @@ const {
   addEvent,
   createNode: $E,
   getNodeById: $ID,
-  setChromeStyleSheet: setCSS
+  setChromeStyleSheet: setCSS,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('IMEState.uc.js', aMsg);
-}
 
 /**
  * UI setting.

@@ -42,13 +42,10 @@ const {
     clearTimeout
   },
   createNode: $E,
-  getNodeById: $ID
+  getNodeById: $ID,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('NaviButton.uc.js', aMsg);
-}
 
 /**
  * UI settings.

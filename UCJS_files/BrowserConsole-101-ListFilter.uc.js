@@ -28,13 +28,10 @@ const {
   getFirstNodeByXPath: $X1,
   getFirstNodeBySelector: $S1,
   addEvent,
-  setChromeStyleSheet: setCSS
+  setChromeStyleSheet: setCSS,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('ListFilter.uc.js', aMsg);
-}
 
 /**
  * List of items.

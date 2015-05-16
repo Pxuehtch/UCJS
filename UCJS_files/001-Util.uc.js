@@ -1032,9 +1032,13 @@ function promisePlacesDBResult(aParam = {}) {
 /**
  * Log function.
  */
-function logMessage(aTargetName, aMessage) {
-  const kMessageFormat = '[%target%]\n%message%';
+function logMessage(aMessage, aCaller) {
+  const kLogFormat = '[%file%]\n::%function%\n%message%';
   const kErrorFormat = '%name%: %message%\n%stack%';
+
+  if (!aCaller) {
+    aCaller = Components.stack.caller;
+  }
 
   if (!Array.isArray(aMessage)) {
     aMessage = [aMessage];
@@ -1054,24 +1058,30 @@ function logMessage(aTargetName, aMessage) {
     return value;
   });
 
-  let output = kMessageFormat.
-    replace('%target%', aTargetName).
+  let getFileName = (aURL) =>
+    aURL.replace(/[?#].*$/, '').replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
+
+  let output = kLogFormat.
+    replace('%file%', getFileName(aCaller.filename)).
+    replace('%function%', aCaller.name || '(anonymous function)').
     replace('%message%', messages.join('\n'));
 
-  // Output to the browser console.
-  // @note No outputs to the web console.
-
-  // WORKAROUND: In Fx38, |nsIConsoleService::logStringMessage| doesn't wrap
-  // an output string by '\n'. But |logMessage| does.
   let scriptError =
     Cc['@mozilla.org/scripterror;1'].createInstance(Ci.nsIScriptError);
 
-  // TODO: Fix up all parameters.
-  scriptError.init(output,
-    null, null, // sourceName, sourceLine
-    null, null, // lineNumber, columnNumber
-    0x8, // flags: just a log message
-    'chrome javascript' // category
+  scriptError.init(
+    output,
+    aCaller.filename,
+    aCaller.sourceLine,
+    aCaller.lineNumber,
+    // Column number
+    null,
+    // Flags
+    // TODO: Set |Ci.nsIScriptError.infoFlag| when implemented.
+    null,
+    // Category
+    // The browser console displays, but the web console does not.
+    'chrome javascript'
   );
 
   Services.console.logMessage(scriptError);
@@ -1079,8 +1089,9 @@ function logMessage(aTargetName, aMessage) {
   return output;
 }
 
+// Log to console for debug in this script.
 function log(aMessage) {
-  return logMessage('Util.uc.js', aMessage);
+  return logMessage(aMessage, Components.stack.caller);
 }
 
 /**

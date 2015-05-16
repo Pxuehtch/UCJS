@@ -24,13 +24,10 @@
  * Imports
  */
 const {
-  addEvent
+  addEvent,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('ResetSearchPoint.uc.js', aMsg);
-}
 
 /**
  * Wrapper of the finder of the current tab.

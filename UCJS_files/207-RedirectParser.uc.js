@@ -25,16 +25,13 @@ const {
   },
   getNodeById: $ID,
   unescapeURLCharacters: unescURLChars,
-  unescapeURLForUI: unescURLforUI
+  unescapeURLForUI: unescURLforUI,
+  // Log to console for debug.
+  logMessage: log
 } = window.ucjsUtil;
 
 function $E(aTag, aAttribute) {
   return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
-}
-
-// For debugging.
-function log(aMsg) {
-  return window.ucjsUtil.logMessage('RedirectParser.uc.js', aMsg);
 }
 
 const {
