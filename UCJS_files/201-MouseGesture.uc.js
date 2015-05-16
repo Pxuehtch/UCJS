@@ -248,16 +248,16 @@ const kGestureSet = [
     gestures: ['RD'],
     name: '履歴を開閉',
     command() {
-      // @see chrome://browser/content/browser.js::toggleSidebar
-      window.toggleSidebar('viewHistorySidebar');
+      // @see chrome://browser/content/browser.js::SidebarUI
+      window.SidebarUI.toggle('viewHistorySidebar');
     }
   },
   {
     gestures: ['LD'],
     name: 'ブックマークを開閉',
     command() {
-      // @see chrome://browser/content/browser.js::toggleSidebar
-      window.toggleSidebar('viewBookmarksSidebar');
+      // @see chrome://browser/content/browser.js::SidebarUI
+      window.SidebarUI.toggle('viewBookmarksSidebar');
     }
   },
   {
