@@ -135,11 +135,11 @@ const kPreset = [
       },
       {
         name: 'Yahoo! link:',
-        URL: 'http://search.yahoo.co.jp/search?p=link:%u%'
+        URL: 'http://search.yahoo.co.jp/search?p=link:%u%&ei=UTF-8'
       },
       {
         name: 'Yahoo! with Page Title',
-        URL: 'http://search.yahoo.co.jp/search?p="%t|en%"'
+        URL: 'http://search.yahoo.co.jp/search?p="%t|en%"&ei=UTF-8'
       }
     ]
   }
