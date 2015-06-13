@@ -10,7 +10,7 @@
 // JS/CSS.
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

@@ -7,7 +7,7 @@
 // @require Util.uc.js
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

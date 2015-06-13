@@ -10,7 +10,7 @@
 // @note Some native functions are modified (see @modified).
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

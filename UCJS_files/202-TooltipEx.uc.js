@@ -14,7 +14,7 @@
 // 'Copy All' menu item of the context menu.
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

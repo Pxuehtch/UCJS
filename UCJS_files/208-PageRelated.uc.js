@@ -9,7 +9,7 @@
 // @usage Creates items in the URLbar context menu.
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

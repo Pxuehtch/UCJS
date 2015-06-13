@@ -14,7 +14,7 @@
 // @usage Access to functions through the global scope (window.ucjsUtil.XXX).
 
 
-const ucjsUtil = (function(window, undefined) {
+const ucjsUtil = (function(window) {
 
 
 "use strict";

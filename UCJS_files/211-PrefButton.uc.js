@@ -16,7 +16,7 @@
 // TODO: Support the customizable UI.
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

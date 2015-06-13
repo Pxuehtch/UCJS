@@ -15,7 +15,7 @@
 // @see |SessionStore.persistTabAttribute|
 
 
-const ucjsTabEx = (function(window, undefined) {
+const ucjsTabEx = (function(window) {
 
 
 "use strict";

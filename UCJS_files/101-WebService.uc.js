@@ -10,7 +10,7 @@
 // (window.ucjsWebService.XXX).
 
 
-const ucjsWebService = (function(window, undefined) {
+const ucjsWebService = (function(window) {
 
 
 "use strict";

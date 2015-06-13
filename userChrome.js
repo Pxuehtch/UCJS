@@ -14,7 +14,7 @@
 // @see https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

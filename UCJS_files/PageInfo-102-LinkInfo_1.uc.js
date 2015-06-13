@@ -9,7 +9,7 @@
 // @note Some functions are exported (window.ucjsLinkInfo.XXX).
 
 
-const ucjsLinkInfo = (function(window, undefined) {
+const ucjsLinkInfo = (function(window) {
 
 
 "use strict";

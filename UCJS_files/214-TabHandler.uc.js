@@ -8,7 +8,7 @@
 // @require [optional for action] Util.uc.js, TabEx.uc.js
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

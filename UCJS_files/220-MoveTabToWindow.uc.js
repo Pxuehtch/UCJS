@@ -9,7 +9,7 @@
 // @usage Creates a menu in the tab context menu.
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

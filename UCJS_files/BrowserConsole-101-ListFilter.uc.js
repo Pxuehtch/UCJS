@@ -11,7 +11,7 @@
 // @see resource:///modules/devtools/webconsole/webconsole.js
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

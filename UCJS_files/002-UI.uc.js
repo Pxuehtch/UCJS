@@ -12,7 +12,7 @@
 // @note Some native functions are modified (see @modified).
 
 
-const ucjsUI = (function(window, undefined) {
+const ucjsUI = (function(window) {
 
 
 "use strict";

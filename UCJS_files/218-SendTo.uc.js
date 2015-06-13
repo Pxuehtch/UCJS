@@ -10,7 +10,7 @@
 // @usage Creates items in the main context menu.
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

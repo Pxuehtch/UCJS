@@ -24,10 +24,8 @@
  *   Utility functions.
  * @param window {ChromeWindow}
  *   The global window object.
- * @param undefined {undefined}
- *   The |undefined| constant.
  */
-(function(Util, window, undefined) {
+(function(Util, window) {
 
 
 "use strict";
@@ -828,7 +826,7 @@ AppLauncher_init();
  * @return Util {hash}
  *   Utility functions.
  */
-((function(window, undefined) {
+((function(window) {
 
 
 "use strict";

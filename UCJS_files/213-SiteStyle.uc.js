@@ -9,7 +9,7 @@
 // @note Creates a preference menu in 'tools' of the menu bar.
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";

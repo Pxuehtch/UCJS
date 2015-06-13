@@ -12,7 +12,7 @@
 // @see https://addons.mozilla.org/en-US/firefox/addon/location-bar-characters/
 
 
-(function(window, undefined) {
+(function(window) {
 
 
 "use strict";
