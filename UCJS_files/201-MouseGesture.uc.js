@@ -127,8 +127,14 @@ const kGestureSet = [
     gestures: ['!LW-', '!RW-'],
     name: 'ページの履歴',
     command({event}) {
-      $ID('backForwardMenu').
-        openPopupAtScreen(event.screenX + 5, event.screenY + 5, false);
+      let {screenX: x, screenY: y} = event;
+
+      // Offset the popup panel from the cursor to prevent gesture events
+      // from being blocked on the panel.
+      x += 5;
+      y += 5;
+
+      $ID('backForwardMenu').openPopupAtScreen(x, y, false);
     }
   },
   {
