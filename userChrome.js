@@ -24,23 +24,29 @@
  * User preferences.
  */
 const kPref = {
-  // Script subfolders under your chrome folder.
-  //
-  // @note Required to register at least one subfolder.
-  // @note Adding '/' at the end, scripts are scanned in the descendant
-  // directories.
+  /**
+   * Script subfolders under your chrome folder.
+   *
+   * @note Required to register at least one subfolder.
+   * @note Scripts are scanned in the descendant directories by adding '/' at
+   * the end.
+   */
   scriptFolders: ['UCJS_files', 'UCJS_tmp/'],
 
-  // File extensions to select which of java-script or xul-overlay a script
-  // runs as.
-  //
-  // @note Tests exact match from the first dot(.) of a file name.
+  /**
+   * File extensions to select which of JavaScript or XUL-overlay a script
+   * runs as.
+   *
+   * @note Tests exact match from the first dot(.) of a file name.
+   */
   jscriptExts: ['.uc.js'],
   overlayExts: ['.uc.xul', '.xul'],
 
-  // URL list of chrome XUL files which is blocked to load scripts.
-  //
-  // @note Wildcard '*' is available.
+  /**
+   * URL list of chrome XUL files which is blocked to load scripts.
+   *
+   * @note Wildcard '*' is available.
+   */
   blockXULs: [
     'chrome://global/content/commonDialog.xul',
     'chrome://browser/content/preferences/*',
@@ -54,21 +60,32 @@ const kPref = {
  * System preferences.
  */
 const kSystem = {
-  // Log the activity of this script to the error console.
+  /**
+   * Log the activity of this script to the browser console.
+   */
   logging: false,
 
-  // Exposed property name in the global scope |window|.
+  /**
+   * Exposed property name in the global scope |window|.
+   */
   loaderName: 'ucjsScriptLoader',
 
-  // ID of <overlay> for overlayed scripts.
+  /**
+   * ID of <overlay> for XUL overlayed scripts.
+   */
   overlayContainerID: 'userChrome_js_overlay',
 
-  // Check the cache of a script whenever the script runs on sub-windows.
-  // Set true and a script that is modified will be applied on the new opened
-  // sub-windows without restart.
-  //
-  // @note This loader checks the cache when the startup browser window opens,
-  // and usually the cached script runs on sub-windows thereafter.
+  /**
+   * Check the cache of a script whenever the script runs on sub-windows.
+   *
+   * Set true and a script that is modified will be applied on the new opened
+   * sub-windows without restart. This is useful for debug, but performance is
+   * poor.
+   *
+   * false[default]: This loader checks the script cache only when the startup
+   * browser window opens, and the cached scripts run on sub-windows
+   * thereafter.
+   */
   checkCacheAtRun: false
 };
 
@@ -736,7 +753,7 @@ function UtilManager() {
       // TODO: Set |Ci.nsIScriptError.infoFlag| when implemented.
       null,
       // Category
-      // The browser console displays, but the web console does not.
+      // @note The browser console displays, but the web console does not.
       'chrome javascript'
     );
 

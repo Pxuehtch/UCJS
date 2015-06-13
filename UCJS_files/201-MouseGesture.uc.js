@@ -18,8 +18,7 @@
  * - <Shift> and <Ctrl> modifier keys are supported in both modes.
  *   @note The keys are detected after a gesture starts.
  *
- * - You can reset the state of a gesture by <Alt+RightClick> if a problem
- *   occurs.
+ * - You can reset the state of a gesture by <Alt+RightClick> for problems.
  *
  * @note
  * - A gesture is only available within the inner frame of the content area,
@@ -191,7 +190,9 @@ const kGestureSet = [
     gestures: ['DR'],
     name: 'タブを閉じる',
     command() {
-      window.ucjsUtil.removeTab(gBrowser.selectedTab, {safeClose: true});
+      window.ucjsUtil.removeTab(gBrowser.selectedTab, {
+        safeClose: true
+      });
     }
   },
   {
@@ -233,7 +234,9 @@ const kGestureSet = [
     gestures: ['S&DURD', 'DURDW+', 'DURDW-'], // shape of 'h'
     name: 'ホームだけにする',
     command() {
-      window.ucjsUtil.openHomePages({doReplace: true});
+      window.ucjsUtil.openHomePages({
+        doReplace: true
+      });
     }
   },
   {
@@ -285,21 +288,30 @@ const kGestureSet = [
     gestures: ['TEXT#L'],
     name: 'Weblio',
     command({dragData}) {
-      window.ucjsWebService.open({name: 'Weblio', data: dragData});
+      window.ucjsWebService.open({
+        name: 'Weblio',
+        data: dragData
+      });
     }
   },
   {
     gestures: ['S&TEXT#L'],
     name: 'Google翻訳',
     command({dragData}) {
-      window.ucjsWebService.open({name: 'GoogleTranslation', data: dragData});
+      window.ucjsWebService.open({
+        name: 'GoogleTranslation',
+        data: dragData
+      });
     }
   },
   {
     gestures: ['TEXT#R'],
     name: 'Google検索',
     command({dragData}) {
-      window.ucjsWebService.open({name: 'GoogleSearch', data: dragData});
+      window.ucjsWebService.open({
+        name: 'GoogleSearch',
+        data: dragData
+      });
     }
   },
   {
@@ -308,7 +320,10 @@ const kGestureSet = [
     command({dragData}) {
       dragData += ' site:' + gBrowser.currentURI.spec;
 
-      window.ucjsWebService.open({name: 'GoogleSearch', data: dragData});
+      window.ucjsWebService.open({
+        name: 'GoogleSearch',
+        data: dragData
+      });
     }
   },
   {
@@ -427,7 +442,7 @@ function MouseGesture() {
     addEvent(pc, 'contextmenu', onContextMenu, true);
 
     // WORKAROUND: We assign <Alt+RightClick> to reset the state of a gesture
-    // ANYTIME for a problem.
+    // ANYTIME when problems occur.
     addEvent(pc, 'click', onClick, true);
 
     // WORKAROUND: Make sure to clean up events.
@@ -729,9 +744,13 @@ function MouseEventManager() {
    *
    * @param aEvent {MouseEvent}
    * @return {boolean|undefined}
-   *   'mousedown' {boolean} Whether a normal mode gesture can start or not.
-   *   'mouseup' {boolean} Whether a normal mode gesture can stop or not.
-   *   @note Returns |undefined| for other cases since no use for them.
+   *   For 'mousedown' {boolean}
+   *     Whether a normal mode gesture can start or not.
+   *   For 'mouseup' {boolean}
+   *     Whether a normal mode gesture can stop or not.
+   *   For other cases {undefined}
+   *     TODO: We don't return an explicit value since we don't handle the
+   *     return value for now.
    */
   function update(aEvent) {
     const {type, button} = aEvent;
@@ -742,7 +761,7 @@ function MouseEventManager() {
           mRightDown = true;
 
           // Disable the context menu while other button is down.
-          // @note OtherDown -> RightDown -> RightUP: Disable the context menu.
+          // OtherDown -> RightDown -> RightUp
           if (mSuppressMenu !== mOtherDown) {
             mSuppressMenu = mOtherDown;
           }
@@ -754,14 +773,14 @@ function MouseEventManager() {
           mOtherDown = true;
 
           // Disable the context menu while the left/middle button is down.
-          // @note RightDown -> OtherDown -> RightUP: Disable the context menu.
+          // RightDown -> OtherDown -> RightUp
           if (mSuppressMenu !== mRightDown) {
             mSuppressMenu = mRightDown;
           }
 
           // Disable the default click action of the left/middle button while
           // the right button is down.
-          // @note RightDown -> OtherClick: Disable the click.
+          // RightDown -> OtherClick
           if (mSuppressClick !== mRightDown) {
             mSuppressClick = mRightDown;
           }
@@ -1225,9 +1244,11 @@ function GestureManager() {
  *   @key update {function}
  */
 function GestureTracer() {
-  // The minimum distance of movement for the gesture is detected.
-  //
-  // @value {integer} [pixels > 0]
+  /**
+   * The minimum distance of movement for the gesture is detected.
+   *
+   * @value {integer} [pixels > 0]
+   */
   const kTolerance = 10;
 
   let mLastX, mLastY;
@@ -1277,11 +1298,13 @@ function GestureTracer() {
  * Helper functions.
  */
 function inGestureArea(aEvent) {
-  // The margin of cancelling a gesture.
-  //
-  // @value {integer} [pixels > 0]
-  // @note Including the width of a scrollbar.
-  // @note 16 pixels is the scrollbar width of my Fx.
+  /**
+   * The margin of cancelling a gesture.
+   *
+   * @value {integer} [pixels > 0]
+   * @note Including the width of a scrollbar.
+   * @note 16 pixels is the scrollbar width of my Fx.
+   */
   const kMargin = 16;
 
   // Get the coordinates of the event relative to the content area.

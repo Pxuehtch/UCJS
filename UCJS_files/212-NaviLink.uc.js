@@ -2640,10 +2640,10 @@ function warn(aMessage) {
 
   if (message.length > kMaxMessageLength) {
     message = message.substr(0, kMaxMessageLength);
-    message += '\n...(too long and truncated)';
+    message += '\n...(Too long and truncated)';
   }
 
-  message += '\n[logged in the Browser Console]';
+  message += '\n[Logged in the Browser Console]';
 
   Services.prompt.alert(null, null, message);
 }
