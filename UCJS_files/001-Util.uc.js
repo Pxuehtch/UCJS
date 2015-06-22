@@ -837,8 +837,9 @@ function restartFx(aOption = {}) {
   // so set the preference to force to restore the session.
   Prefs.set('browser.sessionstore.resume_session_once', true);
 
-  Services.startup.
-    quit(Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart);
+  const {startup} = Services;
+
+  startup.quit(startup.eAttemptQuit | startup.eRestart);
 }
 
 function setGlobalStyleSheet(aCSS, aType) {
