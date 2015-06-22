@@ -554,7 +554,9 @@ function UserScript_formatMetaData(aMetaData) {
 
   let list = [];
 
-  for (let [key, value] in Iterator(aMetaData)) {
+  for (let key in aMetaData) {
+    let value = aMetaData[key];
+
     if (!Array.isArray(value)) {
       value = [value];
     }
@@ -807,8 +809,8 @@ function LogManager(aEnabled) {
   };
 
   let format = (aForm, aAttribute) => {
-    for (let [name, value] in Iterator(aAttribute)) {
-      aForm = aForm.replace('%' + name + '%', value + '');
+    for (let name in aAttribute) {
+      aForm = aForm.replace('%' + name + '%', aAttribute[name] + '');
     }
 
     return aForm;

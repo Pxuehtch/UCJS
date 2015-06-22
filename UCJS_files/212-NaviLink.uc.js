@@ -861,7 +861,9 @@ const MenuUI = (function() {
     // Filter items that the value is |null| or |undefined|.
     let replacement = {};
 
-    for (let [name, value] in Iterator(aReplacement)) {
+    for (let name in aReplacement) {
+      let value = aReplacement[name];
+
       if (value !== null && value !== undefined) {
         replacement['%' + name + '%'] = value;
       }
@@ -886,8 +888,8 @@ const MenuUI = (function() {
       return aFormat[0];
     }
 
-    for (let [name, value] in Iterator(replacement)) {
-      format = format.replace(name, value);
+    for (let name in replacement) {
+      format = format.replace(name, replacement[name]);
     }
 
     return format;

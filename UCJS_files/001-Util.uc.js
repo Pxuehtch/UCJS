@@ -352,7 +352,9 @@ function createNode(aTagOrNode, aAttribute, aAttributeHandler) {
   }
 
   if (!!aAttribute) {
-    for (let [name, value] in Iterator(aAttribute)) {
+    for (let name in aAttribute) {
+      let value = aAttribute[name];
+
       if (aAttributeHandler &&
           aAttributeHandler(node, name, value)) {
         continue;

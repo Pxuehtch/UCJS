@@ -260,7 +260,9 @@ const Scratchpad = (function() {
           aScratchpad.setText(aState.text);
           aScratchpad.editor.setMode(aState.type);
 
-          for (let [key, value] in Iterator(aState.options)) {
+          for (let key in aState.options) {
+            let value = aState.options[key];
+
             aScratchpad.editor.setOption(key, value);
 
             if (kEditorOptionsMenuitemID[key]) {
@@ -339,7 +341,8 @@ const Prettifier = (function() {
   function fixupOptions(aOptions = {}) {
     let options = {};
 
-    for (let [key, setting] in Iterator(kOptionList)) {
+    for (let key in kOptionList) {
+      let setting = kOptionList[key];
       let value = aOptions[key];
 
       if (value === undefined) {

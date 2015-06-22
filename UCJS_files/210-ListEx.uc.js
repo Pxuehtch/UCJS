@@ -213,8 +213,8 @@ const MainMenu = (function() {
 
     addSeparator(kUI.startSeparator);
 
-    for (let [menu, items] in Iterator(menuItems)) {
-      if (items.some((item) => !!kPref.maxNumListItems[item])) {
+    for (let menu in menuItems) {
+      if (menuItems[menu].some((item) => !!kPref.maxNumListItems[item])) {
         addMenu(kUI[menu]);
       }
     }
@@ -1326,7 +1326,9 @@ function handleAttribute(aNode, aName, aValue) {
 
     case 'action': {
       if (aValue) {
-        for (let [name, value] in Iterator(aValue)) {
+        for (let name in aValue) {
+          let value = aValue[name];
+
           if (name === 'oncommand' && typeof value !== 'string') {
             aNode[kDataKey.commandData] = value;
           }
