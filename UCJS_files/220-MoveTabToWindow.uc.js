@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name MoveTabToWindow.uc.js
-// @description Moves a tab to the other window.
+// @description Moves a tab to another window.
 // @include main
 // ==/UserScript==
 

@@ -38,7 +38,7 @@ const {
  *
  * @param category {string}
  *   A category name.
- *   @note Set a unique string to distinguish from other items for internal
+ *   @note Set a unique string to distinguish from the other items for internal
  *   using.
  *   @note Used as the label of a button.
  * @param description {string}

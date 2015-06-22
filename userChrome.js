@@ -34,8 +34,8 @@ const kPref = {
   scriptFolders: ['UCJS_files', 'UCJS_tmp/'],
 
   /**
-   * File extensions to select which of JavaScript or XUL-overlay a script
-   * runs as.
+   * File extensions to determine that a script should be run as either
+   * JavaScript or XUL-overlay.
    *
    * @note Tests exact match from the first dot(.) of a file name.
    */
@@ -43,7 +43,7 @@ const kPref = {
   overlayExts: ['.uc.xul', '.xul'],
 
   /**
-   * URL list of chrome XUL files which is blocked to load scripts.
+   * URL list of chrome XUL windows which are blocked to run scripts.
    *
    * @note Wildcard '*' is available.
    */

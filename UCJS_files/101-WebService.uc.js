@@ -169,8 +169,8 @@ const RequestHandler = (function() {
     mRequestTimeList: {},
 
     update(aURL) {
-      // @note No error checks due to supposing that |URL| of an item of
-      // |kPreset| is valid.
+      // TODO: Validation check for URL.
+      // WORKAROUND: Set a valid |URL| of |kPreset|.
       let host = (/^https?:\/\/([^\/]+)/.exec(aURL))[1];
 
       let lastRequestTime = this.mRequestTimeList[host] || 0;

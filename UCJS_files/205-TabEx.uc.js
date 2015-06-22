@@ -1079,7 +1079,7 @@ const MovingTabObserver = {
         }
 
         // Restore the original open info.
-        // @note Other data are created for a new tab.
+        // @note The other data have been created for a new tab.
         TabData.set(newTab, 'openInfo', originalData.openInfo);
 
         // Set a flag to load the suspended tab.
@@ -1764,7 +1764,7 @@ function getTabs(aStatement, aEssentialTab) {
       return false;
     }
 
-    return (pinned && tab.pinned)  ||
+    return (pinned && tab.pinned) ||
            (active && !tab.pinned && !tab.hidden);
   });
 }

@@ -9,7 +9,7 @@
 // @usage Creates items in the URLbar context menu.
 
 // @note The last computed data is cached and used until the context menu opens
-// in the other URL for performance. So the data may become incorrect when the
+// in another URL for performance. So the data may become incorrect when the
 // document is modified in the same URL.
 
 // @note This script scans only the top content document, does not traverse
@@ -806,7 +806,7 @@ const MenuUI = (function() {
    *
    * TODO: Fix broken tooltip text. Sometimes text wrapping breaks and the
    * latter text is cut off. It seems to happen when a long text has '-' and
-   * '\n'. The other characters may break it.
+   * '\n'. Other characters may break it.
    */
   function formatTooltip(aText, aURL) {
     if (aText && aText !== getLeaf(aURL)) {
@@ -1801,7 +1801,7 @@ const SiblingNavi = (function() {
    * Generator for all possible texts of a link.
    *
    * @param aNode {Element}
-   *   @note Pass a hyperlinked element that |getSearchLinks| genarates.
+   *   @note Pass a hyperlinked element that |getSearchLinks| generates.
    * @return {Generator}
    */
   function* getSearchTexts(aNode) {
@@ -2195,7 +2195,7 @@ const NaviLinkScorer = (function() {
           matches++;
 
           // Remove the matched item to avoid matching with the same value of
-          // the other item of the original parts.
+          // another item of the original parts.
           delete otherParts[matchIndex];
 
           if (!otherParts.length) {
