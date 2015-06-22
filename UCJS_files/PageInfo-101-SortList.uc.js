@@ -91,7 +91,7 @@ function sort(aData, aColumnIndex, aAscending) {
   let comparator =
     !isNaN(aData[0][aColumnIndex]) ?
     (a, b) => a - b :
-    (a, b) => a.toLowerCase().localeCompare(b.toLowerCase());
+    (a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase());
 
   aData.sort((a, b) => comparator(a[aColumnIndex], b[aColumnIndex]));
 
