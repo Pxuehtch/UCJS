@@ -1677,7 +1677,7 @@ const SiblingNavi = (function() {
     let entries = getSearchEntries();
     let link, href, text, score;
 
-    for (link in getSearchLinks()) {
+    for (link of getSearchLinks()) {
       href = link.href;
 
       if (!href ||
@@ -1688,7 +1688,7 @@ const SiblingNavi = (function() {
         continue;
       }
 
-      for (text in getSearchTexts(link)) {
+      for (text of getSearchTexts(link)) {
         // Normalize white-spaces.
         text = trim(text);
 
@@ -1767,7 +1767,13 @@ const SiblingNavi = (function() {
     };
   }
 
-  function getSearchLinks() {
+  /**
+   * Generator for hyperlinked elements in the current content document.
+   *
+   * @return {Generator}
+   */
+  function* getSearchLinks() {
+    // <a> or <area> with the 'href' attribute.
     let links = gBrowser.contentDocument.links;
     let count = links.length;
 
@@ -1789,7 +1795,14 @@ const SiblingNavi = (function() {
     }
   }
 
-  function getSearchTexts(aNode) {
+  /**
+   * Generator for all possible texts of a link.
+   *
+   * @param aNode {Element}
+   *   @note Pass a hyperlinked element that |getSearchLinks| genarates.
+   * @return {Generator}
+   */
+  function* getSearchTexts(aNode) {
     yield aNode.textContent;
     yield aNode.getAttribute('title');
 

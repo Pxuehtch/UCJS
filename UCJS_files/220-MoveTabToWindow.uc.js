@@ -82,7 +82,12 @@ const WindowUtil = (function() {
   // @see resource://gre/modules/commonjs/sdk/window/utils.js
   const utils = getModule('sdk/window/utils');
 
-  function getBrowserWindows() {
+  /**
+   * Generator for browser windows.
+   *
+   * @return {Generator}
+   */
+  function* getBrowserWindows() {
     // Enumerator of all windows in order from front to back.
     let winEnum = Services.wm.getZOrderDOMWindowEnumerator(null, true);
 
@@ -252,7 +257,7 @@ function getWindowsData(aTab) {
 
   let windowsData = [];
 
-  for (let win in getBrowserWindows()) {
+  for (let win of getBrowserWindows()) {
     // Skip the current window.
     if (win === window) {
       continue;

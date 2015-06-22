@@ -641,7 +641,12 @@ const OpenedList = (function() {
     // @see resource://gre/modules/commonjs/sdk/window/utils.js
     const utils = getModule('sdk/window/utils');
 
-    function getWindows() {
+    /**
+     * Generator for all windows.
+     *
+     * @return {Generator}
+     */
+    function* getWindows() {
       // Enumerator of all windows in thier Z-order from front to back.
       let winEnum = Services.wm.getZOrderDOMWindowEnumerator(null, true);
 
@@ -819,7 +824,7 @@ const OpenedList = (function() {
     let fragment = createDocumentFragment();
 
     // Scan windows in their Z-order from front(the current window) to back.
-    for (let win in getWindows()) {
+    for (let win of getWindows()) {
       let title, URL, icon, tabList;
 
       if (isBrowser(win)) {
