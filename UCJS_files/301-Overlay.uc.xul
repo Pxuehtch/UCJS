@@ -22,6 +22,7 @@
 
 <!-- Command -->
 <commandset id="mainCommandSet">
+  <!-- Toggles the find bar. -->
   <!-- @note Overwrite the default setting. -->
   <command id="cmd_find"
     oncommand="ucjsUI.FindBar.toggle();"/>

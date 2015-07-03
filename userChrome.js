@@ -751,8 +751,10 @@ function UtilManager() {
       aCaller.lineNumber,
       // Column number
       null,
-      // Flags
-      // TODO: Set |Ci.nsIScriptError.infoFlag| when implemented.
+      // Flags: Just a log message.
+      // TODO: Set |Ci.nsIScriptError.infoFlag| that will be implemented in
+      // Fx40.
+      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1138336
       null,
       // Category
       // @note The browser console displays, but the web console does not.

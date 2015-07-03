@@ -1008,6 +1008,7 @@ function promisePlacesDBResult(aParam = {}) {
     // @see resource://gre/modules/PlacesUtils.jsm
     const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
 
+    // Get a readonly connection to the Places database.
     let dbConnection = yield PlacesUtils.promiseDBConnection();
 
     let rows = yield dbConnection.executeCached(sql, params);
@@ -1079,11 +1080,12 @@ function logMessage(aMessage, aCaller) {
     aCaller.lineNumber,
     // Column number
     null,
-    // Flags
-    // TODO: Set |Ci.nsIScriptError.infoFlag| when implemented.
+    // Flags: Just a log message.
+    // TODO: Set |Ci.nsIScriptError.infoFlag| that will be implemented in Fx40.
+    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1138336
     null,
     // Category
-    // The browser console displays, but the web console does not.
+    // @note The browser console displays, but the web console does not.
     'chrome javascript'
   );
 

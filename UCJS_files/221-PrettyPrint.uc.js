@@ -465,8 +465,8 @@ const Prettifier = (function() {
 
     /**
      * WORKAROUND: Fix missing 'at-rule' variables.
-     * @note Fixed in the newer version [11 Nov 2013].
-     * @see https://github.com/beautify-web/js-beautify/commit/184492f63aeb5b4ecee16f5b98b61f56efc73549
+     * @note Fixed in the newer version [2 Oct 2014].
+     * @see https://github.com/beautify-web/js-beautify/commit/184492f
      */
 
     // Make regexp expression for all at-rules.
