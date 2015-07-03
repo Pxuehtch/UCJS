@@ -68,12 +68,6 @@
     keycode="VK_ESCAPE" modifiers="shift"
     oncommand="BrowserStop();"/>
 
-  <!-- Error Console. -->
-  <!-- TODO: Remove this because the Error Console is deprecated. -->
-  <key id="ucjs_key_errorConsole"
-    key="J" modifiers="control,alt,shift"
-    oncommand="toJavaScriptConsole();"/>
-
   <!-- Addon: Opens DOM Inspector -->
   <!-- @note Overwrite the default setting. -->
   <!--
