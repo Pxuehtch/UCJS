@@ -74,10 +74,15 @@
     key="J" modifiers="control,alt,shift"
     oncommand="toJavaScriptConsole();"/>
 
-  <!-- Addon: DOM Inspector. -->
+  <!-- Addon: Opens DOM Inspector -->
   <!-- @note Overwrite the default setting. -->
+  <!--
+   * Shortcut keys with 'i';
+   * <Ctrl-Shift-i>: Opens the Browser Console.
+   * <Ctrl-Alt-Shift-i>: Opens the Browser Toolbox.
+   -->
   <key id="key_inspectPage"
-    key="I" modifiers="control,alt,shift"
+    key="i" modifiers="control,alt"
     command="Tasks:InspectPage"/>
 </keyset>
 
