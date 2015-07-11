@@ -155,7 +155,7 @@ const kPreset = [
     }
   },
   {
-    URL: 'http://www.aguse.jp/?m=w&url=%ENC%',
+    URL: 'https://www.aguse.jp/?m=w&url=%ENC%',
     types: ['LINK'],
     label: '%TYPE%を aguse で調査'
   },
