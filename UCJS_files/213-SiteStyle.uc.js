@@ -267,6 +267,14 @@ const kSiteList = [
           width: auto !important;
           margin: 0 !important;
         }
+        /* Special result (Wikipedia, delivery tracking, etc.) */
+        .kp-blk {
+          margin: 0 !important;
+          box-shadow: none !important;
+        }
+        .kp-blk .mod {
+          padding: 0 !important;
+        }
       `;
 
       // Workaround for broken styles.
