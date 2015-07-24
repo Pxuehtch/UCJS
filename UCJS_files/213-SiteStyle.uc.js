@@ -191,7 +191,7 @@ const kSiteList = [
     include: '||google.tld/*q=',
     script(aDocument) {
       // Sanitize links.
-      [...$S('li.g a', aDocument)].forEach((link) => {
+      [...$S('.g a', aDocument)].forEach((link) => {
         link.removeAttribute('onmousedown');
 
         let url =
@@ -206,7 +206,7 @@ const kSiteList = [
 
       let lastHost = null;
 
-      [...$S('li.g', aDocument)].forEach((item) => {
+      [...$S('.g', aDocument)].forEach((item) => {
         let link = $S1('.r>a, .ts a', item);
 
         if (!link) {
