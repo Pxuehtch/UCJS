@@ -21,7 +21,6 @@ const SortState = (function() {
   let mState = new WeakMap();
 
   function clear() {
-    mState.clear();
     mState = null;
   }
 
