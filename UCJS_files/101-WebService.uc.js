@@ -26,6 +26,7 @@ const {
   },
   getModule,
   getFirstNodeByXPath: $X1,
+  addEvent,
   openTab,
   // Log to console for debug.
   logMessage: log
@@ -179,19 +180,54 @@ const RequestHandler = (function() {
       this.mRequestTimeList[host] = requestTime;
 
       // Returns the cooldown time for the next request.
-      return Math.max(remainTime, 0)
+      return Math.max(remainTime, 0);
     }
   };
+
+  /**
+   * List of requests.
+   */
+  const RequestList = (function() {
+    let mPendings = new Set();
+    let mSendings = new Set();
+
+    // Clean up when browser quits.
+    addEvent(window, 'unload', () => {
+      for (let id of mPendings) {
+        clearTimeout(id);
+      }
+
+      mPendings.clear();
+      mPendings = null;
+
+      for (let xhr of mSendings) {
+        if (xhr) {
+          xhr.abort();
+        }
+      }
+
+      mSendings.clear();
+      mSendings = null;
+    }, false);
+
+    return {
+      pendings: mPendings,
+      sendings: mSendings
+    };
+  })();
 
   function request(aURL, aOption) {
     let cooldownTime = RequestTime.update(aURL);
 
-    // TODO: Implement a canceller.
-    setTimeout(() => {
+    let timer = setTimeout(() => {
+      RequestList.pendings.delete(timer);
+
       aOption.timeout = kMinCooldownTime;
 
       doRequest(aURL, aOption);
     }, cooldownTime);
+
+    RequestList.pendings.add(timer);
   }
 
   /**
@@ -212,6 +248,8 @@ const RequestHandler = (function() {
   function doRequest(aURL, aOption) {
     let xhr = new XMLHttpRequest();
 
+    RequestList.sendings.add(xhr);
+
     // No error dialogs.
     xhr.mozBackgroundRequest = true;
 
@@ -227,18 +265,24 @@ const RequestHandler = (function() {
     xhr.timeout = aOption.timeout;
 
     xhr.ontimeout = () => {
+      RequestList.sendings.delete(xhr);
+
       if (aOption.onError) {
         aOption.onError(Error('Timeout'));
       }
     };
 
     xhr.onerror = () => {
+      RequestList.sendings.delete(xhr);
+
       if (aOption.onError) {
         aOption.onError(Error(xhr.statusText));
       }
     };
 
     xhr.onload = () => {
+      RequestList.sendings.delete(xhr);
+
       try {
         if (xhr.status === 200) {
           if (aOption.onLoad) {
