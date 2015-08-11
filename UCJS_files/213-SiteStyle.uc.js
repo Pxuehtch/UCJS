@@ -21,7 +21,6 @@
 const {
   Timer: {
     setTimeout,
-    clearTimeout,
     setInterval,
     clearInterval
   },
