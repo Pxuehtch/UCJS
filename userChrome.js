@@ -510,7 +510,7 @@ function UserScript_scanMetaData(aFile) {
 
   // Each meta data.
   // @note Must specify the global flag 'g'.
-  const kMetaDataRe =
+  const kMetaDataRE =
     /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
 
   /**
@@ -528,7 +528,7 @@ function UserScript_scanMetaData(aFile) {
   let meta = (readFile(aFile).match(kMetaDataBlockRE) || [''])[0];
   let matches, key, value;
 
-  while ((matches = kMetaDataRe.exec(meta))) {
+  while ((matches = kMetaDataRE.exec(meta))) {
     [, key, value] = matches;
 
     if (key in data) {
