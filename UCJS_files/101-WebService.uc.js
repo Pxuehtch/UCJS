@@ -47,9 +47,8 @@ const {
  *   @key form {XPath of <form>}
  *   @key input {XPath of <input>}
  * @key parse {function} [optional; only with type 'get']
- *   A function to parse the response text when the load is complete.
+ *   A function to parse the response text when the load is completed.
  *   @param aResponseText {string}
- *   @param aXHR {nsIXMLHttpRequest}
  */
 const kPresets = [
   {
@@ -189,11 +188,74 @@ const RequestHandler = (function() {
 
     // TODO: Implement a canceller.
     setTimeout(() => {
-      // @see resource://gre/modules/Http.jsm
-      let {httpRequest} = getModule('gre/modules/Http.jsm');
+      aOption.timeout = kMinCooldownTime;
 
-      httpRequest(aURL, aOption);
+      doRequest(aURL, aOption);
     }, cooldownTime);
+  }
+
+  /**
+   * XMLHttpRequest wrapper function.
+   *
+   * @param aURL {string}
+   *   A URL string to request data.
+   * @param aParams {hash}
+   *   timeout: {integer} [milliseconds > 0]
+   *     A timeout value while waiting for a response.
+   *   onLoad: {function}
+   *     A function handle to call when the request is completed.
+   *     @param aResponseText {string}
+   *   onError: {function} [optional]
+   *     A function handle to call when the operation fails.
+   *     @param aError {Error}
+   */
+  function doRequest(aURL, aOption) {
+    let xhr = new XMLHttpRequest();
+
+    // No error dialogs.
+    xhr.mozBackgroundRequest = true;
+
+    // Asynchronous request.
+    xhr.open('GET', aURL, true);
+
+    // Doesn't send cookies and prevents any cache.
+    xhr.channel.loadFlags =
+      Ci.nsIChannel.LOAD_ANONYMOUS |
+      Ci.nsIChannel.LOAD_BYPASS_CACHE |
+      Ci.nsIChannel.INHIBIT_CACHING;
+
+    xhr.timeout = aOption.timeout;
+
+    xhr.ontimeout = () => {
+      if (aOption.onError) {
+        aOption.onError(Error('Timeout'));
+      }
+    };
+
+    xhr.onerror = () => {
+      if (aOption.onError) {
+        aOption.onError(Error(xhr.statusText));
+      }
+    };
+
+    xhr.onload = () => {
+      try {
+        if (xhr.status === 200) {
+          if (aOption.onLoad) {
+            aOption.onLoad(xhr.responseText);
+          }
+
+          return;
+        }
+      }
+      catch (ex) {}
+
+      if (aOption.onError) {
+        aOption.onError(Error(xhr.statusText));
+      }
+    };
+
+    xhr.send(null);
   }
 
   return {
@@ -248,14 +310,11 @@ function open(aParams) {
  *     @note Set the replaced values in the order in Array[] when the URL has
  *     multiple aliases.
  *   onLoad: {function}
- *     A function handle to call when the load is complete.
+ *     A function handle to call when the load is completed.
  *     @param aResponseText {string}
- *     @param aXHR {nsIXMLHttpRequest}
  *   onError: {function} [optional]
- *     A function handle to call when an error occcurs.
- *     @param aErrorText {string}
- *     @param aResponseText {string}
- *     @param aXHR {nsIXMLHttpRequest}
+ *     A function handle to call when the operation fails.
+ *     @param aError {Error}
  *
  * @usage window.ucjsWebService.get(aParams);
  */
@@ -267,18 +326,18 @@ function get(aParams) {
   }
 
   let options = {
-    onLoad(aResponseText, aXHR) {
+    onLoad(aResponseText) {
       if (result.parse) {
-        aResponseText = result.parse(aResponseText, aXHR);
+        aResponseText = result.parse(aResponseText);
       }
 
       if (result.onLoad) {
-        result.onLoad(aResponseText, aXHR);
+        result.onLoad(aResponseText);
       }
     },
-    onError(aErrorText, aResponseText, aXHR) {
+    onError(aError) {
       if (result.onError) {
-        result.onError(aErrorText, aResponseText, aXHR);
+        result.onError(aError);
       }
     }
   };
