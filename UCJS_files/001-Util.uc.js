@@ -1082,9 +1082,7 @@ function logMessage(aMessage, aCaller) {
     // Column number
     null,
     // Flags: Just a log message.
-    // TODO: Set |Ci.nsIScriptError.infoFlag| that will be implemented in Fx40.
-    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1138336
-    null,
+    scriptError.infoFlag,
     // Category
     // @note The browser console displays, but the web console does not.
     'chrome javascript'
