@@ -840,9 +840,10 @@ function restartFx(aOption = {}) {
   // so set the preference to force to restore the session.
   Prefs.set('browser.sessionstore.resume_session_once', true);
 
-  const {startup} = Services;
+  // @see resource://gre/modules/BrowserUtils.jsm
+  const {BrowserUtils} = getModule('gre/modules/BrowserUtils.jsm');
 
-  startup.quit(startup.eAttemptQuit | startup.eRestart);
+  BrowserUtils.restartApplication();
 }
 
 function setGlobalStyleSheet(aCSS, aType) {
