@@ -5,7 +5,7 @@
 // @include chrome://browser/content/devtools/webconsole.xul
 // ==/UserScript==
 
-// Chrome window examples;
+// Chrome window examples:
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // @include chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @include chrome://browser/content/history/history-panel.xul
@@ -277,13 +277,14 @@ function getTextInRange(aRange) {
   return encoder.encodeToString();
 }
 
-// @see chrome://browser/content/browser.js::getBrowserSelection()
 function trimText(aText, aMaxLength) {
   if (!aText) {
     return '';
   }
 
   if (aText.length > aMaxLength) {
+    // Only use the first charlen important chars.
+    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=221361
     let match = RegExp('^(?:\\s*.){0,' + aMaxLength + '}').exec(aText);
 
     if (!match) {
@@ -778,9 +779,9 @@ function removeTab(aTab, aOption = {}) {
   } = aOption;
 
   if (safeClose) {
-    // Do not close;
-    // 1.Pinned tab.
-    // 2.Only one unpinned tab.
+    // Do not close:
+    // - Pinned tab.
+    // - Only one unpinned tab.
     if (aTab.pinned ||
         gBrowser.visibleTabs.length - gBrowser._numPinnedTabs <= 1) {
       return;
@@ -793,8 +794,8 @@ function removeTab(aTab, aOption = {}) {
 /**
  * Alternative |gBrowser.removeAllTabsBut|.
  *
- * 1.Does not warn against closing multiple tabs.
- * 2.Does not close blocked tabs.
+ * - Does not warn against closing multiple tabs.
+ * - Does not close blocked tabs.
  *
  * @see chrome://browser/content/tabbrowser.xml::removeAllTabsBut
  */
@@ -965,9 +966,9 @@ function setContentStyleSheet(aCSS, aOption = {}) {
 }
 
 function normalizeCSS(aCSS) {
-  // @note You should put a 'half-width space' for the separator of;
-  // 1.The descendant selector (e.g. h1 em{...}).
-  // 2.The shorthand properties (e.g. margin:1px 2px;).
+  // @note You should put a 'half-width space' for the separator of:
+  // - The descendant selector (e.g. h1 em{...}).
+  // - The shorthand properties (e.g. margin:1px 2px;).
 
   return aCSS.trim().
     // Put half-width spaces into one (maybe a necessary separator).

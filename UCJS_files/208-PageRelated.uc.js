@@ -151,11 +151,11 @@ const kPreset = [
  * @return {hash}
  *   @key create {function}
  *
- * [aliases]
+ * [alias]
  * %URL%, %u% : A page URL.
  * %TITLE%, %t% : A page title.
  *
- * The modifiers can be combined by '|';
+ * @note The modifiers can be combined by '|'.
  * SCHEMELESS, sl : Without the URL scheme.
  * PARAMLESS, pl : Without the URL parameter.
  * ENCODE, en : With URI encoded.
@@ -363,11 +363,11 @@ function handleAttribute(aNode, aName, aValue) {
 /**
  * Set attributes of a menuitem for its command actions.
  *
- * For one URL;
+ * [For one URL]
  * command: Open a tab.
  * <Ctrl> / <MiddleClick>: Open a tab in background.
  *
- * For all URLs;
+ * [For all URLs]
  * command: Open tabs in background.
  * @note No modifiers.
  *

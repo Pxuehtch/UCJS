@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name userChrome.js
-// @description User-script loader for userChromeJS extention.
+// @description User-script loader for userChromeJS.
 // ==/UserScript==
 
 // @note A new property is exposed in the global scope
@@ -514,7 +514,7 @@ function UserScript_scanMetaData(aFile) {
     /^\s*\/\/\s*@([\w-]+)\s+(.+?)\s*$/gm;
 
   /**
-   * Supported mata data;
+   * Supported meta data:
    * {string}: Only the first line is retrieved.
    * {array}: All lines are retrieved.
    */

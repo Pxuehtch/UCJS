@@ -51,7 +51,7 @@ const kPref = {
    *   true: Disabled completely.
    *   false: Disabled when the custom click is recognized, otherwise enabled.
    *
-   * @note The default actions;
+   * @note The default actions:
    * - Middle click on a tab: Closes a tab.
    * - Double click on the tab bar: Opens a new tab.
    * - Middle click on the tab bar: Opens a new tab.
@@ -291,7 +291,7 @@ const TabBarClickEvent = {
   },
 
   handleEvent(aEvent) {
-    // Bail out for native actions;
+    // Bail out for native actions:
     // 1.A context menu.
     // 2.A UI element (button, menu).
     if (aEvent.button === 2 ||

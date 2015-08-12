@@ -72,7 +72,7 @@
   <!-- Addon: Opens DOM Inspector -->
   <!-- @note Overwrite the default setting. -->
   <!--
-   * Shortcut keys with 'i';
+   * Shortcut keys with 'i':
    * <Ctrl-Shift-i>: Opens the Browser Console.
    * <Ctrl-Alt-Shift-i>: Opens the Browser Toolbox.
    -->

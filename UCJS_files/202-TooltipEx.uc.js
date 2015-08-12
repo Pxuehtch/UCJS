@@ -110,7 +110,7 @@ const kUI = {
    *   The base style of tooltip texts.
    * @key accent {CSS}
    *   For accent portions of a text.
-   *   @note Applied to;
+   *   @note Applied to:
    *   - '<tag>'
    *   - 'description-attribute='
    *   - 'URL-attribute=scheme:'

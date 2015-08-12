@@ -907,13 +907,13 @@ const Startup = {
      * @note 'browser-delayed-startup-finished' was already fired on this
      * timing so that we can't catch it.
      *
-     * For the first window;
+     * For the first window:
      * 1.On boot startup: Observe |DOMContentLoaded| that fires on the document
      * first selected.
      * 2.On resume startup: Observe |SSTabRestored| that fires on the tab first
      * selected.
      *
-     * For sub windows that the current window opens;
+     * For sub windows that the current window opens:
      * 3.With |DOMContentLoaded|: Catch in case 1.
      * 4.Without any catchable event: Observe new window opened and dispatch
      * a custom event for it. (e.g. a window by |window.openDialog| with a tab
@@ -1012,7 +1012,7 @@ const Startup = {
 const MovingTabObserver = {
   init() {
     // Observe a tab that moves to the other window.
-    // @note The event fires on both our browser and the other browser;
+    // @note The event fires on both our browser and the other browser:
     // 1.|originalTarget| = our browser, |detail| = the other browser.
     // 2.|originalTarget| = the other browser, |detail| = our browser.
     // @see chrome://browser/content/tabbrowser.xml::_swapBrowserDocShells
@@ -1735,7 +1735,7 @@ function closeReadTabs() {
  * Gets an array of tabs.
  *
  * @param aStatement {string}
- *   Keywords divided by ',' to include;
+ *   Keywords divided by ',' to include:
  *   'all': All tabs.
  *   'pinned': Pinned tabs.
  *   'active': Visible normal tabs (excluding pinned tabs).

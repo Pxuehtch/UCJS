@@ -36,19 +36,22 @@ const {
  * Preset list.
  *
  * @key type {string}
- *   'get': Requests data.
- *   'open': Opens a tab.
+ *   'open': Opens a tab with the service.
+ *     @see |open()|
+ *   'get': Gets the response by 'GET' HTTP request to the service.
+ *     @see |get()|
  * @key name {string}
  *   A preset name.
  * @key URL {string}
  *   A URL string of a web service.
- *   @note Pass the data with alias.
+ *   @note Set alias strings for the parameter data.
  *   @see |AliasFixup|
- * @key form {hash} [optional for only 'open' type]
+ * @key form {hash} [optional only for type 'open']
+ *   A input box to be filled with the parameter data.
  *   @key form {XPath of <form>}
  *   @key input {XPath of <input>}
- * @key parse {function} [optional; only with type 'get']
- *   A function to parse the response text when the load is completed.
+ * @key parse {function} [optional only for type 'get']
+ *   A function to parse the response text.
  *   @param aResponseText {string}
  */
 const kPresets = [
@@ -98,13 +101,13 @@ const kPresets = [
  * @return {hash}
  *   @key create {function}
  *
- * [aliases]
+ * [alias]
  * %RAW% : The data itself.
  * %ENC% : With URI encoded.
  * %SCHEMELESS%, %sl% : Without the URL scheme.
  * %PARAMLESS%, %pl% : Without the URL parameter.
  *
- * @note Aliases can be combined by '|';
+ * @note Aliases can be combined by '|'.
  * e.g. %SCHEMELESS|ENC% : A data that is trimmed the scheme and then URI
  * encoded (the multiple aliases is applied in the order of settings).
  */
@@ -156,15 +159,19 @@ const AliasFixup = (function() {
 })();
 
 /**
- * XMLHttpRequest handler.
+ * Asynchronous HTTP request handler.
  */
 const RequestHandler = (function() {
-  // The minimum time for waiting a request.
-  //
-  // @value {integer} [milliseconds > 0]
+  /**
+   * The minimum time for waiting a request.
+   *
+   * @value {integer} [milliseconds > 0]
+   */
   const kMinCooldownTime = 2000;
 
-  // The request time for each host.
+  /**
+   * The request time for each host.
+   */
   const RequestTime = {
     mRequestTimeList: {},
 
@@ -239,7 +246,7 @@ const RequestHandler = (function() {
    *   timeout: {integer} [milliseconds > 0]
    *     A timeout value while waiting for a response.
    *   onLoad: {function}
-   *     A function handle to call when the request is completed.
+   *     A function handle to call when the load is completed.
    *     @param aResponseText {string}
    *   onError: {function} [optional]
    *     A function handle to call when the operation fails.
@@ -253,7 +260,7 @@ const RequestHandler = (function() {
     // No error dialogs.
     xhr.mozBackgroundRequest = true;
 
-    // Asynchronous request.
+    // Asynchronous GET request.
     xhr.open('GET', aURL, true);
 
     // Doesn't send cookies and prevents any cache.
@@ -314,9 +321,10 @@ const RequestHandler = (function() {
  *   name: {string}
  *     A preset name.
  *   data: {string|number|[string|number]} [optional]
- *     Data to complete the URL of the preset.
+ *     A parameter data to fixup the URL of preset.
  *     @note Set the replaced values in the order in Array[] when a URL has
  *     multiple aliases.
+ *     @note If the preset has 'form', the data fills the input box.
  *   tabOption: {hash} [optional]
  *     Options for a new tab.
  *     @see |ucjsUtil::openTab|
@@ -335,8 +343,8 @@ function open(aParams) {
 
   // TODO: Observe the document loaded to manage a form.
   // WORKAROUND:
-  // 1.Uses an easy delay for a selected tab.
-  // 2.The URL is just only opened for a background tab.
+  // - Uses an easy delay for a selected tab.
+  // - The URL is just only opened for a background tab.
   // XXX: I'm unwilling to handle an observer for this.
   if (tab.selected && result.form) {
     setTimeout(inputAndSubmit, 500, result.form, result.data);
@@ -344,13 +352,13 @@ function open(aParams) {
 }
 
 /**
- * Gets the response of request to the service.
+ * Gets the response by 'GET' HTTP request to the service.
  *
  * @param aParams {hash}
  *   name: {string}
  *     A preset name.
  *   data: {string|number|[string|number]} [optional]
- *     Data to complete the URL of the preset.
+ *     A parameter data to fixup the URL of preset.
  *     @note Set the replaced values in the order in Array[] when the URL has
  *     multiple aliases.
  *   onLoad: {function}

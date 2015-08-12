@@ -163,7 +163,7 @@ const kNoiseList = [
  *   URL where the commands should run.
  *   @see |URLFilter| for filter rules.
  *
- * Define one or more commands;
+ * Must define one or more commands:
  * ----------
  * @key quickScript {function} [optional]
  *   A function that runs as soon as a location changes.
@@ -544,13 +544,13 @@ const kSiteList = [
  * @value {regexp|string}|{regexp[]|string[]}
  *   {regexp} Used as-is.
  *   {string} Usually a partial match.
- *     @note Special symbols are available;
- *     1.The leading '||' -> ^https?:\/\/[\w-.]*?
+ *     @note Special symbols are available:
+ *     - The leading '||' -> ^https?:\/\/[\w-.]*?
  *                        -> ^ (If URL scheme follows after.)
- *     2.The leading '|'  -> ^https?:\/\/(?:www\d*\.)?
+ *     - The leading '|'  -> ^https?:\/\/(?:www\d*\.)?
  *                        -> ^ (If URL scheme follows after.)
- *     3.The wildcard '*' -> .+?
- *     4.'.tld' will match any top level domain.
+ *     - The wildcard '*' -> .+?
+ *     - '.tld' will match any top level domain.
  */
 const URLFilter = (function() {
   /**

@@ -586,7 +586,7 @@ function doBrowse(aPopup) {
     return 'xul:menuitem[' + key + actions.join('" or ' + key) + '"]';
   };
 
-  // XPath for a useless <menuseparator>;
+  // XPath for a useless <menuseparator>:
   // 1.It is the first visible item in the menu.
   // 2.It is the last visible item in the menu.
   // 3.The next visible item is a menu separator.

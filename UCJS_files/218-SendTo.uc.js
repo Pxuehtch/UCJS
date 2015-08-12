@@ -192,13 +192,13 @@ const kPreset = [
  * @return {hash}
  *   @key create {function}
  *
- * [aliases]
+ * [alias]
  * %RAW% : The data itself.
  * %ENC% : With URI encoded.
  * %SCHEMELESS%, %sl% : Without the URL scheme.
  * %PARAMLESS%, %pl% : Without the URL parameter.
  *
- * @note Aliases can be combined by '|';
+ * @note Aliases can be combined by '|'.
  * e.g. %SCHEMELESS|ENC% : A data, which is trimmed the scheme and then URI
  * encoded (the multiple aliases is applied in the order of settings).
  */

@@ -53,14 +53,14 @@ const kTextType = (function() {
 /**
  * Optional settings for the CodeMirror editor.
  *
- * Initial settings;
+ * Initial settings:
  * @see resource:///modules/devtools/sourceeditor/editor.js::Editor
  * @see chrome://browser/content/devtools/scratchpad.js::Scratchpad::onLoad
  *
- * Available options in the built-in version;
+ * Available options in the built-in version:
  * @see chrome://browser/content/devtools/codemirror/codemirror.js::OPTION DEFAULTS
  *
- * Available options in the recent version;
+ * Available options in the recent version:
  * @see http://codemirror.net/doc/manual.html#config
  */
 const kEditorOptions = {

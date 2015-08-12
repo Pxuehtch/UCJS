@@ -457,7 +457,7 @@ function sliceScheme(aString) {
     return ['', ''];
   }
 
-  // Allowable characters for scheme;
+  // Allowable characters for scheme:
   // scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
   // @see http://tools.ietf.org/html/rfc3986#section-3.1
   const schemeCharRE = /[a-z0-9+-.]/i;
@@ -605,11 +605,11 @@ function handleAttribute(aNode, aName, aValue) {
 /**
  * Set attributes of a menuitem for its command actions.
  *
- * For 'open' action;
+ * [For 'open' action]
  * command: Open a tab.
  * <Ctrl> / <MiddleClick>: Open a tab in background.
  *
- * For 'copy' action;
+ * [For 'copy' action]
  * command: Copy the URL string to clipboard.
  * @note No modifiers.
  *

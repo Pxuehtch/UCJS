@@ -55,7 +55,7 @@ const kPref = {
    * It can cause performance problems for too many items.
    * !!! WARNING !!!
    *
-   * Order of list items;
+   * [Order of list items]
    * tabHistory: From new to old around current page.
    * recentHistory: From recent to old.
    * openedTabs: From start to end around current tab in visible tabs.
@@ -63,7 +63,7 @@ const kPref = {
    * closedTabs: From the last closed tab to old.
    * closedWindows: From the last closed window to old.
    *
-   * tooltip:
+   * [tooltip]
    * List of history of an opened tab: From new to old around selected page.
    * List of tabs of an opened window: From start to end around selected tab.
    * List of history of a closed tab: From new to old around selected page.

@@ -60,7 +60,7 @@ const {
  *   A navigation element for the previous page.
  * @key next {XPath}
  *   A navigation element for the next page.
- *   @note Command actions;
+ *   @note Command actions:
  *   - Opens the URL for an element which has 'href' attribute.
  *   - Submits with the form for an <input> element.
  */
@@ -843,7 +843,7 @@ const MenuUI = (function() {
    *   The key-value items corresponding to the aliases of |aFormat|.
    * @return {string}
    *
-   * Example for aliases;
+   * [Example for aliases]
    * aFormat: 'The number of %foo% is %bar%!'
    * aReplacement: {foo: 'Foo', bar: 3}
    * Returns 'The number of Foo is 3!'
@@ -1166,7 +1166,7 @@ const NaviLink = (function() {
    *   attributes:
    *   URL:
    *
-   *   For <meta>;
+   *   [For <meta>]
    *   name:
    *   content:
    *
@@ -1836,10 +1836,10 @@ const SiblingNavi = (function() {
      * @note Must specify the global flag 'g'.
      */
     const kNumberRE = [
-      // Parameter with a numeric value; [?&]page=123 or [?&]123
+      // Parameter with a numeric value: [?&]page=123 or [?&]123
       /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig,
 
-      // Path ended with numbers; (abc)123 or (abc)123.jpg or (abc)123/
+      // Path ended with numbers: (abc)123 or (abc)123.jpg or (abc)123/
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
     ];
 
@@ -2107,9 +2107,9 @@ const NaviLinkScorer = (function() {
         // @note Decode only special characters for URL.
         aURL = unescURLChars(aURL);
 
-        // Search the same pre path as the original in the target URL;
-        // 1.The target pre path equals the original.
-        // 2.The target path has a pre path that equals the original.
+        // Search the same pre path as the original in the target URL:
+        // - The target pre path equals the original.
+        // - The target path has a pre path that equals the original.
         let index = aURL.indexOf(originalPrePath);
 
         // No information of the original URL.
@@ -2243,7 +2243,7 @@ const NaviLinkScorer = (function() {
       point += URLScorer.score(aURL);
     }
 
-    // Integer range;
+    // Integer range:
     // Text score: [0,1]
     // URL score:  [0,1]
     // Text + URL: [0,2]
@@ -2550,10 +2550,10 @@ const URIUtil = (function() {
      * value for some hosts.
      *
      * For http://gitbookio.github.io/javascript/
-     * Expected;
+     * Expected:
      *   base domain = github.io
      *   public suffix = io
-     * Actual;
+     * Actual:
      *   base domain = gitbookio.github.io
      *   public suffix = github.io
      */

@@ -601,9 +601,9 @@ function MouseGesture() {
   function onDragEnd(aEvent) {
     mMouseEvent.update(aEvent);
 
-    // The drag operation is terminated;
-    // 1.Cancelled by pressing the <Esc> key.
-    // 2.Dropped in a disallowed area.
+    // The drag operation is terminated:
+    // - Cancelled by pressing the <Esc> key.
+    // - Dropped in a disallowed area.
     if (mState === kState.DRAG) {
       cancelGesture();
     }
@@ -637,6 +637,7 @@ function MouseGesture() {
 
   // TODO: Prevent the drop event when the right or wheel button is pressed
   // down while dragging. The drop event fires for now.
+  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=395761
   function onDrop(aEvent) {
     if (mState !== kState.DRAG) {
       return;
@@ -705,8 +706,8 @@ function MouseGesture() {
 /**
  * Mouse event manager.
  *
- * 1.Determines whether a gesture can start or stop.
- * 2.Manages enabling and disabling the context menu and the default click
+ * - Determines whether a gesture can start or stop.
+ * - Manages enabling and disabling the context menu and the default click
  * action of the left/middle button.
  *
  * @return {hash}
@@ -940,7 +941,7 @@ function GestureManager() {
    *   data: {string}
    *     A selected text or a link <href> URL or an image <src> URL.
    *
-   * @note Retrieves only one from a composite data;
+   * @note Retrieves only one from a composite data:
    * - A selected text in a link string.
    * - A link href URL of a linked image.
    */
