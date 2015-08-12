@@ -24,6 +24,7 @@
  * Imports
  */
 const {
+  getModule,
   addEvent,
   // Log to console for debug.
   logMessage: log
@@ -130,9 +131,11 @@ function setFastFindFor(aWindow) {
  * @return {hash|null}
  */
 function getClickManager(aNode) {
-  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
+  // @see resource://gre/modules/BrowserUtils.jsm
+  const {BrowserUtils} = getModule('gre/modules/BrowserUtils.jsm');
+
   let isTextDocument = (aDocument) =>
-    aDocument && window.mimeTypeIsTextBased(aDocument.contentType);
+    aDocument && BrowserUtils.mimeTypeIsTextBased(aDocument.contentType);
 
   let isContentWindow = (aWindow) =>
     aWindow && aWindow.top === window.content;

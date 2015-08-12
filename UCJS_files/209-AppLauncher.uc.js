@@ -38,6 +38,7 @@ const {
   checkApp,
   runApp,
   extractFileName,
+  mimeTypeIsTextBased,
   createNode: $E,
   getNodesByXPath: $X,
   contentAreaContextMenu,
@@ -625,9 +626,8 @@ function getAvailableActions() {
   let isImageDocument = (aDocument) =>
     aDocument instanceof ImageDocument;
 
-  // @see chrome://browser/content/browser.js::mimeTypeIsTextBased
   let isTextDocument = (aDocument) =>
-    window.mimeTypeIsTextBased(aDocument.contentType);
+    mimeTypeIsTextBased(aDocument.contentType);
 
   let actions = [];
 
@@ -1117,6 +1117,13 @@ function makeFile(aFilePath) {
   return file;
 }
 
+function mimeTypeIsTextBased(aMimeType) {
+  // @see resource://gre/modules/BrowserUtils.jsm
+  const {BrowserUtils} = getModule('gre/modules/BrowserUtils.jsm');
+
+  return BrowserUtils.mimeTypeIsTextBased(aMimeType);
+}
+
 function warn(aTitle, aMessage) {
   const kMaxOutputLength = 200;
 
@@ -1156,6 +1163,7 @@ return {
   checkApp,
   runApp,
   extractFileName,
+  mimeTypeIsTextBased,
 
   createNode: window.ucjsUtil.createNode,
   getNodesByXPath: window.ucjsUtil.getNodesByXPath,
