@@ -878,7 +878,7 @@ const MenuUI = (function() {
     let names = Object.keys(replacement);
 
     for (let i = 0, l = aFormat.length; i < l; i++) {
-      if (names.every((name) => aFormat[i].contains(name))) {
+      if (names.every((name) => aFormat[i].includes(name))) {
         format = aFormat[i];
         break;
       }

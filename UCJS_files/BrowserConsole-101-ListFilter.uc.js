@@ -258,7 +258,7 @@ function logOnMessageAdded(aMessageNode, aOutput) {
   // TODO: Ensure a unique id.
   const kLogMark = '(log in onMessageAdded)';
 
-  if (aMessageNode.textContent.contains(kLogMark)) {
+  if (aMessageNode.textContent.includes(kLogMark)) {
     return;
   }
 

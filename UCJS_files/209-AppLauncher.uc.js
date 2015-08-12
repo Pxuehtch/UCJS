@@ -862,7 +862,7 @@ function checkApp(aApp) {
   let path = aApp.path.replace(/[/]/g, '\\');
 
   kSpecialFolderAliases.forEach((alias) => {
-    if (path.contains(alias)) {
+    if (path.includes(alias)) {
       path = path.replace(
         RegExp(alias, 'g'),
         getSpecialDirectory(alias.replace(/%/g, '')).path
@@ -1088,7 +1088,7 @@ function getAppArgs(aArgs, aURL) {
   }
 
   // Remove arguments with %URL% when the application is launched as 'tool'.
-  return aArgs.filter((arg) => !arg.contains('%URL%'));
+  return aArgs.filter((arg) => !arg.includes('%URL%'));
 }
 
 function getSpecialDirectory(aAlias) {
