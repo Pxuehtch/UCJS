@@ -289,17 +289,22 @@ const RequestHandler = (function() {
       switch (aEvent.type) {
         case 'load': {
           try {
-            if (xhr.status === 200) {
-              if (aOption.onLoad) {
-                aOption.onLoad(xhr.responseText);
-              }
+            // may throw.
+            let {status, responseText} = xhr;
+
+            if (status !== 200) {
+              reportError(aEvent, xhr.statusText);
 
               return;
             }
-          }
-          catch (ex) {}
 
-          reportError(aEvent, xhr.statusText);
+            if (aOption.onLoad) {
+              aOption.onLoad(responseText);
+            }
+          }
+          catch (ex) {
+            reportError(aEvent, null, ex);
+          }
 
           break;
         }
