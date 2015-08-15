@@ -269,40 +269,50 @@ const RequestHandler = (function() {
 
     xhr.timeout = aOption.timeout;
 
-    xhr.ontimeout = () => {
-      RequestList.sendings.delete(xhr);
-
+    let reportError = (aError) => {
       if (aOption.onError) {
-        aOption.onError(Error('Timeout'));
+        aOption.onError(aError);
       }
     };
 
-    xhr.onerror = () => {
+    let handleEvent = (aEvent) => {
       RequestList.sendings.delete(xhr);
 
-      if (aOption.onError) {
-        aOption.onError(Error(xhr.statusText));
-      }
-    };
+      switch (aEvent.type) {
+        case 'load': {
+          try {
+            if (xhr.status === 200) {
+              if (aOption.onLoad) {
+                aOption.onLoad(xhr.responseText);
+              }
 
-    xhr.onload = () => {
-      RequestList.sendings.delete(xhr);
-
-      try {
-        if (xhr.status === 200) {
-          if (aOption.onLoad) {
-            aOption.onLoad(xhr.responseText);
+              return;
+            }
           }
+          catch (ex) {}
 
-          return;
+          reportError(Error(xhr.statusText));
+
+          break;
+        }
+
+        case 'error': {
+          reportError(Error(xhr.statusText));
+
+          break;
+        }
+
+        case 'timeout': {
+          aOption.onError(Error('Timeout'));
+
+          break;
         }
       }
-      catch (ex) {}
-
-      if (aOption.onError) {
-        aOption.onError(Error(xhr.statusText));
-      }
     };
+
+    xhr.onload = handleEvent;
+    xhr.onerror = handleEvent;
+    xhr.ontimeout = handleEvent;
 
     try {
       xhr.send(null);
@@ -312,9 +322,7 @@ const RequestHandler = (function() {
     catch (ex) {
       xhr = null;
 
-      if (aOption.onError) {
-        aOption.onError(Error('send() fails'));
-      }
+      reportError(Error('send() fails'));
     }
   }
 
