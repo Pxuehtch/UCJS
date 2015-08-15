@@ -310,7 +310,19 @@ const RequestHandler = (function() {
         }
 
         case 'error': {
-          reportError(aEvent, xhr.statusText);
+          let request = xhr;
+          let status;
+
+          try {
+            status = request.status;
+          }
+          catch (ex) {}
+
+          if (!status) {
+            request = request.channel.QueryInterface(Ci.nsIRequest);
+          }
+
+          reportError(aEvent, request.statusText);
 
           break;
         }
