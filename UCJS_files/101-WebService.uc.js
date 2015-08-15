@@ -250,7 +250,8 @@ const RequestHandler = (function() {
    *     @param aResponseText {string}
    *   onError: {function} [optional]
    *     A function handle to call when the operation fails.
-   *     @param aError {Error}
+   *     @param aStatusText {string}
+   *     @param aError {Error|null}
    */
   function doRequest(aURL, aOption) {
     let xhr = new XMLHttpRequest();
@@ -269,9 +270,16 @@ const RequestHandler = (function() {
 
     xhr.timeout = aOption.timeout;
 
-    let reportError = (aError) => {
+    let reportError = (aEvent, aStatusText, aError) => {
+      let eventType = aEvent ? aEvent.type : 'before request';
+      let statusText = aStatusText || 'No status';
+
+      let message = `<XHR error>\nURL:${aURL}\n${eventType}:${statusText}`;
+
+      log([message, aError]);
+
       if (aOption.onError) {
-        aOption.onError(aError);
+        aOption.onError(statusText, aError);
       }
     };
 
@@ -291,19 +299,19 @@ const RequestHandler = (function() {
           }
           catch (ex) {}
 
-          reportError(Error(xhr.statusText));
+          reportError(aEvent, xhr.statusText);
 
           break;
         }
 
         case 'error': {
-          reportError(Error(xhr.statusText));
+          reportError(aEvent, xhr.statusText);
 
           break;
         }
 
         case 'timeout': {
-          aOption.onError(Error('Timeout'));
+          reportError(aEvent, 'request is timed out');
 
           break;
         }
@@ -322,7 +330,7 @@ const RequestHandler = (function() {
     catch (ex) {
       xhr = null;
 
-      reportError(Error('send() fails'));
+      reportError(null, 'send() fails', ex);
     }
   }
 
@@ -383,7 +391,8 @@ function open(aParams) {
  *     @param aResponseText {string}
  *   onError: {function} [optional]
  *     A function handle to call when the operation fails.
- *     @param aError {Error}
+ *     @param aStatusText {string}
+ *     @param aError {Error|null}
  *
  * @usage window.ucjsWebService.get(aParams);
  */
@@ -404,9 +413,9 @@ function get(aParams) {
         result.onLoad(aResponseText);
       }
     },
-    onError(aError) {
+    onError(aStatusText, aError) {
       if (result.onError) {
-        result.onError(aError);
+        result.onError(aStatusText, aError);
       }
     }
   };

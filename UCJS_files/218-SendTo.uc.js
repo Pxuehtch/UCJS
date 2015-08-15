@@ -148,10 +148,8 @@ const kPreset = [
         onLoad(aResponseText) {
           updateLabel(aResponseText);
         },
-        onError(aError) {
+        onError() {
           updateLabel('Error');
-
-          log(aError);
         }
       });
     }
