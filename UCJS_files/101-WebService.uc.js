@@ -255,8 +255,6 @@ const RequestHandler = (function() {
   function doRequest(aURL, aOption) {
     let xhr = new XMLHttpRequest();
 
-    RequestList.sendings.add(xhr);
-
     // No error dialogs.
     xhr.mozBackgroundRequest = true;
 
@@ -306,7 +304,18 @@ const RequestHandler = (function() {
       }
     };
 
-    xhr.send(null);
+    try {
+      xhr.send(null);
+
+      RequestList.sendings.add(xhr);
+    }
+    catch (ex) {
+      xhr = null;
+
+      if (aOption.onError) {
+        aOption.onError(Error('send() fails'));
+      }
+    }
   }
 
   return {
