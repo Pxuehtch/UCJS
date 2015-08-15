@@ -200,8 +200,8 @@ const RequestHandler = (function() {
 
     // Clean up when browser quits.
     addEvent(window, 'unload', () => {
-      for (let id of mPendings) {
-        clearTimeout(id);
+      for (let timer of mPendings) {
+        clearTimeout(timer);
       }
 
       mPendings.clear();
