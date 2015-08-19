@@ -2545,30 +2545,14 @@ const URIUtil = (function() {
       }
     }
 
-    /**
-     * WORKAROUND: |nsIEffectiveTLDService::getBaseDomain| returns a wrong
-     * value for some hosts.
-     *
-     * For http://gitbookio.github.io/javascript/
-     * Expected:
-     *   base domain = github.io
-     *   public suffix = io
-     * Actual:
-     *   base domain = gitbookio.github.io
-     *   public suffix = github.io
-     */
-    const kBadBaseDomains = [
-      'github.io'
-    ];
-
-    for (let item of kBadBaseDomains) {
-      if (aHost.endsWith(item)) {
-        return item;
-      }
-    }
-
     try {
-      // @note |getBaseDomain| returns a value in ACE format for IDN.
+      /**
+       * @note |getBaseDomain| returns:
+       * - the base domain includes the public suffix. (e.g. '.com', '.co.jp',
+       *   '.aisai.aichi.jp', '.github.io')
+       *   @see https://wiki.mozilla.org/Public_Suffix_List
+       * - a value in ACE format for IDN.
+       */
       return Cc['@mozilla.org/network/idn-service;1'].
         getService(Ci.nsIIDNService).
         convertACEtoUTF8(Services.eTLD.getBaseDomainFromHost(aHost));

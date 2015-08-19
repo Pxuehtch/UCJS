@@ -546,11 +546,12 @@ const kSiteList = [
  *   {string} Usually a partial match.
  *     @note Special symbols are available:
  *     - The leading '||' -> ^https?:\/\/[\w-.]*?
- *                        -> ^ (If URL scheme follows after.)
+ *                        -> ^ (if URL scheme follows after.)
  *     - The leading '|'  -> ^https?:\/\/(?:www\d*\.)?
- *                        -> ^ (If URL scheme follows after.)
+ *                        -> ^ (if URL scheme follows after.)
  *     - The wildcard '*' -> .+?
- *     - '.tld' will match any top level domain.
+ *     - '.tld' will match any top level domain including public suffix.
+ *       @see |getTLDURL|
  */
 const URLFilter = (function() {
   /**
@@ -640,11 +641,9 @@ const URLFilter = (function() {
   /**
    * Get a URL being converted its TLD with a string 'tld'.
    *
-   * TODO: Fix a wrong detection of the TLD for a specific host.
-   * @note |getPublicSuffix| returns a wrong value for '*.github.io'.
-   * But for now, there is no 'github.io' in URL filters and no workaround for
-   * fixing it.
-   * @see NaviLink.uc.js::getBaseDomain
+   * @note TLD includes the public suffix. (e.g. '.com', '.co.jp',
+   * '.aisai.aichi.jp', '.github.io')
+   * @see https://wiki.mozilla.org/Public_Suffix_List
    */
   function getTLDURL(aURL) {
     try {
