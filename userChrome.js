@@ -157,7 +157,7 @@ function ScriptLoader() {
 
     Log.list('Init window', {
       'URL': document.location.href,
-      'Title': (window.content || window).document.title
+      'Title': (window.content || window).document.title || '[N/A]'
     });
 
     mScriptList = ScriptList();
