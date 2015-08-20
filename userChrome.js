@@ -48,11 +48,10 @@ const kPref = {
    * @note Wildcard '*' is available.
    */
   blockXULs: [
+    // A common dialog window.
     'chrome://global/content/commonDialog.xul',
-    'chrome://browser/content/preferences/*',
-    'chrome://inspector/*',
-    'chrome://adblockplus/*',
-    'chrome://noscript/*'
+    // Add-on: DOM Inspector window.
+    'chrome://inspector/*'
   ]
 };
 
