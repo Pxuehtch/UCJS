@@ -6,9 +6,18 @@
 // @note A new property is exposed in the global scope
 // (window[kSystem.loaderName]).
 
-// TODO: Observe the chrome window that does not open alone (e.g. bookmark
-// edit panel, devtools panel). We are observing only the opening of the
-// sidebar of the browser window for now.
+// @note For chrome windows that open in the main browser:
+// - in sidebar:
+//   - Good for bookmark panel and history panel.
+//   - TODO: Test for the others.
+// - in devtools pane:
+//   - Only toolbox panel is detected but blocked for now.
+//   - TODO: Detect each tool.
+// - in tab:
+//   - Any chrome window is detected but blocked for now.
+//   - TODO: Fix errors when access to an in-content chrome window.
+// - others:
+//   - Bookmark edit panel(Star UI) is not detected.
 
 // @see http://userchromejs.mozdev.org/
 // @see https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
@@ -165,28 +174,28 @@ function ScriptLoader() {
     mScriptList.run(document);
 
     if (inBrowserWindow()) {
-      watchSidebar();
+      watchInnerWindow();
     }
 
     return true;
   }
 
-  function watchSidebar() {
+  function watchInnerWindow() {
     const {document} = window;
 
-    document.addEventListener('load', initSidebar, true);
+    document.addEventListener('load', initInnerWindow, true);
     window.addEventListener('unload', function onUnload() {
-      document.removeEventListener('load', initSidebar, true);
+      document.removeEventListener('load', initInnerWindow, true);
       window.removeEventListener('unload', onUnload, false);
     }, false);
 
-    function initSidebar(aEvent) {
+    function initInnerWindow(aEvent) {
       let target = aEvent.originalTarget;
 
       if (!(target instanceof XULDocument)) {
         // WORKAROUND: Comment out too noisy logs.
         /*
-        Log.list('Not init sidebar', {
+        Log.list('Not init inner window', {
           'Loaded node': target.nodeName
         });
         */
@@ -194,20 +203,59 @@ function ScriptLoader() {
         return;
       }
 
-      if (isBlockURL(target)) {
-        Log.list('Not init sidebar', {
-          'Blocked URL': target.location.href
+      let URL = target.location.href;
+      let container = getContainerType(target);
+
+      if (container !== 'sidebar' || isBlockURL(target)) {
+        Log.list('Not init inner window', {
+          'Blocked URL': URL,
+          'Container': container
         });
 
         return;
       }
 
-      Log.list('Init sidebar', {
-        'URL': target.location.href,
-        'Title': document.getElementById('sidebar-title').value
+      Log.list('Init inner window', {
+        'URL': URL,
+        'Container': container
       });
 
       mScriptList.run(target);
+    }
+
+    function getContainerType(aDocument) {
+      const ContainerTester = {
+        'sidebar': (aDocument) => {
+          let container = window.SidebarUI.browser;
+
+          return container && container.contentDocument === aDocument;
+        },
+
+        'devtool': (aDocument) => {
+          const {devtools} =
+            Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+
+          let target = devtools.TargetFactory.forTab(gBrowser.selectedTab)
+          let toolbox = gDevTools.getToolbox(target);
+          let container = toolbox && toolbox.frame;
+
+          return container && container.contentDocument === aDocument;
+        },
+
+        'tab': (aDocument) => {
+          return gBrowser.getBrowserForDocument(aDocument);
+        }
+      };
+
+      for (let type in ContainerTester) {
+        let inContainer = ContainerTester[type](aDocument);
+
+        if (inContainer) {
+          return type;
+        }
+      }
+
+      return 'Unknown';
     }
   }
 
