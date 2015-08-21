@@ -166,7 +166,7 @@ function ScriptLoader() {
 
     Log.list('Init window', {
       'URL': document.location.href,
-      'Title': (window.content || window).document.title || '[N/A]'
+      'Title': document.title || '[N/A]'
     });
 
     mScriptList = ScriptList();
@@ -331,7 +331,7 @@ function ScriptList() {
 
       Log.list('Copy script data from', {
         'URL': win.location.href,
-        'Title': (win.content || win).document.title
+        'Title': win.document.title
       });
     }
     else {
