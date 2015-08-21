@@ -69,7 +69,7 @@
     keycode="VK_ESCAPE" modifiers="shift"
     oncommand="BrowserStop();"/>
 
-  <!-- Addon: Opens DOM Inspector -->
+  <!-- Add-on: Opens DOM Inspector. -->
   <!-- @note Overwrite the default setting. -->
   <!--
    * Shortcut keys with 'i':

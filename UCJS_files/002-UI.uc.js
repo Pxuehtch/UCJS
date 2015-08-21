@@ -504,7 +504,7 @@ const FindBar = (function() {
       doHighlight
     } = aOption;
 
-    // Reset all status.
+    // Reset all states.
     reset();
 
     // Open a findbar and ready for the first finding.

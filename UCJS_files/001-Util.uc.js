@@ -9,7 +9,6 @@
 // @include chrome://browser/content/pageinfo/pageInfo.xul
 // @include chrome://browser/content/bookmarks/bookmarksPanel.xul
 // @include chrome://browser/content/history/history-panel.xul
-// @include chrome://global/content/console.xul
 
 // @usage Access to functions through the global scope (window.ucjsUtil.XXX).
 

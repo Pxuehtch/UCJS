@@ -714,16 +714,17 @@ function SmoothScroll() {
 
     let now = getScroll();
 
-    // Took too much time. Stop stepping and jump to goal.
+    // Took too much time.
     if (aTime.current - aTime.start > 1000) {
+      // Stop stepping and jump to goal.
       stop(true);
 
       return false;
     }
 
-    // Reached the goal or went over. Stop stepping at here.
-    if (was.delta.x * now.delta.x <= 0 &&
-        was.delta.y * now.delta.y <= 0) {
+    // Reached or went over the goal.
+    if (was.delta.x * now.delta.x <= 0 && was.delta.y * now.delta.y <= 0) {
+      // Stop stepping at here.
       stop(false);
 
       return false;
