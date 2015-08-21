@@ -159,7 +159,7 @@ function ScriptLoader() {
     let URL = document.location.href;
     let title = document.title || '[N/A]';
 
-    if (isBlockURL(document)) {
+    if (isBlockURL(URL)) {
       Log.list('Not init window', {
         'Blocked URL': URL,
         'Title': title
@@ -210,7 +210,7 @@ function ScriptLoader() {
       let URL = target.location.href;
       let container = getContainerType(target);
 
-      if (container !== 'sidebar' || isBlockURL(target)) {
+      if (container !== 'sidebar' || isBlockURL(URL)) {
         Log.list('Not init inner window', {
           'Blocked URL': URL,
           'Container': container
@@ -277,13 +277,11 @@ function ScriptLoader() {
     return window.location.href === getBrowserURL();
   }
 
-  function isBlockURL({location}) {
+  function isBlockURL(aURL) {
     const {testURL} = Util;
 
-    let URL = location.href;
-
-    return !/^chrome:.+\.xul$/i.test(URL) ||
-           kPref.blockXULs.some((xul) => testURL(xul, URL));
+    return !/^chrome:.+\.xul$/i.test(aURL) ||
+           kPref.blockXULs.some((xul) => testURL(xul, aURL));
   }
 
   /**
