@@ -639,24 +639,20 @@ function HorizontalCentered() {
  * @return {hash}
  *   start: {function}
  *   cancel: {function}
+ *
+ * TODO: Fix scrolling lag in a big document.
  */
 function SmoothScroll() {
   const kOption = {
     /**
-     * Pitch of a scroll.
+     * The pitch of scrolling.
      *
-     * @value {integer}
-     * far: The goal is away from the current viewport over its width/height.
-     * near: The goal comes within the w/h of the viewport.
+     * @value {integer} [>= 2]
      *
-     * @note 6 pitches mean approaching to the goal by each remaining distance
-     * divided by 6.
-     * @note The bigger value, the slower moving.
+     * @note 2 pitches mean approaching to the goal by each remaining distance
+     * divided by 2. So, the bigger value, the slower moving.
      */
-    pitch: {
-      far: 2,
-      near: 6
-    }
+    pitch: 2
   };
 
   const mState = {
@@ -672,8 +668,6 @@ function SmoothScroll() {
       }
 
       this.view = scrollable.view;
-      this.width = scrollable.width;
-      this.height = scrollable.height;
 
       this.node = node;
       this.start = start;
@@ -693,8 +687,6 @@ function SmoothScroll() {
       this.initialized = null;
 
       this.view = null;
-      this.width = null;
-      this.height = null;
       this.node = null;
       this.start = null;
       this.goal = null;
@@ -763,27 +755,12 @@ function SmoothScroll() {
   }
 
   function getStep(aPosition) {
-    const {far, near} = kOption.pitch;
+    let {pitch} = kOption;
 
-    let dX = mState.goal.x - aPosition.x,
-        dY = mState.goal.y - aPosition.y;
+    let x = (mState.goal.x - aPosition.x) / pitch;
+    let y = (mState.goal.y - aPosition.y) / pitch;
 
-    let pitchX = (Math.abs(dX) < mState.width) ? near : far,
-        pitchY = (Math.abs(dY) < mState.height) ? near : far;
-
-    return Position(round(dX / pitchX), round(dY / pitchY));
-  }
-
-  function round(aValue) {
-    if (aValue > 0) {
-      return Math.ceil(aValue);
-    }
-
-    if (aValue < 0) {
-      return Math.floor(aValue);
-    }
-
-    return 0;
+    return Position(x, y);
   }
 
   function getScroll() {
@@ -827,7 +804,6 @@ function SmoothScroll() {
   function testScrollable(aNode) {
     let view = null;
     let scrollable = false;
-    let width, height;
 
     if (aNode instanceof Window ||
         aNode instanceof HTMLHtmlElement ||
@@ -835,28 +811,16 @@ function SmoothScroll() {
       view = getView(aNode);
 
       scrollable = view.scrollMaxX || view.scrollMaxY;
-
-      if (scrollable) {
-        width = view.innerWidth;
-        height = view.innerHeight;
-      }
     }
     else if (aNode instanceof Element) {
       scrollable =
         aNode.scrollHeight > aNode.clientHeight ||
         aNode.scrollWidth > aNode.clientWidth;
-
-      if (scrollable) {
-        width = aNode.clientWidth;
-        height = aNode.clientHeight;
-      }
     }
 
     if (scrollable) {
       return {
-        view,
-        width,
-        height
+        view
       };
     }
 
