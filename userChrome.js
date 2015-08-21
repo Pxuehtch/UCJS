@@ -156,17 +156,21 @@ function ScriptLoader() {
   function init() {
     const {document} = window;
 
+    let URL = document.location.href;
+    let title = document.title || '[N/A]';
+
     if (isBlockURL(document)) {
       Log.list('Not init window', {
-        'Blocked URL': document.location.href
+        'Blocked URL': URL,
+        'Title': title
       });
 
       return false;
     }
 
     Log.list('Init window', {
-      'URL': document.location.href,
-      'Title': document.title || '[N/A]'
+      'URL': URL,
+      'Title': title
     });
 
     mScriptList = ScriptList();
