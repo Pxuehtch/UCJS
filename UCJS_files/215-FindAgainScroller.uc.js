@@ -652,7 +652,17 @@ function SmoothScroll() {
      * @note 2 pitches mean approaching to the goal by each remaining distance
      * divided by 2. So, the bigger value, the slower moving.
      */
-    pitch: 2
+    pitch: 2,
+
+    /**
+     * The minimum distance of scrolling.
+     *
+     * @value {integer} [> 0] [px]
+     *
+     * @note The scrolling stops when the distances to goal of both X and Y
+     * drop below this value.
+     */
+    minDistance: 10
   };
 
   const mState = {
@@ -708,13 +718,23 @@ function SmoothScroll() {
   function onEnterFrame(aTime) {
     let {step} = mState.param;
 
-    let was = getScroll();
+    let nextStep;
 
-    doScrollBy(step);
+    if (step) {
+      doScrollBy(step);
 
-    let now = getScroll();
+      nextStep = getStep(getScroll());
+    }
 
-    // Took too much time.
+    // No next step needed for enough close to the goal.
+    if (!nextStep) {
+      // Stop stepping at here.
+      stop(false);
+
+      return false;
+    }
+
+    // Took too much time. [1000ms]
     if (aTime.current - aTime.start > 1000) {
       // Stop stepping and jump to goal.
       stop(true);
@@ -722,16 +742,8 @@ function SmoothScroll() {
       return false;
     }
 
-    // Reached or went over the goal.
-    if (was.delta.x * now.delta.x <= 0 && was.delta.y * now.delta.y <= 0) {
-      // Stop stepping at here.
-      stop(false);
-
-      return false;
-    }
-
     // Ready for the next frame.
-    mState.param.step = getStep(now.position);
+    mState.param.step = nextStep;
 
     return true;
   }
@@ -756,12 +768,17 @@ function SmoothScroll() {
   }
 
   function getStep(aPosition) {
-    let {pitch} = kOption;
+    let {pitch, minDistance} = kOption;
 
-    let x = (mState.goal.x - aPosition.x) / pitch;
-    let y = (mState.goal.y - aPosition.y) / pitch;
+    let x = mState.goal.x - aPosition.x;
+    let y = mState.goal.y - aPosition.y;
 
-    return Position(x, y);
+    // The distances to the goal become short enough.
+    if (Math.abs(x) < minDistance && Math.abs(y) < minDistance) {
+      return null;
+    }
+
+    return Position(x / pitch, y / pitch);
   }
 
   function getScroll() {
@@ -776,10 +793,7 @@ function SmoothScroll() {
       y = mState.node.scrollTop;
     }
 
-    return {
-      position: Position(x, y),
-      delta: Position(mState.goal.x - x, mState.goal.y - y)
-    };
+    return Position(x, y);
   }
 
   function doScrollTo(aPosition) {
