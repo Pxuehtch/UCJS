@@ -803,17 +803,17 @@ function SmoothScroll() {
   }
 
   function testScrollable(aNode) {
-    let view = null;
+    let view;
     let scrollable = false;
 
     if (aNode instanceof Window ||
         aNode instanceof HTMLHtmlElement ||
         aNode instanceof HTMLBodyElement) {
       view = getView(aNode);
-
       scrollable = view.scrollMaxX || view.scrollMaxY;
     }
     else if (aNode instanceof Element) {
+      view = null;
       scrollable =
         aNode.scrollHeight > aNode.clientHeight ||
         aNode.scrollWidth > aNode.clientWidth;
