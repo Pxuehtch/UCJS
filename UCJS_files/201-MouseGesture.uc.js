@@ -500,7 +500,7 @@ function MouseGesture() {
 
     if (canStart) {
       if (mState === kState.READY) {
-        if (inGestureArea(aEvent)) {
+        if (!inPrintPreviewMode() && inGestureArea(aEvent)) {
           startGesture(aEvent);
         }
       }
@@ -1298,6 +1298,11 @@ function GestureTracer() {
 /**
  * Helper functions.
  */
+function inPrintPreviewMode() {
+  // @see chrome://browser/content/browser.js::gInPrintPreviewMode
+  return window.gInPrintPreviewMode;
+}
+
 function inGestureArea(aEvent) {
   /**
    * The margin of cancelling a gesture.
