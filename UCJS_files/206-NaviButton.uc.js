@@ -456,10 +456,10 @@ const History = {
     let step = backward ? -1 : 1;
     let border = sh.index + step;
 
-    let within = backward ? function(i) -1 < i : function(i) i < sh.count;
+    let within = backward ? (i) => -1 < i : (i) => i < sh.count;
     let host = sh.getEntryAt(sh.index).host;
 
-    for (; within(border); border += step) {
+    for (/**/; within(border); border += step) {
       if (host !== sh.getEntryAt(border).host) {
         break;
       }
