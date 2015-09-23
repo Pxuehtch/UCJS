@@ -735,8 +735,8 @@ function UtilManager() {
   }
 
   function getTopBrowserWindow() {
-    return $S('@mozilla.org/browser/browserglue;1', 'nsIBrowserGlue').
-      getMostRecentBrowserWindow();
+    return $S('@mozilla.org/appshell/window-mediator;1', 'nsIWindowMediator').
+      getMostRecentWindow('navigator:browser');
   }
 
   function getURLSpecFromFile(aFile) {
