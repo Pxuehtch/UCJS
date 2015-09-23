@@ -245,6 +245,10 @@ const kSiteList = [
 
       // Common styles.
       let css = `
+        /* Search text box. */
+        .srp #searchform {
+          top: auto !important;
+        }
         /* Block items. */
         .nrgt > tbody > tr > td, .ts > tbody > tr >td {
           float: left !important;
