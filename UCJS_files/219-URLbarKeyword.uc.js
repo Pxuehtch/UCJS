@@ -117,7 +117,7 @@ function handleEvent(aEvent) {
       let keyword = item[kDataKey.keyword];
 
       if (keyword) {
-        gURLBar.value = keyword + ' ' + gURLBar.value.trim();
+        gURLBar.textValue = keyword + ' ' + gURLBar.textValue.trim();
 
         // Trigger the auto-complete popup.
         gURLBar.editor.deleteSelection(0, 0);
