@@ -53,7 +53,7 @@ const kDataKey = {
   ancestors: 'ucjs_TabEx_ancestors',
   suspended: 'ucjs_TabEx_suspended',
   read: 'ucjs_TabEx_read',
-  restoring: 'ucjs_TabEx_restoring',
+  startup: 'ucjs_TabEx_startup',
 
   // Extended property name of a browser for moving tab between windows.
   // @see |MovingTabObserver|
@@ -265,8 +265,8 @@ const TabData = (function () {
         type = 'boolean';
         break;
 
-      case 'restoring': // {boolean}
-        name = kDataKey.restoring;
+      case 'startup': // {boolean}
+        name = kDataKey.startup;
         type = 'boolean';
         break;
 
@@ -421,19 +421,10 @@ const TabOpener = {
     gBrowser.addTab = function ucjsTabEx_addTab(...aParams) {
       let newTab = $addTab.apply(this, aParams);
 
-      if (SessionStore.isRestoring) {
-        // Mark a duplicated or undo-closed tab to be properly handled on tab
-        // events.
-        // @see |TabEvent::onTabSelect|, |TabEvent::onSSTabRestored|
-        // @note The tab data will be restored automatically.
-        TabData.set(newTab, 'restoring', true);
-      }
-      else {
-        // Set 'openInfo' data of a tab.
-        // @note This dispatches the custom event 'TabOpenInfoSet' and then the
-        // other tab data will be newly set.
-        setOpenInfo(newTab, aParams);
-      }
+      // Set 'openInfo' data of a tab.
+      // @note This dispatches the custom event 'TabOpenInfoSet' and then the
+      // other tab data will be newly set.
+      setOpenInfo(newTab, aParams);
 
       return newTab;
     };
@@ -859,19 +850,6 @@ const TabSuspender = {
  * Session store handler.
  */
 const SessionStore = {
-  // Whether a duplicated or undo-closed tab is in restoring.
-  isRestoring: false,
-
-  init() {
-    addEvent(window, 'SSWindowStateBusy', () => {
-      this.isRestoring = true;
-    }, false);
-
-    addEvent(window, 'SSWindowStateReady', () => {
-      this.isRestoring = false;
-    }, false);
-  },
-
   persistTabAttribute() {
     let savedAttributes = [
       kDataKey.openInfo,
@@ -989,6 +967,8 @@ const Startup = {
   setStartupTabs() {
     // Scan all tabs (including hidden tabs).
     [...gBrowser.tabs].forEach((tab) => {
+       TabData.set(tab, 'startup', true)
+
       // A boot startup tab (e.g. homepage).
       if (!TabData.get(tab, 'openInfo')) {
         TabOpener.set(tab, 'StartupTab');
@@ -1176,12 +1156,9 @@ const TabEvent = {
   },
 
   onTabSelect(aTab) {
-    // 1.Do not pass a duplicated/undo-closed tab. handle it in
-    // |onSSTabRestored|.
-    // 2.Pass a startup restored tab.
-    if (TabData.get(aTab, 'restoring')) {
-      return;
-    }
+    // TODO: Don't pass a undoclosed or duplicated tab because reloadings
+    // are unwanted and the select info will be updated on |onSSTabRestored|.
+    // XXX: How can I know that this tab is undoclosed or duplicated?
 
     TabSelector.set(aTab);
 
@@ -1214,13 +1191,13 @@ const TabEvent = {
   },
 
   onSSTabRestored(aTab) {
-    // 1.Pass a duplicated/undo-closed tab.
-    // 2.Do not pass a startup restored tab. no relocation needed.
-    if (!TabData.get(aTab, 'restoring')) {
+    // 1.Pass a duplicated or undo-closed tab only.
+    // 2.Do not pass a startup tab because of no relocation needed.
+    if (TabData.get(aTab, 'startup')) {
+      TabData.set(aTab, 'startup', null);
+
       return;
     }
-
-    TabData.set(aTab, 'restoring', null);
 
     let openPos, baseTab;
 
@@ -1930,7 +1907,6 @@ function TabEx_init() {
 
   TabOpener.init();
   TabEvent.init();
-  SessionStore.init();
   Startup.init();
   MovingTabObserver.init();
 }
