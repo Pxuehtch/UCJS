@@ -498,10 +498,7 @@ function inputAndSubmit(aForm, aData) {
 }
 
 function updateFormInput(aData, aOption = {}) {
-  const kInputType = {
-    exclude: './/input[@type="password"]|.//textarea',
-    include: './/input[not(@disabled or @hidden or @readonly) and @type="text"]'
-  };
+  const kTextInputXpath = './/input[not(@disabled or @hidden or @readonly) and (@type="text" or not(@type))]'
 
   if (!aData) {
     return;
@@ -516,11 +513,9 @@ function updateFormInput(aData, aOption = {}) {
       textInput = null;
 
   [...gBrowser.contentDocument.forms].some((form) => {
-    let input =
-      !$X1(kInputType.exclude, form) &&
-      $X1(kInputType.include, form);
+    let input = $X1(kTextInputXpath, form);
 
-    if (input) {
+    if (input && input.value) {
       textForm = form;
       textInput = input;
 
@@ -530,7 +525,7 @@ function updateFormInput(aData, aOption = {}) {
     return false;
   });
 
-  if (!textInput || !textInput.value) {
+  if (!textInput) {
     return;
   }
 
