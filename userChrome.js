@@ -326,7 +326,7 @@ function ScriptList() {
     const {getTopBrowserWindow} = Util;
 
     let win = getTopBrowserWindow();
-    let loader = win ? win[kSystem.loaderName] : null;
+    let loader = win && win[kSystem.loaderName];
 
     if (loader) {
       copyData(loader.scriptList);
