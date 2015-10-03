@@ -24,7 +24,7 @@
  * Imports
  */
 const {
-  getModule,
+  Modules,
   getFirstNodeByXPath: $X1,
   addEvent,
   getTextInRange,
@@ -299,10 +299,8 @@ function findBorder(aXPath, aNode, aTextLength) {
 }
 
 function isTextDocument(aDocument) {
-  // @see resource://gre/modules/BrowserUtils.jsm
-  const {BrowserUtils} = getModule('gre/modules/BrowserUtils.jsm');
-
-  return aDocument && BrowserUtils.mimeTypeIsTextBased(aDocument.contentType);
+  return aDocument &&
+         Modules.BrowserUtils.mimeTypeIsTextBased(aDocument.contentType);
 }
 
 /**

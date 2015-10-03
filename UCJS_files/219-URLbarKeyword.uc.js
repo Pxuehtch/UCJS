@@ -22,9 +22,7 @@
  * Imports
  */
 const {
-  Prefs: {
-    get: getPref
-  },
+  Modules,
   createNode: $E,
   getNodeById: $ID,
   promisePlacesDBResult,
@@ -226,7 +224,7 @@ function getRestrictKeywordData() {
   let data = [];
 
   for (let key in kRestrictKeys) {
-    let keyword = getPref(key);
+    let keyword = Modules.Prefs.get(key);
 
     if (keyword) {
       data.push({

@@ -833,6 +833,22 @@ AppLauncher_init();
 
 
 /**
+ * Imports
+ */
+const {
+  Modules
+  createNode,
+  getNodesByXPath,
+  logMessage
+} = window.ucjsUtil;
+
+const {
+  ContentArea: {
+    contextMenu: contentAreaContextMenu
+  }
+} = window.ucjsUI;
+
+/**
  * Aliases for local special folders.
  * @see http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h
  */
@@ -939,9 +955,9 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
   }
 
   // @see resource://gre/modules/Downloads.jsm
-  const {Downloads} = getModule('gre/modules/Downloads.jsm');
+  const {Downloads} = require('gre/modules/Downloads.jsm');
   // @see resource://gre/modules/commonjs/sdk/window/utils.js
-  const {isWindowPrivate} = getModule('sdk/window/utils');
+  const {isWindowPrivate} = require('sdk/window/utils');
 
   Downloads.fetch(
     aTargetURL,
@@ -1101,8 +1117,7 @@ function makeURI(aURL) {
   }
 
   try {
-    // @see chrome://global/content/contentAreaUtils.js::makeURI
-    return window.makeURI(aURL);
+    return Modules.BrowserUtils.makeURI(aURL);
   }
   catch (ex) {}
 
@@ -1118,10 +1133,7 @@ function makeFile(aFilePath) {
 }
 
 function mimeTypeIsTextBased(aMimeType) {
-  // @see resource://gre/modules/BrowserUtils.jsm
-  const {BrowserUtils} = getModule('gre/modules/BrowserUtils.jsm');
-
-  return BrowserUtils.mimeTypeIsTextBased(aMimeType);
+  return Modules.BrowserUtils.mimeTypeIsTextBased(aMimeType);
 }
 
 function warn(aTitle, aMessage) {
@@ -1144,8 +1156,8 @@ function warn(aTitle, aMessage) {
   Services.prompt.alert(null, null, output);
 }
 
-function getModule(aResourceURL) {
-  return window.ucjsUtil.getModule(aResourceURL);
+function require(resourceURL) {
+  return Modules.require(resourceURL);
 }
 
 function log(aMessage, aCaller) {
@@ -1153,7 +1165,7 @@ function log(aMessage, aCaller) {
     aCaller = Components.stack.caller;
   }
 
-  return window.ucjsUtil.logMessage(aMessage, aCaller);
+  return logMessage(aMessage, aCaller);
 }
 
 /**
@@ -1165,9 +1177,9 @@ return {
   extractFileName,
   mimeTypeIsTextBased,
 
-  createNode: window.ucjsUtil.createNode,
-  getNodesByXPath: window.ucjsUtil.getNodesByXPath,
-  contentAreaContextMenu: window.ucjsUI.ContentArea.contextMenu,
+  createNode,
+  getNodesByXPath,
+  contentAreaContextMenu,
 
   log
 };

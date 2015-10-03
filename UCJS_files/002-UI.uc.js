@@ -22,8 +22,8 @@ const ucjsUI = (function(window) {
  * Imports
  */
 const {
-  Timer: {
-    setImmediate
+  Modules: {
+    Timer
   },
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
@@ -91,7 +91,7 @@ const PopupMenuHandler = (function() {
       toArray: true
     });
 
-    setImmediate(manage, separators);
+    Timer.setImmediate(manage, separators);
 
     function manage(aSeparators) {
       let last = null;

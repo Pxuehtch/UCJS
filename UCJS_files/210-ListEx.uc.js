@@ -20,7 +20,7 @@
  * Imports
  */
 const {
-  getModule,
+  Modules,
   getNodeById: $ID,
   addEvent,
   promisePlacesDBResult,
@@ -639,7 +639,7 @@ const OpenedList = (function() {
    */
   const WindowUtil = (function() {
     // @see resource://gre/modules/commonjs/sdk/window/utils.js
-    const utils = getModule('sdk/window/utils');
+    const utils = Modules.require('sdk/window/utils');
 
     /**
      * Generator for all windows.
@@ -958,11 +958,11 @@ const ClosedList = (function() {
   const SessionStore = (function() {
     function getClosedTabs() {
       try {
-        if (Services.SessionStore.getClosedTabCount(window) > 0) {
+        if (Modules.SessionStore.getClosedTabCount(window) > 0) {
           // Array of the data of closed tabs in thier closed date order from
           // last to first.
           let data =
-            JSON.parse(Services.SessionStore.getClosedTabData(window));
+            JSON.parse(Modules.SessionStore.getClosedTabData(window));
 
           let maxNumItems = kPref.maxNumListItems.closedTabs;
 
@@ -975,10 +975,10 @@ const ClosedList = (function() {
 
     function getClosedWindows() {
       try {
-        if (Services.SessionStore.getClosedWindowCount() > 0) {
+        if (Modules.SessionStore.getClosedWindowCount() > 0) {
           // Array of the data of closed windows in thier closed date order
           // from last to first.
-          let data = JSON.parse(Services.SessionStore.getClosedWindowData());
+          let data = JSON.parse(Modules.SessionStore.getClosedWindowData());
 
           let maxNumItems = kPref.maxNumListItems.closedWindows;
 
@@ -1414,9 +1414,6 @@ function limitListRange({index, length, maxNumItems}) {
 }
 
 function fitIntoLabel(aText, aWrapping) {
-  // @see resource:///modules/PlacesUIUtils.jsm
-  const {PlacesUIUtils} = getModule('/modules/PlacesUIUtils.jsm');
-
   let crop;
 
   // Show the filename of a URL.
@@ -1428,7 +1425,7 @@ function fitIntoLabel(aText, aWrapping) {
     let maxLength = aWrapping.maxTextLength;
 
     if (aText.length > maxLength) {
-      let {ellipsis} = PlacesUIUtils;
+      let {ellipsis} = Modules.PlacesUIUtils;
 
       if (crop === 'center') {
         let half = Math.floor(maxLength / 2);
@@ -1442,20 +1439,17 @@ function fitIntoLabel(aText, aWrapping) {
   }
 
   return {
-    value: aText || PlacesUIUtils.getString('noTitle'),
+    value: aText || Modules.PlacesUIUtils.getString('noTitle'),
     crop
   };
 }
 
 function fixFaviconURL(aIconURL) {
-  // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
-
   if (!aIconURL) {
-    aIconURL = PlacesUtils.favicons.defaultFavicon.spec;
+    aIconURL = Modules.PlacesUtils.favicons.defaultFavicon.spec;
   }
 
-  aIconURL = PlacesUtils.getImageURLForResolution(window, aIconURL);
+  aIconURL = Modules.PlacesUtils.getImageURLForResolution(window, aIconURL);
 
   if (/^https?:/.test(aIconURL)) {
     aIconURL = 'moz-anno:favicon:' + aIconURL;

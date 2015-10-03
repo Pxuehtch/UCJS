@@ -28,7 +28,7 @@ const ucjsNaviLink = (function(window) {
  * Imports
  */
 const {
-  getModule,
+  Modules,
   getNodeById: $ID,
   getNodesBySelector: $S,
   getFirstNodeByXPath: $X1,
@@ -1071,7 +1071,7 @@ const NaviLink = (function() {
     };
 
     // @see resource:///modules/Feeds.jsm
-    const {Feeds} = getModule('/modules/Feeds.jsm');
+    const {Feeds} = Modules.require('/modules/Feeds.jsm');
 
     function getFeedType(aLink, aIsFeed) {
       let principal = gBrowser.contentDocument.nodePrincipal;
@@ -2510,8 +2510,7 @@ const URIUtil = (function() {
     }
 
     try {
-      // @see chrome://global/content/contentAreaUtils.js::makeURI
-      return window.makeURI(aURL);
+      return Modules.BrowserUtils.makeURI(aURL);
     }
     catch (ex) {}
 
@@ -2553,9 +2552,12 @@ const URIUtil = (function() {
        *   @see https://wiki.mozilla.org/Public_Suffix_List
        * - a value in ACE format for IDN.
        */
-      return Cc['@mozilla.org/network/idn-service;1'].
-        getService(Ci.nsIIDNService).
-        convertACEtoUTF8(Services.eTLD.getBaseDomainFromHost(aHost));
+      let baseDomain = Services.eTLD.getBaseDomainFromHost(host);
+
+      const IDNService =
+        Modules.$S('@mozilla.org/network/idn-service;1', 'nsIIDNService');
+
+      return IDNService.convertACEtoUTF8(baseDomain);
     }
     catch (ex) {}
 

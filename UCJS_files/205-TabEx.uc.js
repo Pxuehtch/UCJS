@@ -25,14 +25,7 @@ const ucjsTabEx = (function(window) {
  * Imports
  */
 const {
-  Timer: {
-    setTimeout,
-    clearTimeout,
-    setInterval,
-    clearInterval
-  },
-  Prefs,
-  getModule,
+  Modules,
   addEvent,
   openTab,
   removeTab,
@@ -40,6 +33,16 @@ const {
   // Log to console for debug.
   logMessage: log
 } = window.ucjsUtil;
+
+// Extract usual functions.
+const {
+  Timer: {
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval
+  }
+} = Modules;
 
 /**
  * Key name for storing data.
@@ -860,13 +863,13 @@ const SessionStore = {
     ];
 
     savedAttributes.forEach((key) => {
-      Services.SessionStore.persistTabAttribute(key);
+      Modules.SessionStore.persistTabAttribute(key);
     });
   },
 
   getClosedTabList() {
-    if (Services.SessionStore.getClosedTabCount(window) > 0) {
-      return JSON.parse(Services.SessionStore.getClosedTabData(window));
+    if (Modules.SessionStore.getClosedTabCount(window) > 0) {
+      return JSON.parse(Modules.SessionStore.getClosedTabData(window));
     }
 
     return null;
@@ -925,7 +928,7 @@ const Startup = {
       }
     };
 
-    let isResumeStartup = Services.SessionStartup.doRestore();
+    let isResumeStartup = Modules.SessionStartup.doRestore();
 
     if (isResumeStartup) {
       LoadEvents.add(gBrowser.tabContainer, 'SSTabRestored');
@@ -1790,10 +1793,7 @@ function fetchPageTitle(aURL, aCallback) {
     aCallback(aURL);
   }
 
-  // @see resource://gre/modules/PlacesUtils.jsm
-  const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
-
-  PlacesUtils.promisePlaceInfo(uri).then(
+  Modules.PlacesUtils.promisePlaceInfo(uri).then(
     function onResolve(aPlaceInfo) {
       aCallback(aPlaceInfo.title || aURL);
     },
@@ -1809,8 +1809,7 @@ function makeURI(aURL) {
   }
 
   try {
-    // @see chrome://global/content/contentAreaUtils.js::makeURI
-    return window.makeURI(aURL);
+    return Modules.BrowserUtils.makeURI(aURL);
   }
   catch (ex) {}
 
@@ -1890,11 +1889,9 @@ function modifyPreference() {
     }
   ];
 
-  const {get, set} = Prefs;
-
   kPrefSet.forEach(({key, value}) => {
-    if (get(key) !== value) {
-      set(key, value);
+    if (Modules.Prefs.get(key) !== value) {
+      Modules.Prefs.set(key, value);
     }
   });
 }

@@ -20,10 +20,7 @@
  * Imports
  */
 const {
-  Prefs: {
-    get: getPref,
-    set: setPref
-  },
+  Modules,
   createNode: $E,
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
@@ -476,18 +473,17 @@ function setGlobalAgentCSS(aCSS) {
   // @see http://kb.mozillazine.org/Accessibility.tabfocus
   const kPrefTabFocus = 'accessibility.tabfocus';
 
-  let defaultTabFocus = getPref(kPrefTabFocus);
+  let defaultTabFocus = Modules.Prefs.get(kPrefTabFocus);
 
   addEvent(window, 'unload', () => {
-    setPref(kPrefTabFocus, defaultTabFocus);
+    Modules.Prefs.set(kPrefTabFocus, defaultTabFocus);
   }, false);
 
   let command = `
-    (function(state) {
-      state = ucjsUtil.Prefs.get("${kPrefTabFocus}") !== 1 ? 1 : 7;
-      ucjsUtil.Prefs.set("${kPrefTabFocus}", state);
-      ucjsUI.StatusField.showMessage("TAB focus: " + (state === 1 ?
-      "text fields only" : "text fields, form elements, and links"));
+    (function(M = ucjsUtil.Modules, SF = ucjsUI.StatusField, v) {
+      v = M.Prefs.get("${kPrefTabFocus}") !== 1 ? 1 : 7;
+      M.Prefs.set("${kPrefTabFocus}", v);
+      SF.showMessage("<TAB> focus: " + (v === 1 ? "excluding links" : "including links"));
     })();
   `;
 

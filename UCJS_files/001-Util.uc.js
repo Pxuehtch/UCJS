@@ -12,6 +12,9 @@
 
 // @usage Access to functions through the global scope (window.ucjsUtil.XXX).
 
+// @note This file should be loaded earlier than other scripts.
+// @see |Modules|.
+
 
 const ucjsUtil = (function(window) {
 
@@ -20,19 +23,64 @@ const ucjsUtil = (function(window) {
 
 
 /**
- * Initialize XPCOM handler.
+ * Native module handler.
  *
- * @note This function must run at the top of this common utility file,
- * |Util.uc.js|, because it ensures the access to XPCOM modules as the global
- * property and the access is often used by the following functions.
+ * @note Must put this handler at the top of this file |Util.uc.js|, which has
+ * the common utilities and should be loaded earlier than other scripts, so
+ * that it ensures the access to the modules by later functions.
  */
-initializeXPCOM();
-
-function initializeXPCOM() {
+const Modules = (function() {
   /**
-   * The extra services for |window.Services|.
+   * The modules data.
+   *
+   * [Method]
+   * name: {string}
+   *   The custom name for access to.
+   * method: {function}
+   *   The function to be executed.
+   *
+   * [XPCOM service]
+   * name: {string}
+   *   The custom name for access to.
+   * CID: {string}
+   *   Contract ID.
+   * IID: {string}
+   *   Interface ID.
+   *
+   * [JS module]
+   * name: {string}
+   *   The custom name for access to.
+   *   [JSM] Usually the native module name.
+   *     @note Must set |moduleName| to the native module name when you want to
+   *     access this module by |name| different from the native name.
+   *   [SDK] Your favorite name.
+   * moduleURL: {string}
+   *   The module resource URL.
+   *   [JSM] A full path, but can drop the prefix 'resource://'.
+   *     @see |require|
+   *   [SDK] A special path.
+   *     @see https://developer.mozilla.org/en/Add-ons/SDK/Guides/Module_structure_of_the_SDK#SDK_Modules
+   * moduleName: {string} [optional for JSM]
+   *   The native module name.
+   *
+   * XXX: My setting guide:
+   * - [Method] Some useful functions.
+   * - [XPCOM services] I want to gather all used modules here.
+   * - [JS modules] I only register frequently used modules.
    */
-  const kServices = [
+  const kModulesData = [
+    {
+      name: 'require',
+      method: require
+    },
+    {
+      name: '$S',
+      method: (CID, IID) => Cc[CID].getService(Ci[IID])
+    },
+    {
+      name: '$I',
+      method: (CID, IID) => Cc[CID].createInstance(Ci[IID])
+    },
     {
       name: 'ClipboardHelper',
       CID: '@mozilla.org/widget/clipboardhelper;1',
@@ -57,73 +105,117 @@ function initializeXPCOM() {
       name: 'TextToSubURI',
       CID: '@mozilla.org/intl/texttosuburi;1',
       IID: 'nsITextToSubURI'
+    },
+    {
+      // @see resource://gre/modules/BrowserUtils.jsm
+      name: 'BrowserUtils',
+      moduleURL: 'gre/modules/BrowserUtils.jsm'
+    },
+    {
+      // @see resource://gre/modules/PlacesUtils.jsm
+      name: 'PlacesUtils',
+      moduleURL: 'gre/modules/PlacesUtils.jsm'
+    },
+    {
+      // @see resource:///modules/PlacesUIUtils.jsm
+      name: 'PlacesUIUtils',
+      moduleURL: '/modules/PlacesUIUtils.jsm'
+    },
+    {
+      // @see resource://gre/modules/Preferences.jsm
+      name: 'Prefs',
+      moduleURL: 'gre/modules/Preferences.jsm',
+      moduleName: 'Preferences'
+    },
+    {
+      // @see resource://gre/modules/commonjs/sdk/timers.js
+      name: 'Timer',
+      moduleURL: 'sdk/timers'
     }//,
   ];
 
-  // Ensure access to the modules of |window.Components|.
-  [
-    ['Cc', 'classes'],
-    ['Ci', 'interfaces'],
-    ['Cu', 'utils']
-  ].
-  forEach(([alias, key]) => {
-    if (!window[alias]) {
-      window[alias] = window.Components[key];
-    }
-  });
+  let modules = {};
 
-  // Ensure access to |window.Services|.
-  Cu.import('resource://gre/modules/Services.jsm');
+  // Initialize.
+  setupGlobalAccess();
+  setupModules();
 
-  // Append extra services to |window.Services|.
-  // @see resource://gre/modules/XPCOMUtils.jsm
-  const {XPCOMUtils} = getModule('gre/modules/XPCOMUtils.jsm');
+  function setupGlobalAccess() {
+    // Enable access to usual short names for |window.Components| items.
+    [
+      ['Cc', 'classes'],
+      ['Ci', 'interfaces'],
+      ['Cu', 'utils']
+    ].
+    forEach(([alias, key]) => {
+      if (!window[alias]) {
+        window[alias] = window.Components[key];
+      }
+    });
 
-  kServices.forEach(({name, CID, IID}) => {
-    if (!Services.hasOwnProperty(name)) {
-      XPCOMUtils.defineLazyServiceGetter(Services, name, CID, IID);
-    }
-  });
-}
-
-/**
- * Timer handler.
- *
- * @see resource://gre/modules/commonjs/sdk/timers.js
- */
-const Timer = getModule('sdk/timers');
-
-/**
- * Preferences handler.
- *
- * @see resource://gre/modules/commonjs/sdk/preferences/service.js
- */
-const Prefs = getModule('sdk/preferences/service');
-
-/**
- * JS module loader.
- *
- * TODO: Make a lazy getter option.
- */
-function getModule(aResourceURL) {
-  // Built-in JS module.
-  if (/\.jsm$/.test(aResourceURL)) {
-    if (/^(?:gre|app)?\//.test(aResourceURL)) {
-      aResourceURL = 'resource://' + aResourceURL;
-    }
-
-    let scope = {};
-
-    Cu.import(aResourceURL, scope);
-
-    return scope;
+    // Enable access to |window.Services| and |window.XPCOMUtils|.
+    Cu.import('resource://gre/modules/Services.jsm');
+    Cu.import('resource://gre/modules/XPCOMUtils.jsm');
   }
 
-  // Devtools module loader.
-  let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+  function setupModules() {
+    kModulesData.forEach((params) => {
+      let {name, method, CID, IID, moduleURL, moduleName} = params;
 
-  return loader.devtools.require(aResourceURL);
-}
+      if (method) {
+        XPCOMUtils.defineLazyGetter(modules, name, () => {
+          return method;
+        });
+      }
+      else if (CID && IID) {
+        XPCOMUtils.defineLazyServiceGetter(modules, name, CID, IID);
+      }
+      else if (moduleURL) {
+        XPCOMUtils.defineLazyGetter(modules, name, () => {
+          return require(moduleURL, {
+            moduleName: moduleName || name
+          });
+        });
+      }
+    });
+  }
+
+  /**
+   * JS module loader.
+   *
+   * TODO: Make a lazy getter option.
+   */
+  function require(moduleURL, options = {}) {
+    let {
+      moduleName
+    } = options;
+
+    // Loads JSM.
+    if (/^(?:gre)?\/modules\/.+\.jsm$/.test(moduleURL)) {
+      let scope = {};
+
+      Cu.import('resource://' + moduleURL, scope);
+
+      return moduleName ? scope[moduleName] : scope;
+    }
+
+    // Loads JS.
+    if (/^chrome:.+\.js$/.test(moduleURL)) {
+      let scope = {};
+
+      Services.scriptLoader.loadSubScript(moduleURL, scope);
+
+      return scope;
+    }
+
+    // Loads SDK.
+    let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+
+    return loader.devtools.require(moduleURL);
+  }
+
+  return modules;
+})();
 
 /**
  * Functions for DOM handling.
@@ -262,8 +354,8 @@ function getTextInRange(aRange) {
   }
 
   let encoder =
-    Cc['@mozilla.org/layout/documentEncoder;1?type=text/plain'].
-    createInstance(Ci.nsIDocumentEncoder);
+    Modules.$I('@mozilla.org/layout/documentEncoder;1?type=text/plain',
+    'nsIDocumentEncoder');
 
   encoder.init(
     aRange.startContainer.ownerDocument,
@@ -599,7 +691,7 @@ function unescapeURLForUI(aURL, aCharset) {
 
   let charset = aCharset || getFocusedDocument().characterSet;
 
-  return Services.TextToSubURI.unEscapeURIForUI(charset, aURL);
+  return Modules.TextToSubURI.unEscapeURIForUI(charset, aURL);
 }
 
 function resolveURL(aURL, aBaseURL) {
@@ -614,8 +706,9 @@ function resolveURL(aURL, aBaseURL) {
   let baseURL = aBaseURL || getFocusedDocument().documentURI;
 
   try {
-    // @see chrome://browser/content/utilityOverlay.js::makeURLAbsolute()
-    return window.makeURLAbsolute(baseURL, aURL);
+    const {makeURI} = Modules.BrowserUtils;
+
+    return makeURI(url, null, makeURI(baseURL)).spec
   }
   catch (ex) {}
 
@@ -837,12 +930,9 @@ function restartFx(aOption = {}) {
 
   // WORKAROUND: In Fx30, the browser cannot often restart on resume startup,
   // so set the preference to force to restore the session.
-  Prefs.set('browser.sessionstore.resume_session_once', true);
+  Modules.Prefs.set('browser.sessionstore.resume_session_once', true);
 
-  // @see resource://gre/modules/BrowserUtils.jsm
-  const {BrowserUtils} = getModule('gre/modules/BrowserUtils.jsm');
-
-  BrowserUtils.restartApplication();
+  Modules.BrowserUtils.restartApplication();
 }
 
 function setGlobalStyleSheet(aCSS, aType) {
@@ -867,14 +957,15 @@ function registerGlobalStyleSheet(aCSS, aType, aOption = {}) {
   let URI;
 
   try {
-    // @see chrome://global/content/contentAreaUtils.js::makeURI
-    URI = window.makeURI('data:text/css,' + encodeURIComponent(css));
+    let dataURL = 'data:text/css,' + encodeURIComponent(css);
+
+    URI = Modules.BrowserUtils.makeURI(dataURL);
   }
   catch (ex) {
     return;
   }
 
-  const styleSheetService = Services.StyleSheetService;
+  const styleSheetService = Modules.StyleSheetService;
 
   let type;
 
@@ -1006,11 +1097,8 @@ function promisePlacesDBResult(aParam = {}) {
   } = aParam;
 
   return Task.spawn(function*() {
-    // @see resource://gre/modules/PlacesUtils.jsm
-    const {PlacesUtils} = getModule('gre/modules/PlacesUtils.jsm');
-
     // Get a readonly connection to the Places database.
-    let dbConnection = yield PlacesUtils.promiseDBConnection();
+    let dbConnection = yield Modules.PlacesUtils.promiseDBConnection();
 
     let rows = yield dbConnection.executeCached(sql, params);
 
@@ -1050,7 +1138,7 @@ function logMessage(aMessage, aCaller) {
   }
 
   // @see resource://gre/modules/Log.jsm
-  const {Log} = getModule('gre/modules/Log.jsm');
+  const {Log} = Modules.require('gre/modules/Log.jsm');
 
   let messages = aMessage.map((value) => {
     if (value instanceof Error) {
@@ -1072,7 +1160,7 @@ function logMessage(aMessage, aCaller) {
     replace('%message%', messages.join('\n'));
 
   let scriptError =
-    Cc['@mozilla.org/scripterror;1'].createInstance(Ci.nsIScriptError);
+    Modules.$I('@mozilla.org/scripterror;1', 'nsIScriptError');
 
   scriptError.init(
     output,
@@ -1102,10 +1190,7 @@ function log(aMessage) {
  * Export
  */
 return {
-  Timer,
-  Prefs,
-
-  getModule,
+  Modules,
 
   addEvent,
   getSelectionAtCursor,

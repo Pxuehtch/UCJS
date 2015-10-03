@@ -26,10 +26,7 @@
  * Imports
  */
 const {
-  Prefs: {
-    get: getPref,
-    set: setPref
-  },
+  Modules,
   createNode: $E,
   getNodeById: $ID,
   addEvent,
@@ -118,13 +115,13 @@ const kItemList = [
     get checked() {
       let {key, value} = this.pref;
 
-      return getPref(key, value.linkOrImage) !== value.never;
+      return Modules.Prefs.get(key, value.linkOrImage) !== value.never;
     },
 
     command() {
       let {key, value} = this.pref;
 
-      setPref(key, this.checked ? value.never : value.linkOrImage);
+      Modules.Prefs.set(key, this.checked ? value.never : value.linkOrImage);
     }
   },
   {
@@ -150,13 +147,13 @@ const kItemList = [
     get checked() {
       let {key, value} = this.pref;
 
-      return getPref(key, value.normal) !== value.none;
+      return Modules.Prefs.get(key, value.normal) !== value.none;
     },
 
     command() {
       let {key, value} = this.pref;
 
-      setPref(key, this.checked ? value.none : value.normal);
+      Modules.Prefs.set(key, this.checked ? value.none : value.normal);
 
       // Immediately apply the new mode in the animate-able image document.
       if (gBrowser.contentDocument instanceof ImageDocument &&

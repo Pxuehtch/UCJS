@@ -37,15 +37,20 @@
  * Imports
  */
 const {
-  Timer: {
-    setTimeout,
-    clearTimeout
-  },
+  Modules,
   createNode: $E,
   getNodeById: $ID,
   // Log to console for debug.
   logMessage: log
 } = window.ucjsUtil;
+
+// Extract usual functions.
+const {
+  Timer: {
+    setTimeout,
+    clearTimeout
+  }
+} = Modules;
 
 /**
  * UI settings.

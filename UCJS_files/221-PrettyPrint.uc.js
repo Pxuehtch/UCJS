@@ -20,7 +20,7 @@
  * Imports
  */
 const {
-  getModule,
+  Modules,
   createNode: $E,
   getNodeById: $ID,
   addEvent,
@@ -42,7 +42,7 @@ const {
  */
 const kTextType = (function() {
   // @see resource:///modules/devtools/sourceeditor/editor.js
-  const {modes} = getModule('devtools/sourceeditor/editor');
+  const {modes} = Modules.require('devtools/sourceeditor/editor');
 
   return {
     js:  modes.js,
@@ -241,7 +241,7 @@ const Scratchpad = (function() {
   function open(aState) {
     // @see resource:///modules/devtools/scratchpad-manager.jsm
     const {ScratchpadManager} =
-      getModule('/modules/devtools/scratchpad-manager.jsm');
+      Modules.require('/modules/devtools/scratchpad-manager.jsm');
 
     let scratchpadWindow = ScratchpadManager.openScratchpad();
 
@@ -444,7 +444,7 @@ const Prettifier = (function() {
       indent_char: aOptions.indentChar
     };
 
-    const {js} = getModule('devtools/jsbeautify');
+    const {js} = Modules.require('devtools/jsbeautify');
 
     return js(aText, options);
   }
@@ -461,7 +461,7 @@ const Prettifier = (function() {
       indent_char: aOptions.indentChar
     };
 
-    const {css} = getModule('devtools/jsbeautify');
+    const {css} = Modules.require('devtools/jsbeautify');
 
     /**
      * WORKAROUND: Fix missing 'at-rule' variables.

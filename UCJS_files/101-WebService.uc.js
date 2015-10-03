@@ -20,11 +20,12 @@ const ucjsWebService = (function(window) {
  * Imports
  */
 const {
-  Timer: {
-    setTimeout,
-    clearTimeout
+  Modules: {
+    Timer: {
+      setTimeout,
+      clearTimeout
+    }
   },
-  getModule,
   getFirstNodeByXPath: $X1,
   addEvent,
   openTab,

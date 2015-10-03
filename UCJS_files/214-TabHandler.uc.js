@@ -18,9 +18,13 @@
  * Imports
  */
 const {
-  Timer: {
-    setTimeout,
-    clearTimeout
+  Modules: {
+    Timer: {
+      setTimeout,
+      clearTimeout,
+      setInterval,
+      clearInterval
+    }
   },
   addEvent,
   // Log to console for debug.

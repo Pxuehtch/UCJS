@@ -20,9 +20,11 @@
  * Imports
  */
 const {
-  Timer: {
-    setTimeout,
-    clearTimeout
+  Modules: {
+    Timer: {
+      setTimeout,
+      clearTimeout
+    }
   },
   createNode: $E,
   getNodeById: $ID,

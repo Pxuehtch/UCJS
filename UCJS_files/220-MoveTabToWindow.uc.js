@@ -19,7 +19,7 @@
  * Imports
  */
 const {
-  getModule,
+  Modules,
   createNode: $E,
   getNodeById: $ID,
   addEvent,
@@ -80,7 +80,7 @@ const TabContext = {
  */
 const WindowUtil = (function() {
   // @see resource://gre/modules/commonjs/sdk/window/utils.js
-  const utils = getModule('sdk/window/utils');
+  const utils = Modules.require('sdk/window/utils');
 
   /**
    * Generator for browser windows.

@@ -21,7 +21,7 @@
  * Imports
  */
 const {
-  getModule,
+  Modules,
   createNode: $E,
   getNodeById: $ID,
   getNodesByXPath: $X,
@@ -171,7 +171,7 @@ function setObserver() {
   }
 
   // @see resource:///modules/devtools/webconsole/hudservice.js
-  const HUDService = getModule('devtools/webconsole/hudservice');
+  const HUDService = Modules.require('devtools/webconsole/hudservice');
 
   let browserConsole = HUDService.getBrowserConsole();
 

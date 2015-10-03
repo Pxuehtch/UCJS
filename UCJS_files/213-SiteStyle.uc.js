@@ -19,10 +19,12 @@
  * Imports
  */
 const {
-  Timer: {
-    setTimeout,
-    setInterval,
-    clearInterval
+  Modules: {
+    Timer: {
+      setTimeout,
+      setInterval,
+      clearInterval
+    }
   },
   createNode: $E,
   getNodeById: $ID,
@@ -651,8 +653,7 @@ const URLFilter = (function() {
    */
   function getTLDURL(aURL) {
     try {
-      // @see chrome://global/content/contentAreaUtils.js::makeURI
-      let uri = window.makeURI(aURL);
+      let uri = Modules.BrowserUtils.makeURI(aURL);
       let tld = Services.eTLD.getPublicSuffix(uri);
 
       uri.host = uri.host.slice(0, -tld.length) + 'tld';

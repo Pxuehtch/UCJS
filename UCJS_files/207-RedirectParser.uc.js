@@ -20,9 +20,7 @@
  * Imports
  */
 const {
-  Prefs: {
-    get: getPref
-  },
+  Modules,
   getNodeById: $ID,
   unescapeURLCharacters: unescURLChars,
   unescapeURLForUI: unescURLforUI,
@@ -49,8 +47,8 @@ const {
  * value equals 'false'.
  * @see chrome://global/locale/intl.properties
  */
-const kUnderlinedAccesskey =
-  getPref('intl.menuitems.alwaysappendaccesskeys', 'false') === 'false';
+const kUnderlinedAccesskey = Modules.Prefs.
+  get('intl.menuitems.alwaysappendaccesskeys', 'false') === 'false';
 
 /**
  * Preference
@@ -634,7 +632,7 @@ function setAttributeForCommand(aNode, aActionData) {
     }
 
     case 'copy': {
-      command = 'Services.ClipboardHelper.copyString("%URL%");';
+      command = 'ucjsUtil.Modules.ClipboardHelper.copyString("%URL%");';
 
       break;
     }

@@ -24,7 +24,7 @@
  * Imports
  */
 const {
-  getModule,
+  Modules,
   getNodeById: $ID,
   addEvent,
   unescapeURLForUI,
@@ -135,13 +135,10 @@ const kUI = {
    * The ellipsis mark.
    */
   get ellipsis() {
-    // @see resource:///modules/PlacesUIUtils.jsm
-    const {PlacesUIUtils} = getModule('/modules/PlacesUIUtils.jsm');
-
     // Lazy definition.
     delete this.ellipsis
 
-    return this.ellipsis = PlacesUIUtils.ellipsis;
+    return this.ellipsis = Modules.PlacesUIUtils.ellipsis;
   }
 };
 
@@ -599,7 +596,7 @@ function splitURL(aURL) {
 }
 
 function copyToClipboard(aText) {
-  Services.ClipboardHelper.copyString(aText);
+  Modules.ClipboardHelper.copyString(aText);
 }
 
 /**
