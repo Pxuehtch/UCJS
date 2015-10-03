@@ -25,8 +25,10 @@
  */
 const {
   Modules,
+  Listeners: {
+    $event
+  },
   getFirstNodeByXPath: $X1,
-  addEvent,
   getTextInRange,
   openTab,
   // Logger to console for debug.
@@ -159,7 +161,7 @@ const URLUtil = (function() {
 
 function TextLink_init() {
   // @note Use the capture mode to surely catch the event in the content area.
-  addEvent(gBrowser.mPanelContainer, 'dblclick', handleEvent, true);
+  $event(gBrowser.mPanelContainer, 'dblclick', handleEvent, true);
 }
 
 function handleEvent(aEvent) {

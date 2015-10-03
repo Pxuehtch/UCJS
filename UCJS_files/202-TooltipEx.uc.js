@@ -25,8 +25,10 @@
  */
 const {
   Modules,
+  Listeners: {
+    $event
+  },
   getNodeById: $ID,
-  addEvent,
   unescapeURLForUI,
   resolveURL,
   // Logger to console for debug.
@@ -179,8 +181,8 @@ const TooltipPanel = (function() {
     createPanel();
 
     // Close the tooltip when the document is switched.
-    addEvent(gBrowser, 'select', handleEvent, false);
-    addEvent(gBrowser, 'pagehide', handleEvent, false);
+    $event(gBrowser, 'select', handleEvent);
+    $event(gBrowser, 'pagehide', handleEvent);
 
     // Observe mouse moving to show the tooltip only while trigger keys are
     // down in a HTML document.
@@ -190,7 +192,7 @@ const TooltipPanel = (function() {
     // area.
     // @note The key events are attached to |window| so that we can catch them
     // when our tooltip panel has a focus.
-    addEvent(window, 'keydown', (aEvent) => {
+    $event(window, 'keydown', (aEvent) => {
       let triggerKey = aEvent.ctrlKey && aEvent.altKey;
 
       if (!isObserving &&
@@ -205,7 +207,7 @@ const TooltipPanel = (function() {
 
           pc.removeEventListener('mousemove', handleEvent, true);
           window.removeEventListener('keyup', clear, true);
-          window.removeEventListener('unload', clear, false);
+          window.removeEventListener('unload', clear);
         };
 
         pc.addEventListener('mousemove', handleEvent, true);
@@ -214,7 +216,7 @@ const TooltipPanel = (function() {
         window.addEventListener('keyup', clear, true);
 
         // Make sure to clean up.
-        window.addEventListener('unload', clear, false);
+        window.addEventListener('unload', clear);
       }
     }, true);
   }
@@ -276,7 +278,7 @@ const TooltipPanel = (function() {
       onpopupshowing: 'goUpdateCommand("cmd_copy");'
     });
 
-    addEvent(popup, 'command', handleEvent, false);
+    $event(popup, 'command', handleEvent);
 
     popup.appendChild($E('menuitem', {
       id: kUI.copy.id,

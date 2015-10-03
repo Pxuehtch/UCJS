@@ -21,8 +21,10 @@
  */
 const {
   Modules,
+  Listeners: {
+    $event
+  },
   getNodeById: $ID,
-  addEvent,
   promisePlacesDBResult,
   // Logger to console for debug.
   Console: {
@@ -1191,8 +1193,8 @@ const Tooltip = (function() {
       })
     );
 
-    addEvent(tooltip, 'popupshowing', onPopupShowing, false);
-    addEvent(tooltip, 'popuphiding', onPopupHiding, false);
+    $event(tooltip, 'popupshowing', onPopupShowing);
+    $event(tooltip, 'popuphiding', onPopupHiding);
   }
 
   function onPopupHiding(aEvent) {

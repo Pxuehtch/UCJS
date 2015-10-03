@@ -26,11 +26,14 @@ const {
       clearInterval
     }
   },
+  Listeners: {
+    $event,
+    $shutdown
+  },
   createNode: $E,
   getNodeById: $ID,
   getNodesBySelector: $S,
   getFirstNodeBySelector: $S1,
-  addEvent,
   setContentStyleSheet,
   // Logger to console for debug.
   Console: {
@@ -453,13 +456,13 @@ const kSiteList = [
         let timerID = null;
 
         let clear = () => {
-          aDocument.defaultView.removeEventListener('unload', clear, false);
+          aDocument.defaultView.removeEventListener('unload', clear);
 
           clearInterval(timerID);
           timerID = null;
         }
 
-        aDocument.defaultView.addEventListener('unload', clear, false);
+        aDocument.defaultView.addEventListener('unload', clear);
 
         timerID = setInterval(() => {
           if (--waitCount < 0) {
@@ -699,17 +702,17 @@ const PageObserver = (function() {
 
   const mProgressListener = {
     init() {
-      addEvent(gBrowser.tabContainer, 'TabClose', (aEvent) => {
+      $event(gBrowser.tabContainer, 'TabClose', (aEvent) => {
         let browser = gBrowser.getBrowserForTab(aEvent.target);
 
         mBrowserState.delete(browser);
-      }, false);
+      });
 
       gBrowser.addTabsProgressListener(mProgressListener);
 
-      addEvent(window, 'unload', () => {
+      $shutdown(() => {
         gBrowser.removeTabsProgressListener(mProgressListener);
-      }, false);
+      });
     },
 
     onLocationChange(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
@@ -887,12 +890,12 @@ const PageCSS = (function() {
       return;
     }
 
-    aDocument.addEventListener('DOMContentLoaded', onReady, false);
-    aDocument.defaultView.addEventListener('unload', cleanup, false);
+    aDocument.addEventListener('DOMContentLoaded', onReady);
+    aDocument.defaultView.addEventListener('unload', cleanup);
 
     function cleanup() {
-      aDocument.removeEventListener('DOMContentLoaded', onReady, false);
-      aDocument.defaultView.removeEventListener('unload', cleanup, false);
+      aDocument.removeEventListener('DOMContentLoaded', onReady);
+      aDocument.defaultView.removeEventListener('unload', cleanup);
     }
 
     function onReady() {
@@ -931,7 +934,7 @@ const PrefMenu = (function() {
     if (kSiteList.length) {
       let popup = $E('menupopup');
 
-      addEvent(popup, 'command', onCommand, false);
+      $event(popup, 'command', onCommand);
 
       kSiteList.forEach(({name, disabled}, i) => {
         let menuitem = popup.appendChild($E('menuitem', {

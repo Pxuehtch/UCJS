@@ -252,7 +252,7 @@ const Scratchpad = (function() {
     }
 
     let onLoad = () => {
-      scratchpadWindow.removeEventListener('load', onLoad, false);
+      scratchpadWindow.removeEventListener('load', onLoad);
 
       scratchpadWindow.Scratchpad.addObserver({
         onReady(aScratchpad) {
@@ -279,7 +279,7 @@ const Scratchpad = (function() {
       });
     };
 
-    scratchpadWindow.addEventListener('load', onLoad, false);
+    scratchpadWindow.addEventListener('load', onLoad);
 
     return scratchpadWindow;
   }

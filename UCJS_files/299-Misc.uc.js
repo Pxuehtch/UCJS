@@ -21,10 +21,13 @@
  */
 const {
   Modules,
+  Listeners: {
+    $event,
+    $shutdown
+  },
   createNode: $E,
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
-  addEvent,
   setChromeStyleSheet: setChromeCSS,
   // Logger to console for debug.
   Console: {
@@ -81,8 +84,8 @@ function setGlobalAgentCSS(aCSS) {
   // @note Resisters on the tab bar including the margin without tabs.
   $ID('tabbrowser-tabs').tooltip = kUI.tooltip.id;
 
-  addEvent(mTooltip, 'popupshowing', onPopupShowing, false);
-  addEvent(mTooltip, 'popuphiding', onPopupHiding, false);
+  $event(mTooltip, 'popupshowing', onPopupShowing);
+  $event(mTooltip, 'popuphiding', onPopupHiding);
 
   function onPopupHiding(aEvent) {
     if (aEvent.target !== mTooltip) {
@@ -450,7 +453,7 @@ function setGlobalAgentCSS(aCSS) {
 (function() {
 
   // @note Use the capture mode to surely catch the event in the content area.
-  addEvent(gBrowser.mPanelContainer, 'keydown', (aEvent) => {
+  $event(gBrowser.mPanelContainer, 'keydown', (aEvent) => {
     if (aEvent.key === 'Tab' && aEvent.repeat) {
       aEvent.preventDefault();
       aEvent.stopPropagation();
@@ -477,9 +480,9 @@ function setGlobalAgentCSS(aCSS) {
 
   let defaultTabFocus = Modules.Prefs.get(kPrefTabFocus);
 
-  addEvent(window, 'unload', () => {
+  $shutdown(() => {
     Modules.Prefs.set(kPrefTabFocus, defaultTabFocus);
-  }, false);
+  });
 
   let command = `
     (function(M = ucjsUtil.Modules, SF = ucjsUI.StatusField, v) {
@@ -521,7 +524,7 @@ function setGlobalAgentCSS(aCSS) {
 (function() {
 
   // @note Use the capture mode to surely catch the event in the content area.
-  addEvent(gBrowser.mPanelContainer, 'mousedown', onMouseDown, true);
+  $event(gBrowser.mPanelContainer, 'mousedown', onMouseDown, true);
 
   function onMouseDown(aEvent) {
     if (aEvent.button !== 0 ||
@@ -670,10 +673,10 @@ function setGlobalAgentCSS(aCSS) {
   observeURLBar();
 
   function observeURLBar() {
-    addEvent(gURLBar, 'focus', hideStatus, false);
-    addEvent(gURLBar, 'blur', showStatus, false);
-    addEvent(gURLBar, 'mouseenter', hideStatus, false);
-    addEvent(gURLBar, 'mouseleave', showStatus, false);
+    $event(gURLBar, 'focus', hideStatus);
+    $event(gURLBar, 'blur', showStatus);
+    $event(gURLBar, 'mouseenter', hideStatus);
+    $event(gURLBar, 'mouseleave', showStatus);
 
     function showStatus(aEvent) {
       if (gURLBar.focused) {
@@ -843,7 +846,7 @@ function setGlobalAgentCSS(aCSS) {
    *   <binding id="tabbrowser-alltabs-popup">::
    *   <handler event="command">
    */
-  addEvent(UI.alltabsPopup, 'command', (aEvent) => {
+  $event(UI.alltabsPopup, 'command', (aEvent) => {
     let menuitem = aEvent.target;
 
     if (menuitem.parentNode !== UI.alltabsPopup) {
@@ -853,7 +856,7 @@ function setGlobalAgentCSS(aCSS) {
     if (menuitem.tab && menuitem.tab.selected) {
       gBrowser.tabContainer.mTabstrip.ensureElementIsVisible(menuitem.tab);
     }
-  }, false);
+  });
 
   /**
    * Show the URL of a suspended tab to the status field when a menuitem is
@@ -861,7 +864,7 @@ function setGlobalAgentCSS(aCSS) {
    *
    * @note This is a workaround for a suspended tab by TabEx.uc.js.
    */
-  addEvent(UI.alltabsPopup, 'DOMMenuItemActive', (aEvent) => {
+  $event(UI.alltabsPopup, 'DOMMenuItemActive', (aEvent) => {
     let menuitem = aEvent.target;
 
     if (menuitem.parentNode !== UI.alltabsPopup) {
@@ -892,14 +895,14 @@ function setGlobalAgentCSS(aCSS) {
       // @see chrome://browser/content/browser.js::XULBrowserWindow::setOverLink
       window.XULBrowserWindow.setOverLink(loadingURL, null);
     }
-  }, false);
+  });
 
   /**
    * Update the state of a menuitem for an unread tab.
    *
    * @note This is a workaround for an unread tab handled by TabEx.uc.js.
    */
-  addEvent(UI.alltabsPopup, 'popupshowing', (aEvent) => {
+  $event(UI.alltabsPopup, 'popupshowing', (aEvent) => {
     let popup = aEvent.target;
 
     if (popup !== UI.alltabsPopup) {
@@ -913,10 +916,10 @@ function setGlobalAgentCSS(aCSS) {
     });
 
     gBrowser.tabContainer.
-      addEventListener('TabAttrModified', onTabAttrModified, false);
-  }, false);
+      addEventListener('TabAttrModified', onTabAttrModified);
+  });
 
-  addEvent(UI.alltabsPopup, 'popuphiding', (aEvent) => {
+  $event(UI.alltabsPopup, 'popuphiding', (aEvent) => {
     let popup = aEvent.target;
 
     if (popup !== UI.alltabsPopup) {
@@ -924,8 +927,8 @@ function setGlobalAgentCSS(aCSS) {
     }
 
     gBrowser.tabContainer.
-      removeEventListener('TabAttrModified', onTabAttrModified, false);
-  }, false);
+      removeEventListener('TabAttrModified', onTabAttrModified);
+  });
 
   function onTabAttrModified(aEvent) {
     let tab = aEvent.target;
@@ -977,10 +980,10 @@ function setGlobalAgentCSS(aCSS) {
     onCreate
   });
 
-  addEvent(gBrowser.mPanelContainer, 'command', handleEvent, false);
-  addEvent(gBrowser.mPanelContainer, 'find', handleEvent, false);
-  addEvent(gBrowser, 'select', handleEvent, false);
-  addEvent(gBrowser, 'pageshow', handleEvent, false);
+  $event(gBrowser.mPanelContainer, 'command', handleEvent);
+  $event(gBrowser.mPanelContainer, 'find', handleEvent);
+  $event(gBrowser, 'select', handleEvent);
+  $event(gBrowser, 'pageshow', handleEvent);
 
   function onCreate(aParam) {
     let {findBar} = aParam;

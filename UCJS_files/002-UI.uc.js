@@ -25,10 +25,13 @@ const {
   Modules: {
     Timer
   },
+  Listeners: {
+    $event,
+    $shutdown
+  },
   getNodeById: $ID,
   getNodeByAnonid: $ANONID,
   getNodesByXPath: $X,
-  addEvent,
   resolveURL,
   setChromeStyleSheet: setCSS,
   promisePlacesDBResult,
@@ -165,12 +168,12 @@ const PopupMenuHandler = (function() {
 
       // Restore user settings after UI customization.
       if (observeUICustomization) {
-        addEvent(window, 'beforecustomization', destroy, false);
-        addEvent(window, 'aftercustomization', create, false);
+        $event(window, 'beforecustomization', destroy);
+        $event(window, 'aftercustomization', create);
       }
 
       // Clean up on shutdown of the main browser.
-      addEvent(window, 'unload', uninit, false);
+      $shutdown(uninit);
     }
 
     function uninit() {
@@ -353,8 +356,8 @@ const FindBar = (function() {
 
     let tc = gBrowser.tabContainer;
 
-    addEvent(tc, 'TabFindInitialized', handleEvent, false);
-    addEvent(tc, 'TabClose', handleEvent, false);
+    $event(tc, 'TabFindInitialized', handleEvent);
+    $event(tc, 'TabClose', handleEvent);
 
     function handleEvent(aEvent) {
       let tab = aEvent.target;

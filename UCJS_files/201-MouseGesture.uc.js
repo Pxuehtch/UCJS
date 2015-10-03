@@ -39,8 +39,11 @@
  * Imports
  */
 const {
+  Listeners: {
+    $event,
+    $shutdown
+  },
   getNodeById: $ID,
-  addEvent,
   getSelectionAtCursor,
   resolveURL,
   openTab,
@@ -433,22 +436,22 @@ function MouseGesture() {
   function registerTriggerEvents() {
     let pc = gBrowser.mPanelContainer;
 
-    addEvent(pc, 'mousedown', onMouseDown, true);
-    addEvent(pc, 'mouseup', onMouseUp, true);
+    $event(pc, 'mousedown', onMouseDown, true);
+    $event(pc, 'mouseup', onMouseUp, true);
 
-    addEvent(pc, 'dragstart', onDragStart, true);
-    addEvent(pc, 'dragend', onDragEnd, true);
+    $event(pc, 'dragstart', onDragStart, true);
+    $event(pc, 'dragend', onDragEnd, true);
 
     // WORKAROUND: 'contextmenu' event fires after a gesture stops so we can't
     // add it only in gesturing.
-    addEvent(pc, 'contextmenu', onContextMenu, true);
+    $event(pc, 'contextmenu', onContextMenu, true);
 
     // WORKAROUND: We assign <Alt+RightClick> to reset the state of a gesture
     // ANYTIME when problems occur.
-    addEvent(pc, 'click', onClick, true);
+    $event(pc, 'click', onClick, true);
 
-    // WORKAROUND: Make sure to clean up events.
-    addEvent(window, 'unload', removeEvents, false);
+    // Make sure to clean up when the browser window closes.
+    $shutdown(removeEvents);
   }
 
   function addEvents() {
@@ -463,7 +466,7 @@ function MouseGesture() {
 
       // WORKAROUND: Observe a XUL popup in the content area for cancelling the
       // gesture when the right button is released on it.
-      window.addEventListener('mouseup', onGlobalMouseUp, false);
+      window.addEventListener('mouseup', onGlobalMouseUp);
     }
     else if (mState === kState.DRAG) {
       // @note Use 'dragover' (not 'dragenter') to check the coordinate of a
@@ -484,7 +487,7 @@ function MouseGesture() {
       pc.removeEventListener('wheel', onMouseWheel, true);
       pc.removeEventListener('keydown', onKeyDown, true);
       pc.removeEventListener('keyup', onKeyUp, true);
-      window.removeEventListener('mouseup', onGlobalMouseUp, false);
+      window.removeEventListener('mouseup', onGlobalMouseUp);
     }
     else if (mState === kState.DRAG) {
       pc.removeEventListener('dragover', onDragOver, true);

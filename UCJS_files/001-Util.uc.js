@@ -284,6 +284,78 @@ const Console = (function() {
   };
 })();
 
+/**
+ * Event manager.
+ */
+const EventManager = (function() {
+  /**
+   * Register an event listener that lives until the browser window closed.
+   */
+  function listenEvent(target, type, listener, options = {}) {
+    if (!target || !type || !listener) {
+      throw Error('Missing required parameter.');
+    }
+
+    let {capture} = options;
+
+    capture = !!capture;
+
+    target.addEventListener(type, listener, capture);
+
+    listenShutdown(() => {
+      target.removeEventListener(type, listener, capture);
+    });
+  }
+
+  /**
+   * Register an event listener that lives until once listened.
+   */
+  function listenEventOnce(target, type, listener, options = {}) {
+    if (!target || !type || !listener) {
+      throw Error('Missing required parameter.');
+    }
+
+    let {capture} = options;
+
+    capture = !!capture;
+
+    let onReceive = (event) => {
+      target.removeEventListener(type, onReceive, capture);
+      listener(event);
+    };
+
+    target.addEventListener(type, onReceive, capture);
+  }
+
+  /**
+   * Reserves the execution of given handler when the window is shut down.
+   */
+  function listenShutdown(handler) {
+    window.addEventListener('unload', function onUnload() {
+      window.removeEventListener('unload', onUnload);
+
+      handler();
+    });
+  }
+
+  return {
+    listenEvent,
+    listenEventOnce,
+    listenShutdown
+  };
+})();
+
+/**
+ * Alias names for event listeners.
+ */
+const Listeners = (function() {
+  return {
+    $event: EventManager.listenEvent,
+    $eventOnce: EventManager.listenEventOnce,
+    $shutdown: EventManager.listenShutdown
+  };
+})();
+
 // Log to console for debug just in this script.
 function log(logData) {
   return Console.log(logData, Components.stack.caller);
@@ -301,21 +373,6 @@ function lookupNamespaceURI(aPrefix) {
   };
 
   return kNS[aPrefix] || null;
-}
-
-function addEvent(aTarget, aType, aListener, aCapture) {
-  if (!aTarget || !aType || !aListener) {
-    return;
-  }
-
-  aCapture = !!aCapture;
-
-  aTarget.addEventListener(aType, aListener, aCapture);
-
-  window.addEventListener('unload', function remover() {
-    aTarget.removeEventListener(aType, aListener, aCapture);
-    window.removeEventListener('unload', remover, false);
-  }, false);
 }
 
 /**
@@ -1200,8 +1257,9 @@ function promisePlacesDBResult(aParam = {}) {
 return {
   Modules,
   Console,
+  EventManager,
+  Listeners,
 
-  addEvent,
   getSelectionAtCursor,
   getTextInRange,
   createNode,

@@ -26,7 +26,9 @@ const {
       clearInterval
     }
   },
-  addEvent,
+  Listeners: {
+    $event
+  },
   // Logger to console for debug.
   Console: {
     log
@@ -290,10 +292,10 @@ const TabBarClickEvent = {
     let tc = gBrowser.tabContainer;
 
     // @note Use the capture mode to catch the event before the default event.
-    addEvent(tc, 'mousedown', this, true);
-    addEvent(tc, 'mouseup', this, true);
-    addEvent(tc, 'click', this, true);
-    addEvent(tc, 'dblclick', this, true);
+    $event(tc, 'mousedown', this, true);
+    $event(tc, 'mouseup', this, true);
+    $event(tc, 'click', this, true);
+    $event(tc, 'dblclick', this, true);
   },
 
   handleEvent(aEvent) {
@@ -431,7 +433,7 @@ const TabBarClickEvent = {
 const TabBarWheelEvent = {
   init() {
     // @note Use the capture mode to catch the event before the default event.
-    addEvent(gBrowser.tabContainer, 'wheel', (aEvent) => {
+    $event(gBrowser.tabContainer, 'wheel', (aEvent) => {
       this.scrollTabs(aEvent) || this.switchTabs(aEvent);
 
       // Prevent the default scrolling when the tab bar overflows with tabs.

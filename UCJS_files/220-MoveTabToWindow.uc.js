@@ -20,9 +20,11 @@
  */
 const {
   Modules,
+  Listeners: {
+    $event
+  },
   createNode: $E,
   getNodeById: $ID,
-  addEvent,
   // Logger to console for debug.
   Console: {
     log
@@ -145,7 +147,7 @@ function buildMenu() {
     label: kUI.newWindow.label
   }));
 
-  addEvent(popup, 'command', onCommand, false);
+  $event(popup, 'command', onCommand);
 
   // Replace the default menuitem 'Move to New Window'.
   let defaultItem = $ID('context_openTabInWindow');
@@ -154,7 +156,7 @@ function buildMenu() {
 
   TabContext.menu.insertBefore(menu, defaultItem);
 
-  addEvent(TabContext.menu, 'popupshowing', onPopupShowing, false);
+  $event(TabContext.menu, 'popupshowing', onPopupShowing);
 }
 
 function onPopupShowing(aEvent) {
@@ -290,7 +292,7 @@ function moveTabToWindow(aTab, aWindow) {
   let win = window.OpenBrowserWindow();
 
   let onLoad = () => {
-    win.removeEventListener('load', onLoad, false);
+    win.removeEventListener('load', onLoad);
 
     // WORKAROUND: Wait for initialization of the new browser.
     setTimeout(() => {
@@ -300,7 +302,7 @@ function moveTabToWindow(aTab, aWindow) {
     }, 500);
   };
 
-  win.addEventListener('load', onLoad, false);
+  win.addEventListener('load', onLoad);
 }
 
 function moveTabToOtherWindow(aTab, aWindow) {

@@ -26,8 +26,10 @@ const {
       clearTimeout
     }
   },
+  Listeners: {
+    $shutdown
+  },
   getFirstNodeByXPath: $X1,
-  addEvent,
   openTab,
   // Logger to console for debug.
   Console: {
@@ -201,8 +203,8 @@ const RequestHandler = (function() {
     let mPendings = new Set();
     let mSendings = new Set();
 
-    // Clean up when browser quits.
-    addEvent(window, 'unload', () => {
+    // Clean up when the browser window closes.
+    $shutdown(() => {
       for (let timer of mPendings) {
         clearTimeout(timer);
       }
@@ -218,7 +220,7 @@ const RequestHandler = (function() {
 
       mSendings.clear();
       mSendings = null;
-    }, false);
+    });
 
     return {
       pendings: mPendings,

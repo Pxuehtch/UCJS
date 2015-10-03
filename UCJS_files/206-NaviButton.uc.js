@@ -38,6 +38,9 @@
  */
 const {
   Modules,
+  Listeners: {
+    $shutdown
+  },
   createNode: $E,
   getNodeById: $ID,
   // Logger to console for debug.
@@ -126,9 +129,9 @@ const Button = {
 
     this.preventDefaultCommand(aButton);
 
-    aButton.addEventListener('mouseover', this, false);
-    aButton.addEventListener('mouseout', this, false);
-    aButton.addEventListener('click', this, false);
+    aButton.addEventListener('mouseover', this);
+    aButton.addEventListener('mouseout', this);
+    aButton.addEventListener('click', this);
   },
 
   uninit(aButton) {
@@ -136,9 +139,9 @@ const Button = {
       return;
     }
 
-    aButton.removeEventListener('mouseover', this, false);
-    aButton.removeEventListener('mouseout', this, false);
-    aButton.removeEventListener('click', this, false);
+    aButton.removeEventListener('mouseover', this);
+    aButton.removeEventListener('mouseout', this);
+    aButton.removeEventListener('click', this);
   },
 
   handleEvent(aEvent) {
@@ -614,13 +617,12 @@ function NaviButton_init() {
 
   gBrowser.addProgressListener(BrowserProgressListener);
 
-  window.addEventListener('unload', function onUnload() {
-    window.removeEventListener('unload', onUnload, false);
+  $shutdown(() => {
     gBrowser.removeProgressListener(BrowserProgressListener);
 
     Button.uninit(UI.backButton);
     Button.uninit(UI.forwardButton);
-  }, false);
+  });
 }
 
 NaviButton_init();

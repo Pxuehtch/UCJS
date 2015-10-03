@@ -22,12 +22,15 @@
  */
 const {
   Modules,
+  Listeners: {
+    $event,
+    $shutdown
+  },
   createNode: $E,
   getNodeById: $ID,
   getNodesByXPath: $X,
   getFirstNodeByXPath: $X1,
   getFirstNodeBySelector: $S1,
-  addEvent,
   setChromeStyleSheet: setCSS,
   // Logger to console for debug.
   Console: {
@@ -155,7 +158,7 @@ function makeUI() {
       tabindex: lastTabIndex++
     });
 
-    addEvent(toolbarButton, 'command', onCommand, false);
+    $event(toolbarButton, 'command', onCommand);
 
     clearButton.parentNode.insertBefore(toolbarButton, clearButton);
   });
@@ -167,9 +170,10 @@ function setObserver() {
   function observeMessageAdded(aBrowserConsole) {
     aBrowserConsole.ui.on('new-messages', onMessageAdded);
 
-    addEvent(window, 'unload', () => {
+    // Clean up when the browser window closes.
+    $shutdown(() => {
       aBrowserConsole.ui.off('new-messages', onMessageAdded);
-    }, false);
+    });
   }
 
   // @see resource:///modules/devtools/webconsole/hudservice.js

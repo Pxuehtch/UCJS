@@ -23,7 +23,10 @@ const {
       clearTimeout
     }
   },
-  addEvent,
+  Listeners: {
+    $event,
+    $shutdown
+  },
   createNode: $E,
   getNodeById: $ID,
   setChromeStyleSheet: setCSS,
@@ -50,13 +53,13 @@ const kUI = {
 
 function IMEState_init() {
   // @note Use the capture mode to surely catch the event in the content area.
-  addEvent(window, 'click', handleEvent, true);
-  addEvent(window, 'keyup', handleEvent, true);
+  $event(window, 'click', handleEvent, true);
+  $event(window, 'keyup', handleEvent, true);
 
-  addEvent(gBrowser, 'select', handleEvent, false);
-  addEvent(gBrowser, 'pageshow', handleEvent, false);
+  $event(gBrowser, 'select', handleEvent);
+  $event(gBrowser, 'pageshow', handleEvent);
 
-  addEvent(window, 'unload', handleEvent, false);
+  $shutdown(handleEvent);
 }
 
 function handleEvent(aEvent) {

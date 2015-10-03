@@ -27,9 +27,12 @@
  */
 const {
   Modules,
+  Listeners: {
+    $event,
+    $shutdown
+  },
   createNode: $E,
   getNodeById: $ID,
-  addEvent,
   setChromeStyleSheet: setCSS,
   // Logger to console for debug.
   Console: {
@@ -191,15 +194,15 @@ function PrefButton_init() {
   setStyleSheet();
   makeButtons();
 
-  addEvent(gBrowser, 'select', () => {
+  $event(gBrowser, 'select', () => {
     updateState({tabMode: true});
-  }, false);
+  });
 
   gBrowser.addProgressListener(BrowserProgressListener);
 
-  addEvent(window, 'unload', () => {
+  $shutdown(() => {
     gBrowser.removeProgressListener(BrowserProgressListener);
-  }, false);
+  });
 }
 
 function updateState(aOption = {}) {
@@ -248,7 +251,7 @@ function makeButtons() {
     id: kUI.container.id
   });
 
-  addEvent(container, 'click', doCommand, false);
+  $event(container, 'click', doCommand);
 
   kItemList.forEach((item, i) => {
     if (item.disabled) {

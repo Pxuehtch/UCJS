@@ -26,7 +26,10 @@ const ucjsTabEx = (function(window) {
  */
 const {
   Modules,
-  addEvent,
+  Listeners: {
+    $event,
+    $shutdown
+  },
   openTab,
   removeTab,
   promisePlacesDBResult,
@@ -910,12 +913,12 @@ const Startup = {
 
         this.events.set(aTarget, aType);
 
-        aTarget.addEventListener(aType, this, false);
+        aTarget.addEventListener(aType, this);
       },
 
       clear() {
         for (let [target, type] of this.events) {
-          target.removeEventListener(type, this, false);
+          target.removeEventListener(type, this);
         }
 
         this.events.clear();
@@ -964,9 +967,9 @@ const Startup = {
 
     Services.obs.addObserver(onBrowserOpen, topic, false);
 
-    addEvent(window, 'unload', () => {
+    $shutdown(() => {
       Services.obs.removeObserver(onBrowserOpen, topic);
-    }, false);
+    });
   },
 
   setStartupTabs() {
@@ -1001,12 +1004,12 @@ const MovingTabObserver = {
     // 1.|originalTarget| = our browser, |detail| = the other browser.
     // 2.|originalTarget| = the other browser, |detail| = our browser.
     // @see chrome://browser/content/tabbrowser.xml::_swapBrowserDocShells
-    addEvent(gBrowser, 'SwapDocShells', this, false);
+    $event(gBrowser, 'SwapDocShells', this);
 
     // Observe a tab that becomes a new window.
     // @note 'SwapDocShells' event fires after 'TabBecomingWindow' event.
     // @note We add this custom event to |gBrowser.replaceTabWithWindow|.
-    addEvent(gBrowser, kEventType.TabBecomingWindow, this, false);
+    $event(gBrowser, kEventType.TabBecomingWindow, this);
 
     // Patch the native function.
     // @modified chrome://browser/content/tabbrowser.xml::replaceTabWithWindow
@@ -1117,10 +1120,10 @@ const TabEvent = {
   init() {
     let tc = gBrowser.tabContainer;
 
-    addEvent(tc, kEventType.TabOpenInfoSet, this, false);
-    addEvent(tc, 'TabSelect', this, false);
-    addEvent(tc, 'TabClose', this, false);
-    addEvent(tc, 'SSTabRestored', this, false);
+    $event(tc, kEventType.TabOpenInfoSet, this);
+    $event(tc, 'TabSelect', this);
+    $event(tc, 'TabClose', this);
+    $event(tc, 'SSTabRestored', this);
   },
 
   handleEvent(aEvent) {
