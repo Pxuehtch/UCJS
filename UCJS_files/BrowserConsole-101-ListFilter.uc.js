@@ -29,8 +29,10 @@ const {
   getFirstNodeBySelector: $S1,
   addEvent,
   setChromeStyleSheet: setCSS,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 /**

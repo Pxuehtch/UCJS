@@ -26,8 +26,10 @@ const {
   getNodeByAnonid: $ANONID,
   addEvent,
   setChromeStyleSheet: setChromeCSS,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 function setGlobalAgentCSS(aCSS) {

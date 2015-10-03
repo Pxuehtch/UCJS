@@ -44,8 +44,10 @@ const {
   getSelectionAtCursor,
   resolveURL,
   openTab,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 const {

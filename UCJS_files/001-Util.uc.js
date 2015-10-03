@@ -218,6 +218,78 @@ const Modules = (function() {
 })();
 
 /**
+ * Log function.
+ */
+const Console = (function() {
+  function logMessage(logData, stackCaller) {
+    if (!stackCaller) {
+      stackCaller = Components.stack.caller;
+    }
+
+    if (!Array.isArray(logData)) {
+      logData = [logData];
+    }
+
+    // @see resource://gre/modules/Log.jsm
+    const {Log} = Modules.require('gre/modules/Log.jsm');
+
+    let formatter = new Log.ParameterFormatter();
+    let messages = logData.map((data) => {
+      // TODO: Add other exceptions if error occurs in ParameterFormatter.
+      if (data instanceof Element ||
+          data instanceof Document ||
+          data instanceof Window) {
+        return data.toString();
+      }
+
+      return data;
+    }).
+    map(formatter.format);
+
+    let getFileName = (url) =>
+      url.
+      replace(/[?#].*$/, '').
+      replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
+
+    let output =
+      '[%file%]\n::%function%\n%message%'.
+      replace('%file%', getFileName(stackCaller.filename || '[N/A]')).
+      replace('%function%', stackCaller.name || '[anonymous function]').
+      replace('%message%', messages.join('\n'));
+
+    let scriptError =
+      Modules.$I('@mozilla.org/scripterror;1', 'nsIScriptError');
+
+    scriptError.init(
+      output,
+      stackCaller.filename,
+      stackCaller.sourceLine,
+      stackCaller.lineNumber,
+      // Column number
+      null,
+      // Flags: Just a log message.
+      scriptError.infoFlag,
+      // Category
+      // @note The browser console displays, but the web console does not.
+      'chrome javascript'
+    );
+
+    Services.console.logMessage(scriptError);
+
+    return output;
+  }
+
+  return {
+    log: logMessage
+  };
+})();
+
+// Log to console for debug just in this script.
+function log(logData) {
+  return Console.log(logData, Components.stack.caller);
+}
+
+/**
  * Functions for DOM handling.
  */
 function lookupNamespaceURI(aPrefix) {
@@ -1123,74 +1195,11 @@ function promisePlacesDBResult(aParam = {}) {
 }
 
 /**
- * Log function.
- */
-function logMessage(aMessage, aCaller) {
-  const kLogFormat = '[%file%]\n::%function%\n%message%';
-  const kErrorFormat = '%name%: %message%\n%stack%';
-
-  if (!aCaller) {
-    aCaller = Components.stack.caller;
-  }
-
-  if (!Array.isArray(aMessage)) {
-    aMessage = [aMessage];
-  }
-
-  // @see resource://gre/modules/Log.jsm
-  const {Log} = Modules.require('gre/modules/Log.jsm');
-
-  let messages = aMessage.map((value) => {
-    if (value instanceof Error) {
-      return kErrorFormat.
-        replace('%name%', value.name).
-        replace('%message%', value.message || '').
-        replace('%stack%', Log.stackTrace(value));
-    }
-
-    return value;
-  });
-
-  let getFileName = (aURL) =>
-    aURL.replace(/[?#].*$/, '').replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
-
-  let output = kLogFormat.
-    replace('%file%', getFileName(aCaller.filename)).
-    replace('%function%', aCaller.name || '(anonymous function)').
-    replace('%message%', messages.join('\n'));
-
-  let scriptError =
-    Modules.$I('@mozilla.org/scripterror;1', 'nsIScriptError');
-
-  scriptError.init(
-    output,
-    aCaller.filename,
-    aCaller.sourceLine,
-    aCaller.lineNumber,
-    // Column number
-    null,
-    // Flags: Just a log message.
-    scriptError.infoFlag,
-    // Category
-    // @note The browser console displays, but the web console does not.
-    'chrome javascript'
-  );
-
-  Services.console.logMessage(scriptError);
-
-  return output;
-}
-
-// Log to console for debug in this script.
-function log(aMessage) {
-  return logMessage(aMessage, Components.stack.caller);
-}
-
-/**
  * Export
  */
 return {
   Modules,
+  Console,
 
   addEvent,
   getSelectionAtCursor,
@@ -1219,9 +1228,7 @@ return {
   removeGlobalStyleSheet,
   setChromeStyleSheet,
   setContentStyleSheet,
-  promisePlacesDBResult,
-
-  logMessage
+  promisePlacesDBResult
 }
 
 

@@ -24,8 +24,10 @@ const {
   getNodeById: $ID,
   addEvent,
   promisePlacesDBResult,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 function $E(aTagOrNode, aAttribute) {

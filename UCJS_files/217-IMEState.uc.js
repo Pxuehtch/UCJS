@@ -27,8 +27,10 @@ const {
   createNode: $E,
   getNodeById: $ID,
   setChromeStyleSheet: setCSS,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 /**

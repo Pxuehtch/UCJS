@@ -20,8 +20,10 @@
  */
 const {
   getNodeById: $ID,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 function $E(aTag, aAttribute) {

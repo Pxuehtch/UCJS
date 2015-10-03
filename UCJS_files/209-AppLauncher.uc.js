@@ -42,7 +42,7 @@ const {
   createNode: $E,
   getNodesByXPath: $X,
   contentAreaContextMenu,
-  // Log to console for debug.
+  // Logger to console for debug.
   log
 } = Util;
 
@@ -836,10 +836,13 @@ AppLauncher_init();
  * Imports
  */
 const {
-  Modules
+  Modules,
   createNode,
   getNodesByXPath,
-  logMessage
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 const {
@@ -1158,14 +1161,6 @@ function warn(aTitle, aMessage) {
 
 function require(resourceURL) {
   return Modules.require(resourceURL);
-}
-
-function log(aMessage, aCaller) {
-  if (!aCaller) {
-    aCaller = Components.stack.caller;
-  }
-
-  return logMessage(aMessage, aCaller);
 }
 
 /**

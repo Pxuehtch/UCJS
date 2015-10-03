@@ -40,8 +40,10 @@ const {
   Modules,
   createNode: $E,
   getNodeById: $ID,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 // Extract usual functions.

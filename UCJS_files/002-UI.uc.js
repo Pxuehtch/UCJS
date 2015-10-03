@@ -32,8 +32,10 @@ const {
   resolveURL,
   setChromeStyleSheet: setCSS,
   promisePlacesDBResult,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 /**

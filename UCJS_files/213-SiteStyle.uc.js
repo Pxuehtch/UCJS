@@ -32,8 +32,10 @@ const {
   getFirstNodeBySelector: $S1,
   addEvent,
   setContentStyleSheet,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 /**

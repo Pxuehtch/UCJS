@@ -26,8 +26,10 @@ const {
   createNode: $E,
   getNodeById: $ID,
   promisePlacesDBResult,
-  // Log to console for debug.
-  logMessage: log
+  // Logger to console for debug.
+  Console: {
+    log
+  }
 } = window.ucjsUtil;
 
 const {
