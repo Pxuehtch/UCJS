@@ -284,6 +284,11 @@ const Console = (function() {
   };
 })();
 
+// Log to console for debug just in this script.
+function log(logData) {
+  return Console.log(logData, Components.stack.caller);
+}
+
 /**
  * Event manager.
  */
@@ -355,11 +360,6 @@ const Listeners = (function() {
     $shutdown: EventManager.listenShutdown
   };
 })();
-
-// Log to console for debug just in this script.
-function log(logData) {
-  return Console.log(logData, Components.stack.caller);
-}
 
 /**
  * Functions for DOM handling.
