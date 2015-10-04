@@ -46,8 +46,8 @@ const {
   DOMUtils: {
     $ID
   },
+  URLUtils,
   getSelectionAtCursor,
-  resolveURL,
   // Logger to console for debug.
   Console: {
     log
@@ -1370,7 +1370,7 @@ function getLinkURL(aNode) {
 
   if (node) {
     if (node instanceof SVGAElement) {
-      return resolveURL(node.href.baseVal, node.baseURI);
+      return URLUtils.resolveURL(node.href.baseVal, node.baseURI);
     }
 
     return node.href;
@@ -1381,7 +1381,7 @@ function getLinkURL(aNode) {
 
 function getImageURL(aNode) {
   if (aNode instanceof SVGImageElement && aNode.href) {
-    return resolveURL(aNode.href.baseVal, aNode.baseURI);
+    return URLUtils.resolveURL(aNode.href.baseVal, aNode.baseURI);
   }
 
   if (aNode instanceof HTMLImageElement && aNode.src) {
