@@ -25,8 +25,10 @@ const {
     init$E,
     $ID
   },
-  unescapeURLCharacters: unescURLChars,
-  unescapeURLForUI: unescURLforUI,
+  URLUtils: {
+    unescapeURLCharacters: unescURLChars,
+    unescapeURLForUI: unescURLforUI
+  },
   // Logger to console for debug.
   Console: {
     log

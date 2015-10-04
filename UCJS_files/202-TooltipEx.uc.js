@@ -32,8 +32,7 @@ const {
     init$E,
     $ID
   },
-  unescapeURLForUI,
-  resolveURL,
+  URLUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -409,8 +408,7 @@ const TooltipPanel = (function() {
       }
 
       if (value) {
-        let URL = unescapeURLForUI(resolveURL(value, aNode.baseURI));
-        let [scheme, rest] = splitURL(URL);
+        let [scheme, rest] = splitURL(URL, aNode.baseURI);
 
         // Truncate only a long URL with 'javascript:' or 'data:' scheme.
         let doCrop = /^(?:javascript|data):/.test(scheme);
@@ -595,10 +593,12 @@ function isLinkNode(aNode) {
   );
 }
 
-function splitURL(aURL) {
-  let colon = aURL.indexOf(':') + 1;
+function splitURL(url, baseURI) {
+  url = URLUtils.unescapeURLForUI(URLUtils.resolveURL(url, baseURI));
 
-  return [aURL.slice(0, colon), aURL.slice(colon)];
+  let colon = url.indexOf(':') + 1;
+
+  return [url.slice(0, colon), url.slice(colon)];
 }
 
 function copyToClipboard(aText) {

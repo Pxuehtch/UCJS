@@ -35,8 +35,8 @@ const {
     $S,
     $X1
   },
+  URLUtils,
   openURL,
-  unescapeURLCharacters: unescURLChars,
   // Logger to console for debug.
   Console: {
     log
@@ -2109,7 +2109,7 @@ const NaviLinkScorer = (function() {
 
         // @note The target URL might be including the original URL encoded.
         // @note Decode only special characters for URL.
-        aURL = unescURLChars(aURL);
+        aURL = URLUtils.unescapeURLCharacters(aURL);
 
         // Search the same pre path as the original in the target URL:
         // - The target pre path equals the original.

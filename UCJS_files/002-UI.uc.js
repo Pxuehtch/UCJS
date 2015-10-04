@@ -34,7 +34,7 @@ const {
     $ANONID,
     $X
   },
-  resolveURL,
+  URLUtils,
   setChromeStyleSheet: setCSS,
   promisePlacesDBResult,
   // Logger to console for debug.
@@ -739,7 +739,7 @@ const StatusField = (function() {
         // Get a URL sring of an SVGAElement.
         if (rawURL && rawURL.baseVal) {
           // @note |baseVal| may be a relative path.
-          rawURL = resolveURL(rawURL.baseVal, aAnchorElt.baseURI);
+          rawURL = URLUtils.resolveURL(rawURL.baseVal, aAnchorElt.baseURI);
         }
 
         // Use the cooked URL if a raw URL cannot be retrieved.

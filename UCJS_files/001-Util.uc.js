@@ -23,6 +23,16 @@ const ucjsUtil = (function(window) {
 
 
 /**
+ * Browser window checker.
+ *
+ * @note Used for filtering functions that are available to a browser window
+ * only.
+ */
+function isBrowserWindow() {
+  return window.location.href === 'chrome://browser/content/browser.xul';
+}
+
+/**
  * Native module handler.
  *
  * @note Must put this handler at the top of this file |Util.uc.js|, which has
@@ -769,6 +779,79 @@ const DOMUtils = (function() {
 })();
 
 /**
+ * URL utilities.
+ */
+const URLUtils = (function() {
+  // Available to a browser window only.
+  if (!isBrowserWindow()) {
+    return null;
+  }
+
+  function unescapeURLCharacters(url) {
+    // Special characters for URL.
+    // @see http://tools.ietf.org/html/rfc3986#section-2
+    const kURLChars = {
+      "21":"!", "23":"#", "24":"$", "25":"%", "26":"&",
+      "27":"'", "28":"(", "29":")", "2a":"*", "2b":"+",
+      "2c":",", "2d":"-", "2e":".", "2f":"/", "3a":":",
+      "3b":";", "3d":"=", "3f":"?", "40":"@", "5b":"[",
+      "5d":"]", "5f":"_", "7e":"~"
+    };
+
+    if (!url) {
+      return '';
+    }
+
+    for (let key in kURLChars) {
+      url = url.replace(RegExp('%(?:25)?' + key, 'ig'), kURLChars[key]);
+    }
+
+    return url;
+  }
+
+  function unescapeURLForUI(url, characterSet) {
+    if (!url) {
+      return '';
+    }
+
+    if (!characterSet) {
+      characterSet = gBrowser.selectedBrowser.characterSet || 'UTF-8';
+    }
+
+    return Modules.TextToSubURI.unEscapeURIForUI(characterSet, url);
+  }
+
+  function resolveURL(url, baseURL) {
+    if (!url || !/\S/.test(url)) {
+      return null;
+    }
+
+    if (/^(?:https?|ftp):/.test(url)) {
+      return url;
+    }
+
+    if (!baseURL) {
+      baseURL = gBrowser.currentURI.spec;
+    }
+
+    try {
+      const {makeURI} = Modules.BrowserUtils;
+
+      return makeURI(url, null, makeURI(baseURL)).spec
+    }
+    catch (ex) {}
+
+    return null;
+  }
+
+  return {
+    unescapeURLCharacters,
+    unescapeURLForUI,
+    resolveURL
+  };
+})();
+
+/**
  * Functions for Tab / Window.
  */
 function checkSecurity(aURL, aOption = {}) {
@@ -787,65 +870,6 @@ function checkSecurity(aURL, aOption = {}) {
 
   // @see chrome://global/content/contentAreaUtils.js::urlSecurityCheck()
   window.urlSecurityCheck(aURL, gBrowser.contentPrincipal, flag);
-}
-
-function unescapeURLCharacters(aURL) {
-  // Special characters for URL.
-  // @see http://tools.ietf.org/html/rfc3986#section-2
-  const kURLChars = {
-    "21":"!", "23":"#", "24":"$", "25":"%", "26":"&",
-    "27":"'", "28":"(", "29":")", "2a":"*", "2b":"+",
-    "2c":",", "2d":"-", "2e":".", "2f":"/", "3a":":",
-    "3b":";", "3d":"=", "3f":"?", "40":"@", "5b":"[",
-    "5d":"]", "5f":"_", "7e":"~"
-  };
-
-  if (!aURL) {
-    return '';
-  }
-
-  for (let key in kURLChars) {
-    aURL = aURL.replace(RegExp('%(?:25)?' + key, 'ig'), kURLChars[key]);
-  }
-
-  return aURL;
-}
-
-function unescapeURLForUI(aURL, aCharset) {
-  if (!aURL) {
-    return '';
-  }
-
-
-  if (!aCharset) {
-    aCharset = gBrowser.selectedBrowser.characterSet || 'UTF-8';
-  }
-
-  return Modules.TextToSubURI.unEscapeURIForUI(charset, aURL);
-}
-
-function resolveURL(aURL, aBaseURL) {
-  if (!aURL || !/\S/.test(aURL)) {
-    return null;
-  }
-
-  if (/^(?:https?|ftp):/.test(aURL)) {
-    return aURL;
-  }
-
-
-  if (!baseURL) {
-    baseURL = gBrowser.currentURI.spec;
-  }
-
-  try {
-    const {makeURI} = Modules.BrowserUtils;
-
-    return makeURI(url, null, makeURI(baseURL)).spec
-  }
-  catch (ex) {}
-
-  return null;
 }
 
 function openHomePages(aOption = {}) {
@@ -1264,13 +1288,11 @@ return {
   EventManager,
   Listeners,
   DOMUtils,
+  URLUtils,
 
   getSelectionAtCursor,
   getTextInRange,
 
-  unescapeURLCharacters,
-  unescapeURLForUI,
-  resolveURL,
   openHomePages,
   openTabs,
   openURL,
