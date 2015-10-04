@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name Util.uc.js
-// @description Common utilities.
+// @description The common utility functions for user scripts.
 // @include main
 // @include chrome://browser/content/devtools/webconsole.xul
 // ==/UserScript==
@@ -201,7 +201,7 @@ const Modules = (function() {
     } = options;
 
     // Loads JSM.
-    if (/^(?:gre)?\/modules\/.+\.jsm$/.test(moduleURL)) {
+    if (/^(?:gre)?\/modules\/.+\.jsm$|^services\-.+\.js$/.test(moduleURL)) {
       let scope = {};
 
       Cu.import('resource://' + moduleURL, scope);
@@ -1354,7 +1354,7 @@ return {
   CSSUtils,
   BrowserUtils,
   PlacesUtils//,
-}
+};
 
 
 })(this);
