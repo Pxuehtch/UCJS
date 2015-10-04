@@ -36,7 +36,7 @@ const {
     $X1
   },
   URLUtils,
-  openURL,
+  TabUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -344,7 +344,7 @@ const MenuUI = (function() {
         return;
       }
 
-      openURL(data.open, {
+      TabUtils.openURL(data.open, {
         inTab,
         inBackground,
         relatedToCurrent: true

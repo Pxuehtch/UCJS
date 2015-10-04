@@ -48,7 +48,6 @@ const {
   },
   getSelectionAtCursor,
   resolveURL,
-  openTab,
   // Logger to console for debug.
   Console: {
     log
@@ -112,7 +111,7 @@ const kGestureSet = [
     gestures: ['S&L'],
     name: '前のページへ',
     command() {
-      window.ucjsUtil.loadPage(window.ucjsNaviLink.getPrev());
+      window.ucjsUtil.TabUtils.loadPage(window.ucjsNaviLink.getPrev());
     }
   },
   {
@@ -126,7 +125,7 @@ const kGestureSet = [
     gestures: ['S&R'],
     name: '次のページへ',
     command() {
-      window.ucjsUtil.loadPage(window.ucjsNaviLink.getNext());
+      window.ucjsUtil.TabUtils.loadPage(window.ucjsNaviLink.getNext());
     }
   },
   {
@@ -197,7 +196,7 @@ const kGestureSet = [
     gestures: ['DR'],
     name: 'タブを閉じる',
     command() {
-      window.ucjsUtil.removeTab(gBrowser.selectedTab, {
+      window.ucjsUtil.TabUtils.removeTab(gBrowser.selectedTab, {
         safetyLock: true
       });
     }
@@ -206,7 +205,7 @@ const kGestureSet = [
     gestures: ['S&DR'],
     name: '強制的にタブを閉じる',
     command() {
-      window.ucjsUtil.removeTab(gBrowser.selectedTab);
+      window.ucjsUtil.TabUtils.removeTab(gBrowser.selectedTab);
     }
   },
   {
@@ -234,14 +233,14 @@ const kGestureSet = [
     gestures: ['S&DRU', 'DRUW+', 'DRUW-'],
     name: '他のタブを閉じる',
     command() {
-      window.ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
+      window.ucjsUtil.TabUtils.removeAllTabsBut(gBrowser.selectedTab);
     }
   },
   {
     gestures: ['S&DURD', 'DURDW+', 'DURDW-'], // shape of 'h'
     name: 'ホームだけにする',
     command() {
-      window.ucjsUtil.openHomePages({
+      window.ucjsUtil.TabUtils.openHomePages({
         doReplace: true
       });
     }
@@ -250,7 +249,7 @@ const kGestureSet = [
     gestures: ['DURD'], // Shape of 'h'.
     name: 'ホームを開く',
     command() {
-      window.ucjsUtil.openHomePages();
+      window.ucjsUtil.TabUtils.openHomePages();
     }
   },
 
@@ -386,7 +385,7 @@ const kGestureSet = [
     gestures: ['LINK#U', 'IMAGE#U'],
     name: '新タブに開く',
     command({dragData}) {
-      openTab(dragData, {
+      window.ucjsUtil.TabUtils.openTab(dragData, {
         inBackground: false,
         relatedToCurrent: true,
         allowImageData: true
@@ -397,7 +396,7 @@ const kGestureSet = [
     gestures: ['LINK#D', 'IMAGE#D'],
     name: '裏タブで開く',
     command({dragData}) {
-      openTab(dragData, {
+      window.ucjsUtil.TabUtils.openTab(dragData, {
         inBackground: true,
         relatedToCurrent: true,
         allowImageData: true

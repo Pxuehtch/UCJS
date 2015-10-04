@@ -30,8 +30,7 @@ const {
     $event,
     $shutdown
   },
-  openTab,
-  removeTab,
+  TabUtils,
   promisePlacesDBResult,
   // Logger to console for debug.
   Console: {
@@ -1507,7 +1506,7 @@ function getOpenerTab(aBaseTab, aOption = {}) {
 
       if (referrerURL) {
         // TODO: Opens in foreground or background?
-        return openTab(referrerURL);
+        return TabUtils.openTab(referrerURL);
       }
     }
 
@@ -1698,7 +1697,7 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
   }
 
   for (let i = last; i >= top ; i--) {
-    removeTab(tabs[i], {safetyLock: true});
+    TabUtils.removeTab(tabs[i], {safetyLock: true});
   }
 }
 
@@ -1711,7 +1710,7 @@ function closeReadTabs() {
     tab = tabs[i];
 
     if (TabData.get(tab, 'read')) {
-      removeTab(tab, {safetyLock: true});
+      TabUtils.removeTab(tab, {safetyLock: true});
     }
   }
 }

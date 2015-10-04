@@ -381,10 +381,14 @@ function setAttributeForCommand(aNode, aURLs) {
   let URLs = JSON.stringify(aURLs);
   let inBG = (aURLs.length > 1) ? 'true' : 'event.ctrlKey||event.button===1';
 
-  let command =
-    'ucjsUtil.openTabs(%URLs%,{inBackground:%inBG%,relatedToCurrent:true});';
+  let command = `
+    ucjsUtil.TabUtils.openTabs(${URLs}, {
+      inBackground: ${inBG},
+      relatedToCurrent: true
+    });
+  `;
 
-  command = command.replace('%URLs%', URLs).replace('%inBG%', inBG);
+  command = command.replace(/^\s+|\n/gm, '');
 
   aNode.setAttribute('oncommand', command);
 

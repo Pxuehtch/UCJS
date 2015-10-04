@@ -32,7 +32,7 @@ const {
   DOMUtils: {
     $X1
   },
-  openTab,
+  TabUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -376,7 +376,7 @@ const RequestHandler = (function() {
  *     @note If the preset has 'form', the data fills the input box.
  *   tabOption: {hash} [optional]
  *     Options for a new tab.
- *     @see |ucjsUtil::openTab|
+ *     @see |ucjsUtil::TabUtils.openTab|
  *     e.g. |tabOption: {inBackground: true}| opens tab in background.
  *
  * @usage window.ucjsWebService.open(aParams);
@@ -388,7 +388,7 @@ function open(aParams) {
     return;
   }
 
-  let tab = openTab(result.URL, result.tabOption);
+  let tab = TabUtils.openTab(result.URL, result.tabOption);
 
   // TODO: Observe the document loaded to manage a form.
   // WORKAROUND:

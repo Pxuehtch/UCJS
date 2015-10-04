@@ -852,221 +852,245 @@ const URLUtils = (function() {
 })();
 
 /**
- * Functions for Tab / Window.
+ * Tabs utilities.
  */
-function checkSecurity(aURL, aOption = {}) {
-  let {
-    trustURL,
-    allowImageData
-  } = aOption;
-
-  if (!trustURL && allowImageData) {
-    trustURL = /^data:image\/(?:gif|jpg|png);base64,/.test(aURL);
+const TabUtils = (function() {
+  // Available to a browser window only.
+  if (!isBrowserWindow()) {
+    return null;
   }
 
-  let flag = trustURL ?
-    Ci.nsIScriptSecurityManager.STANDARD :
-    Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL;
+  function checkSecurity(url, options = {}) {
+    let {
+      trustURL,
+      allowImageData
+    } = options;
 
-  // @see chrome://global/content/contentAreaUtils.js::urlSecurityCheck()
-  window.urlSecurityCheck(aURL, gBrowser.contentPrincipal, flag);
-}
+    let principal = gBrowser.contentPrincipal;
 
-function openHomePages(aOption = {}) {
-  let {
-    doReplace,
-    onlyFirstPage
-  } = aOption;
-
-  // @see chrome://browser/content/browser.js::gHomeButton
-  let homePages = window.gHomeButton.getHomePage().split('|');
-
-  if (onlyFirstPage) {
-    homePages = homePages[0];
-  }
-
-  openTabs(homePages, {
-    doReplace,
-    skipSecurityCheck: true
-  });
-}
-
-function openTabs(aURLs, aOption = {}) {
-  if (typeof aURLs === 'string') {
-    aURLs = aURLs.split('|');
-  }
-
-  if (!Array.isArray(aURLs) || aURLs.length === 0) {
-    return;
-  }
-
-  let {
-    inBackground,
-    doReplace
-  } = aOption;
-
-  let firstTabAdded;
-
-  if (doReplace) {
-    // @see chrome://browser/content/browser.js::BrowserOpenTab
-    window.BrowserOpenTab();
-
-    removeAllTabsBut(gBrowser.selectedTab);
-
-    firstTabAdded = loadPage(aURLs.shift(), aOption);
-  }
-  else {
-    if (!inBackground) {
-      firstTabAdded = openTab(aURLs.shift(), aOption);
+    if (!trustURL && allowImageData) {
+      trustURL = /^data:image\/(?:gif|jpg|png);base64,/.test(url);
     }
+
+    let flag = trustURL ?
+      Ci.nsIScriptSecurityManager.STANDARD :
+      Ci.nsIScriptSecurityManager.DISALLOW_INHERIT_PRINCIPAL;
+
+    Modules.BrowserUtils.urlSecurityCheck(url, principal, flag);
   }
 
-  aURLs.forEach((url) => {
-    openTab(url, aOption);
-  });
+  function openHomePages(options = {}) {
+    let {
+      doReplace,
+      onlyFirstPage
+    } = options;
 
-  if (firstTabAdded) {
-    gBrowser.selectedTab = firstTabAdded;
-  }
-}
+    // @see chrome://browser/content/browser.js::gHomeButton
+    let homePages = window.gHomeButton.getHomePage().split('|');
 
-function openURL(aURL, aOption = {}) {
-  let {
-    inTab
-  } = aOption;
+    if (onlyFirstPage) {
+      homePages = homePages[0];
+    }
 
-  if (inTab) {
-    return openTab(aURL, aOption);
-  }
-
-  return loadPage(aURL, aOption);
-}
-
-function openTab(aURL, aOption = {}) {
-  let URL = resolveURL(aURL);
-
-  if (!URL) {
-    return;
-  }
-
-  let {
-    inBackground,
-    skipSecurityCheck,
-    trustURL,
-    allowImageData
-  } = aOption;
-
-  if (!skipSecurityCheck) {
-    checkSecurity(URL, {
-      trustURL,
-      allowImageData
+    openTabs(homePages, {
+      doReplace,
+      skipSecurityCheck: true
     });
   }
 
-  // @note Set |inBackground| to explicit |false| to open in a foreground tab.
-  // Since it will default to the |browser.tabs.loadInBackground| preference in
-  // |gBrowser.loadOneTab| if |undefined|.
-  aOption.inBackground = inBackground === true;
+  function openTabs(urls, options = {}) {
+    if (typeof urls === 'string') {
+      urls = urls.split('|');
+    }
 
-  return gBrowser.loadOneTab(URL, aOption);
-}
-
-function loadPage(aURL, aOption = {}) {
-  let URL = resolveURL(aURL);
-
-  if (!URL) {
-    return;
-  }
-
-  let {
-    referrerURI,
-    charset,
-    postData,
-    allowThirdPartyFixup,
-    fromExternal,
-    allowMixedContent,
-    skipSecurityCheck,
-    trustURL,
-    allowImageData
-  } = aOption;
-
-  if (!skipSecurityCheck) {
-    checkSecurity(URL, {
-      trustURL,
-      allowImageData
-    });
-  }
-
-  let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
-
-  if (allowThirdPartyFixup) {
-    flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
-    flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FIXUP_SCHEME_TYPOS;
-  }
-
-  if (fromExternal) {
-    flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-  }
-
-  if (allowMixedContent) {
-    flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
-  }
-
-  gBrowser.loadURIWithFlags(URL, flags, referrerURI, charset, postData);
-
-  return gBrowser.selectedTab;
-}
-
-/**
- * Alternative |gBrowser.removeTab|.
- *
- * @see chrome://browser/content/tabbrowser.xml::removeTab
- */
-function removeTab(aTab, aOption = {}) {
-  let {
-    safetyLock
-  } = aOption;
-
-  if (safetyLock) {
-    // Do not close:
-    // - Pinned tab.
-    // - Only one unpinned tab.
-    if (aTab.pinned ||
-        gBrowser.visibleTabs.length - gBrowser._numPinnedTabs <= 1) {
+    if (!Array.isArray(urls) || urls.length === 0) {
       return;
     }
-  }
 
-  gBrowser.removeTab(aTab);
-}
+    let {
+      inBackground,
+      doReplace
+    } = options;
 
-/**
- * Alternative |gBrowser.removeAllTabsBut|.
- *
- * - Does not warn against closing multiple tabs.
- * - Does not close blocked tabs.
- *
- * @see chrome://browser/content/tabbrowser.xml::removeAllTabsBut
- */
-function removeAllTabsBut(aTab) {
-  if (aTab.pinned) {
-    return;
-  }
+    let firstTabAdded;
 
-  if (!aTab.hidden && aTab !== gBrowser.selectedTab) {
-    gBrowser.selectedTab = aTab;
-  }
+    if (doReplace) {
+      // @see chrome://browser/content/browser.js::BrowserOpenTab
+      window.BrowserOpenTab();
 
-  let tabs = gBrowser.visibleTabs;
+      removeAllTabsBut(gBrowser.selectedTab);
 
-  for (let i = tabs.length - 1, tab; i >= 0; i--) {
-    tab = tabs[i];
+      firstTabAdded = loadPage(urls.shift(), options);
+    }
+    else {
+      if (!inBackground) {
+        firstTabAdded = openTab(urls.shift(), options);
+      }
+    }
 
-    if (tab !== aTab && !tab.pinned) {
-      removeTab(tab, {safetyLock: true});
+    urls.forEach((url) => {
+      openTab(url, options);
+    });
+
+    if (firstTabAdded) {
+      gBrowser.selectedTab = firstTabAdded;
     }
   }
-}
+
+  function openURL(url, options = {}) {
+    let {
+      inTab
+    } = options;
+
+    if (inTab) {
+      return openTab(url, options);
+    }
+
+    return loadPage(url, options);
+  }
+
+  function openTab(url, options = {}) {
+    url = URLUtils.resolveURL(url);
+
+    if (!url) {
+      return;
+    }
+
+    let {
+      inBackground,
+      skipSecurityCheck,
+      trustURL,
+      allowImageData
+    } = options;
+
+    if (!skipSecurityCheck) {
+      checkSecurity(url, {
+        trustURL,
+        allowImageData
+      });
+    }
+
+    // @note Set |inBackground| to explicit |false| to open in a foreground
+    // tab because if |undefined| it will default to the
+    // |browser.tabs.loadInBackground| preference in |gBrowser.loadOneTab|.
+    options.inBackground = inBackground === true;
+
+    return gBrowser.loadOneTab(url, options);
+  }
+
+  function loadPage(url, options = {}) {
+    url = URLUtils.resolveURL(url);
+
+    if (!url) {
+      return;
+    }
+
+    let {
+      referrerURI,
+      charset,
+      postData,
+      allowThirdPartyFixup,
+      fromExternal,
+      allowMixedContent,
+      skipSecurityCheck,
+      trustURL,
+      allowImageData
+    } = options;
+
+    if (!skipSecurityCheck) {
+      checkSecurity(url, {
+        trustURL,
+        allowImageData
+      });
+    }
+
+    let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
+
+    if (allowThirdPartyFixup) {
+      flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
+      flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FIXUP_SCHEME_TYPOS;
+    }
+
+    if (fromExternal) {
+      flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
+    }
+
+    if (allowMixedContent) {
+      flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
+    }
+
+    gBrowser.loadURIWithFlags(url, flags, referrerURI, charset, postData);
+
+    return gBrowser.selectedTab;
+  }
+
+  /**
+   * Alternative |gBrowser.removeTab|.
+   *
+   * Additional features:
+   * - Does not close a pinned tab.
+   * - Does not close an unpinned tab when no other unpinned tabs.
+   *
+   * @see chrome://browser/content/tabbrowser.xml::removeTab
+   */
+  function removeTab(tab, options = {}) {
+    let {
+      safetyLock
+    } = options;
+
+    if (safetyLock) {
+      let pinned = tab.pinned;
+      let lastUnpinned =
+        gBrowser.visibleTabs.length - gBrowser._numPinnedTabs <= 1
+
+      if (pinned || lastUnpinned) {
+        return;
+      }
+    }
+
+    gBrowser.removeTab(tab);
+  }
+
+  /**
+   * Alternative |gBrowser.removeAllTabsBut|.
+   *
+   * Additional features:
+   * - Does not warn against closing multiple tabs.
+   * - Does not close 'safety locked' tabs.
+   *   @see |TabUtils.removeTab|
+   *
+   * @see chrome://browser/content/tabbrowser.xml::removeAllTabsBut
+   */
+  function removeAllTabsBut(tabToRemain) {
+    if (tabToRemain.pinned) {
+      return;
+    }
+
+    if (!tabToRemain.hidden && tabToRemain !== gBrowser.selectedTab) {
+      gBrowser.selectedTab = tabToRemain;
+    }
+
+    let tabs = gBrowser.visibleTabs;
+
+    for (let i = tabs.length - 1, tab; i >= 0; i--) {
+      tab = tabs[i];
+
+      if (tab !== tabToRemain && !tab.pinned) {
+        removeTab(tab, {safetyLock: true});
+      }
+    }
+  }
+
+  return {
+    openHomePages,
+    openTabs,
+    openURL,
+    openTab,
+    loadPage,
+    removeTab,
+    removeAllTabsBut
+  };
+})();
 
 /**
  * Miscellaneous functions.
@@ -1289,17 +1313,10 @@ return {
   Listeners,
   DOMUtils,
   URLUtils,
+  TabUtils,
 
   getSelectionAtCursor,
   getTextInRange,
-
-  openHomePages,
-  openTabs,
-  openURL,
-  openTab,
-  loadPage,
-  removeTab,
-  removeAllTabsBut,
 
   restartFx,
   setGlobalStyleSheet,

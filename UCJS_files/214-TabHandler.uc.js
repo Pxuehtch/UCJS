@@ -121,7 +121,7 @@ const kClickAction = [
       // Open home pages.
       // <Shift>: The current opened tabs are closed.
       // <Ctrl>: Opens only the first one of the multiple homepages.
-      window.ucjsUtil.openHomePages({
+      window.ucjsUtil.TabUtils.openHomePages({
         doReplace: shiftKey,
         onlyFirstPage: ctrlKey
       });
@@ -141,7 +141,7 @@ const kClickAction = [
       }
 
       // Close tabs except for the selected tab.
-      window.ucjsUtil.removeAllTabsBut(gBrowser.selectedTab);
+      window.ucjsUtil.TabUtils.removeAllTabsBut(gBrowser.selectedTab);
     }
   },
   {
@@ -214,7 +214,7 @@ const kClickAction = [
       let {target} = aState;
 
       // Close the tab.
-      window.ucjsUtil.removeTab(target, {safetyLock: true});
+      window.ucjsUtil.TabUtils.removeTab(target, {safetyLock: true});
     }
   }
   //,

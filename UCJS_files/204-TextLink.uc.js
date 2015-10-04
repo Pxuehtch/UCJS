@@ -31,8 +31,8 @@ const {
   DOMUtils: {
     $X1
   },
+  TabUtils,
   getTextInRange,
-  openTab,
   // Logger to console for debug.
   Console: {
     log
@@ -185,7 +185,7 @@ function handleEvent(aEvent) {
   if (URL) {
     selection.removeAllRanges();
 
-    openTab(URL, {
+    TabUtils.openTab(URL, {
       relatedToCurrent: true
     });
   }

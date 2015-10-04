@@ -429,7 +429,7 @@ function handleAttribute(aNode, aName, aValue) {
  */
 function setAttributeForCommand(aNode, aURL) {
   let command =
-    'ucjsUtil.openTab("%URL%",' +
+    'ucjsUtil.TabUtils.openTab("%URL%",' +
     '{inBackground:event.ctrlKey||event.button===1,relatedToCurrent:true});';
 
   command = command.replace('%URL%', aURL);
