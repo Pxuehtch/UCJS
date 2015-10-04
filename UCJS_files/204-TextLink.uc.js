@@ -32,7 +32,7 @@ const {
     $X1
   },
   TabUtils,
-  getTextInRange,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -123,7 +123,7 @@ const URLUtil = (function() {
    *   |null| if no matches.
    */
   function extract(aRange) {
-    return match(getTextInRange(aRange));
+    return match(BrowserUtils.getTextInRange(aRange));
   }
 
   /**

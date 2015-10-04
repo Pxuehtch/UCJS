@@ -47,7 +47,7 @@ const {
     $ID
   },
   URLUtils,
-  getSelectionAtCursor,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -957,7 +957,7 @@ function GestureManager() {
 
     // 1.A selected text.
     if (!type) {
-      let text = getSelectionAtCursor({event: aEvent});
+      let text = BrowserUtils.getSelectionAtCursor({event: aEvent});
 
       if (text) {
         type = kGestureSign.text;

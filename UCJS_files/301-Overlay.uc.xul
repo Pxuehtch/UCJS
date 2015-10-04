@@ -28,10 +28,10 @@
     oncommand="ucjsUI.FindBar.toggle();"/>
 
   <command id="ucjs_cmd_restartApp"
-    oncommand="ucjsUtil.restartFx();"/>
+    oncommand="ucjsUtil.BrowserUtils.restartFx();"/>
 
   <command id="ucjs_cmd_restartAppWithPurgeCaches"
-    oncommand="ucjsUtil.restartFx({purgeCaches:true});"/>
+    oncommand="ucjsUtil.BrowserUtils.restartFx({purgeCaches:true});"/>
 
   <command id="ucjs_cmd_toggleTabbar"
     oncommand="(function(tb){tb.collapsed=!tb.collapsed;document.getElementById('ucjs_ToolbarContextMenu_toggleTabbar').setAttribute('checked',!tb.collapsed);})(document.getElementById('TabsToolbar'));"/>

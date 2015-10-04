@@ -372,154 +372,6 @@ const Listeners = (function() {
 })();
 
 /**
- * Gets a selected text under the cursor.
- *
- * @param aOption {hash}
- *   @key event {MouseEvent}
- *   @key charLen {integer}
- * @return {string}
- *
- * TODO: |event.rangeOffset| sometimes returns a wrong value (e.g. it returns
- * the same value as if at the first row when a cursor is on the lines below
- * the first row in a <textarea>).
- * WORKAROUND: Rescan ranges with the client coordinates instead of the range
- * offset.
- */
-function getSelectionAtCursor(aOption = {}) {
-  const kMaxCharLen = 150;
-
-  let {
-    event,
-    charLen
-  } = aOption;
-
-  let node, rangeParent, rangeOffset;
-
-  if (event) {
-    // Event mode.
-    node = event.target;
-    rangeParent = event.rangeParent;
-    rangeOffset = event.rangeOffset; // TODO: May be wrong value.
-  }
-  else if (window.gContextMenu) {
-    // Contextmenu mode.
-    // @see chrome://browser/content/nsContextMenu.js
-    node = window.document.popupNode;
-    rangeParent = window.document.popupRangeParent;
-    rangeOffset = window.document.popupRangeOffset;
-  }
-
-  let selection = getSelectionController(node);
-
-  if (!selection) {
-    return null;
-  }
-
-  let text = '';
-
-  // Scan ranges with the range offset.
-  for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
-    range = selection.getRangeAt(i);
-
-    if (range.isPointInRange(rangeParent, rangeOffset)) {
-      text = getTextInRange(range);
-      break;
-    }
-  }
-  // WORKAROUND: |event.rangeOffset| may be wrong when |text| is empty in the
-  // event mode. So, rescan the ranges with the client coordinates.
-  if (event && !text) {
-    let {clientX: x, clientY: y} = event;
-    let rect;
-
-    for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
-      range = selection.getRangeAt(i);
-      rect = range.getBoundingClientRect();
-
-      if (rect.left <= x && x <= rect.right &&
-          rect.top <= y && y <= rect.bottom) {
-        text = getTextInRange(range);
-        break;
-      }
-    }
-  }
-
-  // Use only the first important chars.
-  text = trimText(text, Math.min(charLen || kMaxCharLen, kMaxCharLen));
-
-  return text;
-}
-
-function getSelectionController(aNode) {
-  if (!aNode) {
-    return null;
-  }
-
-  // 1. Scan selection in a textbox (excluding password).
-  if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
-      aNode instanceof HTMLTextAreaElement) {
-    try {
-      return aNode.QueryInterface(Ci.nsIDOMNSEditableElement).
-        editor.selection;
-    }
-    catch (ex) {}
-
-    return null;
-  }
-
-  // 2. Get a window selection.
-  let win = aNode.ownerDocument.defaultView;
-
-  return win.getSelection();
-}
-
-function getTextInRange(aRange) {
-  if (!aRange.toString()) {
-    return '';
-  }
-
-  let encoder =
-    Modules.$I('@mozilla.org/layout/documentEncoder;1?type=text/plain',
-    'nsIDocumentEncoder');
-
-  encoder.init(
-    aRange.startContainer.ownerDocument,
-    'text/plain',
-    encoder.OutputLFLineBreak | encoder.SkipInvisibleContent
-  );
-
-  encoder.setRange(aRange);
-
-  return encoder.encodeToString();
-}
-
-function trimText(aText, aMaxLength) {
-  if (!aText) {
-    return '';
-  }
-
-  if (aText.length > aMaxLength) {
-    // Only use the first charlen important chars.
-    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=221361
-    let match = RegExp('^(?:\\s*.){0,' + aMaxLength + '}').exec(aText);
-
-    if (!match) {
-      return '';
-    }
-
-    aText = match[0];
-  }
-
-  aText = aText.trim().replace(/\s+/g, ' ');
-
-  if (aText.length > aMaxLength) {
-    aText = aText.substr(0, aMaxLength);
-  }
-
-  return aText;
-}
-
-/**
  * DOM utilities.
  */
 const DOMUtils = (function() {
@@ -1240,28 +1092,189 @@ const CSSUtils = (function() {
 })();
 
 /**
- * Miscellaneous functions.
+ * Browser utilities.
  */
-function restartFx(aOption = {}) {
-  let {
-    purgeCaches
-  } = aOption;
-
-  // @see chrome://global/content/globalOverlay.js::canQuitApplication
-  if (!window.canQuitApplication('restart')) {
-    return;
+const BrowserUtils = (function() {
+  // Available to a browser window only.
+  if (!isBrowserWindow()) {
+    return null;
   }
 
-  if (purgeCaches) {
-    Services.appinfo.invalidateCachesOnRestart();
+  function restartFx(options = {}) {
+    let {
+      purgeCaches
+    } = options;
+
+    // @see chrome://global/content/globalOverlay.js::canQuitApplication
+    if (!window.canQuitApplication('restart')) {
+      return;
+    }
+
+    if (purgeCaches) {
+      Services.appinfo.invalidateCachesOnRestart();
+    }
+
+    // WORKAROUND: In Fx30, the browser cannot often restart on resume startup,
+    // so set the preference to force to restore the session.
+    Modules.Prefs.set('browser.sessionstore.resume_session_once', true);
+
+    Modules.BrowserUtils.restartApplication();
   }
 
-  // WORKAROUND: In Fx30, the browser cannot often restart on resume startup,
-  // so set the preference to force to restore the session.
-  Modules.Prefs.set('browser.sessionstore.resume_session_once', true);
+  /**
+   * Gets a selected text under the cursor.
+   *
+   * @param aOption {hash}
+   *   @key event {MouseEvent}
+   *   @key charLen {integer}
+   * @return {string}
+   *
+   * TODO: |event.rangeOffset| sometimes returns a wrong value (e.g. it returns
+   * the same value as if at the first row when a cursor is on the lines below
+   * the first row in a <textarea>).
+   * WORKAROUND: Rescan ranges with the client coordinates instead of the range
+   * offset.
+   */
+  function getSelectionAtCursor(aOption = {}) {
+    const kMaxCharLen = 150;
 
-  Modules.BrowserUtils.restartApplication();
-}
+    let {
+      event,
+      charLen
+    } = aOption;
+
+    let node, rangeParent, rangeOffset;
+
+    if (event) {
+      // Event mode.
+      node = event.target;
+      rangeParent = event.rangeParent;
+      rangeOffset = event.rangeOffset; // TODO: May be wrong value.
+    }
+    else if (window.gContextMenu) {
+      // Contextmenu mode.
+      // @see chrome://browser/content/nsContextMenu.js
+      node = window.document.popupNode;
+      rangeParent = window.document.popupRangeParent;
+      rangeOffset = window.document.popupRangeOffset;
+    }
+
+    let selection = getSelectionController(node);
+
+    if (!selection) {
+      return null;
+    }
+
+    let text = '';
+
+    // Scan ranges with the range offset.
+    for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
+      range = selection.getRangeAt(i);
+
+      if (range.isPointInRange(rangeParent, rangeOffset)) {
+        text = getTextInRange(range);
+        break;
+      }
+    }
+    // WORKAROUND: |event.rangeOffset| may be wrong when |text| is empty in the
+    // event mode. So, rescan the ranges with the client coordinates.
+    if (event && !text) {
+      let {clientX: x, clientY: y} = event;
+      let rect;
+
+      for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
+        range = selection.getRangeAt(i);
+        rect = range.getBoundingClientRect();
+
+        if (rect.left <= x && x <= rect.right &&
+            rect.top <= y && y <= rect.bottom) {
+          text = getTextInRange(range);
+          break;
+        }
+      }
+    }
+
+    // Use only the first important chars.
+    text = trimText(text, Math.min(charLen || kMaxCharLen, kMaxCharLen));
+
+    return text;
+  }
+
+  function getSelectionController(aNode) {
+    if (!aNode) {
+      return null;
+    }
+
+    // 1. Scan selection in a textbox (excluding password).
+    if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
+        aNode instanceof HTMLTextAreaElement) {
+      try {
+        return aNode.QueryInterface(Ci.nsIDOMNSEditableElement).
+          editor.selection;
+      }
+      catch (ex) {}
+
+      return null;
+    }
+
+    // 2. Get a window selection.
+    let win = aNode.ownerDocument.defaultView;
+
+    return win.getSelection();
+  }
+
+  function getTextInRange(aRange) {
+    if (!aRange.toString()) {
+      return '';
+    }
+
+    let encoder =
+      Modules.$I('@mozilla.org/layout/documentEncoder;1?type=text/plain',
+      'nsIDocumentEncoder');
+
+    encoder.init(
+      aRange.startContainer.ownerDocument,
+      'text/plain',
+      encoder.OutputLFLineBreak | encoder.SkipInvisibleContent
+    );
+
+    encoder.setRange(aRange);
+
+    return encoder.encodeToString();
+  }
+
+  function trimText(aText, aMaxLength) {
+    if (!aText) {
+      return '';
+    }
+
+    if (aText.length > aMaxLength) {
+      // Only use the first charlen important chars.
+      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=221361
+      let match = RegExp('^(?:\\s*.){0,' + aMaxLength + '}').exec(aText);
+
+      if (!match) {
+        return '';
+      }
+
+      aText = match[0];
+    }
+
+    aText = aText.trim().replace(/\s+/g, ' ');
+
+    if (aText.length > aMaxLength) {
+      aText = aText.substr(0, aMaxLength);
+    }
+
+    return aText;
+  }
+
+  return {
+    restartFx,
+    getSelectionAtCursor,
+    getTextInRange
+  };
+})();
 
 /**
  * Query the Places database asynchronously.
@@ -1327,11 +1340,8 @@ return {
   URLUtils,
   TabUtils,
   CSSUtils,
+  BrowserUtils,
 
-  getSelectionAtCursor,
-  getTextInRange,
-
-  restartFx,
   promisePlacesDBResult
 }
 

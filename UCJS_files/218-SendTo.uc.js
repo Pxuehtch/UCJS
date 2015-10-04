@@ -24,7 +24,7 @@ const {
     init$E,
     $ID
   },
-  getSelectionAtCursor,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -289,7 +289,7 @@ function getAvailableItems() {
   let {onLink, onImage, onTextInput, linkURL, mediaURL} =
     window.gContextMenu;
   let pageURL = gBrowser.currentURI.spec;
-  let selection = getSelectionAtCursor();
+  let selection = BrowserUtils.getSelectionAtCursor();
   let onPlainTextLink = selection && !onLink && linkURL;
 
   kPreset.forEach((service) => {
