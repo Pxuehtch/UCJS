@@ -198,7 +198,7 @@ const kGestureSet = [
     name: 'タブを閉じる',
     command() {
       window.ucjsUtil.removeTab(gBrowser.selectedTab, {
-        safeClose: true
+        safetyLock: true
       });
     }
   },

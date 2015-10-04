@@ -1024,10 +1024,10 @@ function loadPage(aURL, aOption = {}) {
  */
 function removeTab(aTab, aOption = {}) {
   let {
-    safeClose
+    safetyLock
   } = aOption;
 
-  if (safeClose) {
+  if (safetyLock) {
     // Do not close:
     // - Pinned tab.
     // - Only one unpinned tab.
@@ -1063,7 +1063,7 @@ function removeAllTabsBut(aTab) {
     tab = tabs[i];
 
     if (tab !== aTab && !tab.pinned) {
-      removeTab(tab, {safeClose: true});
+      removeTab(tab, {safetyLock: true});
     }
   }
 }

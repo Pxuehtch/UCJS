@@ -214,7 +214,7 @@ const kClickAction = [
       let {target} = aState;
 
       // Close the tab.
-      window.ucjsUtil.removeTab(target, {safeClose: true});
+      window.ucjsUtil.removeTab(target, {safetyLock: true});
     }
   }
   //,
