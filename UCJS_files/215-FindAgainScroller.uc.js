@@ -26,9 +26,11 @@ const {
       clearTimeout
     }
   },
-  createNode: $E,
-  getNodeById: $ID,
-  getNodesByXPath: $X,
+  DOMUtils: {
+    $E,
+    $ID,
+    $X
+  },
   setChromeStyleSheet: setCSS,
   // Logger to console for debug.
   Console: {

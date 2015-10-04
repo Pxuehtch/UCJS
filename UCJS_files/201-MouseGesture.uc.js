@@ -43,7 +43,9 @@ const {
     $event,
     $shutdown
   },
-  getNodeById: $ID,
+  DOMUtils: {
+    $ID
+  },
   getSelectionAtCursor,
   resolveURL,
   openTab,

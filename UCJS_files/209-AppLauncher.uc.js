@@ -39,8 +39,8 @@ const {
   runApp,
   extractFileName,
   mimeTypeIsTextBased,
-  createNode: $E,
-  getNodesByXPath: $X,
+  $E,
+  $X,
   contentAreaContextMenu,
   // Logger to console for debug.
   log
@@ -837,8 +837,7 @@ AppLauncher_init();
  */
 const {
   Modules,
-  createNode,
-  getNodesByXPath,
+  DOMUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -1172,8 +1171,8 @@ return {
   extractFileName,
   mimeTypeIsTextBased,
 
-  createNode,
-  getNodesByXPath,
+  $E: DOMUtils.$E,
+  $X: DOMUtils.$X,
   contentAreaContextMenu,
 
   log

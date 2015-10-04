@@ -362,20 +362,6 @@ const Listeners = (function() {
 })();
 
 /**
- * Functions for DOM handling.
- */
-function lookupNamespaceURI(aPrefix) {
-  const kNS = {
-    xul:   'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
-    html:  'http://www.w3.org/1999/xhtml',
-    xhtml: 'http://www.w3.org/1999/xhtml',
-    xlink: 'http://www.w3.org/1999/xlink'
-  };
-
-  return kNS[aPrefix] || null;
-}
-
-/**
  * Gets a selected text under the cursor.
  *
  * @param aOption {hash}
@@ -472,7 +458,7 @@ function getSelectionController(aNode) {
   }
 
   // 2. Get a window selection.
-  let win = aNode.ownerDocument.defaultView || getFocusedWindow();
+  let win = aNode.ownerDocument.defaultView;
 
   return win.getSelection();
 }
@@ -524,251 +510,263 @@ function trimText(aText, aMaxLength) {
 }
 
 /**
- * Creates an element with the attributes.
- *
- * @param aTagOrNode {string|Element}
- *   {string}: Set a <tagname>.
- *   {Element}: Set an existing <element> for handling its attributes.
- * @param aAttribute {hash} [optional]
- *   Set list of '<attribute-name>: <attribute-value>'
- *   @note An attribute isn't set if the value is |undefined| or |null| or an
- *   empty string. In adding an existing attribute will be removed if the value
- *   is |null|.
- * @param aAttributeHandler {function} [optional]
- *   A function for a custom handling of attributes.
- *   @note Can handle all values including such as |undefined| and |null|.
- *   @param aNode {Element}
- *   @param aName {string}
- *   @param aValue {string}
- *   @return {boolean}
- *     true if an attribute is processed, false otherwise.
- * @return {Element}
- *   An created or processed element.
- *
- * @note Use only for XUL element.
- *
- * TODO: Manage the namespace of attribute.
+ * DOM utilities.
  */
-function createNode(aTagOrNode, aAttribute, aAttributeHandler) {
-  let node;
+const DOMUtils = (function() {
+  function lookupNamespaceURI(aPrefix) {
+    const kNS = {
+      xul:   'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
+      html:  'http://www.w3.org/1999/xhtml',
+      xhtml: 'http://www.w3.org/1999/xhtml',
+      xlink: 'http://www.w3.org/1999/xlink'
+    };
 
-  if (typeof aTagOrNode === 'string') {
-    let [ns, tag] = aTagOrNode.split(':');
-
-    if (ns && tag) {
-      let nsURI = lookupNamespaceURI(ns);
-
-      if (!nsURI) {
-        throw Error('Invalid namespace prefix: ' + ns);
-      }
-
-      node = window.document.createElementNS(nsURI, tag);
-    }
-    else {
-      node = window.document.createElement(aTagOrNode);
-    }
-  }
-  else {
-    node = aTagOrNode;
+    return kNS[aPrefix] || null;
   }
 
-  if (!!aAttribute) {
-    for (let name in aAttribute) {
-      let value = aAttribute[name];
+  /**
+   * Creates an element with the attributes.
+   *
+   * @param tagOrNode {string|Element}
+   *   {string}: An element tag name.
+   *   {Element}: An existing <element> for handling its attributes.
+   * @param attributes {hash} [optional]
+   *   The list of '<attribute-name>: <attribute-value>'
+   *   @note About falsy value:
+   *   - An attribute cannot be set if the value is |undefined|, |null| or
+   *     an empty string.
+   *   - An existing attribute will be removed if the value is |null|.
+   * @param attributeHandler {function} [optional]
+   *   A function for custom processing of attributes.
+   *   @see |initCreateElement|.
+   *   @param node {Element}
+   *     An element node that is referenced.
+   *   @param name {string}
+   *   @param value {string}
+   *     @note Can handle all values including falsy values such as |undefined|
+   *     and |null|.
+   *   @return {boolean}
+   *     true if an attribute is processed, false otherwise.
+   * @return {Element}
+   *   The element that is created or processed with its attributes.
+   *
+   * TODO: Manage the namespace of attribute.
+   */
+  function createElement(tagOrNode, attributes, attributeHandler) {
+    let node;
 
-      if (aAttributeHandler &&
-          aAttributeHandler(node, name, value)) {
-        continue;
-      }
+    if (typeof tagOrNode === 'string') {
+      let [ns, tag] = tagOrNode.split(':');
 
-      if (value === undefined || value === '') {
-        continue;
-      }
+      if (ns && tag) {
+        let nsURI = lookupNamespaceURI(ns);
 
-      if (value === null) {
-        if (node.hasAttribute(name)) {
-          node.removeAttribute(name, value);
+        if (!nsURI) {
+          throw Error('Invalid namespace prefix: ' + ns);
         }
+
+        node = window.document.createElementNS(nsURI, tag);
       }
       else {
-        if (!node.hasAttribute(name) ||
-            node.getAttribute(name) !== value + '') {
-          node.setAttribute(name, value);
+        node = window.document.createElement(tagOrNode);
+      }
+    }
+    else {
+      node = tagOrNode;
+    }
+
+    if (!!attributes) {
+      for (let name in attributes) {
+        let value = attributes[name];
+
+        if (attributeHandler &&
+            attributeHandler(node, name, value)) {
+          continue;
+        }
+
+        if (value === undefined || value === '') {
+          continue;
+        }
+
+        if (value === null) {
+          if (node.hasAttribute(name)) {
+            node.removeAttribute(name, value);
+          }
+        }
+        else {
+          if (!node.hasAttribute(name) ||
+              node.getAttribute(name) !== value + '') {
+            node.setAttribute(name, value);
+          }
         }
       }
     }
+
+    return node;
   }
 
-  return node;
-}
+  /**
+   * Make a |createElement| with the given attribute handler.
+   */
+  function initCreateElement(attributeHandler) {
+    return (tagOrNode, attributes) =>
+      createElement(tagOrNode, attributes, attributeHandler);
+  }
 
-/**
- * Wrapper of |getElementById|.
- *
- * @note Use only for XUL element.
- */
-function getNodeById(aId) {
-  return window.document.getElementById(aId);
-}
+  function getNodeById(id) {
+    return window.document.getElementById(id);
+  }
 
-/**
- * Wrapper of |getAnonymousElementByAttribute|.
- *
- * @note Use only for XUL element.
- */
-function getNodeByAnonid(aId, aContext) {
-  return window.document.
-    getAnonymousElementByAttribute(aContext, 'anonid', aId);
-}
+  function getNodeByAnonid(anonid, context) {
+    return window.document.
+      getAnonymousElementByAttribute(context, 'anonid', anonid);
+  }
 
-/**
- * Gets the focused window.
- *
- * @return {Window}
- *
- * @note Returns a (top or frame) content window when the current window is the
- * browser window.
- */
-function getFocusedWindow() {
-  let {focusedWindow} = Services.focus;
-
-  if (window.document.documentElement.getAttribute('windowtype') ===
-      'navigator:browser') {
-    if (!focusedWindow || focusedWindow === window) {
-      return window.content;
+  function getFirstNodeBySelector(selector, context) {
+    if (!context) {
+      context = window.document;
     }
+
+    return context.querySelector(selector);
   }
 
-  return focusedWindow || window;
-}
-
-function getFocusedDocument() {
-  let win = getFocusedWindow();
-
-  return win.contentDocument || win.document;
-}
-
-function getFirstNodeBySelector(aSelector, aContext) {
-  let node = aContext || getFocusedDocument();
-
-  return node.querySelector(aSelector);
-}
-
-function getNodesBySelector(aSelector, aContext) {
-  let node = aContext || getFocusedDocument();
-
-  // @return {static NodeList}
-  return node.querySelectorAll(aSelector);
-}
-
-function getFirstNodeByXPath(aXPath, aContext) {
-  let type = XPathResult.FIRST_ORDERED_NODE_TYPE;
-
-  let result = evaluateXPath(aXPath, aContext, type);
-
-  return result ? result.singleNodeValue : null;
-}
-
-function getNodesByXPath(aXPath, aContext, aOption = {}) {
-  let {
-    ordered,
-    toArray
-  } = aOption;
-
-  let type = ordered ?
-    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE :
-    XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE;
-
-  let result = evaluateXPath(aXPath, aContext, type);
-
-  if (!toArray) {
-    return result;
-  }
-
-  let nodes = Array(result ? result.snapshotLength : 0);
-
-  for (let i = 0, l = nodes.length; i < l; i++) {
-    nodes[i] = result.snapshotItem(i);
-  }
-
-  return nodes;
-}
-
-function evaluateXPath(aXPath, aContext, aType) {
-  let doc, base;
-
-  if (aContext instanceof Document) {
-    doc  = aContext;
-    base = doc.documentElement;
-  }
-  else {
-    doc  = aContext ? aContext.ownerDocument : getFocusedDocument();
-    base = aContext || doc.documentElement;
-  }
-
-  let resolver;
-
-  let defaultNS = null;
-  try {
-    defaultNS = base.lookupNamespaceURI(null);
-  }
-  catch (ex) {}
-
-  if (defaultNS) {
-    let tmpPrefix = '__NS__';
-
-    aXPath = fixNamespacePrefixForXPath(aXPath, tmpPrefix);
-
-    resolver = (prefix) =>
-      (prefix === tmpPrefix) ?
-      defaultNS :
-      lookupNamespaceURI(prefix);
-  }
-  else {
-    resolver = (prefix) => lookupNamespaceURI(prefix);
-  }
-
-  try {
-    return doc.evaluate(aXPath, base, resolver, aType, null);
-  }
-  catch (ex) {}
-
-  return null;
-}
-
-/**
- * @see http://nanto.asablo.jp/blog/2008/12/11/4003371
- */
-function fixNamespacePrefixForXPath(aXPath, aPrefix) {
-  const kTokenPattern = /([A-Za-z_\u00c0-\ufffd][\w\-.\u00b7-\ufffd]*|\*)\s*(::?|\()?|(".*?"|'.*?'|\d+(?:\.\d*)?|\.(?:\.|\d+)?|[\)\]])|(\/\/?|!=|[<>]=?|[\(\[|,=+-])|([@$])/g;
-
-  const TERM = 1, OPERATOR = 2, MODIFIER = 3;
-  let tokenType = OPERATOR;
-
-  aPrefix += ':';
-
-  function replacer(token, identifier, suffix, term, operator, modifier) {
-    if (suffix) {
-      tokenType =
-        (suffix === ':' || (suffix === '::' &&
-         (identifier === 'attribute' || identifier === 'namespace'))) ?
-        MODIFIER : OPERATOR;
+  function getStaticNodesBySelector(selector, context) {
+    if (!context) {
+      context = window.document;
     }
-    else if (identifier) {
-      if (tokenType === OPERATOR && identifier !== '*') {
-        token = aPrefix + token;
-      }
-      tokenType = (tokenType === TERM) ? OPERATOR : TERM;
+
+    // @return {static NodeList}
+    return context.querySelectorAll(selector);
+  }
+
+  function getLiveNodesBySelector(selector, context) {
+    if (!context) {
+      context = window.document;
+    }
+
+    // Converts a static NodeList to a live NodeList.
+    return [...context.querySelectorAll(selector)];
+  }
+
+  function getFirstNodeByXPath(xpath, context) {
+    let type = XPathResult.FIRST_ORDERED_NODE_TYPE;
+
+    let result = evaluateXPath(xpath, context, type);
+
+    return result ? result.singleNodeValue : null;
+  }
+
+  function getNodesByXPath(xpath, context, options = {}) {
+    let {
+      ordered,
+      toArray
+    } = options;
+
+    let type = ordered ?
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE :
+      XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE;
+
+    let result = evaluateXPath(xpath, context, type);
+
+    if (!toArray) {
+      return result;
+    }
+
+    let nodes = Array(result ? result.snapshotLength : 0);
+
+    for (let i = 0, l = nodes.length; i < l; i++) {
+      nodes[i] = result.snapshotItem(i);
+    }
+
+    return nodes;
+  }
+
+  function evaluateXPath(xpath, context, type) {
+    let doc, base;
+
+    if (context instanceof Document) {
+      doc  = context;
+      base = doc.documentElement;
     }
     else {
-      tokenType = term ? TERM : (operator ? OPERATOR : MODIFIER);
+      doc  = context ? context.ownerDocument : window.document;
+      base = context || doc.documentElement;
     }
 
-    return token;
+    let resolver;
+    let defaultNS;
+
+    try {
+      defaultNS = base.lookupNamespaceURI(null);
+    }
+    catch (ex) {}
+
+    if (defaultNS) {
+      let tmpPrefix = '__NS__';
+
+      xpath = fixNamespacePrefixForXPath(xpath, tmpPrefix);
+
+      resolver = (prefix) => (prefix === tmpPrefix) ? defaultNS :
+        lookupNamespaceURI(prefix);
+    }
+    else {
+      resolver = (prefix) => lookupNamespaceURI(prefix);
+    }
+
+    try {
+      return doc.evaluate(xpath, base, resolver, type, null);
+    }
+    catch (ex) {}
+
+    return null;
   }
 
-  return aXPath.replace(kTokenPattern, replacer);
-}
+  /**
+   * @see http://nanto.asablo.jp/blog/2008/12/11/4003371
+   */
+  function fixNamespacePrefixForXPath(xpath, prefix) {
+    const kTokenPattern = /([A-Za-z_\u00c0-\ufffd][\w\-.\u00b7-\ufffd]*|\*)\s*(::?|\()?|(".*?"|'.*?'|\d+(?:\.\d*)?|\.(?:\.|\d+)?|[\)\]])|(\/\/?|!=|[<>]=?|[\(\[|,=+-])|([@$])/g;
+
+    const TERM = 1, OPERATOR = 2, MODIFIER = 3;
+    let tokenType = OPERATOR;
+
+    prefix += ':';
+
+    function replacer(token, identifier, suffix, term, operator, modifier) {
+      if (suffix) {
+        tokenType =
+          (suffix === ':' || (suffix === '::' &&
+           (identifier === 'attribute' || identifier === 'namespace'))) ?
+          MODIFIER : OPERATOR;
+      }
+      else if (identifier) {
+        if (tokenType === OPERATOR && identifier !== '*') {
+          token = prefix + token;
+        }
+        tokenType = (tokenType === TERM) ? OPERATOR : TERM;
+      }
+      else {
+        tokenType = term ? TERM : (operator ? OPERATOR : MODIFIER);
+      }
+
+      return token;
+    }
+
+    return xpath.replace(kTokenPattern, replacer);
+  }
+
+  return {
+    $E: createElement,
+    init$E: initCreateElement,
+    $ID: getNodeById,
+    $ANONID: getNodeByAnonid,
+    $S1: getFirstNodeBySelector,
+    $S: getLiveNodesBySelector,
+    $SS: getStaticNodesBySelector,
+    $X1: getFirstNodeByXPath,
+    $X: getNodesByXPath,
+  };
+})();
 
 /**
  * Functions for Tab / Window.
@@ -818,7 +816,10 @@ function unescapeURLForUI(aURL, aCharset) {
     return '';
   }
 
-  let charset = aCharset || getFocusedDocument().characterSet;
+
+  if (!aCharset) {
+    aCharset = gBrowser.selectedBrowser.characterSet || 'UTF-8';
+  }
 
   return Modules.TextToSubURI.unEscapeURIForUI(charset, aURL);
 }
@@ -832,7 +833,10 @@ function resolveURL(aURL, aBaseURL) {
     return aURL;
   }
 
-  let baseURL = aBaseURL || getFocusedDocument().documentURI;
+
+  if (!baseURL) {
+    baseURL = gBrowser.currentURI.spec;
+  }
 
   try {
     const {makeURI} = Modules.BrowserUtils;
@@ -1154,7 +1158,7 @@ function setContentStyleSheet(aCSS, aOption = {}) {
     return;
   }
 
-  let doc = document || getFocusedDocument();
+  let doc = document || gBrowser.contentDocument;
 
   if (!doc.head) {
     return;
@@ -1259,16 +1263,10 @@ return {
   Console,
   EventManager,
   Listeners,
+  DOMUtils,
 
   getSelectionAtCursor,
   getTextInRange,
-  createNode,
-  getNodeById,
-  getNodeByAnonid,
-  getFirstNodeBySelector,
-  getNodesBySelector,
-  getFirstNodeByXPath,
-  getNodesByXPath,
 
   unescapeURLCharacters,
   unescapeURLForUI,

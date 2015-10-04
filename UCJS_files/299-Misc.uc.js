@@ -25,9 +25,11 @@ const {
     $event,
     $shutdown
   },
-  createNode: $E,
-  getNodeById: $ID,
-  getNodeByAnonid: $ANONID,
+  DOMUtils: {
+    $E,
+    $ID,
+    $ANONID
+  },
   setChromeStyleSheet: setChromeCSS,
   // Logger to console for debug.
   Console: {

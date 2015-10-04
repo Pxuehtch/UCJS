@@ -21,7 +21,10 @@
  */
 const {
   Modules,
-  getNodeById: $ID,
+  DOMUtils: {
+    init$E,
+    $ID
+  },
   unescapeURLCharacters: unescURLChars,
   unescapeURLForUI: unescURLforUI,
   // Logger to console for debug.
@@ -30,9 +33,8 @@ const {
   }
 } = window.ucjsUtil;
 
-function $E(aTag, aAttribute) {
-  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
-}
+// Makes $E with the attributes handler.
+const $E = init$E(handleAttribute);
 
 const {
   ContentArea: {

@@ -29,9 +29,12 @@ const ucjsNaviLink = (function(window) {
  */
 const {
   Modules,
-  getNodeById: $ID,
-  getNodesBySelector: $S,
-  getFirstNodeByXPath: $X1,
+  DOMUtils: {
+    init$E,
+    $ID,
+    $S,
+    $X1
+  },
   openURL,
   unescapeURLCharacters: unescURLChars,
   // Logger to console for debug.
@@ -40,9 +43,8 @@ const {
   }
 } = window.ucjsUtil;
 
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
+// Makes $E with the attributes handler.
+const $E = init$E(handleAttribute);
 
 const {
   URLBar: {

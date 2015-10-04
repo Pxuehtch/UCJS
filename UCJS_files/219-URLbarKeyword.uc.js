@@ -23,8 +23,10 @@
  */
 const {
   Modules,
-  createNode: $E,
-  getNodeById: $ID,
+  DOMUtils: {
+    $E,
+    $ID
+  },
   promisePlacesDBResult,
   // Logger to console for debug.
   Console: {

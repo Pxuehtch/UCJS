@@ -41,8 +41,10 @@ const {
   Listeners: {
     $shutdown
   },
-  createNode: $E,
-  getNodeById: $ID,
+  DOMUtils: {
+    $E,
+    $ID
+  },
   // Logger to console for debug.
   Console: {
     log

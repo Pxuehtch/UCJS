@@ -26,11 +26,13 @@ const {
     $event,
     $shutdown
   },
-  createNode: $E,
-  getNodeById: $ID,
-  getNodesByXPath: $X,
-  getFirstNodeByXPath: $X1,
-  getFirstNodeBySelector: $S1,
+  DOMUtils: {
+    $E,
+    $ID,
+    $X,
+    $X1,
+    $S1
+  },
   setChromeStyleSheet: setCSS,
   // Logger to console for debug.
   Console: {

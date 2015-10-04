@@ -21,9 +21,13 @@
  */
 const {
   Modules,
-  createNode: $E,
-  getNodeById: $ID,
-  addEvent,
+  Listeners: {
+    $eventOnce
+  },
+  DOMUtils: {
+    $E,
+    $ID
+  },
   // Logger to console for debug.
   Console: {
     log
@@ -251,9 +255,7 @@ const Scratchpad = (function() {
       return null;
     }
 
-    let onLoad = () => {
-      scratchpadWindow.removeEventListener('load', onLoad);
-
+    $eventOnce(scratchpadWindow, 'load', () => {
       scratchpadWindow.Scratchpad.addObserver({
         onReady(aScratchpad) {
           aScratchpad.removeObserver(this);
@@ -277,9 +279,7 @@ const Scratchpad = (function() {
           }
         }
       });
-    };
-
-    scratchpadWindow.addEventListener('load', onLoad);
+    });
 
     return scratchpadWindow;
   }

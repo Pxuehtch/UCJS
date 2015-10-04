@@ -29,7 +29,9 @@ const {
   Listeners: {
     $shutdown
   },
-  getFirstNodeByXPath: $X1,
+  DOMUtils: {
+    $X1
+  },
   openTab,
   // Logger to console for debug.
   Console: {
@@ -493,8 +495,8 @@ function evaluate(aParams, aPreset) {
 }
 
 function inputAndSubmit(aForm, aData) {
-  let form = $X1(aForm.form),
-      input = $X1(aForm.input);
+  let form = $X1(aForm.form, gBrowser.contentDocument),
+      input = $X1(aForm.input, gBrowser.contentDocument);
 
   if (form && input) {
     input.value = aData;

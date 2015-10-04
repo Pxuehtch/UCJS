@@ -20,7 +20,10 @@
  * Imports
  */
 const {
-  getNodeById: $ID,
+  DOMUtils: {
+    init$E,
+    $ID
+  },
   getSelectionAtCursor,
   // Logger to console for debug.
   Console: {
@@ -28,9 +31,8 @@ const {
   }
 } = window.ucjsUtil;
 
-function $E(aTagOrNode, aAttribute) {
-  return window.ucjsUtil.createNode(aTagOrNode, aAttribute, handleAttribute);
-}
+// Makes $E with the attributes handler.
+const $E = init$E(handleAttribute);
 
 const {
   ContentArea: {

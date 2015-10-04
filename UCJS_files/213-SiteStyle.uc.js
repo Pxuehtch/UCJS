@@ -30,10 +30,12 @@ const {
     $event,
     $shutdown
   },
-  createNode: $E,
-  getNodeById: $ID,
-  getNodesBySelector: $S,
-  getFirstNodeBySelector: $S1,
+  DOMUtils: {
+    $E,
+    $ID,
+    $S,
+    $S1
+  },
   setContentStyleSheet,
   // Logger to console for debug.
   Console: {
@@ -358,7 +360,7 @@ const kSiteList = [
     include: '|search.yahoo.co.jp/search',
     script(aDocument) {
       // Sanitize links.
-      [...$S('#contents a')].forEach((link) => {
+      [...$S('#contents a', aDocument)].forEach((link) => {
         link.removeAttribute('onmousedown');
 
         let url =
@@ -372,7 +374,7 @@ const kSiteList = [
       });
 
       // Process items.
-      [...$S('.w, .cmm')].forEach((item) => {
+      [...$S('.w, .cmm', aDocument)].forEach((item) => {
         let link = $S1('.hd>h3>a', item);
 
         if (!link) {

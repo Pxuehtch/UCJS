@@ -19,16 +19,18 @@
  * Imports
  */
 const {
-  getNodeById: $ID,
+  DOMUtils: {
+    init$E,
+    $ID
+  },
   // Logger to console for debug.
   Console: {
     log
   }
 } = window.ucjsUtil;
 
-function $E(aTag, aAttribute) {
-  return window.ucjsUtil.createNode(aTag, aAttribute, handleAttribute);
-}
+// Makes $E with the attributes handler.
+const $E = init$E(handleAttribute);
 
 const {
   URLBar: {

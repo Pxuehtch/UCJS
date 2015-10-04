@@ -28,7 +28,9 @@ const {
   Listeners: {
     $event
   },
-  getFirstNodeByXPath: $X1,
+  DOMUtils: {
+    $X1
+  },
   getTextInRange,
   openTab,
   // Logger to console for debug.

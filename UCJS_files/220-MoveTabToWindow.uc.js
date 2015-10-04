@@ -21,10 +21,13 @@
 const {
   Modules,
   Listeners: {
-    $event
+    $event,
+    $eventOnce
   },
-  createNode: $E,
-  getNodeById: $ID,
+  DOMUtils: {
+    $E,
+    $ID
+  },
   // Logger to console for debug.
   Console: {
     log
@@ -291,18 +294,14 @@ function moveTabToWindow(aTab, aWindow) {
   // @see chrome://browser/content/browser.js::OpenBrowserWindow
   let win = window.OpenBrowserWindow();
 
-  let onLoad = () => {
-    win.removeEventListener('load', onLoad);
-
+  $eventOnce(win, 'load', () => {
     // WORKAROUND: Wait for initialization of the new browser.
     setTimeout(() => {
       let newTab = moveTabToOtherWindow(aTab, win);
 
       win.gBrowser.removeAllTabsBut(newTab);
     }, 500);
-  };
-
-  win.addEventListener('load', onLoad);
+  });
 }
 
 function moveTabToOtherWindow(aTab, aWindow) {

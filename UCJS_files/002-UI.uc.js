@@ -29,9 +29,11 @@ const {
     $event,
     $shutdown
   },
-  getNodeById: $ID,
-  getNodeByAnonid: $ANONID,
-  getNodesByXPath: $X,
+  DOMUtils: {
+    $ID,
+    $ANONID,
+    $X
+  },
   resolveURL,
   setChromeStyleSheet: setCSS,
   promisePlacesDBResult,
