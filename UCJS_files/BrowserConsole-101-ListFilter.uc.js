@@ -33,7 +33,7 @@ const {
     $X1,
     $S1
   },
-  setChromeStyleSheet: setCSS,
+  CSSUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -105,7 +105,7 @@ function setStyleSheet() {
   // native 'menu-button' type button.
   // @note I use the light theme.
   // @see chrome://browser/skin/devtools/light-theme.css
-  setCSS(`
+  CSSUtils.setChromeStyleSheet(`
     ${filteredBy} {
       display: none;
     }

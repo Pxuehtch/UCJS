@@ -31,7 +31,7 @@ const {
     $E,
     $ID
   },
-  setChromeStyleSheet: setCSS,
+  CSSUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -116,7 +116,7 @@ const SignPanel = (function() {
     init() {
       let {id, animationName} = kUI.signPanel;
 
-      setCSS(`
+      CSSUtils.setChromeStyleSheet(`
         #${id} {
           animation: ${animationName} 1s infinite alternate;
         }

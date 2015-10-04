@@ -35,7 +35,7 @@ const {
     $X
   },
   URLUtils,
-  setChromeStyleSheet: setCSS,
+  CSSUtils,
   promisePlacesDBResult,
   // Logger to console for debug.
   Console: {
@@ -846,7 +846,7 @@ const StatusField = (function() {
     /**
      * Register the appearance.
      */
-    setCSS(`
+    CSSUtils.setChromeStyleSheet(`
       .statuspanel-label {
         font-weight: bolder !important;
       }

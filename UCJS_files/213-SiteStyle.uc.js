@@ -36,7 +36,7 @@ const {
     $S,
     $S1
   },
-  setContentStyleSheet,
+  CSSUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -908,7 +908,7 @@ const PageCSS = (function() {
   }
 
   function setCSS(aDocument, aCSS) {
-    setContentStyleSheet(aCSS, {
+    CSSUtils.setContentStyleSheet(aCSS, {
       document: aDocument,
       id: kUI.pageStyleSheet.id
     });

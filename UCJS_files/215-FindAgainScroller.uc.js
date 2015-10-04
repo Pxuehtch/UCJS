@@ -31,7 +31,7 @@ const {
     $ID,
     $X
   },
-  setChromeStyleSheet: setCSS,
+  CSSUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -1146,7 +1146,7 @@ function FoundHighlight() {
       let borderColors =
         Array(outerWidth).fill(outerColor).concat(innerColor).join(' ');
 
-      setCSS(`
+      CSSUtils.setChromeStyleSheet(`
         #${id} {
           -moz-appearance: none !important;
           margin: 0;

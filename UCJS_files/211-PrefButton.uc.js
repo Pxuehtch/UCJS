@@ -35,7 +35,7 @@ const {
     $E,
     $ID
   },
-  setChromeStyleSheet: setCSS,
+  CSSUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -275,7 +275,7 @@ function makeButtons() {
 
 function setStyleSheet() {
   // @note The styles are adjusted to the themes of my Firefox and OS.
-  setCSS(`
+  CSSUtils.setChromeStyleSheet(`
     #${kUI.container.id} {
       margin: 3px 0 3px 2px;
     }

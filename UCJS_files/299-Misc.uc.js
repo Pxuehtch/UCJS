@@ -30,16 +30,12 @@ const {
     $ID,
     $ANONID
   },
-  setChromeStyleSheet: setChromeCSS,
+  CSSUtils,
   // Logger to console for debug.
   Console: {
     log
   }
 } = window.ucjsUtil;
-
-function setGlobalAgentCSS(aCSS) {
-  return window.ucjsUtil.setGlobalStyleSheet(aCSS, 'AGENT_SHEET');
-}
 
 /**
  * Customizes the tooltip of a tab.
@@ -411,7 +407,7 @@ function setGlobalAgentCSS(aCSS) {
 (function relocateTabbarScrollButtons() {
 
   // @note The margin of a pinned tab is set to 3px.
-  setChromeCSS(`
+  CSSUtils.setChromeStyleSheet(`
     .tabbrowser-arrowscrollbox > .arrowscrollbox-scrollbox {
       -moz-box-ordinal-group: 1;
     }
@@ -742,7 +738,7 @@ function setGlobalAgentCSS(aCSS) {
   /**
    * Register the appearance.
    */
-  setChromeCSS(`
+  CSSUtils.setChromeStyleSheet(`
     #main-window:not([inFullscreen]) statuspanel[${kState.hidden}] {
       visibility: collapse !important;
     }
@@ -784,6 +780,10 @@ function setGlobalAgentCSS(aCSS) {
  * @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
  */
 (function() {
+
+  let setGlobalAgentCSS = (css) => {
+    CSSUtils.setGlobalStyleSheet(css, 'AGENT_SHEET');
+  };
 
   // Clear scrollbar.
   setGlobalAgentCSS(`

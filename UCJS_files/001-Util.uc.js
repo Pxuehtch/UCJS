@@ -1093,6 +1093,153 @@ const TabUtils = (function() {
 })();
 
 /**
+ * CSS utilities.
+ */
+const CSSUtils = (function() {
+  function setGlobalStyleSheet(css, type) {
+    return registerGlobalStyleSheet(css, type);
+  }
+
+  function removeGlobalStyleSheet(css, type) {
+    return registerGlobalStyleSheet(css, type, {
+      doUnregister: true
+    });
+  }
+
+  function registerGlobalStyleSheet(css, type, options = {}) {
+    let {
+      doUnregister
+    } = options;
+
+    css = minifyCSS(css);
+
+    if (!css) {
+      return;
+    }
+
+    let uri;
+
+    try {
+      let dataURL = 'data:text/css,' + encodeURIComponent(css);
+
+      uri = Modules.BrowserUtils.makeURI(dataURL);
+    }
+    catch (ex) {
+      return;
+    }
+
+    const styleSheetService = Modules.StyleSheetService;
+
+    let typeValue;
+
+    switch (type) {
+      case 'AGENT_SHEET':
+      case 'USER_SHEET':
+      case 'AUTHOR_SHEET':
+        typeValue = styleSheetService[type];
+        break;
+
+      default:
+        throw Error('Unknown type: ' + type);
+    }
+
+    let registered = styleSheetService.sheetRegistered(uri, typeValue);
+
+    if (!doUnregister && !registered) {
+      styleSheetService.loadAndRegisterSheet(uri, typeValue);
+    }
+    else if (doUnregister && registered) {
+      styleSheetService.unregisterSheet(uri, typeValue);
+    }
+  }
+
+  function setChromeStyleSheet(css) {
+    css = minifyCSS(css);
+
+    if (!css) {
+      return;
+    }
+
+    let doc = window.document;
+
+    let dataURL = 'data:text/css,' + encodeURIComponent(css);
+
+    if ([...doc.styleSheets].some((sheet) => sheet.href === dataURL)) {
+      return;
+    }
+
+    let newStyleSheet = doc.createProcessingInstruction('xml-stylesheet',
+      `type="text/css" href="${dataURL}"`);
+
+    return doc.insertBefore(newStyleSheet, doc.documentElement);
+  }
+
+  function setContentStyleSheet(aCSS, aOption = {}) {
+    let {
+      document,
+      id
+    } = aOption;
+
+    let css = minifyCSS(aCSS);
+
+    if (!css) {
+      return;
+    }
+
+    let doc = document || gBrowser.contentDocument;
+
+    if (!doc.head) {
+      return;
+    }
+
+    if (id) {
+      let old = doc.getElementById(id);
+
+      if (old) {
+        if (old.textContent === css) {
+          return;
+        }
+
+        old.parentNode.removeChild(old);
+      }
+    }
+
+    let style = doc.createElement('style');
+
+    style.type = 'text/css';
+
+    if (id) {
+      style.id = id;
+    }
+
+    style.textContent = css;
+
+    return doc.head.appendChild(style);
+  }
+
+  function minifyCSS(css) {
+    // @note You should put a 'half-width space' for the separator of:
+    // - The descendant selector (e.g. h1 em{...}).
+    // - The shorthand properties (e.g. margin:1px 2px;).
+
+    return css.trim().
+      // Remove comments.
+      replace(/\/\*[^\*]*?\*\//gm, '').
+      // Put half-width spaces into one (maybe a necessary separator).
+      replace(/ +/g, ' ').
+      // Remove consecutive white spaces.
+      replace(/\s{2,}/g, '');
+  }
+
+  return {
+    setGlobalStyleSheet,
+    removeGlobalStyleSheet,
+    setChromeStyleSheet,
+    setContentStyleSheet
+  };
+})();
+
+/**
  * Miscellaneous functions.
  */
 function restartFx(aOption = {}) {
@@ -1114,141 +1261,6 @@ function restartFx(aOption = {}) {
   Modules.Prefs.set('browser.sessionstore.resume_session_once', true);
 
   Modules.BrowserUtils.restartApplication();
-}
-
-function setGlobalStyleSheet(aCSS, aType) {
-  return registerGlobalStyleSheet(aCSS, aType);
-}
-
-function removeGlobalStyleSheet(aCSS, aType) {
-  return registerGlobalStyleSheet(aCSS, aType, {remove: true});
-}
-
-function registerGlobalStyleSheet(aCSS, aType, aOption = {}) {
-  let {
-    remove
-  } = aOption;
-
-  let css = normalizeCSS(aCSS);
-
-  if (!css) {
-    return;
-  }
-
-  let URI;
-
-  try {
-    let dataURL = 'data:text/css,' + encodeURIComponent(css);
-
-    URI = Modules.BrowserUtils.makeURI(dataURL);
-  }
-  catch (ex) {
-    return;
-  }
-
-  const styleSheetService = Modules.StyleSheetService;
-
-  let type;
-
-  switch (aType) {
-    case 'AGENT_SHEET':
-    case 'USER_SHEET':
-    case 'AUTHOR_SHEET':
-      type = styleSheetService[aType];
-      break;
-
-    default:
-      return;
-  }
-
-  let registered = styleSheetService.sheetRegistered(URI, type);
-
-  if (!remove && !registered) {
-    styleSheetService.loadAndRegisterSheet(URI, type);
-  }
-  else if (remove && registered) {
-    styleSheetService.unregisterSheet(URI, type);
-  }
-}
-
-function setChromeStyleSheet(aCSS) {
-  let css = normalizeCSS(aCSS);
-
-  if (!css) {
-    return;
-  }
-
-  let doc = window.document;
-
-  let dataURI = 'data:text/css,' + encodeURIComponent(css);
-
-  if ([...doc.styleSheets].some((sheet) => sheet.href === dataURI)) {
-    return;
-  }
-
-  let newStyleSheet = doc.createProcessingInstruction(
-    'xml-stylesheet',
-    `type="text/css" href="${dataURI}"`
-  );
-
-  return doc.insertBefore(newStyleSheet, doc.documentElement);
-}
-
-function setContentStyleSheet(aCSS, aOption = {}) {
-  let {
-    document,
-    id
-  } = aOption;
-
-  let css = normalizeCSS(aCSS);
-
-  if (!css) {
-    return;
-  }
-
-  let doc = document || gBrowser.contentDocument;
-
-  if (!doc.head) {
-    return;
-  }
-
-  if (id) {
-    let old = doc.getElementById(id);
-
-    if (old) {
-      if (old.textContent === css) {
-        return;
-      }
-
-      old.parentNode.removeChild(old);
-    }
-  }
-
-  let style = doc.createElement('style');
-
-  style.type = 'text/css';
-
-  if (id) {
-    style.id = id;
-  }
-
-  style.textContent = css;
-
-  return doc.head.appendChild(style);
-}
-
-function normalizeCSS(aCSS) {
-  // @note You should put a 'half-width space' for the separator of:
-  // - The descendant selector (e.g. h1 em{...}).
-  // - The shorthand properties (e.g. margin:1px 2px;).
-
-  return aCSS.trim().
-    // Put half-width spaces into one (maybe a necessary separator).
-    replace(/ +/g, ' ').
-    // Remove consecutive white spaces.
-    replace(/\s{2,}/g, '').
-    // Remove comments.
-    replace(/\s*\/\*.*?\*\/\s*/g, '');
 }
 
 /**
@@ -1314,15 +1326,12 @@ return {
   DOMUtils,
   URLUtils,
   TabUtils,
+  CSSUtils,
 
   getSelectionAtCursor,
   getTextInRange,
 
   restartFx,
-  setGlobalStyleSheet,
-  removeGlobalStyleSheet,
-  setChromeStyleSheet,
-  setContentStyleSheet,
   promisePlacesDBResult
 }
 
