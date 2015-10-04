@@ -27,7 +27,7 @@ const {
     $E,
     $ID
   },
-  promisePlacesDBResult,
+  PlacesUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -264,7 +264,7 @@ function getBookmarkKeywordData() {
     'JOIN moz_places p ON p.id = b.fk'
   ].join(' ');
 
-  return promisePlacesDBResult({
+  return PlacesUtils.promisePlacesDBResult({
     sql,
     columns: ['title', 'keyword', 'url']
   }).

@@ -36,7 +36,7 @@ const {
   },
   URLUtils,
   CSSUtils,
-  promisePlacesDBResult,
+  PlacesUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -798,9 +798,9 @@ const StatusField = (function() {
         "LIMIT 1"
       ].join(' ');
 
-      return promisePlacesDBResult({
+      return PlacesUtils.promisePlacesDBResult({
         sql,
-        params: {'url': aURL},
+        parameters: {'url': aURL},
         columns: ['visit_date']
       }).
       // Resolved with the date, or null if no data.
@@ -817,9 +817,9 @@ const StatusField = (function() {
         "LIMIT 1"
       ].join(' ');
 
-      return promisePlacesDBResult({
+      return PlacesUtils.promisePlacesDBResult({
         sql,
-        params: {'url': aURL},
+        parameters: {'url': aURL},
         columns: ['id']
       }).
       // Resolved with bookmarked or not.

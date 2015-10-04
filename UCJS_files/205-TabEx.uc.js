@@ -31,7 +31,7 @@ const {
     $shutdown
   },
   TabUtils,
-  promisePlacesDBResult,
+  PlacesUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -646,9 +646,9 @@ const Referrer = {
       "LIMIT 1"
     ].join(' ');
 
-    return promisePlacesDBResult({
+    return PlacesUtils.promisePlacesDBResult({
       sql,
-      params: {'url': aURL},
+      parameters: {'url': aURL},
       columns: ['url']
     }).
     // Resolved with the URL, or null if no data.

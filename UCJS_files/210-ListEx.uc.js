@@ -28,7 +28,7 @@ const {
     init$E,
     $ID
   },
-  promisePlacesDBResult,
+  PlacesUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -388,9 +388,9 @@ const HistoryList = (function() {
       // -1: All results will be returned.
       let limit = (maxNumItems > 0) ? maxNumItems : -1;
 
-      return promisePlacesDBResult({
+      return PlacesUtils.promisePlacesDBResult({
         sql,
-        params: {'limit': limit},
+        parameters: {'limit': limit},
         columns: ['title', 'url', 'time', 'icon']
       });
     }
@@ -413,9 +413,9 @@ const HistoryList = (function() {
         "LIMIT 1"
       ].join(' ');
 
-      return promisePlacesDBResult({
+      return PlacesUtils.promisePlacesDBResult({
         sql,
-        params: {'url': aURL},
+        parameters: {'url': aURL},
         columns: ['time', 'icon']
       }).
       // Resolved with the hash including time and icon, or empty hash if no

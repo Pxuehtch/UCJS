@@ -1277,56 +1277,68 @@ const BrowserUtils = (function() {
 })();
 
 /**
- * Query the Places database asynchronously.
- *
- * @param aParam {hash}
- *   sql: {string}
- *     A SQL statement to execute.
- *   params: {hash} [optional]
- *     The binding parameters.
- *   columns: {array}
- *     The column names.
- * @return {Promise}
- *   onResolve: {hash[]|null}
- *     Resolved with an array of name-value hashes whose names are associated
- *     with |columns|, or null if no result.
- *   onReject: {Error}
- *     Rejected with an error object.
- *
- * TODO: Handle cancelling by user.
+ * Places utilities.
  */
-function promisePlacesDBResult(aParam = {}) {
-  const {
-    sql,
-    params,
-    columns
-  } = aParam;
+const PlacesUtils = (function() {
+  /**
+   * Promise for querying the Places database asynchronously.
+   *
+   * @param parameters {hash}
+   *   sql: {string}
+   *     A SQL statement to execute.
+   *     @see https://wiki.mozilla.org/Places:Design_Overview#Models
+   *   params: {hash} [optional]
+   *     The binding parameters.
+   *   columns: {array}
+   *     The column names.
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with an array of name-value hashes whose names are associated
+   *     with |columns|, or null if no result.
+   *     @param result {hash[]|null}
+   *   reject: {function}
+   *     Rejected with an error object.
+   *     @param error {Error}
+   *
+   * TODO: Handle cancelling by user.
+   */
+  function promisePlacesDBResult(params = {}) {
+    const {
+      sql,
+      parameters,
+      columns
+    } = params;
 
-  return Task.spawn(function*() {
-    // Get a readonly connection to the Places database.
-    let dbConnection = yield Modules.PlacesUtils.promiseDBConnection();
+    return Task.spawn(function*() {
+      // Get a readonly connection to the Places database.
+      let dbConnection = yield Modules.PlacesUtils.promiseDBConnection();
 
-    let rows = yield dbConnection.executeCached(sql, params);
+      let rows = yield dbConnection.executeCached(sql, parameters);
 
-    let result = [];
+      let result = [];
 
-    for (let row of rows) {
-      let values = {};
+      for (let row of rows) {
+        let values = {};
 
-      columns.forEach((aName) => {
-        values[aName] = row.getResultByName(aName);
-      });
+        columns.forEach((name) => {
+          values[name] = row.getResultByName(name);
+        });
 
-      result.push(values);
-    }
+        result.push(values);
+      }
 
-    if (!result.length) {
-      return null;
-    }
+      if (!result.length) {
+        return null;
+      }
 
-    return result;
-  });
-}
+      return result;
+    });
+  }
+
+  return {
+    promisePlacesDBResult
+  };
+})();
 
 /**
  * Export
@@ -1341,8 +1353,7 @@ return {
   TabUtils,
   CSSUtils,
   BrowserUtils,
-
-  promisePlacesDBResult
+  PlacesUtils//,
 }
 
 
