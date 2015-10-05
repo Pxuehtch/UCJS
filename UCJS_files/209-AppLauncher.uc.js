@@ -412,10 +412,10 @@ function initAppList() {
 function initMenu(aAppList) {
   contentAreaContextMenu.register({
     events: [
-      ['popupshowing', onPopupShowing, false],
+      ['popupshowing', onPopupShowing],
       ['command', (aEvent) => {
         onCommand(aEvent, aAppList);
-      }, false]
+      }]
     ],
 
     onCreate: (aContextMenu) => {

@@ -227,7 +227,7 @@ const AliasFixup = (function() {
 function PageRelated_init() {
   URLBarContextMenu.register({
     events: [
-      ['popupshowing', onPopupShowing, false]
+      ['popupshowing', onPopupShowing]
     ],
 
     onCreate: createMenu

@@ -146,8 +146,8 @@ const kUI = {
 function RedirectParser_init() {
   contentAreaContextMenu.register({
     events: [
-      ['popupshowing', onPopupShowing, false],
-      ['popuphiding', onPopupHiding, false]
+      ['popupshowing', onPopupShowing],
+      ['popuphiding', onPopupHiding]
     ],
 
     onCreate: createMenu

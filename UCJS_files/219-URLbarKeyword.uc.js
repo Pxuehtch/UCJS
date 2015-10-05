@@ -78,9 +78,9 @@ const kDataKey = {
 function URLbarKeyword_init() {
   URLBarContextMenu.register({
     events: [
-      ['popupshowing', handleEvent, false],
-      ['popuphiding', handleEvent, false],
-      ['command', handleEvent, false]
+      ['popupshowing', handleEvent],
+      ['popuphiding', handleEvent],
+      ['command', handleEvent]
     ],
 
     onCreate: createMenu

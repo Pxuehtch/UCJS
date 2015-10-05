@@ -69,7 +69,7 @@ const PopupMenuHandler = (function() {
 
     handlerManager.register({
       events: [
-        ['popupshowing', manageMenuSeparators, false]
+        ['popupshowing', manageMenuSeparators]
       ]
     });
 

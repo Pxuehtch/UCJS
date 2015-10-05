@@ -164,9 +164,9 @@ const MainMenu = (function() {
   function init() {
     contentAreaContextMenu.register({
       events: [
-        ['popupshowing', onPopupShowing, false],
-        ['popuphiding', onPopupHiding, false],
-        ['command', onCommand, false]
+        ['popupshowing', onPopupShowing],
+        ['popuphiding', onPopupHiding],
+        ['command', onCommand]
       ],
 
       onCreate: createMenu

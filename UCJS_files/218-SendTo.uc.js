@@ -248,7 +248,7 @@ const AliasFixup = (function() {
 function SendTo_init() {
   contentAreaContextMenu.register({
     events: [
-      ['popupshowing', onPopupShowing, false]
+      ['popupshowing', onPopupShowing]
     ],
 
     onCreate: createMenu

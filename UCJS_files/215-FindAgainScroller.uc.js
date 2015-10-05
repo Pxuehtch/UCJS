@@ -939,18 +939,18 @@ function FoundHighlight() {
       window.addEventListener('mousedown', this, true);
 
       // Cancel when the document is switched.
-      gBrowser.addEventListener('select', this, false);
-      gBrowser.addEventListener('pagehide', this, false);
+      gBrowser.addEventListener('select', this);
+      gBrowser.addEventListener('pagehide', this);
 
       // Make sure to clean up.
-      window.addEventListener('unload', this, false);
+      window.addEventListener('unload', this);
     },
 
     clear() {
       window.removeEventListener('mousedown', this, true);
-      gBrowser.removeEventListener('select', this, false);
-      gBrowser.removeEventListener('pagehide', this, false);
-      window.removeEventListener('unload', this, false);
+      gBrowser.removeEventListener('select', this);
+      gBrowser.removeEventListener('pagehide', this);
+      window.removeEventListener('unload', this);
     },
 
     handleEvent(aEvent) {
@@ -971,12 +971,12 @@ function FoundHighlight() {
       gBrowser.mPanelContainer.addEventListener('scroll', this, true);
 
       // Make sure to clean up.
-      window.addEventListener('unload', this, false);
+      window.addEventListener('unload', this);
     },
 
     clear() {
       gBrowser.mPanelContainer.removeEventListener('scroll', this, true);
-      window.removeEventListener('unload', this, false);
+      window.removeEventListener('unload', this);
     },
 
     handleEvent(aEvent) {

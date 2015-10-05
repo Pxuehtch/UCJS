@@ -290,10 +290,10 @@ const MenuUI = (function() {
   function init() {
     URLBarContextMenu.register({
       events: [
-        ['click', onClick, false],
-        ['command', onCommand, false],
-        ['popupshowing', onPopupShowing, false],
-        ['popuphiding', onPopupHiding, false]
+        ['click', onClick],
+        ['command', onCommand],
+        ['popupshowing', onPopupShowing],
+        ['popuphiding', onPopupHiding]
       ],
 
       onCreate: createMenu
