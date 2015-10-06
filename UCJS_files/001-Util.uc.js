@@ -312,10 +312,15 @@ const ContentScripts = (function() {
    * @note Attentions to the content frame script:
    * - Don't repeat the injection names of modules.
    * - Can't use the chrome code.
+   * - Write comments not to break the syntax for injecting minified code.
+   *   @see |MessageManager::minifyJS|
    */
 
   /**
    * The global scoped utilities in the content frame.
+   *
+   * @note This is pre-injected for all content scripts.
+   * @see |MessageManager.makeInjectionSource|
    */
   const GlobalUtils = `
     const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
@@ -780,13 +785,179 @@ const EventManager = (function() {
 })();
 
 /**
- * Alias names for event listeners.
+ * Message manager.
+ */
+const MessageManager = (function() {
+  // Available to a browser window only.
+  if (!isBrowserWindow()) {
+    return null;
+  }
+
+  /**
+   * Injects a frame script in the content process.
+   */
+  function loadFrameScript(script) {
+    let scriptData = `data:,(${makeInjectionSource(script)})();`;
+
+    // A message manager for all browsers.
+    let mm = window.messageManager;
+
+    mm.loadFrameScript(scriptData, true);
+
+    EventManager.listenShutdown(() => {
+      mm.removeDelayedFrameScript(scriptData);
+    });
+  }
+
+  function makeInjectionSource(script) {
+    let source = script.toString().trim();
+
+    // Make sure to surround an arrow function's body with curly brackets.
+    source = source.replace(
+      /^(\([^\)]*\)\s*=>)\s*([^\s\{][\s\S]+)$/m,
+      '$1{return $2;}'
+    );
+
+    // Pre-inject usual global utilities.
+    source = source.replace(
+      /^(?:function\s*\*?\s*\([^\)]*\)|\([^\)]*\)\s*=>)[\s\S]*?\{/m,
+      `$& ${ContentScripts.GlobalUtils}`
+    );
+
+    /** Evaluate the formatted injections of |ContentScripts|.
+     *
+     * [Format]
+     * function() {
+     *   '${ContentScripts.XXX}';
+     *   '${ContentScripts.YYY}';
+     *
+     *   and your code...
+     * }
+     *
+     * TODO: Don't use deprecated 'eval'.
+     */
+    source = source.replace(
+      /^\s*["']\$\{([^\}]+)\}["'];\s*$/gm,
+      ($0, $1) => eval($1)
+    );
+
+    return minifyJS(source);
+  }
+
+  /**
+   * Minify a JS source code into an one-liner string.
+   *
+   * @note Don't append a line comment after any code in a line. That line
+   * comment cannot be stripped and the generated one-liner code would break
+   * syntax.
+   * TODO: Strip a line comment anywhere.
+   *
+   * @note Be aware of the characters combination for block comment('/' + '*')
+   * in a string or regexp literal. The comment-ish part would be stripped.
+   * TODO: Not change the content of string and regexp literals.
+   */
+  function minifyJS(script) {
+    /**
+     * Strip unnecessary parts:
+     * - Block comment: /\/\*[^\*]*?\*\//gm
+     * - Line comment:  /^\s*\/\/.+$/gm
+     * - Leading indentation: /^\s+/gm
+     * - Line break: /\n/gm
+     */
+    const kStripRE = /\/\*[^\*]*?\*\/|^\s*\/\/.+$|^\s+|\n/gm;
+
+    return script.replace(kStripRE, '');
+  }
+
+  function promiseMessage(messageName, params = {}, paramsAsCPOW = {}) {
+    let requestName, responseName;
+
+    if (typeof messageName === 'string') {
+      requestName = responseName = messageName;
+    }
+    else {
+      requestName = messageName.request;
+      responseName = messageName.response;
+    }
+
+    // A message manager for the current browser.
+    let mm = gBrowser.selectedBrowser.messageManager;
+
+    return new Promise((resolve) => {
+      // TODO: Make sure the response is associated with this request.
+      mm.sendAsyncMessage(requestName, params, paramsAsCPOW);
+
+      let onMessage = (message) => {
+        mm.removeMessageListener(responseName, onMessage);
+
+        resolve(message.data);
+      };
+
+      mm.addMessageListener(responseName, onMessage);
+    });
+  }
+
+  /**
+   * Register a message listener that observes on all tabs in a browser window
+   * and lives until the window closed.
+   */
+  function listenMessage(name, listener) {
+    if (!name || !listener) {
+      throw Error('Missing required parameter.');
+    }
+
+    // A message manager for all browsers.
+    let mm = window.messageManager;
+
+    mm.addMessageListener(name, listener);
+
+    EventManager.listenShutdown(() => {
+      mm.removeMessageListener(name, listener);
+    });
+  }
+
+  /**
+   * Register a message listener that observes on all tabs in a browser window
+   * and lives until once listened.
+   */
+  function listenMessageOnce(name, listener) {
+    if (!name || !listener) {
+      throw Error('Missing required parameter.');
+    }
+
+    // A message manager for all browsers.
+    let mm = window.messageManager;
+
+    let onReceive = (message) => {
+      mm.removeMessageListener(name, onReceive);
+      listener(message);
+    };
+
+    mm.addMessageListener(name, onReceive);
+  }
+
+  return {
+    // Script source texts for injection into the frame script.
+    ContentScripts,
+    loadFrameScript,
+    makeInjectionSource,
+    promiseMessage,
+    listenMessage,
+    listenMessageOnce
+  };
+})();
+
+/**
+ * Alias names for event/message listeners.
  */
 const Listeners = (function() {
   return {
-    $event: EventManager.listenEvent,
-    $eventOnce: EventManager.listenEventOnce,
-    $shutdown: EventManager.listenShutdown
+    $event: EventManager && EventManager.listenEvent,
+    $eventOnce: EventManager && EventManager.listenEventOnce,
+    $shutdown: EventManager && EventManager.listenShutdown,
+
+    $message: MessageManager && MessageManager.listenMessage,
+    $messageOnce: MessageManager && MessageManager.listenMessageOnce
   };
 })();
 
