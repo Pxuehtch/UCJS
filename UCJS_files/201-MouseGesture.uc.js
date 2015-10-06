@@ -21,8 +21,8 @@
  * - You can reset the state of a gesture by <Alt+RightClick> for problems.
  *
  * @note
- * - A gesture is only available within the inner frame of the content area,
- *   and the default width of the frame is 16px.
+ * - A gesture is available within the inner frame of the content area only.
+ *   The default width of the frame is 16px.
  *   @see |inGestureArea()|
  * - The max number of signs(directions and wheel rotations) per gesture is 10.
  *   @see |GestureManager()|
@@ -39,6 +39,7 @@
  * Imports
  */
 const {
+  ContentTask,
   Listeners: {
     $event,
     $shutdown
@@ -46,7 +47,6 @@ const {
   DOMUtils: {
     $ID
   },
-  URLUtils,
   BrowserUtils,
   // Logger to console for debug.
   Console: {
@@ -410,26 +410,28 @@ const kGestureSet = [
  *
  * TODO: Cancel the gesture when enters into an always-on-top window that
  * overlays on the gesture area.
+ *
+ * TODO: Prevent the drop event when the right or wheel button is pressed
+ * down while dragging. The drop event fires for now.
+ * @see https://bugzilla.mozilla.org/show_bug.cgi?id=395761
  */
 function MouseGesture() {
   const kState = {
-    READY: 0,
-    GESTURE: 1,
-    DRAG: 2
+    Ready: 0,
+    Pending: 1,
+    Gesturing: 2,
+    Dragging: 3
   };
 
-  let mState = kState.READY;
+  let mState = kState.Ready;
   let mMouseEvent = MouseEventManager();
   let mGesture = GestureManager();
 
   /**
-   * Register the events to observe that a gesture starts, and it stops.
-   *
-   * @note Use the capture mode to surely catch the event in the content
-   * area.
+   * Register the events to observe that a gesture starts and stops.
    *
    * @note The events that are necessary only in progress of a gesture are
-   * registered after a gesture starts. And they are unregistered after the
+   * registered after the gesture starts. And they are unregistered after the
    * gesture stops.
    */
   registerTriggerEvents();
@@ -437,19 +439,21 @@ function MouseGesture() {
   function registerTriggerEvents() {
     let pc = gBrowser.mPanelContainer;
 
-    $event(pc, 'mousedown', onMouseDown, true);
-    $event(pc, 'mouseup', onMouseUp, true);
+    // Observe a gesturing operation.
+    $event(pc, 'mousedown', onMouseDown);
+    $event(pc, 'mouseup', onMouseUp);
 
-    $event(pc, 'dragstart', onDragStart, true);
-    $event(pc, 'dragend', onDragEnd, true);
+    // Observe a dragging operation.
+    $event(pc, 'dragstart', onDragStart);
+    $event(pc, 'dragend', onDragEnd);
 
     // WORKAROUND: 'contextmenu' event fires after a gesture stops so we can't
     // add it only in gesturing.
-    $event(pc, 'contextmenu', onContextMenu, true);
+    $event(pc, 'contextmenu', onContextMenu);
 
     // WORKAROUND: We assign <Alt+RightClick> to reset the state of a gesture
     // ANYTIME when problems occur.
-    $event(pc, 'click', onClick, true);
+    $event(pc, 'click', onClick);
 
     // Make sure to clean up when the browser window closes.
     $shutdown(removeEvents);
@@ -458,43 +462,37 @@ function MouseGesture() {
   function addEvents() {
     let pc = gBrowser.mPanelContainer;
 
-    if (mState === kState.GESTURE) {
-      pc.addEventListener('mousemove', onMouseMove, true);
-      pc.addEventListener('wheel', onMouseWheel, true);
+    if (mState === kState.Gesturing) {
+      pc.addEventListener('mousemove', onMouseMove);
+      pc.addEventListener('wheel', onMouseWheel);
+      pc.addEventListener('keydown', onKeyDown);
+      pc.addEventListener('keyup', onKeyUp);
 
-      pc.addEventListener('keydown', onKeyDown, true);
-      pc.addEventListener('keyup', onKeyUp, true);
-
-      // WORKAROUND: Observe a XUL popup in the content area for cancelling the
-      // gesture when the right button is released on it.
+      // WORKAROUND: Observe a XUL popup element in the content area for
+      // cancelling the gesture when the right button is released on it.
       window.addEventListener('mouseup', onGlobalMouseUp);
     }
-    else if (mState === kState.DRAG) {
-      // @note Use 'dragover' (not 'dragenter') to check the coordinate of a
-      // cursor.
-      pc.addEventListener('dragover', onDragOver, true);
-      pc.addEventListener('drop', onDrop, true);
-
-      pc.addEventListener('keydown', onKeyDown, true);
-      pc.addEventListener('keyup', onKeyUp, true);
+    else if (mState === kState.Dragging) {
+      pc.addEventListener('dragover', onDragOver);
+      pc.addEventListener('keydown', onKeyDown);
+      pc.addEventListener('keyup', onKeyUp);
     }
   }
 
   function removeEvents() {
     let pc = gBrowser.mPanelContainer;
 
-    if (mState === kState.GESTURE) {
-      pc.removeEventListener('mousemove', onMouseMove, true);
-      pc.removeEventListener('wheel', onMouseWheel, true);
-      pc.removeEventListener('keydown', onKeyDown, true);
-      pc.removeEventListener('keyup', onKeyUp, true);
+    if (mState === kState.Gesturing) {
+      pc.removeEventListener('mousemove', onMouseMove);
+      pc.removeEventListener('wheel', onMouseWheel);
+      pc.removeEventListener('keydown', onKeyDown);
+      pc.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('mouseup', onGlobalMouseUp);
     }
-    else if (mState === kState.DRAG) {
-      pc.removeEventListener('dragover', onDragOver, true);
-      pc.removeEventListener('drop', onDrop, true);
-      pc.removeEventListener('keydown', onKeyDown, true);
-      pc.removeEventListener('keyup', onKeyUp, true);
+    else if (mState === kState.Dragging) {
+      pc.removeEventListener('dragover', onDragOver);
+      pc.removeEventListener('keydown', onKeyDown);
+      pc.removeEventListener('keyup', onKeyUp);
     }
   }
 
@@ -505,7 +503,7 @@ function MouseGesture() {
     let canStart = mMouseEvent.update(aEvent);
 
     if (canStart) {
-      if (mState === kState.READY) {
+      if (mState === kState.Ready) {
         if (!inPrintPreviewMode() && inGestureArea(aEvent)) {
           startGesture(aEvent);
         }
@@ -515,14 +513,14 @@ function MouseGesture() {
       }
     }
     else {
-      if (mState !== kState.READY) {
+      if (mState !== kState.Ready) {
         cancelGesture();
       }
     }
   }
 
   function onMouseMove(aEvent) {
-    if (mState === kState.GESTURE) {
+    if (mState === kState.Gesturing) {
       mMouseEvent.update(aEvent);
 
       if (inGestureArea(aEvent)) {
@@ -538,21 +536,21 @@ function MouseGesture() {
     let canStop = mMouseEvent.update(aEvent);
 
     if (canStop) {
-      if (mState === kState.GESTURE) {
+      if (mState === kState.Gesturing) {
         stopGesture(aEvent);
       }
     }
   }
 
-  // WORKAROUND: Cancel the gesture on a XUL popup.
+  // WORKAROUND: Cancel the gesture on a XUL popup element.
   function onGlobalMouseUp(aEvent) {
-    if (mState === kState.GESTURE &&
-        isPopupNode(aEvent.target)) {
+    if (mState === kState.Gesturing &&
+        isXulPopup(aEvent.target)) {
       cancelGesture();
     }
   }
 
-  function isPopupNode(aNode) {
+  function isXulPopup(aNode) {
     if (aNode instanceof XULElement) {
       while (aNode) {
         if (aNode.popupBoxObject &&
@@ -568,7 +566,7 @@ function MouseGesture() {
   }
 
   function onMouseWheel(aEvent) {
-    if (mState === kState.GESTURE) {
+    if (mState === kState.Gesturing) {
       mMouseEvent.update(aEvent);
 
       suppressDefault(aEvent);
@@ -577,13 +575,13 @@ function MouseGesture() {
   }
 
   function onKeyDown(aEvent) {
-    if (mState !== kState.READY) {
+    if (mState !== kState.Ready && mState !== kState.Pending) {
       progress(aEvent);
     }
   }
 
   function onKeyUp(aEvent) {
-    if (mState !== kState.READY) {
+    if (mState !== kState.Ready && mState !== kState.Pending) {
       progress(aEvent);
     }
   }
@@ -597,31 +595,20 @@ function MouseGesture() {
   }
 
   function onDragStart(aEvent) {
-    if (mState === kState.READY) {
+    if (mState === kState.Ready) {
       if (inGestureArea(aEvent)) {
         startDrag(aEvent);
       }
     }
   }
 
-  function onDragEnd(aEvent) {
-    mMouseEvent.update(aEvent);
-
-    // The drag operation is terminated:
-    // - Cancelled by pressing the <Esc> key.
-    // - Dropped in a disallowed area.
-    if (mState === kState.DRAG) {
-      cancelGesture();
-    }
-  }
-
   function onDragOver(aEvent) {
-    if (mState !== kState.DRAG) {
+    if (mState !== kState.Dragging) {
       return;
     }
 
-    // Cancel our gesture drag but the default drag works.
-    // @note Both drag operations are cancelled by pressing the <Esc> key.
+    // Cancel our gesture dragging but the native dragging still works.
+    // @note Both drag operations are cancelled by pressing <Esc> key.
     let forceCancel = aEvent.shiftKey && aEvent.altKey;
 
     if (forceCancel) {
@@ -630,32 +617,43 @@ function MouseGesture() {
       return;
     }
 
-    if (inGestureArea(aEvent)) {
-      if (!inEditable(aEvent)) {
-        suppressDefault(aEvent);
-        progress(aEvent);
-      }
-    }
-    else {
+    if (!inGestureArea(aEvent)) {
       cancelGesture();
-    }
-  }
 
-  // TODO: Prevent the drop event when the right or wheel button is pressed
-  // down while dragging. The drop event fires for now.
-  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=395761
-  function onDrop(aEvent) {
-    if (mState !== kState.DRAG) {
       return;
     }
 
-    if (inEditable(aEvent)) {
+    inEditableNode(aEvent).then((inEditable) => {
+      if (!inEditable) {
+        progress(aEvent);
+      }
+    }).
+    catch(Cu.reportError);
+  }
+
+  function onDragEnd(aEvent) {
+    mMouseEvent.update(aEvent);
+
+    if (mState !== kState.Dragging) {
+      return;
+    }
+
+    // The drag operation is cancelled by pressing <Esc> key.
+    if (aEvent.dataTransfer.mozUserCancelled) {
       cancelGesture();
+
+      return;
     }
-    else {
-      suppressDefault(aEvent);
-      stopGesture(aEvent);
-    }
+
+    inEditableNode(aEvent).then((inEditable) => {
+      if (inEditable) {
+        cancelGesture();
+      }
+      else {
+        stopGesture(aEvent);
+      }
+    }).
+    catch(Cu.reportError);
   }
 
   function suppressDefault(aEvent) {
@@ -667,23 +665,33 @@ function MouseGesture() {
    * Helper functions.
    */
   function startGesture(aEvent) {
-    if (start(aEvent)) {
-      mState = kState.GESTURE;
+    mState = kState.Pending;
 
-      addEvents();
-    }
+    mGesture.init(aEvent).then((started) => {
+      if (started) {
+        if (mState === kState.Pending) {
+          mState = kState.Gesturing;
+
+          addEvents();
+        }
+      }
+    }).
+    catch(Cu.reportError);
   }
 
   function startDrag(aEvent) {
-    if (start(aEvent)) {
-      mState = kState.DRAG;
+    mState = kState.Pending;
 
-      addEvents();
-    }
-  }
+    mGesture.init(aEvent).then((started) => {
+      if (started) {
+        if (mState === kState.Pending) {
+          mState = kState.Dragging;
 
-  function start(aEvent) {
-    return mGesture.init(aEvent);
+          addEvents();
+        }
+      }
+    }).
+    catch(Cu.reportError);
   }
 
   function progress(aEvent) {
@@ -703,7 +711,7 @@ function MouseGesture() {
   function clear() {
     removeEvents();
 
-    mState = kState.READY;
+    mState = kState.Ready;
 
     mGesture.clear();
   }
@@ -714,7 +722,7 @@ function MouseGesture() {
  *
  * - Determines whether a gesture can start or stop.
  * - Manages enabling and disabling the context menu and the default click
- * action of the left/middle button.
+ *   action of the left/middle button.
  *
  * @return {hash}
  *   @key update {function}
@@ -781,15 +789,22 @@ function MouseEventManager() {
 
           // Disable the context menu while the left/middle button is down.
           // RightDown -> OtherDown -> RightUp
-          if (mSuppressMenu !== mRightDown) {
-            mSuppressMenu = mRightDown;
-          }
+          mSuppressMenu = mRightDown;
 
           // Disable the default click action of the left/middle button while
           // the right button is down.
           // RightDown -> OtherClick
-          if (mSuppressClick !== mRightDown) {
-            mSuppressClick = mRightDown;
+          mSuppressClick = mRightDown;
+
+          // Ready to suppress the default click in the content process.
+          // @note The 'click' event here, it is too late to cancel the system
+          // click action in the content process. So, in this 'mousedown'
+          // event before click, send a ready message to cancel it and the
+          // content process will prevent the default click.
+          if (mSuppressClick) {
+            let mm = gBrowser.selectedBrowser.messageManager;
+
+            mm.sendAsyncMessage('ucjs:PageEvent:PreventDefaultClick');
           }
         }
 
@@ -840,20 +855,10 @@ function MouseEventManager() {
       }
 
       case 'click': {
-        // @see chrome://browser/content/browser.js::contentAreaClick()
-        // @note The right button has no default click action.
         if (button === 2) {
           // Force to reset the state of a gesture.
           if (aEvent.altKey) {
             clear();
-          }
-        }
-        else {
-          if (mSuppressClick) {
-            mSuppressClick = false;
-
-            aEvent.preventDefault();
-            aEvent.stopPropagation();
           }
         }
 
@@ -919,22 +924,24 @@ function GestureManager() {
   }
 
   function init(aEvent) {
-    setOverLink(false);
+    return Task.spawn(function*() {
+      setOverLink(false);
 
-    mTracer.init(aEvent);
+      mTracer.init(aEvent);
 
-    if (aEvent.type === 'dragstart') {
-      let info = getDragInfo(aEvent);
+      if (aEvent.type === 'dragstart') {
+        let info = yield getDragInfo(aEvent);
 
-      if (!info.type || !info.data) {
-        return false;
+        if (!info.type || !info.data) {
+          return false;
+        }
+
+        mDragType = info.type;
+        mDragData = info.data;
       }
 
-      mDragType = info.type;
-      mDragData = info.data;
-    }
-
-    return true;
+      return true;
+    });
   }
 
   /**
@@ -951,44 +958,46 @@ function GestureManager() {
    * - A selected text in a link string.
    * - A link href URL of a linked image.
    */
-  function getDragInfo(aEvent) {
-    let node = aEvent.target;
-    let type = '', data = '';
+  function getDragInfo(event) {
+    return Task.spawn(function*() {
+      let type, data;
+      let {x, y} = BrowserUtils.getCursorPointInContent(event);
 
-    // 1.A selected text.
-    if (!type) {
-      let text = BrowserUtils.getSelectionAtCursor({event: aEvent});
+      // 1.A selected text.
+      if (!type) {
+        let text = yield BrowserUtils.promiseSelectionTextAtPoint(x, y);
 
-      if (text) {
-        type = kGestureSign.text;
-        data = text;
+        if (text) {
+          type = kGestureSign.text;
+          data = text;
+        }
       }
-    }
 
-    // 2.A link URL.
-    if (!type) {
-      let link = getLinkURL(node);
+      // 2.A link URL.
+      if (!type) {
+        let link = yield promiseLinkURLAtPoint(x, y);
 
-      if (link) {
-        type = kGestureSign.link;
-        data = link;
+        if (link) {
+          type = kGestureSign.link;
+          data = link;
+        }
       }
-    }
 
-    // 3.An image URL.
-    if (!type) {
-      let image = getImageURL(node);
+      // 3.An image URL.
+      if (!type) {
+        let image = yield promiseImageURLAtPoint(x, y);
 
-      if (image) {
-        type = kGestureSign.image;
-        data = image;
+        if (image) {
+          type = kGestureSign.image;
+          data = image;
+        }
       }
-    }
 
-    return {
-      type,
-      data
-    };
+      return {
+        type,
+        data
+      };
+    });
   }
 
   function update(aEvent) {
@@ -1172,6 +1181,7 @@ function GestureManager() {
       catch (ex) {
         mError = 'Command error';
 
+        // Log to console.
         log([delayedShowStatusText(), ex]);
       }
     }
@@ -1191,9 +1201,9 @@ function GestureManager() {
    * Delayed show the status text.
    *
    * @note This is a workaround for a command error in |doAction|.
-   * Show the error status even after the gesture state is cleared. Since the
-   * status display is also cleared just after |doAction| is called at the end
-   * of a gesture.
+   * We have to show the error status even after the gesture state is cleared
+   * since the status display will be cleared just after |doAction| is called
+   * at the end of a gesture.
    * @see |MouseGesture.stopGesture()|
    */
   function delayedShowStatusText() {
@@ -1304,93 +1314,6 @@ function GestureTracer() {
 /**
  * Helper functions.
  */
-function inPrintPreviewMode() {
-  // @see chrome://browser/content/browser.js::gInPrintPreviewMode
-  return window.gInPrintPreviewMode;
-}
-
-function inGestureArea(aEvent) {
-  /**
-   * The margin of cancelling a gesture.
-   *
-   * @value {integer} [pixels > 0]
-   * @note Including the width of a scrollbar.
-   * @note 16 pixels is the scrollbar width of my Fx.
-   */
-  const kMargin = 16;
-
-  // Get the coordinates of the event relative to the content area.
-  // @note |aEvent.clientX/Y| are not reliable here. Because they return the
-  // coordinate within the window or frame, so that we can not retrieve the
-  // client coordinates over frames.
-  let {screenX: x, screenY: y} = aEvent;
-  let {screenX: left, screenY: top, width, height} =
-    gBrowser.selectedBrowser.boxObject;
-
-  // Convert the screen coordinates of a cursor to the client ones.
-  x -= left;
-  y -= top;
-
-  return kMargin < x && x < (width - kMargin) &&
-         kMargin < y && y < (height - kMargin);
-}
-
-function inEditable(aEvent) {
-  let node = aEvent.target;
-
-  return (
-    node instanceof HTMLTextAreaElement ||
-    node instanceof HTMLInputElement ||
-    node.isContentEditable ||
-    node.ownerDocument.designMode === 'on'
-  );
-}
-
-function getLinkURL(aNode) {
-  const XLinkNS = 'http://www.w3.org/1999/xlink';
-
-  // @note The initial node may be a text node.
-  let node = aNode;
-
-  while (node) {
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      if (node instanceof HTMLAnchorElement ||
-          node instanceof HTMLAreaElement ||
-          node instanceof HTMLLinkElement ||
-          node.getAttributeNS(XLinkNS, 'type') === 'simple' ||
-          node instanceof SVGAElement) {
-        if (node.href) {
-          break;
-        }
-      }
-    }
-
-    node = node.parentNode
-  }
-
-  if (node) {
-    if (node instanceof SVGAElement) {
-      return URLUtils.resolveURL(node.href.baseVal, node.baseURI);
-    }
-
-    return node.href;
-  }
-
-  return null;
-}
-
-function getImageURL(aNode) {
-  if (aNode instanceof SVGImageElement && aNode.href) {
-    return URLUtils.resolveURL(aNode.href.baseVal, aNode.baseURI);
-  }
-
-  if (aNode instanceof HTMLImageElement && aNode.src) {
-    return aNode.src;
-  }
-
-  return null;
-}
-
 function doCommand(aCommand) {
   let command = $ID(aCommand);
 
@@ -1401,6 +1324,101 @@ function doCommand(aCommand) {
     // @see chrome://global/content/globalOverlay.js::goDoCommand
     window.goDoCommand(aCommand);
   }
+}
+
+function inPrintPreviewMode() {
+  // @see chrome://browser/content/browser.js::gInPrintPreviewMode
+  return window.gInPrintPreviewMode;
+}
+
+function inGestureArea(event) {
+  /**
+   * The margin width of cancelling a gesture.
+   *
+   * @value {integer} [pixels > 0]
+   * @note Including the width of a scrollbar in the content area.
+   * @note 16 pixels is the scrollbar width of my Fx.
+   */
+  const kMarginWidth = 16;
+
+  let {x, y} = BrowserUtils.getCursorPointInContent(event);
+  let {width, height} = gBrowser.mPanelContainer.boxObject;
+
+  return kMarginWidth < x && x < (width - kMarginWidth) &&
+         kMarginWidth < y && y < (height - kMarginWidth);
+}
+
+/**
+ * Content process tasks.
+ */
+function inEditableNode(event) {
+  let {x, y} = BrowserUtils.getCursorPointInContent(event);
+
+  return ContentTask.spawn({
+    params: {x, y},
+    task: function*(params) {
+      '${ContentTask.ContentScripts.DOMUtils}';
+
+      let {x, y} = params;
+
+      let node = DOMUtils.getElementFromPoint(x, y);
+
+      return (
+        node instanceof Ci.nsIDOMHTMLTextAreaElement ||
+        node instanceof Ci.nsIDOMHTMLInputElement ||
+        node.isContentEditable ||
+        node.ownerDocument.designMode === 'on'
+      );
+    },
+  });
+}
+
+function promiseLinkURLAtPoint(x, y) {
+  return ContentTask.spawn({
+    params: {x, y},
+    task: function*(params) {
+      '${ContentTask.ContentScripts.DOMUtils}';
+
+      let {x, y} = params;
+
+      let node = DOMUtils.getElementFromPoint(x, y);
+
+      while (node) {
+        let href = DOMUtils.getLinkHref(node);
+
+        if (href) {
+          return href;
+        }
+
+        node = node.parentNode;
+      }
+
+      return null;
+    }
+  });
+}
+
+function promiseImageURLAtPoint(x, y) {
+  return ContentTask.spawn({
+    params: {x, y},
+    task: function*(params) {
+      '${ContentTask.ContentScripts.DOMUtils}';
+
+      let {x, y} = params;
+
+      let node = DOMUtils.getElementFromPoint(x, y);
+
+      if (node instanceof Ci.nsIDOMHTMLImageElement && node.src) {
+        return node.src;
+      }
+
+      if (node instanceof content.SVGImageElement && node.href) {
+        return DOMUtils.resolveURL(node.href.baseVal, node.baseURI);
+      }
+
+      return null;
+    }
+  });
 }
 
 /**
