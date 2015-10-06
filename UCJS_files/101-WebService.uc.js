@@ -29,9 +29,7 @@ const {
   Listeners: {
     $shutdown
   },
-  DOMUtils: {
-    $X1
-  },
+  ContentTask,
   TabUtils,
   // Logger to console for debug.
   Console: {
@@ -249,7 +247,7 @@ const RequestHandler = (function() {
    *
    * @param aURL {string}
    *   A URL string to request data.
-   * @param aParams {hash}
+   * @param aOption {hash}
    *   timeout: {integer} [milliseconds > 0]
    *     A timeout value while waiting for a response.
    *   onLoad: {function}
@@ -283,6 +281,7 @@ const RequestHandler = (function() {
 
       let message = `<XHR error>\nURL:${aURL}\n${eventType}:${statusText}`;
 
+      // Log to console.
       log([message, aError]);
 
       if (aOption.onError) {
@@ -494,56 +493,83 @@ function evaluate(aParams, aPreset) {
   return result;
 }
 
-function inputAndSubmit(aForm, aData) {
-  let form = $X1(aForm.form, gBrowser.contentDocument),
-      input = $X1(aForm.input, gBrowser.contentDocument);
+function inputAndSubmit(formInfo, inputData) {
+  ContentTask.spawn({
+    params: {formInfo, inputData},
+    task: function*(params) {
+      '${ContentTask.ContentScripts.DOMUtils}';
 
-  if (form && input) {
-    input.value = aData;
-    form.submit();
-  }
+      let {formInfo, inputData} = params;
+
+      let formNode = DOMUtils.$X1(formInfo.form),
+          inputNode = DOMUtils.$X1(formInfo.input);
+
+      if (formNode && inputNode) {
+        inputNode.value = inputData;
+        formNode.submit();
+      }
+    }
+  }).
+  catch(Cu.reportError);
 }
 
-function updateFormInput(aData, aOption = {}) {
-  const kTextInputXpath = './/input[not(@disabled or @hidden or @readonly) and (@type="text" or not(@type))]'
+function updateFormInput(inputData, options = {}) {
+  ContentTask.spawn({
+    params: {
+      inputData,
+      options
+    },
+    task: `function*(params) {
+      ${ContentTask.ContentScripts.DOMUtils}
+      ${content_updateFormInput.toString()}
 
-  if (!aData) {
-    return;
-  }
+      let {inputData, options} = params;
 
-  let {
-    lessData,
-    doSubmit
-  } = aOption;
+      content_updateFormInput(inputData, options);
+    }`
+  }).
+  catch(Cu.reportError);
 
-  let textForm = null,
-      textInput = null;
+  function content_updateFormInput(inputData, options = {}) {
+    const kTextInputXpath = './/input[not(@disabled or @hidden or @readonly) and (@type="text" or not(@type))]';
 
-  [...gBrowser.contentDocument.forms].some((form) => {
-    let input = $X1(kTextInputXpath, form);
-
-    if (input && input.value) {
-      textForm = form;
-      textInput = input;
-
-      return true;
+    if (!inputData) {
+      return;
     }
 
-    return false;
-  });
+    let {
+      lessData,
+      doSubmit
+    } = options;
 
-  if (!textInput) {
-    return;
-  }
+    let formNode, inputNode;
 
-  textInput.value +=
-    (lessData ? ' -' : ' ') + '"' + aData.trim().replace(/\s+/g, ' ') + '"';
+    [...content.document.forms].some((form) => {
+      let input = DOMUtils.$X1(kTextInputXpath, form);
 
-  if (doSubmit) {
-    textForm.submit();
-  }
-  else {
-    textInput.focus();
+      if (input && input.value) {
+        formNode = form;
+        inputNode = input;
+
+        return true;
+      }
+
+      return false;
+    });
+
+    if (!inputNode) {
+      return;
+    }
+
+    inputData = inputData.trim().replace(/\s+/g, ' ');
+    inputNode.value += (lessData ? ' -' : ' ') + '"' + inputData + '"';
+
+    if (doSubmit) {
+      formNode.submit();
+    }
+    else {
+      inputNode.focus();
+    }
   }
 }
 
