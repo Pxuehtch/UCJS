@@ -1364,8 +1364,8 @@ function inEditableNode(event) {
       let node = DOMUtils.getElementFromPoint(x, y);
 
       return (
-        node instanceof Ci.nsIDOMHTMLTextAreaElement ||
-        node instanceof Ci.nsIDOMHTMLInputElement ||
+        node instanceof content.HTMLTextAreaElement ||
+        node instanceof content.HTMLInputElement ||
         node.isContentEditable ||
         node.ownerDocument.designMode === 'on'
       );
@@ -1408,7 +1408,7 @@ function promiseImageURLAtPoint(x, y) {
 
       let node = DOMUtils.getElementFromPoint(x, y);
 
-      if (node instanceof Ci.nsIDOMHTMLImageElement && node.src) {
+      if (node instanceof content.HTMLImageElement && node.src) {
         return node.src;
       }
 
