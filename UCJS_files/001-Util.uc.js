@@ -948,7 +948,169 @@ const MessageManager = (function() {
 })();
 
 /**
- * Alias names for event/message listeners.
+ * Page event manager.
+ */
+const PageEvents = (function() {
+  // Available to a browser window only.
+  if (!isBrowserWindow()) {
+    return null;
+  }
+
+  // Initialize.
+  setContentScript();
+
+  function setContentScript() {
+    let content_script = () => {
+      '${MessageManager.ContentScripts.Listeners}';
+
+      let handleEvent = (event) => {
+        // Ignore events from subframes.
+        if (event.target !== content.document) {
+          return;
+        }
+
+        let data = {
+          persisted: event.persisted,
+          readyState: content.document.readyState
+        };
+
+        sendAsyncMessage('ucjs:PageEvent:' + event.type, data);
+      };
+
+      ['pageshow', 'pagehide'].forEach((type) => {
+        Listeners.$event(type, handleEvent);
+      });
+    };
+
+    MessageManager.loadFrameScript(content_script);
+  }
+
+  function listenPageEvent(type, listener) {
+    switch (type) {
+      case 'pageready': {
+        let browser;
+
+        if (typeof listener !== 'function') {
+          browser = listener.browser;
+          listener = listener.listener;
+        }
+
+        promisePageReady(browser).then((result) => {
+          let {persisted} = result;
+
+          let pseudoEvent = {
+            type,
+            persisted
+          };
+
+          listener(pseudoEvent);
+        }).
+        catch(Cu.reportError);
+
+        break;
+      }
+
+      case 'pageshow':
+      case 'pagehide': {
+        // We are interested in the selected browser only.
+        Listeners.$message('ucjs:PageEvent:' + type, (message) => {
+          if (message.target !== gBrowser.selectedBrowser) {
+            return;
+          }
+
+          let {persisted, readyState} = message.data;
+
+          // WORKAROUND: 'pageshow' sometimes fires in a document loading
+          // (e.g. on a start-up tab).
+          if (type === 'pageshow' && readyState !== 'complete') {
+            return;
+          }
+
+          let pseudoEvent = {
+            type,
+            persisted
+          };
+
+          listener(pseudoEvent, message);
+        });
+
+        break;
+      }
+
+      case 'pageselect': {
+        // We are interested in the selected browser only.
+        Listeners.$event(gBrowser, 'TabSwitchDone', (event) => {
+          ContentTask.spawn(function*() {
+            return content.document.readyState;
+          }).
+          then((readyState) => {;
+            let pseudoEvent = {
+              type,
+              readyState
+            };
+
+            listener(pseudoEvent, event);
+          }).
+          catch(Cu.reportError);
+        });
+
+        break;
+      }
+
+      default: {
+        throw Error('Unknown type:' + type);
+      }
+    }
+  }
+
+  function promisePageReady(browser) {
+    return ContentTask.spawn({
+      browser,
+      task: function*() {
+        return new Promise((resolve) => {
+          let document = content.document;
+
+          let onReady = (persisted) => {
+            resolve({
+              persisted
+            });
+          };
+
+          if (document.readyState === 'complete') {
+            onReady(true);
+
+            return;
+          }
+
+          if (document.readyState === 'interactive') {
+            onReady(false);
+
+            return;
+          }
+
+          let onLoad = (event) => {
+            if (event.originalTarget !== document) {
+              return;
+            }
+
+            document.removeEventListener('DOMContentLoaded', onLoad);
+
+            onReady(false);
+          };
+
+          document.addEventListener('DOMContentLoaded', onLoad)
+        });
+      }
+    });
+  }
+
+  return {
+    listenPageEvent
+  };
+})();
+
+/**
+ * Alias names for event/message/page-event listeners.
  */
 const Listeners = (function() {
   return {
@@ -957,7 +1119,9 @@ const Listeners = (function() {
     $shutdown: EventManager && EventManager.listenShutdown,
 
     $message: MessageManager && MessageManager.listenMessage,
-    $messageOnce: MessageManager && MessageManager.listenMessageOnce
+    $messageOnce: MessageManager && MessageManager.listenMessageOnce,
+
+    $page: PageEvents && PageEvents.listenPageEvent
   };
 })();
 
