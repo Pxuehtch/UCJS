@@ -994,22 +994,67 @@ const PageEvents = (function() {
     let content_script = () => {
       '${MessageManager.ContentScripts.Listeners}';
 
+      let doPreventDefaultClick = false;
+
       let handleEvent = (event) => {
-        // Ignore events from subframes.
-        if (event.target !== content.document) {
-          return;
+        switch (event.type) {
+          case 'pageshow':
+          case 'pagehide': {
+            // Ignore events from subframes.
+            if (event.target !== content.document) {
+              return;
+            }
+
+            let data = {
+              persisted: event.persisted,
+              readyState: content.document.readyState
+            };
+
+            sendAsyncMessage('ucjs:PageEvent:' + event.type, data);
+
+            break;
+          }
+
+          case 'click': {
+            if (event.button === 2) {
+              return;
+            }
+
+            if (doPreventDefaultClick) {
+              doPreventDefaultClick = false;
+
+              event.preventDefault();
+            }
+
+            break;
+          }
         }
-
-        let data = {
-          persisted: event.persisted,
-          readyState: content.document.readyState
-        };
-
-        sendAsyncMessage('ucjs:PageEvent:' + event.type, data);
       };
 
-      ['pageshow', 'pagehide'].forEach((type) => {
+      let receiveMessage = (message) => {
+        switch (message.name) {
+          case 'ucjs:PageEvent:PreventDefaultClick': {
+            doPreventDefaultClick = true;
+
+            break;
+          }
+        }
+      };
+
+      [
+        'pageshow',
+        'pagehide',
+        'click'
+      ].
+      forEach((type) => {
         Listeners.$event(type, handleEvent);
+      });
+
+      [
+        'ucjs:PageEvent:PreventDefaultClick'
+      ].
+      forEach((name) => {
+        Listeners.$message(name, receiveMessage);
       });
     };
 
