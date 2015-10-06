@@ -24,11 +24,11 @@
  */
 const {
   Modules,
+  ContentTask,
   Listeners: {
     $event,
     $page
   },
-  ContentTask,
   DOMUtils: {
     init$E,
     $ID
@@ -446,7 +446,7 @@ const Tooltip = (function() {
     $event(window, 'keydown', (event) => {
       let triggerKey = event.ctrlKey && event.altKey;
 
-      if (!isObserving && triggerKey && isHTMLDocument()) {
+      if (!isObserving && triggerKey && BrowserUtils.isHTMLDocument()) {
         isObserving = true;
 
         let pc = gBrowser.mPanelContainer;
@@ -758,17 +758,6 @@ const Tooltip = (function() {
 /**
  * Utility functions.
  */
-function isHTMLDocument() {
-  let mime = gBrowser.selectedBrowser.documentContentType;
-
-  return (
-    mime === 'text/html' ||
-    mime === 'text/xml' ||
-    mime === 'application/xml' ||
-    mime === 'application/xhtml+xml'
-  );
-}
-
 function splitURL(url, baseURI) {
   url = URLUtils.unescapeURLForUI(URLUtils.resolveURL(url, baseURI));
 
