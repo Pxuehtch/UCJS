@@ -28,16 +28,69 @@ const {
   Listeners: {
     $event
   },
-  DOMUtils: {
-    $X1
-  },
+  ContentTask,
   TabUtils,
-  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
   }
 } = window.ucjsUtil;
+
+function TextLink_init() {
+  $event(gBrowser.mPanelContainer, 'dblclick', handleEvent);
+}
+
+function handleEvent(event) {
+  // Bail out for the selection by the default action.
+  if (event.shiftKey || event.ctrlKey) {
+    return;
+  }
+
+  if (!isTextDocument()) {
+    return;
+  }
+
+  findURL().then((url) => {
+    if (url) {
+      TabUtils.openTab(url, {
+        relatedToCurrent: true
+      });
+    }
+  }).
+  catch(Cu.reportError);
+}
+
+function isTextDocument() {
+  // @see resource://gre/modules/BrowserUtils.jsm
+  const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
+
+  let contentType = gBrowser.selectedBrowser.documentContentType;
+
+  return BrowserUtils.mimeTypeIsTextBased(contentType);
+}
+
+function findURL() {
+  return ContentTask.spawn(`function*() {
+    ${ContentTask.ContentScripts.DOMUtils}
+    ${ContentTask.ContentScripts.TextUtils}
+    ${content_createURLUtil.toString()}
+    ${content_getSelection.toString()}
+    ${content_findURL.toString()}
+    ${content_createRange.toString()}
+    ${content_findBorder.toString()}
+
+    let URLUtil = content_createURLUtil();
+
+    let {document, selection} = content_getSelection();
+    let url = content_findURL(document, selection);
+
+    if (url) {
+      selection.removeAllRanges();
+    }
+
+    return url;
+  }`);
+}
 
 /**
  * Helper functions for URL-like strings.
@@ -50,7 +103,7 @@ const {
  *
  * TODO: Detect Kana/Kanji characters.
  */
-const URLUtil = (function() {
+function content_createURLUtil() {
   /**
    * Converts fullwidth ASCII printable characters into halfwidth ones.
    *
@@ -58,7 +111,8 @@ const URLUtil = (function() {
    * @return {string}
    *
    * [94 characters]
-   * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`
+   * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+   * and [back-tick] (can't write here the character for template string)
    * abcdefghijklmnopqrstuvwxyz{|}~
    *
    * [Unicode]
@@ -67,10 +121,11 @@ const URLUtil = (function() {
    *
    * @see http://taken.s101.xrea.com/blog/article.php?id=510
    */
-  let normalize = (aString) => aString.replace(/[\uFF01-\uFF5E]/g,
-    (aChar) => {
-      let code = aChar.charCodeAt(0);
-      code &= 0x007F; // FF01->0001
+  let normalize = (str) => str.replace(/[\uFF01-\uFF5E]/g,
+    (char) => {
+      let code = char.charCodeAt(0);
+      // FF01->0001
+      code &= 0x007F;
       code += 0x0020;
 
       return String.fromCharCode(code);
@@ -83,7 +138,7 @@ const URLUtil = (function() {
    * @param aString {string}
    * @return {boolean}
    */
-  let isASCII = (aString) => !/[^!-~]/.test(normalize(aString));
+  let isASCII = (str) => !/[^!-~]/.test(normalize(str));
 
   /**
    * Retrieves an array of URL-like strings.
@@ -93,14 +148,12 @@ const URLUtil = (function() {
    *   |null| if no matches.
    */
   let match = (function() {
-    const absolute =
-      '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[!-~]*';
-    const relative =
-      '\\.\\.?\\/[!-~]+';
+    const absolute = '(?:ps?:\\/\\/|www\\.)(?:[\\w\\-]+\\.)+[a-z]{2,}[!-~]*';
+    const relative = '\\.\\.?\\/[!-~]+';
 
     const re = RegExp(absolute + '|' + relative, 'ig');
 
-    return (aString) => normalize(aString).match(re);
+    return (str) => normalize(str).match(re);
   })();
 
   /**
@@ -111,8 +164,8 @@ const URLUtil = (function() {
    *
    * @note Guesses the selection string at a part of a URL.
    */
-  function guess(aSelection) {
-    return isASCII(aSelection.toString());
+  function guess(selection) {
+    return isASCII(selection.toString());
   }
 
   /**
@@ -122,8 +175,8 @@ const URLUtil = (function() {
    * @return {array|null}
    *   |null| if no matches.
    */
-  function extract(aRange) {
-    return match(BrowserUtils.getTextInRange(aRange));
+  function extract(range) {
+    return match(TextUtils.getTextInRange(range));
   }
 
   /**
@@ -135,8 +188,8 @@ const URLUtil = (function() {
    *
    * @note Used as a map indicating the position of URL strings.
    */
-  function map(aRange) {
-    return normalize(aRange.toString());
+  function map(range) {
+    return normalize(range.toString());
   }
 
   /**
@@ -145,8 +198,8 @@ const URLUtil = (function() {
    * @param aString {string}
    * @return {string}
    */
-  function fix(aString) {
-    return aString.
+  function fix(str) {
+    return str.
       replace(/^[^s:\/]+(s?:\/)/, 'http$1').
       replace(/^www\./, 'http://www.').
       // Remove trailing characters that may be marks unrelated to the URL.
@@ -159,54 +212,40 @@ const URLUtil = (function() {
     map,
     fix
   }
-})();
-
-function TextLink_init() {
-  // @note Use the capture mode to surely catch the event in the content area.
-  $event(gBrowser.mPanelContainer, 'dblclick', handleEvent, true);
 }
 
-function handleEvent(aEvent) {
-  // Bail out for the selection by the default action.
-  if (aEvent.shiftKey || aEvent.ctrlKey) {
-    return;
+function content_getSelection() {
+  let {focusedWindow} = Services.focus;
+
+  if (!focusedWindow) {
+    return null;
   }
 
-  let doc = aEvent.originalTarget.ownerDocument;
+  // Ignore a selection in editable elements.
+  let selection = focusedWindow.getSelection();
 
-  if (!isTextDocument(doc)) {
-    return;
-  }
-
-  let selection = doc.defaultView.getSelection();
-
-  let URL = findURL(doc, selection);
-
-  if (URL) {
-    selection.removeAllRanges();
-
-    TabUtils.openTab(URL, {
-      relatedToCurrent: true
-    });
-  }
+  return {
+    document: focusedWindow.document,
+    selection
+  };
 }
 
-function findURL(aDocument, aSelection) {
+function content_findURL(document, selection) {
   // Test if the selection seems to be a part of a URL.
-  if (!aSelection ||
-      !aSelection.rangeCount ||
-      !URLUtil.guess(aSelection)) {
+  if (!selection ||
+      !selection.rangeCount ||
+      !URLUtil.guess(selection)) {
     return null;
   }
 
   // Create a large range that contains the source selection and retrieve the
   // position of the source selection in the range.
-  let {range, sourcePosition} = createRange(aDocument, aSelection);
+  let {range, sourcePosition} = content_createRange(document, selection);
 
   // Extract an array of URL strings.
-  let URLs = URLUtil.extract(range);
+  let urls = URLUtil.extract(range);
 
-  if (!URLs) {
+  if (!urls) {
     return null;
   }
 
@@ -216,12 +255,12 @@ function findURL(aDocument, aSelection) {
   let start, end = 0;
   let map = URLUtil.map(range);
 
-  URLs.some((URL) => {
-    start = map.indexOf(URL, end);
-    end = start + URL.length;
+  urls.some((url) => {
+    start = map.indexOf(url, end);
+    end = start + url.length;
 
     if (sourcePosition.start < end && start < sourcePosition.end) {
-      resultURL = URLUtil.fix(URL);
+      resultURL = URLUtil.fix(url);
 
       return true;
     }
@@ -232,15 +271,15 @@ function findURL(aDocument, aSelection) {
   return resultURL;
 }
 
-function createRange(aDocument, aSelection) {
-  let range = aDocument.createRange();
+function content_createRange(document, selection) {
+  let range = document.createRange();
 
-  range.selectNode(aDocument.documentElement);
+  range.selectNode(document.documentElement);
 
-  let sourceRange = aSelection.getRangeAt(0);
+  let sourceRange = selection.getRangeAt(0);
 
   // Expand the range before the source selection.
-  let result = findBorder(
+  let result = content_findBorder(
     'preceding::text()[1]',
     sourceRange.startContainer,
     sourceRange.startOffset
@@ -253,7 +292,7 @@ function createRange(aDocument, aSelection) {
   let end = start + sourceRange.toString().length;
 
   // Expand range after the source selection.
-  result = findBorder(
+  result = content_findBorder(
     'following::text()[1]',
     sourceRange.endContainer,
     sourceRange.endContainer.textContent.length - sourceRange.endOffset
@@ -270,18 +309,16 @@ function createRange(aDocument, aSelection) {
   };
 }
 
-function findBorder(aXPath, aNode, aTextLength) {
-  // The threshold number of characters without white-spaces.
+function content_findBorder(xpath, rootNode, textLength) {
+  // The max numbers of characters without white-spaces.
   // @note It seems that 2,000 characters are sufficient for a HTTP URL.
   const kMaxTextLength = 2000;
 
-  let borderNode = aNode;
-  let textLength = aTextLength;
-
-  let node = aNode;
+  let borderNode = rootNode;
+  let node = rootNode;
 
   while (textLength < kMaxTextLength) {
-    node = $X1(aXPath, node);
+    node = DOMUtils.$X1(xpath, node);
 
     if (!node) {
       break;
@@ -302,11 +339,6 @@ function findBorder(aXPath, aNode, aTextLength) {
     borderNode,
     textLength
   };
-}
-
-function isTextDocument(aDocument) {
-  return aDocument &&
-         Modules.BrowserUtils.mimeTypeIsTextBased(aDocument.contentType);
 }
 
 /**
