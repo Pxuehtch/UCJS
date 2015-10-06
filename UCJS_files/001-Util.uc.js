@@ -300,6 +300,425 @@ function log(logData) {
 }
 
 /**
+ * Script source texts for importing into the content frame script.
+ */
+const ContentScripts = (function() {
+  // Available to a browser window only.
+  if (!isBrowserWindow()) {
+    return null;
+  }
+
+  /**
+   * @note Attentions to the content frame script:
+   * - Don't repeat the injection names of modules.
+   * - Can't use the chrome code.
+   */
+
+  /**
+   * The global scoped utilities in the content frame.
+   */
+  const GlobalUtils = `
+    const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
+
+    const Modules = {
+      require: (url) => Cu.import('resource://' + url, {}),
+      $S: (CID, IID) => Cc[CID].getService(Ci[IID]),
+      $I: (CID, IID) => Cc[CID].createInstance(Ci[IID])
+    };
+
+    Cu.import('resource://gre/modules/Services.jsm');
+    Cu.import('resource://gre/modules/XPCOMUtils.jsm');
+  `;
+
+  /**
+   * Alias names for event/message listeners.
+   */
+  const Listeners = `
+    const Listeners = (function() {
+      ${content_listenShutdown.toString()}
+
+      return {
+        $event: ${content_listenEvent.toString()},
+        $eventOnce: ${content_listenEventOnce.toString()},
+        $message: ${content_listenMessage.toString()},
+        $messageOnce: ${content_listenMessageOnce.toString()}
+      };
+    })();
+  `;
+
+  /**
+   * DOM utilities.
+   */
+  const DOMUtils = `
+    const DOMUtils = (function() {
+      ${content_querySelector.toString()}
+      ${content_evaluateXPath.toString()}
+      ${content_getFrameContentOffset.toString()}
+      ${content_resolveURL.toString()}
+
+      return {
+        $ID: ${content_getElementById.toString()},
+        $S1: ${content_getFirstNodeBySelector.toString()},
+        $S: ${content_getLiveNodesBySelector.toString()},
+        $SS: ${content_getStaticNodesBySelector.toString()},
+        $X1: ${content_getFirstNodeByXPath.toString()},
+        $X: ${content_getNodesByXPath.toString()},
+        getElementFromPoint: ${content_getElementFromPoint.toString()},
+        getLinkHref: ${content_getLinkHref.toString()}
+      };
+    })();
+  `;
+
+  /**
+   * CSS utilities.
+   */
+  const CSSUtils = `
+    const CSSUtils = {
+      injectStyleSheet: ${content_injectStyleSheet.toString()}
+    };
+  `;
+
+  /**
+   * Register an event listener that observes on the global scope and lives
+   * until the content process is shut down.
+   */
+  function content_listenEvent(type, listener, capture) {
+    capture = !!capture;
+
+    addEventListener(type, listener, capture);
+
+    content_listenShutdown(() => {
+      removeEventListener(type, listener, capture);
+    });
+  }
+
+  /**
+   * Register an event listener that observes on the global scope and lives
+   * until once listened.
+   */
+  function content_listenEventOnce(type, listener, capture) {
+    capture = !!capture;
+
+    let onReceive = (event) => {
+      removeEventListener(type, onReceive, capture);
+      listener(event);
+    };
+
+    addEventListener(type, onReceive, capture);
+  }
+
+  /**
+   * Register a message listener that observes on the global scope and lives
+   * until the content process is shut down.
+   */
+  function content_listenMessage(name, listener) {
+    addMessageListener(name, listener);
+
+    content_listenShutdown(() => {
+      removeMessageListener(name, listener);
+    });
+  }
+
+  /**
+   * Register a message listener that observes on the global scope and lives
+   * until once listened.
+   */
+  function content_listenMessageOnce(name, listener) {
+    let onReceive = (message) => {
+      removeMessageListener(name, onReceive);
+      listener(message);
+    };
+
+    addMessageListener(name, onReceive);
+  }
+
+  /**
+   * Reserves the execution of given handler when the content process is shut
+   * down.
+   *
+   * @note The 'unload' event on the global scope occurs when the frame script
+   * environment is shut down, not when the content document unloads.
+   * @see https://developer.mozilla.org/en/Firefox/Multiprocess_Firefox/Frame_script_environment#Events
+   */
+  function content_listenShutdown(handler) {
+    addEventListener('unload', function onUnload() {
+      removeEventListener('unload', onUnload);
+
+      handler();
+    });
+  }
+
+  function content_getElementById(id) {
+    return content.document.getElementById(id);
+  }
+
+  function content_getFirstNodeBySelector(selector, context) {
+    if (!context) {
+      context = content.document;
+    }
+
+    return content_querySelector(selector, context);
+  }
+
+  function content_getStaticNodesBySelector(selector, context) {
+    if (!context) {
+      context = content.document;
+    }
+
+    // @return {static NodeList}
+    return context.querySelectorAll(selector);
+  }
+
+  function content_getLiveNodesBySelector(selector, context) {
+    if (!context) {
+      context = content.document;
+    }
+
+    // Converts a static NodeList to a live NodeList.
+    return [...context.querySelectorAll(selector)];
+  }
+
+  function content_getFirstNodeByXPath(xpath, context) {
+    let type = content.XPathResult.FIRST_ORDERED_NODE_TYPE;
+
+    let result = content_evaluateXPath(xpath, context, type);
+
+    return result ? result.singleNodeValue : null;
+  }
+
+  function content_getNodesByXPath(xpath, context, options = {}) {
+    let {
+      ordered,
+      toArray
+    } = options;
+
+    let type = ordered ?
+      content.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE :
+      content.XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE;
+
+    let result = evaluateXPath(xpath, context, type);
+
+    if (!toArray) {
+      return result;
+    }
+
+    let nodes = Array(result ? result.snapshotLength : 0);
+
+    for (let i = 0, l = nodes.length; i < l; i++) {
+      nodes[i] = result.snapshotItem(i);
+    }
+
+    return nodes;
+  }
+
+  /**
+   * Like document.querySelector but can go into frames too.
+   *
+   * ".container iframe |> .sub-container div" will first try to find the node
+   * matched by ".container iframe" in the root document, then try to get the
+   * content document inside it, and then try to match ".sub-container div" in
+   * side this document.
+   *
+   * The original code:
+   * @see resource:///modules/devtools/shared/frame-script-utils.js
+   */
+  function content_querySelector(selector, root = content.document) {
+   const kSeparator = '|>';
+
+   let frameIndex = selector.indexOf(kSeparator);
+
+   if (frameIndex === -1) {
+     return root.querySelector(selector);
+   }
+   else {
+     let rootSelector = selector.substr(0, frameIndex);
+     let childSelector = selector.substr(frameIndex + kSeparator.length);
+
+     root = root.querySelector(rootSelector);
+
+     if (!root || !root.contentWindow) {
+       return null;
+     }
+
+     return content_querySelector(childSelector, root.contentWindow.document);
+   }
+  }
+
+  function content_evaluateXPath(xpath, context, type) {
+    function lookupNamespaceURI(prefix) {
+      const kNS = {
+        xul: 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul',
+        html: 'http://www.w3.org/1999/xhtml',
+        xhtml: 'http://www.w3.org/1999/xhtml',
+        xlink: 'http://www.w3.org/1999/xlink'
+      };
+
+      return kNS[prefix] || null;
+    }
+
+    let doc, root;
+
+    if (context instanceof content.Document) {
+      doc = context;
+      root = doc.documentElement;
+    }
+    else {
+      doc = context ? context.ownerDocument : content.document;
+      root = context || doc.documentElement;
+    }
+
+    try {
+      return doc.evaluate(xpath, root, lookupNamespaceURI, type, null);
+    }
+    catch (ex) {}
+
+    return null;
+  }
+
+  /**
+   * Find an element from the given coordinates. This method descends through
+   * frames.
+   *
+   * The original code:
+   * @see resource:///modules/devtools/shared/layout/utils.js
+   */
+  function content_getElementFromPoint(x, y, root = content.document) {
+    let node = root.elementFromPoint(x, y);
+
+    if (node && node.contentDocument) {
+      let rect = node.getBoundingClientRect();
+
+      let [offsetTop, offsetLeft] = content_getFrameContentOffset(node);
+
+      x -= rect.left + offsetLeft;
+      y -= rect.top + offsetTop;
+
+      if (x < 0 || y < 0) {
+        return node;
+      }
+
+      let subnode = content_getElementFromPoint(x, y, node.contentDocument);
+
+      if (subnode) {
+        node = subnode;
+      }
+    }
+
+    return node;
+  }
+
+  function content_getFrameContentOffset(frame) {
+    let style = frame.contentWindow.getComputedStyle(frame, null);
+
+    if (!style) {
+      return [0, 0];
+    }
+
+    let parseInteger = (value) => parseInt(style.getPropertyValue(value), 10);
+
+    let paddingTop = parseInteger('padding-top');
+    let paddingLeft = parseInteger('padding-left');
+    let borderTop = parseInteger('border-top-width');
+    let borderLeft = parseInteger('border-left-width');
+
+    return [borderTop + paddingTop, borderLeft + paddingLeft];
+  }
+
+  function content_getLinkHref(node) {
+    const XLinkNS = 'http://www.w3.org/1999/xlink';
+
+    if (node.nodeType !== content.Node.ELEMENT_NODE) {
+      return null;
+    }
+
+    if (node instanceof Ci.nsIDOMHTMLAnchorElement ||
+        node instanceof Ci.nsIDOMHTMLAreaElement ||
+        node instanceof Ci.nsIDOMHTMLLinkElement) {
+      return node.href;
+    }
+
+    if (node.getAttributeNS(XLinkNS, 'type') === 'simple') {
+      let href = node.getAttributeNS(XLinkNS, 'href');
+
+      return content_resolveURL(href, node.baseURI);
+    }
+
+    if (node instanceof content.SVGAElement && node.href) {
+      return content_resolveURL(node.href.baseVal, node.baseURI);
+    }
+
+    return null;
+  }
+
+  function content_resolveURL(url, baseURL) {
+    const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
+    const {makeURI} = BrowserUtils;
+
+    if (!url || !/\S/.test(url)) {
+      return null;
+    }
+
+    try {
+      return makeURI(url, null, makeURI(baseURL)).spec;
+    }
+    catch (ex) {}
+
+    return null;
+  }
+
+  function content_injectStyleSheet(css, options = {}) {
+    let {id} = options;
+
+    // @see |CSSUtils.minifyCSS|
+    css = css.trim().
+      replace(/\/\*[^\*]*?\*\//gm, '').
+      replace(/ +/g, ' ').
+      replace(/\s{2,}/g, '');
+
+    if (!css) {
+      return;
+    }
+
+    let document = content.document;
+
+    if (!document.head) {
+      return;
+    }
+
+    if (id) {
+      let old = document.getElementById(id);
+
+      if (old) {
+        if (old.textContent !== css) {
+          old.textContent = css;
+        }
+
+        return;
+      }
+    }
+
+    let style = document.createElement('style');
+
+    style.type = 'text/css';
+
+    if (id) {
+      style.id = id;
+    }
+
+    style.textContent = css;
+
+    return document.head.appendChild(style);
+  }
+
+  return {
+    GlobalUtils,
+    Listeners,
+    DOMUtils,
+    CSSUtils
+  };
+})();
+
+/**
  * Event manager.
  */
 const EventManager = (function() {
@@ -1026,49 +1445,6 @@ const CSSUtils = (function() {
     return doc.insertBefore(newStyleSheet, doc.documentElement);
   }
 
-  function setContentStyleSheet(aCSS, aOption = {}) {
-    let {
-      document,
-      id
-    } = aOption;
-
-    let css = minifyCSS(aCSS);
-
-    if (!css) {
-      return;
-    }
-
-    let doc = document || gBrowser.contentDocument;
-
-    if (!doc.head) {
-      return;
-    }
-
-    if (id) {
-      let old = doc.getElementById(id);
-
-      if (old) {
-        if (old.textContent === css) {
-          return;
-        }
-
-        old.parentNode.removeChild(old);
-      }
-    }
-
-    let style = doc.createElement('style');
-
-    style.type = 'text/css';
-
-    if (id) {
-      style.id = id;
-    }
-
-    style.textContent = css;
-
-    return doc.head.appendChild(style);
-  }
-
   function minifyCSS(css) {
     // @note You should put a 'half-width space' for the separator of:
     // - The descendant selector (e.g. h1 em{...}).
@@ -1086,8 +1462,7 @@ const CSSUtils = (function() {
   return {
     setGlobalStyleSheet,
     removeGlobalStyleSheet,
-    setChromeStyleSheet,
-    setContentStyleSheet
+    setChromeStyleSheet
   };
 })();
 
