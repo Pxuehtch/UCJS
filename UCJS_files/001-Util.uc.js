@@ -2309,6 +2309,72 @@ const PlacesUtils = (function() {
 })();
 
 /**
+ * History utilities.
+ */
+const HistoryUtils = (function() {
+  /**
+   * Promise for the session history data of a browser.
+   *
+   * @param browser {xul:browser}
+   *   A browser that has the session history.
+   *   If omitted, retrieves the session history of a selected brower.
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with a session histoy data, or null if no data.
+   *     @param result {hash}
+   *       index: {integer} The index of a selected entry.
+   *       count: {integer} The count of entries.
+   *       entries: {hash[]}
+   *         title: {string}
+   *         url: {string}
+   *   reject: {function}
+   *     Rejected with an error message string.
+   *     @param error {string}
+   *
+   * TODO: Handle cancelling by user.
+   */
+  function promiseSessionHistory(browser) {
+    return ContentTask.spawn({
+      browser,
+      task: content_task
+    });
+
+    function* content_task() {
+      let sessionHistory =
+        docShell.
+        QueryInterface(Ci.nsIWebNavigation).
+        sessionHistory;
+
+      let {index, count} = sessionHistory;
+      let entries = [];
+
+      for (let i = 0; i < count; i++) {
+        let entry = sessionHistory.getEntryAtIndex(i, false);
+
+        entries.push({
+          title: entry.title,
+          URL: entry.URI && entry.URI.spec
+        });
+      }
+
+      if (!entries.length) {
+        return null;
+      }
+
+      return {
+        index,
+        count,
+        entries
+      };
+    }
+  }
+
+  return {
+    promiseSessionHistory
+  };
+})();
+
+/**
  * Export
  */
 return {
@@ -2323,7 +2389,8 @@ return {
   TabUtils,
   CSSUtils,
   BrowserUtils,
-  PlacesUtils//,
+  PlacesUtils,
+  HistoryUtils//,
 };
 
 
