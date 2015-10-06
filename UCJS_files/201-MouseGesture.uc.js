@@ -1408,15 +1408,7 @@ function promiseImageURLAtPoint(x, y) {
 
       let node = DOMUtils.getElementFromPoint(x, y);
 
-      if (node instanceof content.HTMLImageElement && node.src) {
-        return node.src;
-      }
-
-      if (node instanceof content.SVGImageElement && node.href) {
-        return DOMUtils.resolveURL(node.href.baseVal, node.baseURI);
-      }
-
-      return null;
+      return DOMUtils.getImageSrc(node);
     }
   });
 }

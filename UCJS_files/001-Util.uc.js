@@ -369,7 +369,8 @@ const ContentScripts = (function() {
         $X1: ${content_getFirstNodeByXPath.toString()},
         $X: ${content_getNodesByXPath.toString()},
         getElementFromPoint: ${content_getElementFromPoint.toString()},
-        getLinkHref: ${content_getLinkHref.toString()}
+        getLinkHref: ${content_getLinkHref.toString()},
+        getImageSrc: ${content_getImageSrc.toString()}
       };
     })();
   `;
@@ -658,6 +659,22 @@ const ContentScripts = (function() {
     }
 
     if (node instanceof content.SVGAElement && node.href) {
+      return content_resolveURL(node.href.baseVal, node.baseURI);
+    }
+
+    return null;
+  }
+
+  function content_getImageSrc(node) {
+    if (node.nodeType !== content.Node.ELEMENT_NODE) {
+      return null;
+    }
+
+    if (node instanceof content.HTMLImageElement && node.src) {
+      return node.src;
+    }
+
+    if (node instanceof content.SVGImageElement && node.href) {
       return content_resolveURL(node.href.baseVal, node.baseURI);
     }
 
