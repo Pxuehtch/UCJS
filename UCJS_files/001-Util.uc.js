@@ -962,6 +962,224 @@ const Listeners = (function() {
 })();
 
 /**
+ * Content task manager.
+ *
+ * The original code:
+ * @see http://mxr.mozilla.org/mozilla-central/source/testing/mochitest/BrowserTestUtils/ContentTask.jsm
+*/
+const ContentTask = (function() {
+  // Available to a browser window only.
+  if (!isBrowserWindow()) {
+    return null;
+  }
+
+  /**
+   * Promise list manager.
+   */
+  const PromiseList = (function() {
+    let messages = new Map();
+    let uniqueId = 0;
+
+    function set(browser, deferred, task, params, paramsAsCPOW) {
+      let messageId = uniqueId++;
+
+      // Make a listener instance for the message this time.
+      let listener = (message) => receiveMessage(message);
+
+      messages.set(messageId, {
+        deferred,
+        listener
+      });
+
+      let data = {
+        messageId,
+        task: MessageManager.makeInjectionSource(task),
+        params: params || {}
+      };
+
+      let objects = paramsAsCPOW || {};
+
+      let mm = browser.messageManager;
+
+      mm.addMessageListener('ucjs:ContentTask:response', listener);
+      mm.sendAsyncMessage('ucjs:ContentTask:spawn', data, objects);
+    }
+
+    function get(browser, messageId) {
+      let data = messages.get(messageId);
+
+      // TODO: Fix many redundant messages can be received when a tab moves to
+      // the other window.
+      if (!data) {
+        return null;
+      }
+
+      let {deferred, listener} = data;
+
+      messages.delete(messageId);
+
+      let mm = browser.messageManager;
+
+      mm.removeMessageListener('ucjs:ContentTask:response', listener);
+
+      return deferred;
+    }
+
+    return {
+      set,
+      get
+    };
+  })();
+
+  // Initialize.
+  setContentScript();
+
+  function setContentScript() {
+    let content_script = () => {
+      '${MessageManager.ContentScripts.Listeners}';
+
+      function receiveMessage(message) {
+        let messageId = message.data.messageId;
+        let task = message.data.task || '()=>{}';
+        let params = message.data.params;
+        let paramsAsCPOW = message.objects;
+
+        let sendResponse = (data) => {
+          data.messageId = messageId;
+
+          if (data.error instanceof Error) {
+            data.error = data.error.toString();
+
+            // Log to the console.
+            content.console.error(data.error);
+          }
+
+          sendAsyncMessage('ucjs:ContentTask:response', data);
+        };
+
+        try {
+          let runnable = eval(`(()=>{return (${task});})();`);
+          let iterator = runnable(params, paramsAsCPOW);
+
+          Task.spawn(iterator).then(
+            function resolve(result) {
+              sendResponse({
+                resolved: true,
+                result
+              });
+            },
+            function reject(error) {
+              sendResponse({
+                rejected: true,
+                error
+              });
+            }
+          ).
+          catch((error) => {
+            sendResponse({
+              error
+            });
+          });
+        }
+        catch (error) {
+          sendResponse({
+            error
+          });
+        }
+      }
+
+      Listeners.$message('ucjs:ContentTask:spawn', receiveMessage);
+    };
+
+    MessageManager.loadFrameScript(content_script);
+  }
+
+  function receiveMessage(message) {
+    let {
+      messageId,
+      resolved,
+      result,
+      rejected,
+      error
+    } = message.data;
+
+    let promise = PromiseList.get(message.target, messageId);
+
+    if (!promise) {
+      return;
+    }
+
+    if (resolved) {
+      promise.resolve(result);
+    }
+    else {
+      promise.reject({
+        error,
+        rejected: !!rejected
+      });
+    }
+  }
+
+  /**
+   * Creates a new task in a browser's content.
+   *
+   * @param data {hash|(function|string)}
+   *   @note You can directly pass only task function or function string that
+   *   does't need any parameters and runs in the selected browser.
+   *   browser: {xul:browser}
+   *     A browser that has the target content process.
+   *     If omitted, a selected browser works.
+   *   params: {hash}
+   *     A serializable object that will be passed to the task.
+   *     Passed as the first parameter.
+   *   paramsAsCPOW: {hash}
+   *     A unserializable object that will be passed to the task as CPOW.
+   *     Passed as the second parameter.
+   *   task: {generator|string}
+   *     A generator which will be sent to the content process to be executed.
+   *     @note A function object will be stringified.
+   *     @note You can import utilities of |ContentTask.ContentScripts.XXX|.
+   *     @see |MessageManager.makeInjectionSource|
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the serializable value of the task if it executes
+   *     successfully.
+   *     @param result {}
+   *   reject: {function}
+   *     Rejected with the error if execution fails.
+   *     @param {hash}
+   *       error: {string}
+   *       rejected: {boolean}
+   *         true if the user reject function is processed.
+   */
+  function spawn(data = {}) {
+    let {browser, params, paramsAsCPOW, task} = data;
+
+    if (typeof data === 'function' || typeof data === 'string') {
+      task = data;
+    }
+
+    if (!browser) {
+      browser = gBrowser.selectedBrowser;
+    }
+
+    const {PromiseUtils} = Modules.require('gre/modules/PromiseUtils.jsm');
+
+    let deferred = PromiseUtils.defer();
+
+    PromiseList.set(browser, deferred, task, params, paramsAsCPOW);
+
+    return deferred.promise;
+  }
+
+  return {
+    // Script source texts for injection into the content task function.
+    ContentScripts,
+    spawn
+  };
+})();
+
+/**
  * DOM utilities.
  */
 const DOMUtils = (function() {
@@ -1893,7 +2111,9 @@ return {
   Modules,
   Console,
   EventManager,
+  MessageManager,
   Listeners,
+  ContentTask,
   DOMUtils,
   URLUtils,
   TabUtils,
