@@ -1,16 +1,15 @@
 // ==UserScript==
 // @name TooltipEx.uc.js
-// @description A tooltip of an element with the informations.
+// @description The tooltip of element with the informations.
 // @include main
 // ==/UserScript==
 
 // @require Util.uc.js
 
-// @usage Opens a tooltip panel with <Ctrl+Alt+MouseMove> on an element
-// with the attribute for description or URL or event-handler including the
-// ancestor elements.
-// @note You can move the panel with dragging the margin of the content.
-// @note You can select and copy texts. And also can copy the whole data by the
+// @usage A tooltip panel opens with <Ctrl+Alt+MouseMove> on an element, with
+// the various informations including the ancestor elements'.
+// @note You can move the panel with dragging the frame margin of the content.
+// @note You can select and copy texts and also can copy the whole data by the
 // 'Copy All' menu item of the context menu.
 
 
@@ -26,13 +25,16 @@
 const {
   Modules,
   Listeners: {
-    $event
+    $event,
+    $page
   },
+  ContentTask,
   DOMUtils: {
     init$E,
     $ID
   },
   URLUtils,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -76,13 +78,13 @@ const kPref = {
  * Attribute names for the informations of an element.
  *
  * @key descriptions {string[]}
- * @key URLs {string[]}
+ * @key urls {string[]}
  */
 const kInfoAttribute = {
   descriptions: [
     'title', 'alt', 'summary'
   ],
-  URLs: [
+  urls: [
     'href', 'src', 'usemap', 'action', 'data',
     'cite', 'longdesc', 'background'
   ]
@@ -114,13 +116,12 @@ const kUI = {
    * @key text {CSS}
    *   The base style of tooltip texts.
    * @key accent {CSS}
-   *   For accent portions of a text.
-   *   @note Applied to:
+   *   The accent portions of a text:
    *   - '<tag>'
    *   - 'description-attribute='
    *   - 'URL-attribute=scheme:'
-   * @key ellipsis {CSS}
-   *   For the ellipsis mark of a cropped text.
+   * @key ellipsis {CSS} ('...' in my case)
+   *   The ellipsis mark of a cropped text.
    */
   style: {
     text: 'font:1em/1.2 monospace;letter-spacing:.1em;',
@@ -156,92 +157,339 @@ const kDataKey = {
 };
 
 /**
- * Tooltip panel handler.
+ * Tooltip handler.
  */
-const TooltipPanel = (function() {
+const Tooltip = (function() {
   /**
-   * Tooltip <panel>.
+   * Panel manager.
    */
-  let mPanel;
+  const Panel = (function() {
+    let vars = {
+      // The <panel> element.
+      panel: null,
+      // The <box> element of tooltip texts container.
+      box: null
+    };
+
+    function create() {
+      let panelStyle =
+        '-moz-appearance:tooltip;' +
+        // @note |vars.box| has 'max-width'.
+        'max-width:none;' +
+        // The margin for dragging the panel.
+        'padding:.3em;' +
+        // Tight text wrapping.
+        'word-break:break-all;word-wrap:break-word;';
+
+      let boxStyle = `max-width:${kPref.maxWidth}em;`;
+
+      let panel = $E('panel', {
+        id: kUI.panel.id,
+        style: panelStyle,
+        backdrag: true,
+        // Close the context menu too.
+        // @note The context menu must be the first child of the panel.
+        onpopuphiding: 'if(event.target===this){this.firstChild.hidePopup();}'
+      });
+
+      // Make the context menu.
+      let popup = $E('menupopup', {
+        // @see chrome://global/content/globalOverlay.js::goUpdateCommand
+        onpopupshowing: 'goUpdateCommand("cmd_copy");'
+      });
+
+      $event(popup, 'command', handleEvent);
+
+      popup.appendChild($E('menuitem', {
+        id: kUI.copy.id,
+        label: kUI.copy.label,
+        command: 'cmd_copy'
+      }));
+
+      popup.appendChild($E('menuitem', {
+        id: kUI.copyAll.id,
+        label: kUI.copyAll.label
+      }));
+
+      panel.contextMenu = '_child';
+      // Append the context panel as the first child of the panel.
+      panel.appendChild(popup);
+
+      vars.box = panel.appendChild($E('vbox', {
+        style: boxStyle
+      }));
+
+      vars.panel = $ID('mainPopupSet').appendChild(panel);
+    }
+
+    function appendItems(items) {
+      vars.box.appendChild(items);
+    }
+
+    function clearItems() {
+      let box = vars.box;
+
+      while (box.firstChild) {
+        box.removeChild(box.firstChild);
+      }
+    }
+
+    function getItems() {
+      return [...vars.box.childNodes];
+    }
+
+    function isEmpty() {
+      return getItems().length === 0;
+    }
+
+    function isOpen() {
+      return vars.panel.state === 'open';
+    }
+
+    function open(event) {
+      const kMargin = {
+        x: 10,
+        y: 10
+      };
+
+      let {screenX: x, screenY: y} = event;
+
+      vars.panel.openPopupAtScreen(x + kMargin.x, y + kMargin.y, false);
+    }
+
+    function hide() {
+      vars.panel.hidePopup();
+    }
+
+    return {
+      create,
+      appendItems,
+      clearItems,
+      getItems,
+      isEmpty,
+      isOpen,
+      open,
+      hide
+    };
+  })();
 
   /**
-   * Container <box> for rows of tooltip texts.
+   * Information manager of a target node.
    */
-  let mBox;
+  const NodeInfo = (function() {
+    let vars = {
+      selector: '',
+      nodeTree: [],
+      doUpdate: false
+    };
 
-  /**
-   * Target node in the content area.
-   *
-   * TODO: Make sure to release the reference.
-   * WORKAROUND: Cleans up whenever the document is switched.
-   */
-  let mTarget;
+    function clear() {
+      vars.selector = '';
+      vars.nodeTree = [];
+      vars.doUpdate = false;
+    }
+
+    function update(event) {
+      vars.doUpdate = true;
+
+      return Task.spawn(function*() {
+        vars.doUpdate = false;
+
+        let point = BrowserUtils.getCursorPointInContent(event);
+        let newInfo = yield getNodeInfo(point, vars.selector);
+
+        // The new task is requested so that this task should be abandoned.
+        if (vars.doUpdate) {
+          return Promise.reject();
+        }
+
+        // Update the cache with the new information.
+        if (newInfo) {
+          vars.selector = newInfo.selector;
+          vars.nodeTree = newInfo.nodeTree;
+
+          return vars.nodeTree;
+        }
+
+        return null;
+      });
+    }
+
+    function* getNodeInfo(point, selector) {
+      return ContentTask.spawn({
+        params: {point, selector},
+        task: `function* content_task(params) {
+          ${ContentTask.ContentScripts.DOMUtils}
+          ${content_collectInfo.toString()}
+
+          let {point, selector} = params;
+
+          let node = DOMUtils.getElementFromPoint(point.x, point.y);
+
+          // The information of this node has been cached.
+          if (selector && node === DOMUtils.$S1(selector)) {
+            return null;
+          }
+
+          return content_collectInfo(node);
+        }`
+      });
+    }
+
+    function content_collectInfo(node) {
+      let selectors = [];
+      let nodeTree = [];
+
+      let selectorCompleted = false;
+
+      let add = (selector, node) => {
+        if (selector && !selectorCompleted) {
+          if (selectors.length && /^i?frame$/.test(node.localName)) {
+            selector += '|';
+          }
+
+          selectors.unshift(selector);
+        }
+
+        let attributes = {};
+
+        [...node.attributes].forEach((attribute) => {
+          attributes[attribute.localName] = attribute.value;
+        });
+
+        let linkText;
+
+        if (DOMUtils.getLinkHref(node)) {
+          linkText = node.textContent
+        }
+
+        nodeTree.push({
+          baseURI: node.baseURI,
+          tagName: node.localName,
+          attributes,
+          linkText
+        });
+      };
+
+      while (node) {
+        if (node instanceof Ci.nsIDOMHTMLBodyElement ||
+            node instanceof Ci.nsIDOMHTMLHtmlElement) {
+          add(node.localName, node);
+
+          let view = node.ownerDocument.defaultView;
+
+          // Enter the parent document.
+          if (view.frameElement) {
+            node = view.frameElement;
+            selectorCompleted = false;
+
+            continue;
+          }
+
+          break;
+        }
+
+        if (node instanceof Ci.nsIDOMHTMLElement) {
+          if (node.id) {
+            add('#' + node.id, node);
+            selectorCompleted = true;
+          }
+          else {
+            let selector;
+
+            if (node.previousElementSibling || node.nextElementSibling) {
+              let count = 0;
+              let sibling = node;
+
+              while (sibling) {
+                count++;
+                sibling = sibling.previousElementSibling;
+              }
+
+              selector = `${node.localName}:nth-child(${count})`;
+            }
+            else {
+              selector = node.localName;
+            }
+
+            add(selector, node);
+          }
+        }
+
+        node = node.parentElement;
+      }
+
+      return {
+        selector: selectors.join('>'),
+        nodeTree
+      };
+    }
+
+    return {
+      clear,
+      update
+    };
+  })();
 
   function init() {
     // Create the tooltip panel.
-    createPanel();
+    Panel.create();
 
-    // Close the tooltip when the document is switched.
-    $event(gBrowser, 'select', handleEvent);
-    $event(gBrowser, 'pagehide', handleEvent);
+    // Clear the tooltip content when a document closes.
+    $page('pageselect', handleEvent);
+    $page('pagehide', handleEvent);
 
     // Observe mouse moving to show the tooltip only while trigger keys are
-    // down in a HTML document.
+    // pressed down in an HTML document.
     let isObserving = false;
 
-    // @note Use the capture mode to surely catch the event in the content
-    // area.
-    // @note The key events are attached to |window| so that we can catch them
-    // when our tooltip panel has a focus.
-    $event(window, 'keydown', (aEvent) => {
-      let triggerKey = aEvent.ctrlKey && aEvent.altKey;
+    $event(window, 'keydown', (event) => {
+      let triggerKey = event.ctrlKey && event.altKey;
 
-      if (!isObserving &&
-          triggerKey &&
-          isHTMLDocument(gBrowser.contentDocument)) {
+      if (!isObserving && triggerKey && isHTMLDocument()) {
         isObserving = true;
 
         let pc = gBrowser.mPanelContainer;
 
-        let clear = () => {
+        let stopObserving = () => {
           isObserving = false;
 
-          pc.removeEventListener('mousemove', handleEvent, true);
-          window.removeEventListener('keyup', clear, true);
-          window.removeEventListener('unload', clear);
+          pc.removeEventListener('mousemove', handleEvent);
+          window.removeEventListener('keyup', stopObserving);
+          window.removeEventListener('unload', stopObserving);
         };
 
-        pc.addEventListener('mousemove', handleEvent, true);
+        pc.addEventListener('mousemove', handleEvent);
 
-        // @note Stop observing when any key is up.
-        window.addEventListener('keyup', clear, true);
+        // Stop observing when any key is released.
+        window.addEventListener('keyup', stopObserving);
 
-        // Make sure to clean up.
-        window.addEventListener('unload', clear);
+        // Clean up all when shutdown.
+        window.addEventListener('unload', stopObserving);
       }
-    }, true);
+    });
   }
 
-  function handleEvent(aEvent) {
-    switch (aEvent.type) {
+  function handleEvent(event) {
+    switch (event.type) {
       // Show the tooltip of a target node in the content area.
       case 'mousemove': {
-        show(aEvent);
+        show(event);
 
         break;
       }
 
       // Close the tooltip when the document is switched.
-      case 'select':
+      case 'pageselect':
       case 'pagehide': {
-        hide();
+        clear();
 
         break;
       }
 
       // Command of the context menu of a tooltip.
       case 'command': {
-        switch (aEvent.target.id) {
+        switch (event.target.id) {
           case kUI.copyAll.id: {
             copyAllData();
 
@@ -254,114 +502,63 @@ const TooltipPanel = (function() {
     }
   }
 
-  function createPanel() {
-    let panelStyle =
-      '-moz-appearance:tooltip;' +
-      // @note The inner container |mBox| has 'max-width'.
-      'max-width:none;' +
-      // The margin for dragging the panel.
-      'padding:.3em;' +
-      // Tight text wrapping.
-      'word-break:break-all;word-wrap:break-word;';
+  function show(event) {
+    NodeInfo.update(event).then(
+      function resolve(nodeTree) {
+        // Show the tooltip of the new node.
+        if (nodeTree) {
+          // Close the tooltip of the old node.
+          if (Panel.isOpen()) {
+            hide();
+          }
 
-    let panel = $E('panel', {
-      id: kUI.panel.id,
-      style: panelStyle,
-      backdrag: true,
-      // Close the context menu too.
-      // @note The context menu has to be the first child.
-      onpopuphiding: 'if(event.target===this){this.firstChild.hidePopup();}'
-    });
+          // Try to build the new tooltip.
+          if (!build(nodeTree)) {
+            return;
+          }
+        }
+        else {
+          // The same node has had no information.
+          if (Panel.isEmpty()) {
+            return;
+          }
 
-    // Make the context menu.
-    let popup = $E('menupopup', {
-      // @see chrome://global/content/globalOverlay.js::goUpdateCommand
-      onpopupshowing: 'goUpdateCommand("cmd_copy");'
-    });
+          // Leave the showing tooltip of the same node.
+          if (Panel.isOpen()) {
+            return;
+          }
+        }
 
-    $event(popup, 'command', handleEvent);
-
-    popup.appendChild($E('menuitem', {
-      id: kUI.copy.id,
-      label: kUI.copy.label,
-      command: 'cmd_copy'
-    }));
-
-    popup.appendChild($E('menuitem', {
-      id: kUI.copyAll.id,
-      label: kUI.copyAll.label
-    }));
-
-    panel.contextMenu = '_child';
-    panel.appendChild(popup);
-
-    mBox = panel.appendChild($E('vbox', {
-      style: 'max-width:' + kPref.maxWidth + 'em;'
-    }));
-
-    mPanel = $ID('mainPopupSet').appendChild(panel);
-  }
-
-  function show(aEvent) {
-    let target = aEvent.target;
-
-    if (mPanel.state === 'showing' || mPanel.state === 'hiding') {
-      return;
-    }
-
-    if (target === mTarget) {
-      // Bail out if this known target has no information.
-      if (!mBox.firstChild) {
-        return;
-      }
-
-      // Leave the showing tooltip of the known target.
-      // @note Reopen the tooltip of the known target if it closed.
-      if (mPanel.state === 'open') {
-        return;
-      }
-    }
-    else {
-      // Close the tooltip of the old target.
-      if (mPanel.state === 'open') {
+        Panel.open(event);
+      },
+      function reject() {
+        // This showing process is cancelled.
         hide();
       }
-
-      mTarget = target;
-
-      // Build the new tooltip.
-      if (!build()) {
-        return;
-      }
-    }
-
-    mPanel.openPopupAtScreen(aEvent.screenX, aEvent.screenY, false);
+    ).
+    catch(Cu.reportError);
   }
 
   function hide() {
-    mPanel.hidePopup();
-
-    mTarget = null;
+    Panel.hide();
   }
 
-  function build() {
+  function clear() {
+    hide();
+    NodeInfo.clear();
+  }
+
+  function build(nodeTree) {
     // Clear existing items.
-    while (mBox.firstChild) {
-      mBox.removeChild(mBox.firstChild);
-    }
+    Panel.clearItems();
 
     let tips = [];
 
-    // @note The initial node may be a text node.
-    let node = mTarget;
-
-    while (node) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        tips = tips.concat(collectTipData(node));
-      }
-
-      node = node.parentNode;
-    }
+    nodeTree.forEach((node, i) => {
+      tips = tips.concat(collectTipData(node, {
+        isBaseNode: i === 0
+      }));
+    });
 
     if (!tips.length) {
       return false;
@@ -373,50 +570,42 @@ const TooltipPanel = (function() {
       fragment.appendChild(createTipItem(tip));
     });
 
-    mBox.appendChild(fragment);
+    Panel.appendItems(fragment);
 
     return true;
   }
 
-  function collectTipData(aNode) {
-    // Helper functions.
+  function collectTipData(node, options = {}) {
+    // Template replacer.
     let $tag = (name) => kUI.accent.tag.replace('%tag%', name);
     let $attr = (name) => kUI.accent.attribute.replace('%name%', name);
 
-    let data = [];
-    let attributes = {};
+    let {tagName, attributes, linkText} = node;
+    let {isBaseNode} = options;
 
-    [...aNode.attributes].forEach((attribute) => {
-      attributes[attribute.localName] = attribute.value;
-    });
+    let data = [];
 
     kInfoAttribute.descriptions.forEach((name) => {
       let value = attributes[name];
 
-      if (value === null || value === undefined) {
-        return;
+      if (value) {
+        data.push(makeTipData($attr(name), value, true));
       }
-
-      data.push(makeTipData($attr(name), value, true));
     });
 
-    kInfoAttribute.URLs.forEach((name) => {
+    kInfoAttribute.urls.forEach((name) => {
       let value = attributes[name];
 
-      if (value === null || value === undefined) {
-        return;
-      }
-
       if (value) {
-        let [scheme, rest] = splitURL(URL, aNode.baseURI);
+        let [scheme, rest] = splitURL(value, node.baseURI);
 
         // Truncate only a long URL with 'javascript:' or 'data:' scheme.
         let doCrop = /^(?:javascript|data):/.test(scheme);
 
         data.push(makeTipData($attr(name) + scheme, rest, doCrop));
       }
-      else {
-        data.push(makeTipData($attr(name), '', true));
+      else if (name in attributes) {
+        data.push(makeTipData($attr(name), '[N/A]', true));
       }
     });
 
@@ -427,11 +616,11 @@ const TooltipPanel = (function() {
       }
     }
 
-    if (data.length || isLinkNode(aNode)) {
-      let rest = isLinkNode(aNode) ? aNode.textContent : '';
-
+    // Show the base node, an ancestor node that has the information and a link
+    // node with text.
+    if (isBaseNode || data.length || linkText) {
       // Add a tag name to the top of array.
-      data.unshift(makeTipData($tag(aNode.localName), rest, true));
+      data.unshift(makeTipData($tag(tagName), linkText, true));
     }
 
     return data;
@@ -440,25 +629,25 @@ const TooltipPanel = (function() {
   /**
    * Make a data for creating an element of a tooltip text.
    *
-   * @param aHead {string}
-   * @param aRest {string}
-   * @param aDoCrop {boolean}
+   * @param head {string}
+   * @param rest {string}
+   * @param doCrop {boolean}
    * @return {hash}
    *   @note The value is passed to |createTipItem|.
    */
-  function makeTipData(aHead, aRest, aDoCrop) {
-    if (!aRest) {
+  function makeTipData(head, rest, doCrop) {
+    if (!rest) {
       return {
-        text: aHead,
-        head: aHead
+        text: head,
+        head
       };
     }
 
-    let text = (aHead + aRest).trim().replace(/\s+/g, ' ');
+    let text = (head + rest).trim().replace(/\s+/g, ' ');
 
     let croppedText;
 
-    if (aDoCrop) {
+    if (doCrop) {
       let maxLength = kPref.maxWidth * kPref.maxNumWrapLinesWhenCropped;
 
       if (text.length > maxLength) {
@@ -468,8 +657,8 @@ const TooltipPanel = (function() {
 
     return {
       text,
-      head: aHead,
-      rest: (croppedText || text).substr(aHead.length),
+      head,
+      rest: (croppedText || text).substr(head.length),
       cropped: !!croppedText
     };
   }
@@ -477,27 +666,27 @@ const TooltipPanel = (function() {
   /**
    * Create an element of a tooltip text.
    *
-   * @param aTipData {hash}
+   * @param tipData {hash}
    *   @note The value is created by |makeTipData|.
    * @return {Element}
    */
-  function createTipItem(aTipData) {
-    let {text, head, rest, cropped} = aTipData;
+  function createTipItem(tipData) {
+    let {text, head, rest, cropped} = tipData;
 
     // A block element for a tooltip text.
-    let $item = (aAttribute) => {
-      if (aAttribute) {
+    let $item = (attribute) => {
+      if (attribute) {
         // Make the content text selectable by user.
-        aAttribute.style += '-moz-user-focus:normal;-moz-user-select:text;';
+        attribute.style += '-moz-user-focus:normal;-moz-user-select:text;';
       }
 
-      return $E('html:div', aAttribute);
+      return $E('html:div', attribute);
     };
 
     // An inline element for styling of a text.
-    let $span = (aAttribute) => $E('html:span', aAttribute);
+    let $span = (attribute) => $E('html:span', attribute);
 
-    let $text = (aText) => window.document.createTextNode(aText);
+    let $text = (text) => window.document.createTextNode(text);
 
     let item = $item({
       style: kUI.style.text,
@@ -521,8 +710,8 @@ const TooltipPanel = (function() {
         kUI.style.text;
 
       let subTooltip = $E('tooltip', {
-        // TODO: Make a smart unique id.
-        id: kUI.subTooltip.id + mBox.childNodes.length,
+        // Make a unique id.
+        id: kUI.subTooltip.id + Panel.getItems().length,
         style: subTooltipStyle
       });
 
@@ -550,7 +739,7 @@ const TooltipPanel = (function() {
   function copyAllData() {
     let data = [];
 
-    [...mBox.childNodes].forEach((node) => {
+    Panel.getItems().forEach((node) => {
       let textData = node[kDataKey.textData];
 
       if (textData) {
@@ -569,27 +758,14 @@ const TooltipPanel = (function() {
 /**
  * Utility functions.
  */
-function isHTMLDocument(aDocument) {
-  if (aDocument instanceof HTMLDocument) {
-    let mime = aDocument.contentType;
+function isHTMLDocument() {
+  let mime = gBrowser.selectedBrowser.documentContentType;
 
-    return (
-      mime === 'text/html' ||
-      mime === 'text/xml' ||
-      mime === 'application/xml' ||
-      mime === 'application/xhtml+xml'
-    );
-  }
-
-  return false;
-}
-
-function isLinkNode(aNode) {
   return (
-    aNode instanceof HTMLAnchorElement ||
-    aNode instanceof HTMLAreaElement ||
-    aNode instanceof HTMLLinkElement ||
-    aNode.getAttributeNS('http://www.w3.org/1999/xlink', 'type') === 'simple'
+    mime === 'text/html' ||
+    mime === 'text/xml' ||
+    mime === 'application/xml' ||
+    mime === 'application/xhtml+xml'
   );
 }
 
@@ -601,17 +777,17 @@ function splitURL(url, baseURI) {
   return [url.slice(0, colon), url.slice(colon)];
 }
 
-function copyToClipboard(aText) {
-  Modules.ClipboardHelper.copyString(aText);
+function copyToClipboard(str) {
+  Modules.ClipboardHelper.copyString(str);
 }
 
 /**
- * Callback function for |ucjsUtil.createNode|.
+ * Attribute handler for |ucjsUtil.DOMUtils.$E|.
  */
-function handleAttribute(aNode, aName, aValue) {
-  if (aName === 'textData') {
-    if (aValue) {
-      aNode[kDataKey.textData] = aValue;
+function handleAttribute(node, name, value) {
+  if (name === 'textData') {
+    if (value) {
+      node[kDataKey.textData] = value;
     }
 
     return true;
@@ -624,7 +800,7 @@ function handleAttribute(aNode, aName, aValue) {
  * Entry point.
  */
 function TooltipEx_init() {
-  TooltipPanel.init();
+  Tooltip.init();
 }
 
 TooltipEx_init();
