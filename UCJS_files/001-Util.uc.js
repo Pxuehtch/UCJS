@@ -384,6 +384,15 @@ const ContentScripts = (function() {
   `;
 
   /**
+   * Text utilities.
+   */
+  const TextUtils = `
+    const TextUtils = {
+      getTextInRange: ${content_getTextInRange.toString()}
+    };
+  `;
+
+  /**
    * Register an event listener that observes on the global scope and lives
    * until the content process is shut down.
    */
@@ -715,11 +724,33 @@ const ContentScripts = (function() {
     return document.head.appendChild(style);
   }
 
+  /**
+   * Gets visible texts in the given range.
+   */
+  function content_getTextInRange(range) {
+    if (!range || !range.toString()) {
+      return null;
+    }
+
+    let encoder =
+      Modules.$I('@mozilla.org/layout/documentEncoder;1?type=text/plain',
+      'nsIDocumentEncoder');
+
+    let context = range.startContainer.ownerDocument;
+    let flags = encoder.OutputLFLineBreak | encoder.SkipInvisibleContent;
+
+    encoder.init(context, 'text/plain', flags);
+    encoder.setRange(range);
+
+    return encoder.encodeToString();
+  }
+
   return {
     GlobalUtils,
     Listeners,
     DOMUtils,
-    CSSUtils
+    CSSUtils,
+    TextUtils
   };
 })();
 
@@ -2049,95 +2080,120 @@ const BrowserUtils = (function() {
     Modules.BrowserUtils.restartApplication();
   }
 
+  function getCursorPointInContent(event) {
+    let x, y;
+
+    // The main context menu opens.
+    // @see chrome://browser/content/nsContextMenu.js
+    if (!event && window.gContextMenu) {
+      let contextMenuEvent = window.gContextMenuContentData.event;
+
+      x = contextMenuEvent.clientX;
+      y = contextMenuEvent.clientY;
+    }
+    else if (event) {
+      x = event.screenX;
+      y = event.screenY;
+
+      let {
+        screenX: left,
+        screenY: top
+      } = gBrowser.mPanelContainer.boxObject;
+
+      // Convert the screen coordinates of a cursor to the client ones in the
+      // content area.
+      x -= left;
+      y -= top;
+    }
+
+    return {x, y};
+  }
+
+  function promiseSelectionTextAtContextMenuCursor() {
+    let {x, y} = getCursorPointInContent();
+
+    return promiseSelectionTextAtPoint(x, y);
+  }
+
   /**
-   * Gets a selected text under the cursor.
+   * Promise for a selection text under the cursor.
    *
-   * @param aOption {hash}
-   *   @key event {MouseEvent}
-   *   @key charLen {integer}
+   * @param x {float}
+   * @param y {float}
    * @return {string}
-   *
-   * TODO: |event.rangeOffset| sometimes returns a wrong value (e.g. it returns
-   * the same value as if at the first row when a cursor is on the lines below
-   * the first row in a <textarea>).
-   * WORKAROUND: Rescan ranges with the client coordinates instead of the range
-   * offset.
    */
-  function getSelectionAtCursor(aOption = {}) {
-    const kMaxCharLen = 150;
+  function promiseSelectionTextAtPoint(x, y) {
+    return Task.spawn(function*() {
+      if (isNaN(x) || isNaN(y)) {
+        return null;
+      }
 
-    let {
-      event,
-      charLen
-    } = aOption;
+      return ContentTask.spawn({
+        params: {x, y},
+        task: `function*(params) {
+          ${ContentTask.ContentScripts.DOMUtils}
+          ${ContentTask.ContentScripts.TextUtils}
+          ${content_getSelectionTextAtPoint.toString()}
+          ${content_getSelection.toString()}
+          ${content_trimText.toString()}
 
-    let node, rangeParent, rangeOffset;
+          let {x, y} = params;
 
-    if (event) {
-      // Event mode.
-      node = event.target;
-      rangeParent = event.rangeParent;
-      rangeOffset = event.rangeOffset; // TODO: May be wrong value.
-    }
-    else if (window.gContextMenu) {
-      // Contextmenu mode.
-      // @see chrome://browser/content/nsContextMenu.js
-      node = window.document.popupNode;
-      rangeParent = window.document.popupRangeParent;
-      rangeOffset = window.document.popupRangeOffset;
-    }
+          return content_getSelectionTextAtPoint(x, y);
+        }`
+      });
+    });
+  }
 
-    let selection = getSelectionController(node);
+  /**
+   * Gets selection text at the given coordinates.
+   *
+   * TODO: It seems more reliable to find a focused range by using
+   * |caretPositionFromPoint| and |range.isPointInRange|. But the former is
+   * unstable for editable elements.
+   * @see https://developer.mozilla.org/en/docs/Web/API/Document/caretPositionFromPoint#Browser_compatibility
+   * WORKAROUND: Compares the coordinates of cursor and range by using
+   * |range.getBoundingClientRect|.
+   */
+  function content_getSelectionTextAtPoint(x, y) {
+    let node = DOMUtils.getElementFromPoint(x, y);
+    let selection = content_getSelection(node);
 
     if (!selection) {
       return null;
     }
 
-    let text = '';
+    let focusedRange;
 
-    // Scan ranges with the range offset.
-    for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
-      range = selection.getRangeAt(i);
+    for (let i = 0, l = selection.rangeCount; i < l; i++) {
+      let range = selection.getRangeAt(i);
+      let rect = range.getBoundingClientRect();
 
-      if (range.isPointInRange(rangeParent, rangeOffset)) {
-        text = getTextInRange(range);
+      if (rect.left <= x && x <= rect.right &&
+          rect.top <= y && y <= rect.bottom) {
+        focusedRange = range;
+
         break;
       }
     }
-    // WORKAROUND: |event.rangeOffset| may be wrong when |text| is empty in the
-    // event mode. So, rescan the ranges with the client coordinates.
-    if (event && !text) {
-      let {clientX: x, clientY: y} = event;
-      let rect;
 
-      for (let i = 0, l = selection.rangeCount, range; i < l; i++) {
-        range = selection.getRangeAt(i);
-        rect = range.getBoundingClientRect();
-
-        if (rect.left <= x && x <= rect.right &&
-            rect.top <= y && y <= rect.bottom) {
-          text = getTextInRange(range);
-          break;
-        }
-      }
-    }
-
-    // Use only the first important chars.
-    text = trimText(text, Math.min(charLen || kMaxCharLen, kMaxCharLen));
-
-    return text;
+    return content_trimText(TextUtils.getTextInRange(focusedRange));
   }
 
-  function getSelectionController(aNode) {
-    if (!aNode) {
+  /**
+   * Gets selection controller.
+   */
+  function content_getSelection(node) {
+    if (!node) {
       return null;
     }
 
-    // 1. Scan selection in a textbox (excluding password).
-    if ((aNode instanceof HTMLInputElement && aNode.mozIsTextField(true)) ||
-        aNode instanceof HTMLTextAreaElement) {
+    // 1.Scan selection in a text box (excluding password input).
+    if ((node instanceof Ci.nsIDOMHTMLInputElement &&
+         node.mozIsTextField(true)) ||
+        node instanceof Ci.nsIDOMHTMLTextAreaElement) {
       try {
-        return aNode.QueryInterface(Ci.nsIDOMNSEditableElement).
+        return node.QueryInterface(Ci.nsIDOMNSEditableElement).
           editor.selection;
       }
       catch (ex) {}
@@ -2146,61 +2202,45 @@ const BrowserUtils = (function() {
     }
 
     // 2. Get a window selection.
-    let win = aNode.ownerDocument.defaultView;
-
-    return win.getSelection();
+    return node.ownerDocument.defaultView.getSelection();
   }
 
-  function getTextInRange(aRange) {
-    if (!aRange.toString()) {
-      return '';
+  /**
+   * Retrieves only the first important characters.
+   *
+   * @see resource://gre/modules/BrowserUtils.jsm::getSelectionDetails
+   */
+  function content_trimText(text) {
+    const kMaxTextLength = 150;
+
+    if (!text) {
+      return null;
     }
 
-    let encoder =
-      Modules.$I('@mozilla.org/layout/documentEncoder;1?type=text/plain',
-      'nsIDocumentEncoder');
-
-    encoder.init(
-      aRange.startContainer.ownerDocument,
-      'text/plain',
-      encoder.OutputLFLineBreak | encoder.SkipInvisibleContent
-    );
-
-    encoder.setRange(aRange);
-
-    return encoder.encodeToString();
-  }
-
-  function trimText(aText, aMaxLength) {
-    if (!aText) {
-      return '';
-    }
-
-    if (aText.length > aMaxLength) {
-      // Only use the first charlen important chars.
-      // @see https://bugzilla.mozilla.org/show_bug.cgi?id=221361
-      let match = RegExp('^(?:\\s*.){0,' + aMaxLength + '}').exec(aText);
+    if (text.length > kMaxTextLength) {
+      let match = RegExp('^(?:\\s*.){0,' + kMaxTextLength + '}').exec(text);
 
       if (!match) {
-        return '';
+        return null;
       }
 
-      aText = match[0];
+      text = match[0];
     }
 
-    aText = aText.trim().replace(/\s+/g, ' ');
+    text = text.trim().replace(/\s+/g, ' ');
 
-    if (aText.length > aMaxLength) {
-      aText = aText.substr(0, aMaxLength);
+    if (text.length > kMaxTextLength) {
+      text = text.substr(0, kMaxTextLength);
     }
 
-    return aText;
+    return text;
   }
 
   return {
     restartFx,
-    getSelectionAtCursor,
-    getTextInRange
+    getCursorPointInContent,
+    promiseSelectionTextAtContextMenuCursor,
+    promiseSelectionTextAtPoint
   };
 })();
 
