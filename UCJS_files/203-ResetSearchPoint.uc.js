@@ -13,6 +13,8 @@
  * point by Fx default behavior.
  */
 
+// !!! This script doesn't yet support e10s. !!!
+
 
 (function(window) {
 
