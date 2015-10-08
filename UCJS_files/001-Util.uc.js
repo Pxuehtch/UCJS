@@ -778,12 +778,10 @@ const EventManager = (function() {
   /**
    * Register an event listener that lives until the browser window closed.
    */
-  function listenEvent(target, type, listener, options = {}) {
+  function listenEvent(target, type, listener, capture) {
     if (!target || !type || !listener) {
       throw Error('Missing required parameter.');
     }
-
-    let {capture} = options;
 
     capture = !!capture;
 
@@ -797,12 +795,10 @@ const EventManager = (function() {
   /**
    * Register an event listener that lives until once listened.
    */
-  function listenEventOnce(target, type, listener, options = {}) {
+  function listenEventOnce(target, type, listener, capture) {
     if (!target || !type || !listener) {
       throw Error('Missing required parameter.');
     }
-
-    let {capture} = options;
 
     capture = !!capture;
 
