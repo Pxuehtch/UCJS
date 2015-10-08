@@ -1416,6 +1416,11 @@ const ContentTask = (function() {
       browser = gBrowser.selectedBrowser;
     }
 
+    // WORKAROUND: Bail out for missing browser.
+    if (!browser) {
+      return Promise.resolve('|browser| is missing');
+    }
+
     const {PromiseUtils} = Modules.require('gre/modules/PromiseUtils.jsm');
 
     let deferred = PromiseUtils.defer();
