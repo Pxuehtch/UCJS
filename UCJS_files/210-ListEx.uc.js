@@ -7,7 +7,7 @@
 // @require Util.uc.js, UI.uc.js
 // @require [optional for the extended info of tabs] TabEx.uc.js
 
-// @usage Creates items in the main context menu.
+// @usage The list menus are appended in the main context menu.
 
 
 (function(window) {
@@ -29,6 +29,9 @@ const {
     $ID
   },
   PlacesUtils,
+  HistoryUtils: {
+    promiseSessionHistory
+  },
   // Logger to console for debug.
   Console: {
     log
@@ -447,21 +450,18 @@ const HistoryList = (function() {
    */
   function build(aPopup) {
     if (!!kPref.maxNumListItems.tabHistory) {
-      if (!buildTabHistory(aPopup)) {
-        makeDisabledMenuItem(aPopup, kUI.historyMenu.tabEmpty);
-      }
-
-      makeMenuSeparator(aPopup);
+      buildMenuItems({
+        builder: buildTabHistory,
+        listUI: kUI.historyMenu.list.tabHistory,
+        referenceNode: makeMenuSeparator(aPopup)
+      });
     }
 
     if (!!kPref.maxNumListItems.recentHistory) {
-      // Recent history items will be async-appended before this separator.
-      let recentHistorySep = makeMenuSeparator(aPopup);
-
-      asyncBuildRecentHistory(recentHistorySep, (aBuilt) => {
-        if (!aBuilt) {
-          makeDisabledMenuItem(recentHistorySep, kUI.historyMenu.recentEmpty);
-        }
+      buildMenuItems({
+        builder: buildRecentHistory,
+        listUI: kUI.historyMenu.list.recentHistory,
+        referenceNode: makeMenuSeparator(aPopup)
       });
     }
 
@@ -472,131 +472,125 @@ const HistoryList = (function() {
     }));
   }
 
-  function buildTabHistory(aPopup) {
-    let sessionHistory = gBrowser.sessionHistory;
-    let historyLength = sessionHistory.count;
-    let selectedIndex = sessionHistory.index;
+  function buildTabHistory() {
+    return Task.spawn(function*() {
+      let sessionHistory = yield promiseSessionHistory();
 
-    if (historyLength < 1) {
-      return false;
-    }
-
-    let fragment = createDocumentFragment();
-
-    // Scan history entries in thier visited date order from new to old around
-    // the current page.
-    let [start, end] = limitListRange({
-      index: selectedIndex,
-      length: historyLength,
-      maxNumItems: kPref.maxNumListItems.tabHistory
-    });
-
-    for (let i = end; i >= start; i--) {
-      let entry = sessionHistory.getEntryAtIndex(i, false);
-
-      let URL, title, className, action;
-
-      URL = entry.URI.spec;
-      title = entry.title || URL;
-      className = ['menuitem-iconic'];
-
-      if (i === selectedIndex) {
-        className.push('unified-nav-current');
-      }
-      else {
-        let direction = (i < selectedIndex) ? 'back' : 'forward';
-
-        className.push('unified-nav-' + direction);
-
-        action = Action.openTabHistory(i);
+      if (!sessionHistory) {
+        return null;
       }
 
-      // @note |label| and |icon| will be set asynchronously.
-      let menuitem = fragment.appendChild($E('menuitem', {
-        tooltip: {
-          title,
-          URL
-        },
-        class: className.join(' '),
-        action
-      }));
+      let {
+        count: historyLength,
+        index: selectedIndex,
+        entries: historyEntries
+      } = sessionHistory;
 
-      asyncGetTimeAndIcon(URL, ({time, icon}) => {
-        $E(menuitem, {
-          label: {
-            prefix: formatTime(time),
-            value: title
-          },
-          icon
-        });
+      // Scan history entries in thier visited date order from new to old
+      // around the current page.
+      let [start, end] = limitListRange({
+        index: selectedIndex,
+        length: historyLength,
+        maxNumItems: kPref.maxNumListItems.tabHistory
       });
-    }
 
-    aPopup.appendChild(fragment);
+      let fragment = createDocumentFragment();
 
-    return true;
-  }
+      for (let i = end; i >= start; i--) {
+        let entry = historyEntries[i];
 
-  function asyncBuildRecentHistory(aRefNode, aCallback) {
-    PlacesDB.promiseRecentHistory().then(
-      function onResolve(aRecentHistory) {
-        if (!isContextMenuOpen()) {
-          return;
+        let URL, title, className, action;
+
+        URL = entry.URL;
+        title = entry.title || URL;
+        className = ['menuitem-iconic'];
+
+        if (i === selectedIndex) {
+          className.push('unified-nav-current');
+        }
+        else {
+          let direction = (i < selectedIndex) ? 'back' : 'forward';
+
+          className.push('unified-nav-' + direction);
+
+          action = Action.openTabHistory(i);
         }
 
-        if (aRecentHistory) {
-          buildRecentHistory(aRefNode, aRecentHistory);
-        }
+        // @note |label| and |icon| will be set asynchronously.
+        let menuitem = fragment.appendChild($E('menuitem', {
+          tooltip: {
+            title,
+            URL
+          },
+          class: className.join(' '),
+          action
+        }));
 
-        aCallback(!!aRecentHistory);
-      }
-    ).catch(Cu.reportError);
-  }
-
-  function buildRecentHistory(aRefNode, aRecentHistory) {
-    let fragment = createDocumentFragment();
-
-    let currentURL = gBrowser.currentURI.spec;
-
-    // Scan history entries in thier visited date order from recent to old.
-    aRecentHistory.forEach((entry) => {
-      let URL, title, className, action;
-
-      URL = entry.url;
-      title = entry.title || URL;
-      className = ['menuitem-iconic'];
-
-      if (currentURL === URL) {
-        className.push('unified-nav-current');
-      }
-      else {
-        action = Action.openRecentHistory(URL);
+        asyncGetTimeAndIcon(URL, ({time, icon}) => {
+          $E(menuitem, {
+            label: {
+              prefix: formatTime(time),
+              value: title
+            },
+            icon
+          });
+        });
       }
 
-      fragment.appendChild($E('menuitem', {
-        label: {
-          prefix: formatTime(entry.time),
-          value: title
-        },
-        tooltip: {
-          title,
-          URL
-        },
-        icon: entry.icon,
-        class: className.join(' '),
-        action
-      }));
+      return fragment;
     });
-
-    aRefNode.parentNode.insertBefore(fragment, aRefNode);
   }
 
   function asyncGetTimeAndIcon(aURL, aCallback) {
-    PlacesDB.promiseTimeAndIcon(aURL).then(
-      function onResolve(aResult) {
-        aCallback(aResult);
+    PlacesDB.promiseTimeAndIcon(aURL).then((aResult) => {
+      aCallback(aResult);
+    });
+  }
+
+  function buildRecentHistory() {
+    return Task.spawn(function*() {
+      let recentHistory = yield PlacesDB.promiseRecentHistory();
+
+      if (!recentHistory) {
+        return null;
       }
-    ).catch(Cu.reportError);
+
+      let currentURL = gBrowser.currentURI.spec;
+
+      let fragment = createDocumentFragment();
+
+      // Scan history entries in thier visited date order from recent to old.
+      recentHistory.forEach((entry) => {
+        let URL, title, className, action;
+
+        URL = entry.url;
+        title = entry.title || URL;
+        className = ['menuitem-iconic'];
+
+        if (currentURL === URL) {
+          className.push('unified-nav-current');
+        }
+        else {
+          action = Action.openRecentHistory(URL);
+        }
+
+        fragment.appendChild($E('menuitem', {
+          label: {
+            prefix: formatTime(entry.time),
+            value: title
+          },
+          tooltip: {
+            title,
+            URL
+          },
+          icon: entry.icon,
+          class: className.join(' '),
+          action
+        }));
+      });
+
+      return fragment;
+    });
   }
 
   return {
@@ -717,209 +711,231 @@ const OpenedList = (function() {
    */
   function build(aPopup) {
     if (!!kPref.maxNumListItems.openedTabs) {
-      buildOpenedTabs(aPopup);
-
-      makeMenuSeparator(aPopup);
+      buildMenuItems({
+        builder: buildOpenedTabs,
+        listUI: kUI.openedMenu.list.openedTabs,
+        referenceNode: makeMenuSeparator(aPopup)
+      });
     }
 
     if (!!kPref.maxNumListItems.openedWindows) {
-      buildOpenedWindows(aPopup);
+      buildMenuItems({
+        builder: buildOpenedWindows,
+        listUI: kUI.openedMenu.list.openedWindows,
+        referenceNode: aPopup
+      });
     }
   }
 
-  function buildOpenedTabs(aPopup) {
-    let fragment = createDocumentFragment();
-
-    // Scan the visible tabs in thier position order from start to end around
-    // the current tab.
-    let tabs = gBrowser.visibleTabs;
-
-    let [start, end] = limitListRange({
-      index: tabs.indexOf(gBrowser.selectedTab),
-      length: tabs.length,
-      maxNumItems: kPref.maxNumListItems.openedTabs
-    });
-
-    for (let i = start; i <= end; i++) {
-      let tab = tabs[i];
-      let b = gBrowser.getBrowserForTab(tab);
-
-      let URL = b.currentURI.spec;
-
-      // Scan tab history in their visited date order from new to old around
-      // the selected page in this tab.
-      let sessionHistory = b.sessionHistory;
-      let historyLength = sessionHistory.count;
-      let selectedIndex = sessionHistory.index;
-
-      let history = [{
-        label: {
-          value: fixPluralForm({
-            format: '[#1 history #2]',
-            count: historyLength,
-            labels: ['entry', 'entries']
-          })
-        },
-        header: true
-      }];
-
-      // [optional]
-      // Show that a tab is suspended from loading in background.
-      // @note A suspended tab may have no history if the initialization is
-      // interrupted.
-      // @require TabEx.uc.js
-      if (window.ucjsTabEx) {
-        if (window.ucjsTabEx.tabState.isSuspended(tab)) {
-          history.push({
-            label: {
-              value: 'This tab is suspended from loading.'
-            }
-          });
-        }
-      }
+  function buildOpenedTabs() {
+    return Task.spawn(function*() {
+      // Scan the visible tabs in thier position order from start to end around
+      // the current tab.
+      let tabs = gBrowser.visibleTabs;
 
       let [start, end] = limitListRange({
-        index: selectedIndex,
-        length: historyLength,
-        maxNumItems: kPref.maxNumListItems.tooltip
+        index: tabs.indexOf(gBrowser.selectedTab),
+        length: tabs.length,
+        maxNumItems: kPref.maxNumListItems.openedTabs
       });
 
-      for (let j = end; j >= start; j--) {
-        let entry = sessionHistory.getEntryAtIndex(j, false);
+      let fragment = createDocumentFragment();
 
-        let item = {
-          label: {
-            prefix: formatOrderNumber(j + 1),
-            value: entry.title || entry.URI.spec
-          }
-        };
+      for (let i = start; i <= end; i++) {
+        let tab = tabs[i];
+        let b = gBrowser.getBrowserForTab(tab);
 
-        if (j === selectedIndex) {
-          item.selected = true;
+        let URL = b.currentURI.spec;
+
+        // Scan tab history in their visited date order from new to old around
+        // the selected page in this tab.
+        let sessionHistory = yield promiseSessionHistory(b);
+
+        let historyLength;
+        let selectedIndex;
+        let historyEntries;
+
+        if (sessionHistory) {
+          historyLength = sessionHistory.count;
+          selectedIndex = sessionHistory.index;
+          historyEntries = sessionHistory.entries;
         }
 
-        history.push(item);
-      }
-
-      let className = ['menuitem-iconic'], action;
-
-      if (tab.selected) {
-        className.push('unified-nav-current');
-      }
-      else {
-        action = Action.selectTab(i);
-      }
-
-      let menuitem = fragment.appendChild($E('menuitem', {
-        label: {
-          prefix: formatOrderNumber(i + 1),
-          value: tab.label
-        },
-        tooltip: {
-          title: tab.label,
-          URL,
-          list: history
-        },
-        icon: gBrowser.getIcon(tab),
-        class: className.join(' '),
-        action
-      }));
-
-      // [optional]
-      // Set a state to indicate that the tab is unread.
-      // @require TabEx.uc.js in |ucjsUI.setStateForUnreadTab|.
-      if (!tab.selected) {
-        setStateForUnreadTab(menuitem, tab);
-      }
-    }
-
-    aPopup.appendChild(fragment);
-  }
-
-  function buildOpenedWindows(aPopup) {
-    let {getWindows, isBrowser, getIdFor} = WindowUtil;
-
-    let fragment = createDocumentFragment();
-
-    // Scan windows in their Z-order from front(the current window) to back.
-    for (let win of getWindows()) {
-      let title, URL, icon, tabList;
-
-      if (isBrowser(win)) {
-        let b = win.gBrowser;
-        let tabs = b.visibleTabs;
-        let tabsLength = tabs.length;
-        let selectedIndex = tabs.indexOf(b.selectedTab);
-
-        title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
-        URL = b.currentURI.spec;
-        icon = b.getIcon(b.selectedTab);
-
-        // Scan visible tabs in their position order from start to end around
-        // the selected tab in this window.
-        tabList = [{
+        let history = [{
           label: {
             value: fixPluralForm({
-              format: '[#1 #2]',
-              count: tabsLength,
-              labels: ['tab', 'tabs']
+              format: '[#1 history #2]',
+              count: historyLength,
+              labels: ['entry', 'entries']
             })
           },
           header: true
         }];
 
-        let [start, end] = limitListRange({
-          index: selectedIndex,
-          length: tabsLength,
-          maxNumItems: kPref.maxNumListItems.tooltip
-        });
-
-        for (let j = start; j <= end; j++) {
-          let item = {
-            label: {
-              prefix: formatOrderNumber(j + 1),
-              value: tabs[j].label
-            }
-          };
-
-          if (j === selectedIndex) {
-            item.selected = true;
+        // [optional]
+        // Show that a tab is suspended from loading in background.
+        // @note A suspended tab may have no history if the initialization is
+        // interrupted.
+        // @require TabEx.uc.js
+        if (window.ucjsTabEx) {
+          if (window.ucjsTabEx.tabState.isSuspended(tab)) {
+            history.push({
+              label: {
+                value: 'This tab is suspended from loading.'
+              }
+            });
           }
+        }
 
-          tabList.push(item);
+        if (historyLength) {
+          let [start, end] = limitListRange({
+            index: selectedIndex,
+            length: historyLength,
+            maxNumItems: kPref.maxNumListItems.tooltip
+          });
+
+          for (let j = end; j >= start; j--) {
+            let entry = historyEntries[j];
+
+            let item = {
+              label: {
+                prefix: formatOrderNumber(j + 1),
+                value: entry.title || entry.URL
+              }
+            };
+
+            if (j === selectedIndex) {
+              item.selected = true;
+            }
+
+            history.push(item);
+          }
+        }
+
+        let className = ['menuitem-iconic'], action;
+
+        if (tab.selected) {
+          className.push('unified-nav-current');
+        }
+        else {
+          action = Action.selectTab(i);
+        }
+
+        let menuitem = fragment.appendChild($E('menuitem', {
+          label: {
+            prefix: formatOrderNumber(i + 1),
+            value: tab.label
+          },
+          tooltip: {
+            title: tab.label,
+            URL,
+            list: history
+          },
+          icon: gBrowser.getIcon(tab),
+          class: className.join(' '),
+          action
+        }));
+
+        // [optional]
+        // Set a state to indicate that the tab is unread.
+        // @require TabEx.uc.js in |ucjsUI.setStateForUnreadTab|.
+        if (!tab.selected) {
+          setStateForUnreadTab(menuitem, tab);
         }
       }
-      else {
-        title = win.document.title;
-        URL = win.location.href;
-        icon = 'moz-icon://.exe?size=16';
+
+      return fragment;
+    });
+  }
+
+  function buildOpenedWindows() {
+    // @note This task is perfuctory. It doesn't receive any iterators but is
+    // made in accordance with other builder functions.
+    return Task.spawn(function*() {
+      let {getWindows, isBrowser, getIdFor} = WindowUtil;
+
+      let fragment = createDocumentFragment();
+
+      // Scan windows in their Z-order from front(the current window) to back.
+      for (let win of getWindows()) {
+        let title, URL, icon, tabList;
+
+        if (isBrowser(win)) {
+          let b = win.gBrowser;
+          let tabs = b.visibleTabs;
+          let tabsLength = tabs.length;
+          let selectedIndex = tabs.indexOf(b.selectedTab);
+
+          title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
+          URL = b.currentURI.spec;
+          icon = b.getIcon(b.selectedTab);
+
+          // Scan visible tabs in their position order from start to end around
+          // the selected tab in this window.
+          tabList = [{
+            label: {
+              value: fixPluralForm({
+                format: '[#1 #2]',
+                count: tabsLength,
+                labels: ['tab', 'tabs']
+              })
+            },
+            header: true
+          }];
+
+          let [start, end] = limitListRange({
+            index: selectedIndex,
+            length: tabsLength,
+            maxNumItems: kPref.maxNumListItems.tooltip
+          });
+
+          for (let j = start; j <= end; j++) {
+            let item = {
+              label: {
+                prefix: formatOrderNumber(j + 1),
+                value: tabs[j].label
+              }
+            };
+
+            if (j === selectedIndex) {
+              item.selected = true;
+            }
+
+            tabList.push(item);
+          }
+        }
+        else {
+          title = win.document.title;
+          URL = win.location.href;
+          icon = 'moz-icon://.exe?size=16';
+        }
+
+        let className = ['menuitem-iconic'], action;
+
+        if (win === window) {
+          className.push('unified-nav-current');
+        }
+        else {
+          action = Action.selectWindow(getIdFor(win));
+        }
+
+        fragment.appendChild($E('menuitem', {
+          label: {
+            value: title
+          },
+          tooltip: {
+            title,
+            URL,
+            list: tabList
+          },
+          icon,
+          class: className.join(' '),
+          action
+        }));
       }
 
-      let className = ['menuitem-iconic'], action;
-
-      if (win === window) {
-        className.push('unified-nav-current');
-      }
-      else {
-        action = Action.selectWindow(getIdFor(win));
-      }
-
-      fragment.appendChild($E('menuitem', {
-        label: {
-          value: title
-        },
-        tooltip: {
-          title,
-          URL,
-          list: tabList
-        },
-        icon,
-        class: className.join(' '),
-        action
-      }));
-    }
-
-    aPopup.appendChild(fragment);
+      return fragment;
+    });
   }
 
   return {
@@ -974,37 +990,48 @@ const ClosedList = (function() {
    * Utility functions for session store.
    */
   const SessionStore = (function() {
-    function getClosedTabs() {
+    function promiseClosedTabs() {
+      const ss = Modules.SessionStore;
+
+      let result = null;
+
       try {
-        if (Modules.SessionStore.getClosedTabCount(window) > 0) {
+        if (ss.getClosedTabCount(window) > 0) {
           // Array of the data of closed tabs in thier closed date order from
           // last to first.
-          let data =
-            JSON.parse(Modules.SessionStore.getClosedTabData(window));
+          let data = JSON.parse(ss.getClosedTabData(window));
 
           let maxNumItems = kPref.maxNumListItems.closedTabs;
 
-          return limitData(data, maxNumItems);
+          result = limitData(data, maxNumItems);
         }
       } catch (ex) {}
 
-      return null;
+      return new Promise((onResolve) => {
+        onResolve(result);
+      });
     }
 
-    function getClosedWindows() {
+    function promiseClosedWindows() {
+      const ss = Modules.SessionStore;
+
+      let result = null;
+
       try {
-        if (Modules.SessionStore.getClosedWindowCount() > 0) {
+        if (ss.getClosedWindowCount() > 0) {
           // Array of the data of closed windows in thier closed date order
           // from last to first.
-          let data = JSON.parse(Modules.SessionStore.getClosedWindowData());
+          let data = JSON.parse(ss.getClosedWindowData());
 
           let maxNumItems = kPref.maxNumListItems.closedWindows;
 
-          return limitData(data, maxNumItems);
+          result = limitData(data, maxNumItems);
         }
       } catch (ex) {}
 
-      return null;
+      return new Promise((onResolve) => {
+        onResolve(result);
+      });
     }
 
     function limitData(aData, aMaxNumItems) {
@@ -1012,8 +1039,8 @@ const ClosedList = (function() {
     }
 
     return {
-      getClosedTabs,
-      getClosedWindows
+      promiseClosedTabs,
+      promiseClosedWindows
     };
   })();
 
@@ -1022,166 +1049,168 @@ const ClosedList = (function() {
    */
   function build(aPopup) {
     if (!!kPref.maxNumListItems.closedTabs) {
-      if (!buildClosedTabs(aPopup)) {
-        makeDisabledMenuItem(aPopup, kUI.closedMenu.noTabs);
-      }
-
-      makeMenuSeparator(aPopup);
+      buildMenuItems({
+        builder: buildClosedTabs,
+        listUI: kUI.closedMenu.list.closedTabs,
+        referenceNode: makeMenuSeparator(aPopup)
+      });
     }
 
     if (!!kPref.maxNumListItems.closedWindows) {
-      if (!buildClosedWindows(aPopup)) {
-        makeDisabledMenuItem(aPopup, kUI.closedMenu.noWindows);
-      }
+      buildMenuItems({
+        builder: buildClosedWindows,
+        listUI: kUI.closedMenu.list.closedWindows,
+        referenceNode: aPopup
+      });
     }
   }
 
-  function buildClosedTabs(aPopup) {
-    let closedTabs = SessionStore.getClosedTabs();
+  function buildClosedTabs() {
+    return Task.spawn(function*() {
+      let closedTabs = yield SessionStore.promiseClosedTabs();
 
-    if (!closedTabs) {
-      return false;
-    }
-
-    let fragment = createDocumentFragment();
-
-    // Scan closed tabs in thier closed date order from last to first.
-    closedTabs.forEach((closedTab, i) => {
-      let tabHistory = closedTab.state.entries;
-      let historyLength = tabHistory.length;
-      let selectedIndex = closedTab.state.index - 1;
-
-      let URL;
-
-      // Scan tab history in their visited date order from new to old around
-      // the selected page in this closed tab.
-      let history = [{
-        label: {
-          value: fixPluralForm({
-            format: '[#1 history #2]',
-            count: historyLength,
-            labels: ['entry', 'entries']
-          })
-        },
-        header: true
-      }];
-
-      let [start, end] = limitListRange({
-        index: selectedIndex,
-        length: historyLength,
-        maxNumItems: kPref.maxNumListItems.tooltip
-      });
-
-      for (let j = end; j >= start; j--) {
-        let entry = tabHistory[j];
-
-        let item = {
-          label: {
-            prefix: formatOrderNumber(j + 1),
-            value: entry.title || entry.url
-          }
-        };
-
-        if (j === selectedIndex) {
-          URL = entry.url;
-          item.selected = true;
-        }
-
-        history.push(item);
+      if (!closedTabs) {
+        return null;
       }
 
-      fragment.appendChild($E('menuitem', {
-        label: {
-          value: closedTab.title
-        },
-        tooltip: {
-          title: closedTab.title,
-          URL,
-          list: history
-        },
-        icon: closedTab.image,
-        class: 'menuitem-iconic',
-        action: Action.undoCloseTab(i)
-      }));
+      let fragment = createDocumentFragment();
+
+      // Scan closed tabs in thier closed date order from last to first.
+      closedTabs.forEach((closedTab, i) => {
+        let tabHistory = closedTab.state.entries;
+        let historyLength = tabHistory.length;
+        let selectedIndex = closedTab.state.index - 1;
+
+        let URL;
+
+        // Scan tab history in their visited date order from new to old around
+        // the selected page in this closed tab.
+        let history = [{
+          label: {
+            value: fixPluralForm({
+              format: '[#1 history #2]',
+              count: historyLength,
+              labels: ['entry', 'entries']
+            })
+          },
+          header: true
+        }];
+
+        let [start, end] = limitListRange({
+          index: selectedIndex,
+          length: historyLength,
+          maxNumItems: kPref.maxNumListItems.tooltip
+        });
+
+        for (let j = end; j >= start; j--) {
+          let entry = tabHistory[j];
+
+          let item = {
+            label: {
+              prefix: formatOrderNumber(j + 1),
+              value: entry.title || entry.url
+            }
+          };
+
+          if (j === selectedIndex) {
+            URL = entry.url;
+            item.selected = true;
+          }
+
+          history.push(item);
+        }
+
+        fragment.appendChild($E('menuitem', {
+          label: {
+            value: closedTab.title
+          },
+          tooltip: {
+            title: closedTab.title,
+            URL,
+            list: history
+          },
+          icon: closedTab.image,
+          class: 'menuitem-iconic',
+          action: Action.undoCloseTab(i)
+        }));
+      });
+
+      return fragment;
     });
-
-    aPopup.appendChild(fragment);
-
-    return true;
   }
 
-  function buildClosedWindows(aPopup) {
-    let closedWindows = SessionStore.getClosedWindows();
+  function buildClosedWindows() {
+    return Task.spawn(function*() {
+      let closedWindows = yield SessionStore.promiseClosedWindows();
 
-    if (!closedWindows) {
-      return false;
-    }
-
-    let fragment = createDocumentFragment();
-
-    // Scan closed windows in thier closed date order from last to first.
-    closedWindows.forEach((closedWindow, i) => {
-      let tabs = closedWindow.tabs;
-      let tabsLength = tabs.length;
-      let selectedIndex = closedWindow.selected - 1;
-
-      let URL;
-
-      // Scan visible tabs in their position order from start to end around
-      // the selected tab in this closed window.
-      let tabList = [{
-        label: {
-          value: fixPluralForm({
-            format: '[#1 #2]',
-            count: tabsLength,
-            labels: ['tab', 'tabs']
-          })
-        },
-        header: true
-      }];
-
-      let [start, end] = limitListRange({
-        index: selectedIndex,
-        length: tabsLength,
-        maxNumItems: kPref.maxNumListItems.tooltip
-      });
-
-      for (let j = start; j <= end; j++) {
-        let tab = tabs[j].index && tabs[j].entries[tabs[j].index - 1];
-
-        let item = {
-          label: {
-            prefix: formatOrderNumber(j + 1),
-            value: tab && (tab.title || tab.url)
-          }
-        };
-
-        if (j === selectedIndex) {
-          URL = tab.url;
-          item.selected = true;
-        }
-
-        tabList.push(item);
+      if (!closedWindows) {
+        return null;
       }
 
-      fragment.appendChild($E('menuitem', {
-        label: {
-          value: closedWindow.title
-        },
-        tooltip: {
-          title: closedWindow.title,
-          URL,
-          list: tabList
-        },
-        icon: tabs[closedWindow.selected - 1].image,
-        class: 'menuitem-iconic',
-        action: Action.undoCloseWindow(i)
-      }));
+      let fragment = createDocumentFragment();
+
+      // Scan closed windows in thier closed date order from last to first.
+      closedWindows.forEach((closedWindow, i) => {
+        let tabs = closedWindow.tabs;
+        let tabsLength = tabs.length;
+        let selectedIndex = closedWindow.selected - 1;
+
+        let URL;
+
+        // Scan visible tabs in their position order from start to end around
+        // the selected tab in this closed window.
+        let tabList = [{
+          label: {
+            value: fixPluralForm({
+              format: '[#1 #2]',
+              count: tabsLength,
+              labels: ['tab', 'tabs']
+            })
+          },
+          header: true
+        }];
+
+        let [start, end] = limitListRange({
+          index: selectedIndex,
+          length: tabsLength,
+          maxNumItems: kPref.maxNumListItems.tooltip
+        });
+
+        for (let j = start; j <= end; j++) {
+          let tab = tabs[j].index && tabs[j].entries[tabs[j].index - 1];
+
+          let item = {
+            label: {
+              prefix: formatOrderNumber(j + 1),
+              value: tab && (tab.title || tab.url)
+            }
+          };
+
+          if (j === selectedIndex) {
+            URL = tab.url;
+            item.selected = true;
+          }
+
+          tabList.push(item);
+        }
+
+        fragment.appendChild($E('menuitem', {
+          label: {
+            value: closedWindow.title
+          },
+          tooltip: {
+            title: closedWindow.title,
+            URL,
+            list: tabList
+          },
+          icon: tabs[closedWindow.selected - 1].image,
+          class: 'menuitem-iconic',
+          action: Action.undoCloseWindow(i)
+        }));
+      });
+
+      return fragment;
     });
-
-    aPopup.appendChild(fragment);
-
-    return true;
   }
 
   return {
@@ -1301,7 +1330,7 @@ const Tooltip = (function() {
 })();
 
 /**
- * Callback function for |ucjsUtil.createNode|.
+ * Attribute handler for |ucjsUtil.DOMUtils.$E|.
  */
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
@@ -1377,22 +1406,50 @@ function createDocumentFragment() {
   return window.document.createDocumentFragment();
 }
 
-function makeDisabledMenuItem(aPopup, aLabel) {
-  let refItem = null;
-
-  if (aPopup.localName !== 'menupopup') {
-    refItem = aPopup;
-    aPopup = aPopup.parentNode;
-  }
-
-  return aPopup.insertBefore($E('menuitem', {
-    label: aLabel,
-    disabled: true
-  }), refItem);
+function makeMenuSeparator(popup) {
+  return popup.appendChild($E('menuseparator'));
 }
 
-function makeMenuSeparator(aPopup) {
-  return aPopup.appendChild($E('menuseparator'));
+function buildMenuItems(params) {
+  let {
+    builder,
+    listUI,
+    referenceNode
+  } = params;
+
+  builder().then((list) => {
+    // No need to append new menu items if the context menu has closed.
+    if (!isContextMenuOpen()) {
+      return;
+    }
+
+    appendMenuItem(list, listUI, referenceNode);
+  }).
+  catch(Cu.reportError);
+}
+
+function appendMenuItem(menuItem, listUI, referenceNode) {
+  let popup, reference;
+
+  if (referenceNode.localName === 'menupopup') {
+    popup = referenceNode;
+    reference = null;
+  }
+  else {
+    popup = referenceNode.parentNode;
+    reference = referenceNode;
+  }
+
+  if (!menuItem && listUI.noItems) {
+    menuItem = $E('menuitem', {
+      label: listUI.noItems,
+      disabled: true
+    });
+  }
+
+  if (menuItem) {
+    popup.insertBefore(menuItem, reference);
+  }
 }
 
 function isContextMenuOpen() {
@@ -1431,70 +1488,70 @@ function limitListRange({index, length, maxNumItems}) {
   return [start, end];
 }
 
-function fitIntoLabel(aText, aWrapping) {
+function fitIntoLabel(text, wrapping) {
   let crop;
 
   // Show the filename of a URL.
-  if (/^(?:https?|ftp|file):/i.test(aText)) {
+  if (/^(?:https?|ftp|file):/i.test(text)) {
     crop = 'center';
   }
 
-  if (aWrapping) {
-    let maxLength = aWrapping.maxTextLength;
+  if (wrapping) {
+    let maxLength = wrapping.maxTextLength;
 
-    if (aText.length > maxLength) {
+    if (text.length > maxLength) {
       let {ellipsis} = Modules.PlacesUIUtils;
 
       if (crop === 'center') {
         let half = Math.floor(maxLength / 2);
 
-        aText = [aText.substr(0, half), aText.substr(-half)].join(ellipsis);
+        text = [text.substr(0, half), text.substr(-half)].join(ellipsis);
       }
       else {
-        aText = aText.substr(0, maxLength) + ellipsis;
+        text = text.substr(0, maxLength) + ellipsis;
       }
     }
   }
 
   return {
-    value: aText || Modules.PlacesUIUtils.getString('noTitle'),
+    value: text || Modules.PlacesUIUtils.getString('noTitle'),
     crop
   };
 }
 
-function fixFaviconURL(aIconURL) {
-  if (!aIconURL) {
-    aIconURL = Modules.PlacesUtils.favicons.defaultFavicon.spec;
+function fixFaviconURL(iconURL) {
+  if (!iconURL) {
+    iconURL = Modules.PlacesUtils.favicons.defaultFavicon.spec;
   }
 
-  aIconURL = Modules.PlacesUtils.getImageURLForResolution(window, aIconURL);
+  iconURL = Modules.PlacesUtils.getImageURLForResolution(window, iconURL);
 
-  if (/^https?:/.test(aIconURL)) {
-    aIconURL = 'moz-anno:favicon:' + aIconURL;
+  if (/^https?:/.test(iconURL)) {
+    iconURL = 'moz-anno:favicon:' + iconURL;
   }
 
-  return aIconURL;
+  return iconURL;
 }
 
-function formatTime(aMicroSeconds) {
+function formatTime(microSeconds) {
   // Format to convert date and time.
   // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
   const kTimeFormat = '%Y/%m/%d %H:%M:%S';
   const kTextFormat = '[%time%]';
   const kNotAvailable = '[N/A]';
 
-  if (!aMicroSeconds) {
+  if (!microSeconds) {
     return kNotAvailable;
   }
 
   // Convert microseconds into milliseconds.
-  let time = (new Date(aMicroSeconds / 1000)).toLocaleFormat(kTimeFormat);
+  let time = (new Date(microSeconds / 1000)).toLocaleFormat(kTimeFormat);
 
   return kTextFormat.replace('%time%', time);
 }
 
-function formatOrderNumber(aNumber) {
-  return aNumber + '.';
+function formatOrderNumber(num) {
+  return num + '.';
 }
 
 /**
