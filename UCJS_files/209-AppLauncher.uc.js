@@ -929,7 +929,10 @@ function execute(aApp, aTargetURL) {
   let appFile = getAppFile(aApp.path);
 
   if (!appFile) {
-    warn('Not executed', ['The application is not available now.', aApp.path]);
+    warn({
+      title: 'Not executed',
+      texts: ['The application is not available now.', aApp.path]
+    });
 
     return;
   }
@@ -951,7 +954,10 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
     saveFilePath = getSaveFilePath(makeURI(aTargetURL), targetDocument);
   }
   catch (ex) {
-    warn('Not downloaded', [ex.message, aTargetURL]);
+    warn({
+      title: 'Not downloaded',
+      texts: [ex.message, aTargetURL]
+    });
 
     return;
   }
@@ -972,7 +978,10 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
       execute(aApp, saveFilePath);
     },
     function onReject(aError) {
-      warn('Not downloaded', [aError.message, aTargetURL]);
+      warn({
+        title: 'Not downloaded',
+        texts: [aError.message, aTargetURL]
+      });
     }
   ).catch(Cu.reportError);
 }
@@ -1138,15 +1147,17 @@ function mimeTypeIsTextBased(aMimeType) {
   return Modules.BrowserUtils.mimeTypeIsTextBased(aMimeType);
 }
 
-function warn(aTitle, aMessage) {
+function warn(params) {
   const kMaxOutputLength = 200;
 
-  if (!Array.isArray(aMessage)) {
-    aMessage = [aMessage];
+  let {title, texts} = params
+
+  if (!Array.isArray(texts)) {
+    texts = [texts];
   }
 
   let caller = Components.stack.caller;
-  let output = log(['Error: ' + aTitle, aMessage.join('\n')], caller);
+  let output = log(['Error: ' + title, texts.join('\n')], caller);
 
   if (output.length > kMaxOutputLength) {
     output = output.substr(0, kMaxOutputLength);
