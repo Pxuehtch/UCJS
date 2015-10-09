@@ -41,6 +41,7 @@ const {
   mimeTypeIsTextBased,
   $E,
   $X,
+  promiseMessage,
   contentAreaContextMenu,
   // Logger to console for debug.
   log
@@ -623,19 +624,13 @@ function getAvailableActions() {
   // @see chrome://browser/content/nsContextMenu.js
   const {gContextMenu} = window;
 
-  let isImageDocument = (aDocument) =>
-    aDocument instanceof ImageDocument;
-
-  let isTextDocument = (aDocument) =>
-    mimeTypeIsTextBased(aDocument.contentType);
-
   let actions = [];
 
   let onMedia = false;
 
   if (gContextMenu.onImage ||
       gContextMenu.onCanvas ||
-      isImageDocument(gContextMenu.target.ownerDocument)) {
+      gContextMenu.inSyntheticDoc) {
     onMedia = true;
 
     actions.push('viewImage');
@@ -685,7 +680,8 @@ function getAvailableActions() {
     }
   }
   else if (!onMedia && !gContextMenu.onTextInput) {
-    let inText = isTextDocument(gContextMenu.target.ownerDocument);
+    let contentType = gBrowser.selectedBrowser.documentContentType;
+    let inText = mimeTypeIsTextBased(contentType);
 
     actions.push('openPage');
 
@@ -717,98 +713,127 @@ function getAvailableActions() {
   return actions;
 }
 
-function doAction(aApp, aAction) {
-  // @see chrome://browser/content/nsContextMenu.js
-  const {gContextMenu} = window;
+function doAction(appInfo, action) {
+  Task.spawn(function*() {
+    // @see chrome://browser/content/nsContextMenu.js
+    const {gContextMenu, gContextMenuContentData} = window;
 
-  let save = false;
-  let targetDocument;
-  let targetURL;
+    let doSave = false;
+    let targetURL;
+    let docInfo;
 
-  switch (FileExtUtil.getBaseAction(aAction)) {
-    case 'launchTool':
-      targetURL = null;
-      break;
+    switch (FileExtUtil.getBaseAction(action)) {
+      case 'launchTool':
+        targetURL = null;
+        break;
 
-    case 'openPage':
-      targetURL = gBrowser.contentDocument.documentURI;
-      break;
+      case 'openPage':
+        targetURL = gBrowser.currentURI.spec;
+        break;
 
-    case 'viewPageSource':
-      save = true;
-      targetDocument = gBrowser.contentDocument;
-      targetURL = targetDocument.documentURI;
-      break;
+      case 'viewPageSource':
+        doSave = true;
+        targetURL = gBrowser.currentURI.spec;
+        docInfo = yield promiseDocInfo();
+        break;
 
-    case 'openFrame':
-      targetURL = gContextMenu.target.ownerDocument.documentURI;
-      break;
+      case 'openFrame':
+        targetURL = gContextMenuContentData.docLocation;
+        break;
 
-    case 'viewFrameSource':
-      save = true;
-      targetDocument = gContextMenu.target.ownerDocument;
-      targetURL = targetDocument.documentURI;
-      break;
+      case 'viewFrameSource':
+        doSave = true;
+        targetURL = gContextMenuContentData.docLocation;
+        docInfo = yield promiseDocInfo();
+        break;
 
-    case 'openLink':
-    case 'sendMail':
-    case 'readNews':
-    case 'downloadLink':
-    case 'openFTP':
-      targetURL = gContextMenu.linkURL;
-      break;
+      case 'openLink':
+      case 'sendMail':
+      case 'readNews':
+      case 'downloadLink':
+      case 'openFTP':
+        targetURL = gContextMenu.linkURL;
+        break;
 
-    case 'openFile':
-    case 'viewLinkSource':
-    case 'openLinkMedia':
-    case 'viewLinkImage':
-      save = true;
-      targetURL = gContextMenu.linkURL;
-      break;
+      case 'openFile':
+      case 'viewLinkSource':
+      case 'openLinkMedia':
+      case 'viewLinkImage':
+        doSave = true;
+        targetURL = gContextMenu.linkURL;
+        break;
 
-    case 'openMedia':
-      save = true;
-      targetURL = gContextMenu.mediaURL;
-      break;
-
-    case 'viewImage':
-      save = true;
-
-      if (gContextMenu.onImage) {
+      case 'openMedia':
+        doSave = true;
         targetURL = gContextMenu.mediaURL;
+        break;
+
+      case 'viewImage': {
+        doSave = true;
+
+        if (gContextMenu.onImage) {
+          targetURL = gContextMenu.mediaURL;
+        }
+        else if (gContextMenu.onCanvas) {
+          targetURL = yield promiseCanvasDataURL();
+        }
+ 
+        break;
       }
-      else if (gContextMenu.onCanvas) {
-        targetURL = gContextMenu.target.toDataURL();
-      }
-      else {
-        targetURL = gContextMenu.target.ownerDocument.documentURI;
-      }
-      break;
 
-    case 'viewBGImage':
-      save = true;
-      targetURL = gContextMenu.bgImageURL;
-      break;
+      case 'viewBGImage':
+        doSave = true;
+        targetURL = gContextMenu.bgImageURL;
+        break;
 
-    case 'downloadMedia':
-    case 'downloadImage':
-      targetURL = gContextMenu.mediaURL;
-      break;
+      case 'downloadMedia':
+      case 'downloadImage':
+        targetURL = gContextMenu.mediaURL;
+        break;
 
-    case 'downloadBGImage':
-      targetURL = gContextMenu.bgImageURL;
-      break;
-  }
+      case 'downloadBGImage':
+        targetURL = gContextMenu.bgImageURL;
+        break;
+    }
 
-  let saveInfo = null;
+    runApp(appInfo, targetURL, doSave, docInfo);
+  }).
+  catch(Cu.reportError);
+}
 
-  if (save) {
-    saveInfo = {
-      targetDocument
+function promiseDocInfo() {
+  let messageName = {
+    request: 'PageInfo:getData',
+    response: 'PageInfo:data'
+  };
+
+  let params = {
+    frameOuterWindowID: gContextMenu.frameOuterWindowID
+  };
+
+  return promiseMessage(messageName, params).then((data) => {
+    let {docInfo} = data;
+
+    return {
+      title: docInfo.title,
+      contentType: docInfo.contentType
     };
-  }
+  });
+}
 
-  runApp(aApp, targetURL, saveInfo);
+function promiseCanvasDataURL() {
+  let messageName = {
+    request: 'ContextMenu:Canvas:ToDataURL',
+    response: 'ContextMenu:Canvas:ToDataURL:Result'
+  };
+
+  let paramsAsCPOW = {
+    target: gContextMenu.target
+  };
+
+  return promiseMessage(messageName, null, paramsAsCPOW).then((data) => {
+    return data.dataURL;
+  });
 }
 
 /**
@@ -837,6 +862,7 @@ AppLauncher_init();
  */
 const {
   Modules,
+  MessageManager,
   DOMUtils,
   // Logger to console for debug.
   Console: {
@@ -860,7 +886,6 @@ const kSpecialFolderAliases = [
   '%ProgF%',
 
   // Windows "Local application data" folder.
-  // C:/Documents and Settings/{username}/Local Settings/Application Data/
   // C:/Users/{username}/AppData/Local/
   '%LocalAppData%'
 ];
@@ -868,7 +893,7 @@ const kSpecialFolderAliases = [
 /**
  * XPCOM instances.
  */
-let $I = (aCID, aIID) => Cc[aCID].createInstance(Ci[aIID]);
+let $I = (CID, IID) => Cc[CID].createInstance(Ci[IID]);
 
 let LocalFile = () =>
   $I('@mozilla.org/file/local;1', 'nsIFile');
@@ -876,8 +901,8 @@ let LocalFile = () =>
 let Process = () =>
   $I('@mozilla.org/process/util;1', 'nsIProcess');
 
-function checkApp(aApp) {
-  let path = aApp.path.replace(/[/]/g, '\\');
+function checkApp(appInfo) {
+  let path = appInfo.path.replace(/[/]/g, '\\');
 
   kSpecialFolderAliases.forEach((alias) => {
     if (path.includes(alias)) {
@@ -892,7 +917,7 @@ function checkApp(aApp) {
 
   if (appFile) {
     // @note Overwrites the property value.
-    aApp.path = appFile.path;
+    appInfo.path = appFile.path;
 
     return true;
   }
@@ -900,9 +925,9 @@ function checkApp(aApp) {
   return false;
 }
 
-function getAppFile(aFilePath) {
+function getAppFile(filePath) {
   try {
-    let file = makeFile(aFilePath);
+    let file = makeFile(filePath);
 
     if (file &&
         file.exists() &&
@@ -916,47 +941,52 @@ function getAppFile(aFilePath) {
   return null;
 }
 
-function runApp(aApp, aTargetURL, aSaveInfo) {
-  if (aSaveInfo) {
-    saveAndExecute(aApp, aTargetURL, aSaveInfo);
+function runApp(appInfo, targetURL, doSave, docInfo) {
+  if (doSave) {
+    saveAndExecute(appInfo, targetURL, docInfo);
   }
   else {
-    execute(aApp, aTargetURL);
+    execute(appInfo, targetURL);
   }
 }
 
-function execute(aApp, aTargetURL) {
-  let appFile = getAppFile(aApp.path);
+function execute(appInfo, targetURL) {
+  let {
+    path: appPath,
+    args: appArgs
+  } = appInfo;
+
+  let appFile = getAppFile(appPath);
 
   if (!appFile) {
     warn({
       title: 'Not executed',
-      texts: ['The application is not available now.', aApp.path]
+      texts: ['The application is not available now.', appPath]
     });
 
     return;
   }
 
-  let args = getAppArgs(aApp.args, aTargetURL);
   let process = Process();
 
   process.init(appFile);
+
+  let args = getAppArgs(appArgs, targetURL);
 
   // @note Use 'wide string' version for Unicode arguments.
   process.runwAsync(args, args.length);
 }
 
-function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
-  let {targetDocument} = aSaveInfo;
+function saveAndExecute(appInfo, targetURL, docInfo) {
   let saveFilePath;
 
   try {
-    saveFilePath = getSaveFilePath(makeURI(aTargetURL), targetDocument);
+    saveFilePath = getSaveFilePath(makeURI(targetURL), docInfo);
   }
   catch (ex) {
     warn({
       title: 'Not downloaded',
-      texts: [ex.message, aTargetURL]
+      texts: [ex.message, targetURL]
     });
 
     return;
@@ -968,28 +998,28 @@ function saveAndExecute(aApp, aTargetURL, aSaveInfo) {
   const {isWindowPrivate} = require('sdk/window/utils');
 
   Downloads.fetch(
-    aTargetURL,
+    targetURL,
     saveFilePath,
     {
       isPrivate: isWindowPrivate(window)
     }
   ).then(
     function onResolve() {
-      execute(aApp, saveFilePath);
+      execute(appInfo, saveFilePath);
     },
     function onReject(aError) {
       warn({
         title: 'Not downloaded',
-        texts: [aError.message, aTargetURL]
+        texts: [aError.message, targetURL]
       });
     }
   ).catch(Cu.reportError);
 }
 
-function getSaveFilePath(aURI, aDocument) {
+function getSaveFilePath(uri, docInfo) {
   const kFileNameForm = 'ucjsAL%NUM%_%FILENAME%';
 
-  let fileName = makeFileName(aURI, aDocument);
+  let fileName = makeFileName(uri, docInfo);
 
   if (!fileName) {
     throw Error('Invalid URL for download.');
@@ -1013,8 +1043,8 @@ function getSaveFilePath(aURI, aDocument) {
   return dir.path;
 }
 
-function makeFileName(aURI, aDocument) {
-  if (!aURI) {
+function makeFileName(uri, docInfo) {
+  if (!uri) {
     return null;
   }
 
@@ -1030,16 +1060,16 @@ function makeFileName(aURI, aDocument) {
 
   let baseName, extension;
 
-  if (/^(?:https?|ftp)$/.test(aURI.scheme)) {
-    let result = extractFileName(aURI, aDocument);
+  if (/^(?:https?|ftp)$/.test(uri.scheme)) {
+    let result = extractFileName(uri, docInfo);
 
     if (result) {
       baseName = result.baseName;
       extension = result.extension;
     }
   }
-  else if (/^data$/.test(aURI.scheme)) {
-    let match = /^image\/([a-z]+);/.exec(aURI.path);
+  else if (/^data$/.test(uri.scheme)) {
+    let match = /^image\/([a-z]+);/.exec(uri.path);
 
     if (match) {
       baseName = kDataImageBaseName;
@@ -1068,29 +1098,29 @@ function makeFileName(aURI, aDocument) {
   return baseName;
 }
 
-function extractFileName(aURI, aDocument) {
-  if (!(aURI instanceof Ci.nsIURI)) {
-    aURI = makeURI(aURI);
+function extractFileName(uri, docInfo) {
+  if (!(uri instanceof Ci.nsIURI)) {
+    uri = makeURI(uri);
 
-    if (!aURI) {
+    if (!uri) {
       return null;
     }
   }
 
   // @note |getDefaultFileName| always returns a string not empty.
   // @see chrome://global/content/contentAreaUtils.js::getDefaultFileName()
-  let baseName = window.getDefaultFileName('', aURI, aDocument);
+  let baseName = window.getDefaultFileName('', uri, docInfo);
 
   // @see chrome://global/content/contentAreaUtils.js::getDefaultExtension()
-  let extension = window.getDefaultExtension('', aURI,
-    aDocument ? aDocument.contentType : null);
+  let contentType = docInfo ? docInfo.contentType : null;
+  let extension = window.getDefaultExtension('', uri, contentType);
 
   if (extension && baseName.endsWith('.' + extension)) {
     // @see chrome://global/content/contentAreaUtils.js::getFileBaseName()
     baseName = window.getFileBaseName(baseName);
   }
 
-  if (!extension && aDocument && /^https?$/.test(aURI.scheme)) {
+  if (!extension && docInfo && /^https?$/.test(uri.scheme)) {
     extension = 'htm';
   }
 
@@ -1100,51 +1130,51 @@ function extractFileName(aURI, aDocument) {
   };
 }
 
-function getAppArgs(aArgs, aURL) {
-  if (aURL) {
+function getAppArgs(args, url) {
+  if (url) {
     // Escape the path separator.
-    aURL = aURL.replace(/\\/g, '\\\\');
+    url = url.replace(/\\/g, '\\\\');
   }
 
-  if (!aArgs || !aArgs.length) {
-    return aURL ? [aURL] : [];
+  if (!args || !args.length) {
+    return url ? [url] : [];
   }
 
-  if (aURL) {
-    return aArgs.map((arg) => arg.replace(/%URL%/g, aURL));
+  if (url) {
+    return args.map((arg) => arg.replace(/%URL%/g, url));
   }
 
   // Remove arguments with %URL% when the application is launched as 'tool'.
-  return aArgs.filter((arg) => !arg.includes('%URL%'));
+  return args.filter((arg) => !arg.includes('%URL%'));
 }
 
 function getSpecialDirectory(aAlias) {
   return Services.dirsvc.get(aAlias, Ci.nsIFile);
 }
 
-function makeURI(aURL) {
-  if (!aURL) {
+function makeURI(url) {
+  if (!url) {
     return null;
   }
 
   try {
-    return Modules.BrowserUtils.makeURI(aURL);
+    return Modules.BrowserUtils.makeURI(url);
   }
   catch (ex) {}
 
   return null;
 }
 
-function makeFile(aFilePath) {
+function makeFile(filePath) {
   let file = LocalFile();
 
-  file.initWithPath(aFilePath);
+  file.initWithPath(filePath);
 
   return file;
 }
 
-function mimeTypeIsTextBased(aMimeType) {
-  return Modules.BrowserUtils.mimeTypeIsTextBased(aMimeType);
+function mimeTypeIsTextBased(mimeType) {
+  return Modules.BrowserUtils.mimeTypeIsTextBased(mimeType);
 }
 
 function warn(params) {
@@ -1184,6 +1214,7 @@ return {
 
   $E: DOMUtils.$E,
   $X: DOMUtils.$X,
+  promiseMessage: MessageManager.promiseMessage,
   contentAreaContextMenu,
 
   log
