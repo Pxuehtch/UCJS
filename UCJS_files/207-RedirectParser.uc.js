@@ -6,7 +6,7 @@
 
 // @require Util.uc.js, UI.uc.js
 
-// @usage Creates a menu in the main context menu on a link that has inner
+// @usage A menu is appended in the main context menu on a link that has inner
 // URLs.
 
 
@@ -63,7 +63,7 @@ const kPref = {
   // URL schemes that can be opened with a command.
   // @note The URL with other schemes can't be opened but will be copied to
   // clipboard.
-  generalSchemes: 'http|https|ftp'
+  schemesToOpen: 'http|https|ftp'
 };
 
 /**
@@ -265,7 +265,7 @@ function makeMenuItems(aParseList) {
     }
 
     if (URL) {
-      if (testGeneralScheme(URL)) {
+      if (testSchemeToOpen(URL)) {
         action = 'open';
       }
       else {
@@ -316,9 +316,9 @@ function makeMenuItems(aParseList) {
   $ID(kUI.menu.id).menupopup.appendChild(fragment);
 }
 
-function testGeneralScheme(aURL) {
+function testSchemeToOpen(aURL) {
   if (aURL) {
-    let re = RegExp('^(?:' + kPref.generalSchemes + '):\/\/.+$', 'i');
+    let re = RegExp('^(?:' + kPref.schemesToOpen + '):\/\/.+$', 'i');
 
     return re.test(aURL);
   }
@@ -580,7 +580,7 @@ function createParseList(aPreset, aSourceURLType) {
 }
 
 /**
- * Callback function for |ucjsUtil.createNode|.
+ * Attribute handler for |ucjsUtil.DOMUtils.$E|.
  */
 function handleAttribute(aNode, aName, aValue) {
   switch (aName) {
