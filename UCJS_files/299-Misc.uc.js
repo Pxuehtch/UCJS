@@ -153,13 +153,14 @@ const {
 
     // Add the referrer information to a tab without backward history.
     if (!browser.canGoBack && referrer.exists(tab)) {
-      referrer.fetchInfo(tab, (aInfo) => {
+      referrer.promiseInfo(tab).then(({title, URL}) => {
         buildData({
-          title: aInfo.title,
-          URL: aInfo.URL,
+          title,
+          URL,
           referrer: true
         });
-      });
+      }).
+      catch(Cu.reportError);
     }
   }
 

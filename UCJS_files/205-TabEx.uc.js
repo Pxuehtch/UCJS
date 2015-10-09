@@ -600,15 +600,15 @@ const Referrer = {
     return referrerURL || fromVisit;
   },
 
-  fetchInfo(aTab, aCallback) {
-    let URL = this.getURL(aTab);
+  promiseInfo(tab) {
+    let URL = this.getURL(tab);
 
     // The document title is fetched by async history API.
-    fetchPageTitle(URL, (aTitle) => {
-      aCallback({
-        title: aTitle,
+    return promisePageTitle(URL).then((title) => {
+      return {
+        title,
         URL
-      });
+      };
     });
   },
 
@@ -784,9 +784,10 @@ const TabSuspender = {
       }
 
       if (isBlank) {
-        fetchPageTitle(loadingURL, (aTitle) => {
-          aTab.label = aTitle;
-        });
+        promisePageTitle(loadingURL).then((title) => {
+          aTab.label = title;
+        }).
+        catch(Cu.reportError);
       }
     }
   },
@@ -1790,21 +1791,21 @@ function htmlUnescape(aString) {
     replace(/&amp;/g, '&'); // Must unescape at last.
 }
 
-function fetchPageTitle(aURL, aCallback) {
-  let uri = makeURI(aURL);
+function promisePageTitle(url) {
+  let uri = makeURI(url);
 
   if (!uri) {
-    aCallback(aURL);
+    return Promise.resolve(url);
   }
 
-  Modules.PlacesUtils.promisePlaceInfo(uri).then(
-    function onResolve(aPlaceInfo) {
-      aCallback(aPlaceInfo.title || aURL);
+  return Modules.PlacesUtils.promisePlaceInfo(uri).then(
+    function resolve(info) {
+      return info.title || url;
     },
-    function onReject(aReason) {
-      aCallback(aURL);
+    function reject() {
+      return url;
     }
-  ).catch(Cu.reportError);
+  );
 }
 
 function makeURI(aURL) {
