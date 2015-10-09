@@ -200,7 +200,14 @@ const Button = {
  * @see |NaviButton_init()|
  */
 const BrowserProgressListener = {
-  onLocationChange(aWebProgress, aRequest, aLocation, aFlag) {
+  onLocationChange(webProgress) {
+    // Receive location change from top frame only.
+    // XXX: Do this just to be safe though I don't know the case of sub frames
+    // change.
+    if (!webProgress.isTopLevel) {
+      return;
+    }
+
     let backButton = UI.backButton;
     let referrerKey = kDataKey.referrer;
 
