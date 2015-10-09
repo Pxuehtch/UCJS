@@ -68,11 +68,10 @@ const kDataKey = {
 };
 
 /**
- * Custom event type.
+ * The names for the custom notifications.
  */
-const kEventType = {
+const kNotificationName = {
   TabOpenInfoSet: 'ucjs_TabEx_TabOpenInfoSet',
-  LoadedBrowserOpen: 'ucjs_TabEx_LoadedBrowserOpen',
   TabBecomingWindow: 'ucjs_TabEx_TabBecomingWindow'
 };
 
@@ -526,7 +525,7 @@ const TabOpener = {
 
         TabData.set(aTab, 'openInfo', openInfo);
 
-        let event = new CustomEvent(kEventType.TabOpenInfoSet, {
+        let event = new CustomEvent(kNotificationName.TabOpenInfoSet, {
           // @note Listen the event on |gBrowser.tabContainer|.
           // @see |TabEvent::init|
           bubbles: true
@@ -887,88 +886,23 @@ const SessionStore = {
 const Startup = {
   init() {
     /**
-     * Execute processing just after all tabs open at startup.
+     * Wait the initialization for startup.
      *
-     * TODO: Use a reliable observer.
-     * @note 'browser-delayed-startup-finished' was already fired on this
-     * timing so that we can't catch it.
-     *
-     * For the first window:
-     * 1.On boot startup: Observe |DOMContentLoaded| that fires on the document
-     * first selected.
-     * 2.On resume startup: Observe |SSTabRestored| that fires on the tab first
-     * selected.
-     *
-     * For sub windows that the current window opens:
-     * 3.With |DOMContentLoaded|: Catch in case 1.
-     * 4.Without any catchable event: Observe new window opened and dispatch
-     * a custom event for it. (e.g. a window by |window.openDialog| with a tab
-     * node in arguments has no loading tab.)
+     * @note |SessionStore.promiseInitialized| resolves after
+     * 'sessionstore-state-finalized' and 'browser-delayed-startup-finished'
+     * have finished.
+     * WORKAROUND: I want to execute my startup processing after all tabs are
+     * loaded. I'm not sure that it has done so wait a moment just in case.
+     * TODO: Observe a reliable notification, or no need to wait?
      */
-    const LoadEvents = {
-      add(aTarget, aType) {
-        if (!this.events) {
-          this.events = new Map();
-        }
+    const {SessionStore} =
+      Modules.require('/modules/sessionstore/SessionStore.jsm');
 
-        this.events.set(aTarget, aType);
-
-        aTarget.addEventListener(aType, this);
-      },
-
-      clear() {
-        for (let [target, type] of this.events) {
-          target.removeEventListener(type, this);
-        }
-
-        this.events.clear();
-        delete this.events;
-      },
-
-      handleEvent(aEvent) {
-        this.clear();
-
+    SessionStore.promiseInitialized.then(() => {
+      setTimeout(() => {
         Startup.setStartupTabs();
         SessionStore.persistTabAttribute();
-      }
-    };
-
-    let isResumeStartup = Modules.SessionStartup.doRestore();
-
-    if (isResumeStartup) {
-      LoadEvents.add(gBrowser.tabContainer, 'SSTabRestored');
-    }
-    else {
-      LoadEvents.add(window, 'DOMContentLoaded');
-    }
-
-    // Observe new sub window without any loading.
-    LoadEvents.add(gBrowser, kEventType.LoadedBrowserOpen);
-
-    let onBrowserOpen = (aSubject) => {
-      if (!aSubject.gBrowser.mIsBusy) {
-        // Ensure that the new browser can catch the event at startup.
-        // TODO: Use a reliable observer instead of waiting.
-        setTimeout(() => {
-          let event = new CustomEvent(kEventType.LoadedBrowserOpen);
-
-          aSubject.gBrowser.dispatchEvent(event);
-
-          // Update some states for the selected tab, notify onLocationChange,
-          // correct the URL bar, etc.
-          // TODO: I don't know how to update them properly. Watch side effects
-          // by using this function.
-          aSubject.gBrowser.updateCurrentBrowser(true);
-        }, 500);
-      }
-    };
-
-    let topic = 'browser-delayed-startup-finished';
-
-    Services.obs.addObserver(onBrowserOpen, topic, false);
-
-    $shutdown(() => {
-      Services.obs.removeObserver(onBrowserOpen, topic);
+      }, 1000);
     });
   },
 
@@ -1009,7 +943,7 @@ const MovingTabObserver = {
     // Observe a tab that becomes a new window.
     // @note 'SwapDocShells' event fires after 'TabBecomingWindow' event.
     // @note We add this custom event to |gBrowser.replaceTabWithWindow|.
-    $event(gBrowser, kEventType.TabBecomingWindow, this);
+    $event(gBrowser, kNotificationName.TabBecomingWindow, this);
 
     // Patch the native function.
     // @modified chrome://browser/content/tabbrowser.xml::replaceTabWithWindow
@@ -1022,7 +956,7 @@ const MovingTabObserver = {
       }
 
       // Dispatch our custom event.
-      let event = new CustomEvent(kEventType.TabBecomingWindow, {
+      let event = new CustomEvent(kNotificationName.TabBecomingWindow, {
         detail: {
           tab: aParams[0]
         }
@@ -1078,7 +1012,7 @@ const MovingTabObserver = {
         break;
       }
 
-      case kEventType.TabBecomingWindow: {
+      case kNotificationName.TabBecomingWindow: {
         let originalTab = aEvent.detail.tab;
 
         // Evacuate the tab data in the browser. We can refer to it on
@@ -1120,7 +1054,7 @@ const TabEvent = {
   init() {
     let tc = gBrowser.tabContainer;
 
-    $event(tc, kEventType.TabOpenInfoSet, this);
+    $event(tc, kNotificationName.TabOpenInfoSet, this);
     $event(tc, 'TabSelect', this);
     $event(tc, 'TabClose', this);
     $event(tc, 'SSTabRestored', this);
@@ -1130,7 +1064,7 @@ const TabEvent = {
     let tab = aEvent.originalTarget;
 
     switch (aEvent.type) {
-      case kEventType.TabOpenInfoSet:
+      case kNotificationName.TabOpenInfoSet:
         this.onTabOpen(tab);
         break;
 
