@@ -345,6 +345,17 @@ const TabData = (function () {
   }
 
   /**
+   * Removes a tab data.
+   *
+   * @param aTab {Element}
+   * @param aKey {string}
+   *   A reserved key corresponding to a data.
+   */
+  function remove(aTab, aKey) {
+    set(aTab, aKey, null);
+  }
+
+  /**
    * Retrieves the data of a closed tab from the session store.
    *
    * @param aClosedTabData {hash}
@@ -410,6 +421,7 @@ const TabData = (function () {
   return {
     get,
     set,
+    remove,
     getSS,
     state
   };
@@ -704,9 +716,9 @@ const TabSelector = {
     let {reset, read} = aOption;
 
     if (reset) {
-      TabData.set(aTab, 'selectTime', null);
-      TabData.set(aTab, 'readTime', null);
-      TabData.set(aTab, 'read', null);
+      TabData.remove(aTab, 'selectTime');
+      TabData.remove(aTab, 'readTime');
+      TabData.remove(aTab, 'read');
 
       return;
     }
@@ -803,7 +815,7 @@ const TabSuspender = {
       return;
     }
 
-    TabData.set(aTab, 'suspended', null);
+    TabData.remove(aTab, 'suspended');
 
     let [browser, loadingURL, openInfo] = this.getBrowserForTab(aTab);
 
@@ -1136,7 +1148,7 @@ const TabEvent = {
     // 1.Pass a duplicated or undo-closed tab only.
     // 2.Do not pass a startup tab because of no relocation needed.
     if (TabData.get(aTab, 'startup')) {
-      TabData.set(aTab, 'startup', null);
+      TabData.remove(aTab, 'startup');
 
       return;
     }
