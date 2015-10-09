@@ -52,7 +52,7 @@ const {
  */
 const kPref = {
   /**
-   * Max number of listed items.
+   * Max number of entry items of each list.
    *
    * @value {integer} [>0]
    * @note A list is not created if set to 0.
@@ -61,7 +61,7 @@ const kPref = {
    * It can cause performance problems for too many items.
    * !!! WARNING !!!
    *
-   * [Order of list items]
+   * [The order of entry items]
    * tabHistory: From new to old around current page.
    * recentHistory: From recent to old.
    * openedTabs: From start to end around current tab in visible tabs.
@@ -69,11 +69,14 @@ const kPref = {
    * closedTabs: From the last closed tab to old.
    * closedWindows: From the last closed window to old.
    *
-   * [tooltip]
-   * List of history of an opened tab: From new to old around selected page.
-   * List of tabs of an opened window: From start to end around selected tab.
-   * List of history of a closed tab: From new to old around selected page.
-   * List of tabs of a closed window: From start to end around selected tab.
+   * tooltip:
+   * - History of an opened tab: From new to old around selected page.
+   * - Tabs of an opened window: From start to end around selected tab.
+   * - History of a closed tab: From new to old around selected page.
+   * - Tabs of a closed window: From start to end around selected tab.
+   *
+   * @note The key names must be the same names of entries of
+   * |KUI.xxxMenu.list| except for |tooltip|.
    */
   maxNumListItems: {
     tabHistory:    10,
@@ -108,8 +111,14 @@ const kUI = {
     label: 'History Tab/Recent',
     accesskey: 'H',
 
-    tabEmpty: 'Tab: No history.',
-    recentEmpty: 'Recent: No history.'
+    list: {
+      tabHistory: {
+        noItems: 'No tab history.'
+      },
+      recentHistory: {
+        noItems: 'No recent history.'
+      }
+    }
   },
 
   historyManager: {
@@ -120,7 +129,16 @@ const kUI = {
   openedMenu: {
     id: 'ucjs_ListEx_openedMenu',
     label: 'Opened Tab/Window',
-    accesskey: 'O'
+    accesskey: 'O',
+
+    list: {
+      openedTabs: {
+        // At least the current tab surely opens.
+      },
+      openedWindows: {
+        // At least the current window surely opens.
+      }
+    }
   },
 
   closedMenu: {
@@ -128,8 +146,14 @@ const kUI = {
     label: 'Closed Tab/Window',
     accesskey: 'C',
 
-    noTabs: 'No closed tabs.',
-    noWindows: 'No closed windows.'
+    list: {
+      closedTabs: {
+        noItems: 'No closed tabs.'
+      },
+      closedWindows: {
+        noItems: 'No closed windows.'
+      }
+    }
   },
 
   tooltip: {
@@ -175,62 +199,50 @@ const MainMenu = (function() {
     Tooltip.init();
   }
 
-  function createMenu(aContextMenu) {
-    let refItem = aContextMenu.firstChild;
+  function createMenu(contextMenu) {
+    // TODO: Make the insertion position of items fixed for useful access.
+    // WORKAROUND: Inserts to the top of the context menu at this point in
+    // time.
+    let referenceNode = contextMenu.firstChild;
 
-    function addSeparator(aSeparatorName) {
-      aContextMenu.insertBefore($E('menuseparator', {
-        id: aSeparatorName.id
-      }), refItem);
-    }
+    let addSeparator = (separatorUI) => {
+      contextMenu.insertBefore($E('menuseparator', {
+        id: separatorUI.id
+      }), referenceNode);
+    };
 
-    function addMenu(aMenuName) {
-      let menu = aContextMenu.insertBefore($E('menu', {
-        id: aMenuName.id,
-        label: aMenuName.label,
-        accesskey: aMenuName.accesskey
-      }), refItem);
+    let addMenu = (menuUI) => {
+      let menu = contextMenu.insertBefore($E('menu', {
+        id: menuUI.id,
+        label: menuUI.label,
+        accesskey: menuUI.accesskey
+      }), referenceNode);
 
       menu.appendChild($E('menupopup'));
-    }
-
-    /**
-     * List of items of menus.
-     *
-     * @key A menu name in |kUI|.
-     * @value A items name in |kPref.maxNumListItems|.
-     *
-     * TODO: Make a smart way to avoid managing constant names.
-     */
-    let menuItems = {
-      'historyMenu': [
-        'tabHistory',
-        'recentHistory'
-      ],
-      'openedMenu': [
-        'openedTabs',
-        'openedWindows'
-      ],
-      'closedMenu': [
-        'closedTabs',
-        'closedWindows'
-      ]
     };
 
     addSeparator(kUI.startSeparator);
 
-    for (let menu in menuItems) {
-      if (menuItems[menu].some((item) => !!kPref.maxNumListItems[item])) {
-        addMenu(kUI[menu]);
+    [
+      kUI.historyMenu,
+      kUI.openedMenu,
+      kUI.closedMenu
+    ].
+    forEach((menuUI) => {
+      let hasEnabledList =
+        Object.keys(menuUI.list).some((key) => !!kPref.maxNumListItems[key])
+
+      if (hasEnabledList) {
+        addMenu(menuUI);
       }
-    }
+    });
 
     addSeparator(kUI.endSeparator);
   }
 
-  function onPopupShowing(aEvent) {
-    let menupopup = aEvent.target;
-    let contextMenu = aEvent.currentTarget;
+  function onPopupShowing(event) {
+    let menupopup = event.target;
+    let contextMenu = event.currentTarget;
 
     if (menupopup === contextMenu) {
       // @see chrome://browser/content/nsContextMenu.js
@@ -246,8 +258,8 @@ const MainMenu = (function() {
         kUI.openedMenu,
         kUI.closedMenu
       ].
-      forEach((aMenuName) => {
-        gContextMenu.showItem(aMenuName.id, !hidden);
+      forEach((menuUI) => {
+        gContextMenu.showItem(menuUI.id, !hidden);
       });
     }
     else {
@@ -258,8 +270,8 @@ const MainMenu = (function() {
         [kUI.openedMenu, OpenedList],
         [kUI.closedMenu, ClosedList]
       ].
-      some(([menuName, menuHandler]) => {
-        if (menu.id === menuName.id && !menu.itemCount) {
+      some(([menuUI, menuHandler]) => {
+        if (menu.id === menuUI.id && !menu.itemCount) {
           menuHandler.build(menupopup);
 
           return true;
@@ -270,17 +282,17 @@ const MainMenu = (function() {
     }
   }
 
-  function onPopupHiding(aEvent) {
-    let contextMenu = aEvent.currentTarget;
+  function onPopupHiding(event) {
+    let contextMenu = event.currentTarget;
 
-    if (aEvent.target === contextMenu) {
+    if (event.target === contextMenu) {
       [
         kUI.historyMenu,
         kUI.openedMenu,
         kUI.closedMenu
       ].
-      forEach((aMenuName) => {
-        let menu = $ID(aMenuName.id);
+      forEach((menuUI) => {
+        let menu = $ID(menuUI.id);
 
         if (menu) {
           while (menu.itemCount) {
@@ -291,13 +303,13 @@ const MainMenu = (function() {
     }
   }
 
-  function onCommand(aEvent) {
-    let menuitem = aEvent.target;
+  function onCommand(event) {
+    let menuitem = event.target;
 
     let commandData = menuitem[kDataKey.commandData];
 
     if (commandData) {
-      commandData.command(aEvent, commandData.params);
+      commandData.command(event, commandData.params);
     }
   }
 
