@@ -732,6 +732,11 @@ const TabSuspender = {
   timers: {},
 
   set(aTab, aDelay) {
+    // WORKAROUND: Too small delay can't stop the native loading.
+    if (aDelay < 100) {
+      aDelay = 100;
+    }
+
     let timer = setTimeout((tab) => {
       this.stop(tab);
     }, aDelay, aTab);
@@ -772,14 +777,12 @@ const TabSuspender = {
         browser.currentURI.spec === 'about:blank' ||
         (aTab.hasAttribute('pending') && isBusy);
 
-
       if (isBusy || isBlank) {
         TabData.set(aTab, 'suspended', true);
       }
 
       if (isBusy) {
-        // WORKAROUND: Wait for the Fx processing to stop surely.
-        setTimeout(() => browser.stop(), 0);
+        browser.stop();
       }
 
       if (isBlank) {
@@ -809,7 +812,7 @@ const TabSuspender = {
 
       if (openInfo) {
         // TODO: Handle the POST data.
-        loadPage = () => browser.loadURIWithFlags(
+        browser.loadURIWithFlags(
           loadingURL,
           openInfo.flags,
           makeURI(openInfo.referrerURL) || null,
@@ -818,11 +821,8 @@ const TabSuspender = {
         );
       }
       else {
-        loadPage = () => browser.loadURI(loadingURL);
+        browser.loadURI(loadingURL);
       }
-
-      // WORKAROUND: Wait for the Fx processing to load correctly.
-      setTimeout(loadPage, 0);
     }
   },
 
