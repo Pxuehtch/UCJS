@@ -243,7 +243,8 @@ const Tooltip = (function() {
     }
 
     function isOpen() {
-      return vars.panel.state === 'open';
+      // WORKAROUND: This tests whether the panel is alive or not.
+      return vars.panel && vars.panel.state === 'open';
     }
 
     function open(event) {
@@ -258,7 +259,9 @@ const Tooltip = (function() {
     }
 
     function hide() {
-      vars.panel.hidePopup();
+      if (isOpen()) {
+        vars.panel.hidePopup();
+      }
     }
 
     return {
