@@ -45,6 +45,9 @@ const {
     $E,
     $ID
   },
+  HistoryUtils: {
+    promiseSessionHistory
+  },
   // Logger to console for debug.
   Console: {
     log
@@ -238,8 +241,8 @@ const Referrer = {
     return false;
   },
 
-  fetchInfo(aCallback) {
-    this.referrer.fetchInfo(gBrowser.selectedTab, aCallback);
+  promiseInfo() {
+    return this.referrer.promiseInfo(gBrowser.selectedTab);
   }
 };
 
@@ -279,11 +282,13 @@ const Tooltip = {
       backward,
       referrer,
       disabled
-    },
-    (aData) => {
-      this.build(aData);
+    }).
+    then((historyData) => {
+      this.build(historyData);
+
       this.tooltip.openPopup(button, 'after_start', 0, 0, false, false);
-    });
+    }).
+    catch(Cu.reportError);
   },
 
   build(aData) {
@@ -408,132 +413,100 @@ const Tooltip = {
  * Session history handler.
  */
 const History = {
-  scan(aParam, aCallback) {
-    this.initData(aParam, (aData) => {
-      this.updateData(aParam, aData);
-      aCallback(aData);
+  scan(params) {
+    return this.initHistoryData(params).then((data) => {
+      return this.updateHistoryData(params, data).then(() => data);
     });
   },
 
-  initData(aParam, aCallback) {
-    function Entry() {
-      return {
-        title: '',
-        URL: '',
-        index: -1,
-        distance: 0
+  initHistoryData(params) {
+    return Task.spawn(function*() {
+      function Entry() {
+        return {
+          title: '',
+          URL: '',
+          index: -1,
+          distance: 0
+        };
+      }
+
+      let {backward, referrer} = params;
+
+      // Make a new property.
+      this.data = {
+        backward,
+        neighbor: Entry(),
+        border:   Entry(),
+        stop:     Entry(),
+        referrer: Entry()
       };
-    }
 
-    let {backward, referrer} = aParam;
+      if (referrer) {
+        let referrerInfo = yield Referrer.promiseInfo();
 
-    // Make a new property.
-    this.data = {
-      backward,
-      neighbor: Entry(),
-      border:   Entry(),
-      stop:     Entry(),
-      referrer: Entry()
-    };
+        this.data.referrer.title = referrerInfo.title;
+        this.data.referrer.URL = referrerInfo.URL;
+      }
 
-    if (referrer) {
-      Referrer.fetchInfo((aInfo) => {
-        this.data.referrer.title = aInfo.title;
-        this.data.referrer.URL = aInfo.URL;
+      return this.data;
+    }.bind(this));
+  },
 
-        aCallback(this.data);
+  updateHistoryData(params, data) {
+    return Task.spawn(function*() {
+      let {backward, disabled} = params;
+
+      if (disabled) {
+        return data;
+      }
+
+      let sessionHistory = yield promiseSessionHistory();
+
+      if (!sessionHistory) {
+        return data;
+      }
+
+      let {
+        index: historyIndex,
+        count: historyCount,
+        entries: historyEntries
+      } = sessionHistory;
+
+      if ((backward && historyIndex === 0) ||
+          (!backward && historyIndex === historyCount - 1)) {
+        return data;
+      }
+
+      let step = backward ? -1 : 1;
+      let border = historyIndex + step;
+
+      let within = backward ? (i) => -1 < i : (i) => i < historyCount;
+      let host = getHost(historyEntries[historyIndex].URL);
+
+      for (/**/; within(border); border += step) {
+        if (host !== getHost(historyEntries[border].URL)) {
+          break;
+        }
+      }
+
+      [
+        [data.neighbor, historyIndex + step],
+        [data.border, border - step],
+        [data.stop, backward ? 0 : historyCount - 1]
+      ].
+      forEach(([entry, index]) => {
+        if (historyIndex !== index) {
+          let info = historyEntries[index];
+
+          entry.title = info.title;
+          entry.URL = info.URL;
+          entry.index = index;
+          entry.distance = Math.abs(index - historyIndex);
+        }
       });
 
-      return;
-    }
-
-    aCallback(this.data);
-  },
-
-  updateData(aParam, aData) {
-    let {backward, disabled} = aParam;
-
-    if (disabled) {
-      return;
-    }
-
-    let sh = this.getSessionHistory();
-
-    if (!sh ||
-        (backward && sh.index === 0) ||
-        (!backward && sh.index === sh.count - 1)) {
-      return;
-    }
-
-    let step = backward ? -1 : 1;
-    let border = sh.index + step;
-
-    let within = backward ? (i) => -1 < i : (i) => i < sh.count;
-    let host = sh.getEntryAt(sh.index).host;
-
-    for (/**/; within(border); border += step) {
-      if (host !== sh.getEntryAt(border).host) {
-        break;
-      }
-    }
-
-    [
-      [aData.neighbor, sh.index + step],
-      [aData.border, border - step],
-      [aData.stop, backward ? 0 : sh.count - 1]
-    ].
-    forEach(([entry, index]) => {
-      if (sh.index !== index) {
-        let info = sh.getEntryAt(index);
-
-        entry.title = info.title;
-        entry.URL = info.URL;
-        entry.index = index;
-        entry.distance = Math.abs(index - sh.index);
-      }
+      return data
     });
-  },
-
-  getSessionHistory() {
-    let sh = gBrowser.sessionHistory;
-
-    if (sh) {
-      return {
-        index: sh.index,
-        count: sh.count,
-        getEntryAt
-      };
-    }
-
-    return null;
-
-    function getEntryAt(aIndex) {
-      let info = {
-        title: '',
-        URL: '',
-        host: ''
-      };
-
-      let entry = sh.getEntryAtIndex(aIndex, false);
-
-      if (entry) {
-        if (entry.title) {
-          info.title = entry.title;
-        }
-
-        if (entry.URI) {
-          info.URL = entry.URI.spec;
-          try {
-            info.host = entry.URI.host;
-          }
-          catch (ex) {
-            info.host = entry.URI.scheme;
-          }
-        }
-      }
-
-      return info;
-    }
   },
 
   jump(aEvent) {
@@ -566,10 +539,14 @@ const History = {
     }
 
     if (button === 1) {
-      let delta = index - gBrowser.sessionHistory.index;
+      Task.spawn(function*() {
+        let sessionHistory = yield promiseSessionHistory();
+        let delta = index - sessionHistory.index;
 
-      // @see chrome://browser/content/browser.js::duplicateTabIn
-      window.duplicateTabIn(gBrowser.selectedTab, 'tab', delta);
+        // @see chrome://browser/content/browser.js::duplicateTabIn
+        window.duplicateTabIn(gBrowser.selectedTab, 'tab', delta);
+      }).
+      catch(Cu.reportError);
     }
     else {
       gBrowser.gotoIndex(index);
@@ -580,6 +557,20 @@ const History = {
 /**
  * Helper function.
  */
+function getHost(url) {
+  if (!url) {
+    return null;
+  }
+
+  try {
+    return Modules.BrowserUtils.makeURI(url).host;
+  }
+  catch (ex) {}
+
+  // Return scheme.
+  return /^(\w+):/.exec(url)[1];
+}
+
 function selectOrOpen(aURL, aOption = {}) {
   function getURL(aTab) {
     let browser = gBrowser.getBrowserForTab(aTab);
