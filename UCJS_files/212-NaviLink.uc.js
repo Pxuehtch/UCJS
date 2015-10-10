@@ -471,7 +471,7 @@ const MenuUI = (function() {
       popup.appendChild($E('menuitem', {
         crop: 'start',
         label: URL,
-        'open': URL
+        [$a('open')]: URL
       }));
     });
 
@@ -519,8 +519,8 @@ const MenuUI = (function() {
 
       node = $E('menuitem', {
         tooltiptext,
-        'open': data.URL,
-        'submit': data.formIndex
+        [$a('open')]: data.URL,
+        [$a('submit')]: data.formIndex
       });
     }
     else {
@@ -536,7 +536,7 @@ const MenuUI = (function() {
         popup.appendChild($E('menuitem', {
           label: text,
           tooltiptext: formatTooltip(text, URL),
-          'open': URL
+          [$a('open')]: URL
         }));
       });
 
@@ -595,7 +595,7 @@ const MenuUI = (function() {
           let URL = data.URL;
 
           child = $E('menuitem', {
-            'open': URL
+            [$a('open')]: URL
           });
 
           tooltiptext = URL;
@@ -610,7 +610,7 @@ const MenuUI = (function() {
               crop: 'center',
               label: text,
               tooltiptext: formatTooltip(text, URL),
-              'open': URL
+              [$a('open')]: URL
             }));
           });
 
@@ -695,7 +695,7 @@ const MenuUI = (function() {
             crop: 'center',
             label: text,
             tooltiptext: formatTooltip(text, URL),
-            'open': URL
+            [$a('open')]: URL
           }));
         });
       }
@@ -2615,24 +2615,45 @@ function trim(aText) {
   return aText.trim().replace(/\s+/g, ' ');
 }
 
-/**
- * Callback function for |ucjsUtil.createNode|.
- */
-function handleAttribute(aNode, aName, aValue) {
-  switch (aName) {
-    // Set the value to a property of the node.
-    case 'open':
-    case 'submit': {
-      if (aValue) {
-        aNode[kDataKey.commandData] = {};
-        aNode[kDataKey.commandData][aName] = aValue;
-      }
 
-      return true;
-    }
+/**
+ * Attribute handler for |ucjsUtil.DOMUtils.$E|.
+ */
+function handleAttribute(node, name, value) {
+  let userAttribute = parse$a(name);
+
+  if (userAttribute) {
+    let {category, key} = userAttribute;
+
+    node[category] = {};
+    node[category][key] = value;
+
+    return true;
   }
 
   return false;
+}
+
+/**
+ * User attribute handler.
+ *
+ * @note Handles only a command data for |onCommand| for now.
+ */
+function $a(command) {
+  return kDataKey.commandData + command;
+}
+
+function parse$a(name) {
+  let commandData = kDataKey.commandData;
+
+  if (name.startsWith(commandData)) {
+    return {
+      category: commandData,
+      key: name.slice(commandData.length)
+    }
+  }
+
+  return null;
 }
 
 /**
