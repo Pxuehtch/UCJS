@@ -263,8 +263,10 @@ const kUI = {
     official: '%title%',
     searching: '%title% (%score%)',
     numbering: '%here% -> %there%',
-    // Submit mode warning.
-    submit: '<submit mode>',
+    // No navigation warning in preset page.
+    presetNoNavigation: '<No navigation>',
+    // Submit mode warning in preset page.
+    presetSubmitMode: '<submit mode>',
 
     // Items of |NaviLink| / |PageInfo|.
     type: ['%title%', '%title% (%count%)'],
@@ -510,18 +512,50 @@ const MenuUI = (function() {
 
     if (list.length === 1) {
       let data = list[0];
-      let tooltiptext = formatTooltip(
+      let tooltiptext, command;
+
+      if (data.URL) {
+        tooltiptext = data.URL;
+        command = {
+          key: 'open',
+          value: data.URL
+        };
+      }
+      else if (data.formIndex) {
+        tooltiptext = kUI.items.presetSubmitMode;
+        command = {
+          key: 'submit',
+          value: {
+            name: data.name,
+            formIndex: data.formIndex
+          }
+        };
+      }
+      else {
+        tooltiptext = kUI.items.presetNoNavigation;
+      }
+
+      tooltiptext = formatTooltip(
         formatText(data, {
           siblingScanType: scanType
         }),
-        data.URL || kUI.items.submit
+        tooltiptext
       );
 
       node = $E('menuitem', {
-        tooltiptext,
-        [$a('open')]: data.URL,
-        [$a('submit')]: data.formIndex
+        tooltiptext
       });
+
+      if (command) {
+        $E(node, {
+          [$a(command.key)]: command.value
+        });
+      }
+      else {
+        $E(node, {
+          disabled: true
+        });
+      }
     }
     else {
       let popup = $E('menupopup');
