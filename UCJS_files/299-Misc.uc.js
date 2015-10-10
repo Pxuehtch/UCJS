@@ -6,7 +6,7 @@
 
 // @require Util.uc.js, UI.uc.js, TabEx.uc.js
 
-// @note Some about:config preferences are changed (see @pref).
+// @note Some about:config preferences are changed (see @prefs).
 // @note Some native functions are modified (see @modified).
 
 
@@ -21,8 +21,10 @@
  */
 const {
   Modules,
+  ContentTask,
   Listeners: {
     $event,
+    $page,
     $shutdown
   },
   DOMUtils: {
@@ -31,6 +33,7 @@ const {
     $ANONID
   },
   CSSUtils,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -326,9 +329,9 @@ const {
   function parseAccent(aUrl) {
     let offsets = [];
 
-    let add = (aIndex, aMatch) => {
-      let from = aMatch.index;
-      let to = from + aMatch[0].length - 1
+    let add = (index, match) => {
+      let from = match.index;
+      let to = from + match[0].length - 1
 
       // Check whether the match string falls in a free range.
       if (!offsets.every((offset) => offset.to < from || to < offset.from)) {
@@ -336,7 +339,7 @@ const {
       }
 
       offsets.push({
-        index: aIndex,
+        index,
         from,
         to
       });
@@ -455,7 +458,7 @@ const {
   /**
    * Toggles focusing behavior by the <Tab> key.
    */
-  // @pref
+  // @prefs
   // 1: Give focus to text fields only.
   // 7: Give focus to focusable text fields, form elements, and links.
   // @see http://kb.mozillazine.org/Accessibility.tabfocus
@@ -487,89 +490,70 @@ const {
 })();
 
 /**
- * Prevent new page opening by the target attribute on link click.
+ * Prevent new tab opening by the 'target' attribute when click link.
  *
- * @note Follows the action by clicking with modifier keys.
+ * @note Follows the native action by clicking with modifier keys.
  * @note Follows the valid target in <frame> windows.
  *
  * TODO: Handle <iframe>.
  */
 (function() {
 
-  // @note Use the capture mode to surely catch the event in the content area.
-  $event(gBrowser.mPanelContainer, 'mousedown', onMouseDown, true);
+  $event(gBrowser.mPanelContainer, 'mousedown', onMouseDown);
 
-  function onMouseDown(aEvent) {
-    if (aEvent.button !== 0 ||
-        aEvent.shiftKey || aEvent.ctrlKey || aEvent.altKey) {
+  function onMouseDown(event) {
+    if (event.button !== 0 ||
+        event.shiftKey || event.ctrlKey || event.altKey) {
       return;
     }
 
-    if (!isHtmlDocument(aEvent.target.ownerDocument)) {
+    if (!BrowserUtils.isHTMLDocument()) {
       return;
     }
 
-    let link = getLink(aEvent.target);
+    let {x, y} = BrowserUtils.getCursorPointInContent(event);
 
-    if (!link) {
-      return;
-    }
+    ContentTask.spawn({
+      params: {x, y},
+      task: function*(params) {
+        '${ContentTask.ContentScripts.DOMUtils}';
 
-    if (link.target) {
-      let hasTargetFrame = false;
+        let {x, y} = params;
 
-      let view = aEvent.target.ownerDocument.defaultView;
+        let node = DOMUtils.getElementFromPoint(x, y);
 
-      if (view.frameElement instanceof HTMLFrameElement) {
-        let target = link.target;
+        while (node) {
+          if (DOMUtils.getLinkHref(node)) {
+            break;
+          }
 
-        // @note [...window.frames] doesn't work since |window.frames| doesn't
-        // have [Symbol.iterator].
-        hasTargetFrame =
-          Array.some(view.top.frames, (frame) => frame.name === target);
-      }
+          node = node.parentNode;
+        }
 
-      if (!hasTargetFrame) {
-        link.target = '_top';
-      }
-    }
-  }
+        if (!node || !node.href) {
+          return;
+        }
 
-  function isHtmlDocument(aDocument) {
-    if (aDocument instanceof HTMLDocument) {
-      let mime = aDocument.contentType;
+        if (node.target) {
+          let hasTargetFrame = false;
 
-      return (
-        mime === 'text/html' ||
-        mime === 'text/xml' ||
-        mime === 'application/xml' ||
-        mime === 'application/xhtml+xml'
-      );
-    }
+          let view = node.ownerDocument.defaultView;
 
-    return false;
-  }
+          if (view.frameElement instanceof content.HTMLFrameElement) {
+            let target = node.target;
 
-  function getLink(aNode) {
-    const XLinkNS = 'http://www.w3.org/1999/xlink';
+            // @note [...window.frames] doesn't work since |window.frames|
+            // doesn't have [Symbol.iterator].
+            hasTargetFrame =
+              Array.some(view.top.frames, (frame) => frame.name === target);
+          }
 
-    // @note The initial node may be a text node.
-    let node = aNode;
-
-    while (node) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node instanceof HTMLAnchorElement ||
-            node instanceof HTMLAreaElement ||
-            node instanceof HTMLLinkElement ||
-            node.getAttributeNS(XLinkNS, 'type') === 'simple') {
-          return node;
+          if (!hasTargetFrame) {
+            node.target = '_top';
+          }
         }
       }
-
-      node = node.parentNode;
-    }
-
-    return null;
+    });
   }
 
 })();
@@ -628,7 +612,7 @@ const {
   /**
    * Fx native UI elements.
    */
-   const UI = {
+  const UI = {
     get statusInput() {
       // <statuspanel>
       return window.XULBrowserWindow.statusTextField;
@@ -752,7 +736,7 @@ const {
  * Style for anonymous elements.
  *
  * @note AGENT-STYLE-SHEETS can apply styles to native anonymous elements.
- * @see https://developer.mozilla.org/en-US/docs/Using_the_Stylesheet_Service#Using_the_API
+ * @see https://developer.mozilla.org/en/docs/Using_the_Stylesheet_Service#Using_the_API
  */
 (function() {
 
@@ -939,10 +923,11 @@ const {
 
   const UI = {
     get lockButton() {
-      // Get the lock button if a findbar in the current tab is initialized to
-      // avoid creating a needless findbar once the lazy getter |gFindBar| is
-      // called.
-      if (gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
+      // Get the lock button only when a findbar in the current tab has been
+      // initialized to avoid creating a needless findbar once the lazy getter
+      // |gFindBar| is called.
+      if (gBrowser.isFindBarInitialized &&
+          gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
         return gFindBar.getElementsByClassName(kUI.lockButton.id)[0];
       }
 
@@ -959,8 +944,8 @@ const {
 
   $event(gBrowser.mPanelContainer, 'command', handleEvent);
   $event(gBrowser.mPanelContainer, 'find', handleEvent);
-  $event(gBrowser, 'select', handleEvent);
-  $event(gBrowser, 'pageshow', handleEvent);
+  $page('pageselect', handleEvent);
+  $page('pageshow', handleEvent);
 
   function onCreate(aParam) {
     let {findBar} = aParam;
@@ -975,12 +960,12 @@ const {
     }));
   }
 
-  function handleEvent(aEvent) {
+  function handleEvent(event) {
     const {FindBar} = window.ucjsUI;
 
-    switch (aEvent.type) {
+    switch (event.type) {
       case 'command': {
-        let button = aEvent.target;
+        let button = event.target;
 
         let lockButton = UI.lockButton;
 
@@ -1005,14 +990,19 @@ const {
         break;
       }
 
-      case 'select':
+      case 'pageselect':
       case 'pageshow': {
-        // Handle the selected tab that completely loaded.
-        if ((aEvent.type === 'select' &&
-             gBrowser.contentDocument.readyState !== 'complete') ||
-            (aEvent.type === 'pageshow' &&
-             aEvent.target !== gBrowser.contentDocument)) {
-          break;
+        if (event.type === 'pageselect') {
+          // 'pageshow' event will fire after a document loads completely.
+          if (event.readyState !== 'complete') {
+            return;
+          }
+        }
+
+        let isFirstLoaded = false;
+
+        if (event.type === 'pageshow') {
+          isFirstLoaded = !event.persisted;
         }
 
         if (mIsLocked) {
@@ -1030,9 +1020,9 @@ const {
 
           // 1.Find again with the new string when a tab is selected.
           // 2.Find again with the same string when a new document loads in a
-          //   tab.
-          // @note Do nothing for a history cache to retain the last view.
-          if (isUpdated || (aEvent.type === 'pageshow' && !aEvent.persisted)) {
+          //   tab. But do nothing for a history cache to retain the last
+          //   view.
+          if (isUpdated || isFirstLoaded) {
             gFindBar.onFindAgainCommand();
           }
         }
