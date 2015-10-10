@@ -47,28 +47,8 @@ const kPref = {
    *
    * @note The default click is deactivated when 'mouseup' fires in this time
    * after 'mousedown', otherwise activated.
-   * @note Set |disableDefaultClick| to true to disable the default click
-   * completely.
    */
   clickThresholdTime: 200,
-
-  /**
-   * Disable the default click action on the tab bar.
-   *
-   * @value {boolean}
-   *   true: Disabled completely.
-   *   false: Disabled when the custom click is recognized, otherwise enabled.
-   *
-   * @note The default actions:
-   * - Middle click on a tab: Closes a tab.
-   * - Double click on the tab bar: Opens a new tab.
-   * - Middle click on the tab bar: Opens a new tab.
-   * @see chrome://browser/content/tabbrowser.xml::
-   *   <binding id="tabbrowser-tabs">::
-   *   <handler event="dblclick">
-   *   <handler event="click">
-   */
-  disableDefaultClick: true
 };
 
 /**
@@ -165,7 +145,9 @@ const kClickAction = [
 
       if (ctrlKey) {
         // Select/Reopen the opener tab.
-        window.ucjsTabEx.selectOpenerTab(target, {undoClose: true});
+        window.ucjsTabEx.selectOpenerTab(target, {
+          undoClose: true
+        });
       }
       else {
         // Select the previously selected tab.
@@ -214,7 +196,9 @@ const kClickAction = [
       let {target} = aState;
 
       // Close the tab.
-      window.ucjsUtil.TabUtils.removeTab(target, {safetyLock: true});
+      window.ucjsUtil.TabUtils.removeTab(target, {
+        safetyLock: true
+      });
     }
   }
   //,
@@ -322,11 +306,21 @@ const TabBarClickEvent = {
 
       case 'click':
       case 'dblclick': {
-        if (kPref.disableDefaultClick ||
-            this.isObserving) {
-          aEvent.preventDefault();
-          aEvent.stopPropagation();
-        }
+        /**
+         * Prevent the default actions:
+         * - Middle click on a tab: Closes a tab.
+         * - Double click on the tab bar: Opens a new tab.
+         * - Middle click on the tab bar: Opens a new tab.
+         * @see chrome://browser/content/tabbrowser.xml::
+         *   <binding id="tabbrowser-tabs">::
+         *   <handler event="dblclick">
+         *   <handler event="click">
+         *
+         * TODO: We should make detailed management in accordance with the
+         * native processing.
+         */
+        aEvent.stopPropagation();
+        aEvent.preventDefault();
 
         break;
       }
