@@ -7,7 +7,7 @@
 // @require Util.uc.js
 // @require [optional] TabEx.uc.js
 
-// @usage Access to items through the global property (window.ucjsUI.XXX).
+// @usage Access to functions through the global property (window.ucjsUI.XXX).
 
 // @note Some native functions are modified (see @modified).
 
@@ -69,66 +69,92 @@ const PopupMenuHandler = (function() {
 
     handlerManager.register({
       events: [
-        ['popupshowing', manageMenuSeparators]
+        ['popupshowing', (event) => {
+          let popupMenu = event.currentTarget;
+
+          if (event.target !== popupMenu) {
+            return;
+          }
+
+          // Wait the popup items setup completed.
+          Timer.setImmediate(repaintSeparators, popupMenu);
+        }]
       ]
     });
 
     return {
       get: aPopupMenuGetter,
-      register: handlerManager.register
+      register: handlerManager.register,
+      repaintSeparators: repaintSeparators.bind(null, aPopupMenuGetter())
     };
   }
 
   /**
-   * Manages the visibility of menu separators in a popup menu.
+   * Updates the visibility of menu separators in the popup menu.
    *
-   * @param aEvent {Event}
-   *
-   * @note Triggered by the 'popupshowing' event of a <menupopup> element.
+   * @param popupMenu {<menupopup>}
+   * @param options {hash} [optional]
+   *   startSeparator: {<menuseparator>}
+   *   endSeparator: {<menuseparator>}
    */
-  function manageMenuSeparators(aEvent) {
-    let popupMenu = aEvent.currentTarget;
-
-    if (aEvent.target !== popupMenu) {
-      return;
-    }
+  function repaintSeparators(popupMenu, options = {}) {
+    let {
+      startSeparator,
+      endSeparator
+    } = options;
 
     let separators = $X('xul:menuseparator', popupMenu, {
       ordered: true,
       toArray: true
     });
 
-    Timer.setImmediate(manage, separators);
+    if (startSeparator || endSeparator) {
+      let start = separators.indexOf(startSeparator);
 
-    function manage(aSeparators) {
-      let last = null;
-
-      aSeparators.forEach((separator) => {
-        if (separator.hidden) {
-          separator.hidden = false;
-        }
-
-        if (!shouldShow(separator, 'previousSibling')) {
-          separator.hidden = true;
-        }
-        else {
-          last = separator;
-        }
-      });
-
-      if (last && !shouldShow(last, 'nextSibling')) {
-        last.hidden = true;
+      if (start < 0) {
+        start = 0;
       }
+
+      let end = separators.indexOf(endSeparator);
+
+      if (end < 0) {
+        end = separators.length - 1;
+      }
+
+      separators = separators.slice(start, end + 1);
     }
 
-    function shouldShow(aSeparator, aSibling) {
+    manageSeparatorsVisibility(separators);
+  }
+
+  function manageSeparatorsVisibility(separators) {
+    let last = null;
+
+    separators.forEach((separator) => {
+      if (separator.hidden) {
+        separator.hidden = false;
+      }
+
+      if (!shouldShow(separator, 'previousSibling')) {
+        separator.hidden = true;
+      }
+      else {
+        last = separator;
+      }
+    });
+
+    if (last && !shouldShow(last, 'nextSibling')) {
+      last.hidden = true;
+    }
+
+    function shouldShow(separator, sibling) {
       // @see chrome://browser/content/utilityOverlay.js::isElementVisible()
       const isElementVisible = window.isElementVisible;
 
-      let node = aSeparator;
+      let node = separator;
 
       do {
-        node = node[aSibling];
+        node = node[sibling];
       } while (node && !isElementVisible(node));
 
       return node && node.localName !== 'menuseparator';
@@ -733,7 +759,7 @@ const StatusField = (function() {
         // |aURL| that is passed to the native function |setOverLink| may be
         // a processed URL for UI, so we query the Places DB with the raw URL
         // of an anchor element to fetch the proper result.
-        // @note |Element.href| will always return the absolute path.
+        // @note |Element.href| string returns an absolute path.
         let rawURL = aAnchorElt && aAnchorElt.href;
 
         // Get a URL sring of an SVGAElement.
