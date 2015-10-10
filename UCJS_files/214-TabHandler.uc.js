@@ -404,7 +404,7 @@ const TabBarClickEvent = {
     }
 
     // On the margin where has no tabs in the tab bar.
-    if (target.localName === 'tabs') {
+    if (originalTarget.localName === 'box') {
       return kClickArea.notTabs;
     }
 
