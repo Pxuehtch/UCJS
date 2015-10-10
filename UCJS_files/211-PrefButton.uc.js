@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 
-// @usage Creates items on the navigation toolbar.
+// @usage Buttons are appended on the navigation toolbar.
 
 // @note Some about:config preferences are changed (see @prefs).
 
@@ -14,6 +14,7 @@
 // @see |setStyleSheet()|
 
 // TODO: Support the customizable UI.
+// TODO: Observe state changes in an external process and update our buttons.
 
 
 (function(window) {
@@ -27,9 +28,10 @@
  */
 const {
   Modules,
+  ContentTask,
   Listeners: {
     $event,
-    $shutdown
+    $page
   },
   DOMUtils: {
     $E,
@@ -64,17 +66,19 @@ const kUI = {
  *   Set true if |command| should work only on the selected tab.
  * @param type {string}
  *   'button': A normal button.
- *   'checkbox': A toggle button with On/Off.
+ *   'checkbox': A toggle button with checked/unchecked states.
  * @param label {string}
  *   A label text of a button.
  * @param image {URL string} [optional]
  *   The image instead of the label text of a button.
  * @param description {string}
  *   @note Used as a tooltip text.
- * @param checked {getter} [optional]
- *   @return {boolean}
- *   Set a getter that returns On/Off state for 'checkbox' type button.
+ * @param checkState {function} [required for 'checkbox' type]
+ *   @return {Promise}
+ *     Promise for the state of checkbox button should be checked or not.
  * @param command {function}
+ *   @param aChecked {boolean} [optional for 'checkbox' type]
+ *     The state of checkbox button changes to checked or not.
  * @param disabled {boolean} [optional]
  */
 const kItemList = [
@@ -85,18 +89,22 @@ const kItemList = [
     label: 'CSS',
     description: 'Switch CSS (Tab)',
 
-    // Gets the content viewer for the current content document.
-    // @see chrome://browser/content/tabbrowser.xml::markupDocumentViewer
-    get documentViewer() {
-      return gBrowser.markupDocumentViewer;
+    checkState() {
+      return ContentTask.spawn(function*() {
+        return !docShell.contentViewer.authorStyleDisabled;
+      });
     },
 
-    get checked() {
-      return !this.documentViewer.authorStyleDisabled;
-    },
-
-    command() {
-      this.documentViewer.authorStyleDisabled = this.checked;
+    command(aChecked) {
+      if (aChecked) {
+        // Apply the default stylesheet.
+        // @see chrome://browser/content/browser.js::gPageStyleMenu
+        window.gPageStyleMenu.switchStyleSheet('');
+      }
+      else {
+        // @see chrome://browser/content/browser.js::gPageStyleMenu
+        window.gPageStyleMenu.disableStyle();
+      }
     }
   },
   {
@@ -119,12 +127,14 @@ const kItemList = [
       }
     }),
 
-    get checked() {
-      return this.prefs.get() !== 'never';
+    checkState() {
+      let shouldCheck = this.prefs.get() !== 'never';
+
+      return Promise.resolve(shouldCheck);
     },
 
-    command() {
-      this.prefs.set(this.checked ? 'linkOrImage' : 'never');
+    command(aChecked) {
+      this.prefs.set(aChecked ? 'linkOrImage' : 'never');
     }
   },
   {
@@ -147,16 +157,18 @@ const kItemList = [
       }
     }),
 
-    get checked() {
-      return this.prefs.get() !== 'none';
+    checkState() {
+      let shouldCheck = this.prefs.get() !== 'none';
+
+      return Promise.resolve(shouldCheck);
     },
 
-    command() {
-      this.prefs.set(this.checked ? 'normal' : 'none');
+    command(aChecked) {
+      this.prefs.set(aChecked ? 'normal' : 'none');
 
       // Immediately apply the new mode in the animate-able image document.
-      if (gBrowser.contentDocument instanceof ImageDocument &&
-          /^image\/(?:gif|png)$/.test(gBrowser.contentDocument.contentType)) {
+      if (/^image\/(?:gif|png)$/.
+        test(gBrowser.selectedBrowser.documentContentType)) {
         // @see chrome://browser/content/browser.js::BrowserReload
         window.BrowserReload();
       }
@@ -164,38 +176,25 @@ const kItemList = [
   }//,
 ];
 
-/**
- * Progress listener.
- */
-const BrowserProgressListener = {
-  onStateChange(aWebProgress, aRequest, aFlags, aStatus) {
-    const {STATE_STOP, STATE_IS_WINDOW} = Ci.nsIWebProgressListener;
-
-    if (aFlags & STATE_STOP &&
-        aFlags & STATE_IS_WINDOW &&
-        aWebProgress.DOMWindow === gBrowser.contentWindow) {
-      updateState();
-    }
-  },
-
-  onLocationChange() {},
-  onProgressChange() {},
-  onStatusChange() {},
-  onSecurityChange() {}
-};
-
 function PrefButton_init() {
-  setStyleSheet();
   makeButtons();
 
-  $event(gBrowser, 'select', () => {
-    updateState({tabMode: true});
+  $page('pageshow', () => {
+    updateState();
   });
 
-  gBrowser.addProgressListener(BrowserProgressListener);
+  $page('pageselect', (aEvent) => {
+    // If a document is loading, 'pageshow' event will fire after loaded and
+    // update all buttons for the new document.
+    if (aEvent.readyState !== 'complete') {
+      return;
+    }
 
-  $shutdown(() => {
-    gBrowser.removeProgressListener(BrowserProgressListener);
+    // Enough to update only tab mode buttons if an existing tab is selected
+    // without any loading.
+    updateState({
+      tabMode: true
+    });
   });
 }
 
@@ -216,9 +215,12 @@ function updateState(aOption = {}) {
       }
 
       case 'checkbox': {
-        if (button.checked !== item.checked) {
-          button.checked = item.checked;
-        }
+        item.checkState().then((aShouldCheck) => {
+          if (button.checked !== aShouldCheck) {
+            button.checked = aShouldCheck;
+          }
+        }).
+        catch(Cu.reportError);
 
         break;
       }
@@ -231,20 +233,23 @@ function doCommand(aEvent) {
     return;
   }
 
-  let button = aEvent.target;
+  let {id, checked} = aEvent.target;
 
-  if (button.id && button.id.startsWith(kUI.button.id)) {
-    kItemList[+button.id.replace(kUI.button.id, '')].command();
+  if (id && id.startsWith(kUI.button.id)) {
+    kItemList[+id.replace(kUI.button.id, '')].command(checked);
   }
 }
 
 function makeButtons() {
+  setStyleSheet();
+
   let toolbar = $ID('nav-bar');
 
   let container = $E('hbox', {
     id: kUI.container.id
   });
 
+  // XXX: I can't handle the 'command' event on <hbox>.
   $event(container, 'click', doCommand);
 
   kItemList.forEach((item, i) => {
