@@ -236,6 +236,7 @@ const TabBarClickEvent = {
     if (aValue === true) {
       this.mouseUpTimer = setTimeout(() => {
         this.doAction();
+        this.updateForegroundTab(this.state.target)
 
         this.stopObserving();
       }, kPref.clickThresholdTime);
@@ -259,6 +260,10 @@ const TabBarClickEvent = {
     this.clearState();
   },
 
+  updateForegroundTab(target) {
+    this.isForegroundTab = target.localName === 'tab' && target.selected;
+  },
+
   clearState() {
     this.state.target   = null;
     this.state.area     = null;
@@ -275,9 +280,11 @@ const TabBarClickEvent = {
 
     let tc = gBrowser.tabContainer;
 
+    $event(tc, 'mouseover', this);
+    $event(tc, 'mousedown', this);
+    $event(tc, 'mouseup', this);
+
     // @note Use the capture mode to catch the event before the default event.
-    $event(tc, 'mousedown', this, true);
-    $event(tc, 'mouseup', this, true);
     $event(tc, 'click', this, true);
     $event(tc, 'dblclick', this, true);
   },
@@ -292,6 +299,12 @@ const TabBarClickEvent = {
     }
 
     switch (aEvent.type) {
+      case 'mouseover': {
+        this.onMouseOver(aEvent);
+
+        break;
+      }
+
       case 'mousedown': {
         this.onMouseDown(aEvent);
 
@@ -327,6 +340,21 @@ const TabBarClickEvent = {
     }
   },
 
+
+  /**
+   * Check whether the tab is foreground or not before 'mousedown' event makes
+   * the tab selected.
+   * @see chrome://browser/content/tabbrowser.xml::
+   *   <binding id="tabbrowser-tab">::
+   *   <handler event="mousedown">
+   * @see chrome://global/content/bindings/tabbox.xml::
+   *   <binding id="tab">::
+   *   <handler event="mousedown">
+   */
+  onMouseOver(event) {
+    this.updateForegroundTab(event.target);
+  },
+
   onMouseDown(aEvent) {
     if (this.isObserving) {
       // Two buttons are pressed down.
@@ -349,19 +377,6 @@ const TabBarClickEvent = {
       this.state.shiftKey = aEvent.shiftKey;
       this.state.ctrlKey  = aEvent.ctrlKey;
       this.state.altKey   = aEvent.altKey;
-    }
-
-    // Disable selecting a background tab.
-    // @see chrome://browser/content/tabbrowser.xml::
-    //   <binding id="tabbrowser-tab">::
-    //   <handler event="mousedown">
-    // @see chrome://global/content/bindings/tabbox.xml::
-    //   <binding id="tab">::
-    //   <handler event="mousedown">
-    //
-    // TODO: Some side effect may occur especially for focusing.
-    if (this.state.area === kClickArea.backTab) {
-      aEvent.stopPropagation();
     }
   },
 
@@ -387,14 +402,14 @@ const TabBarClickEvent = {
 
     // Ignore a UI element to let its native action work.
     // TODO: The probable elements, <menu*> or <toolbar*>, are examined. We may
-    // need to test the others.
+    // need to test others.
     if (/^(?:menu|toolbar)/.test(originalTarget.localName)) {
       return null;
     }
 
     // On a tab.
     if (target.localName === 'tab') {
-      return target.selected ? kClickArea.foreTab : kClickArea.backTab;
+      return this.isForegroundTab ? kClickArea.foreTab : kClickArea.backTab;
     }
 
     // On the margin where has no tabs in the tab bar.
