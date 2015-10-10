@@ -196,7 +196,7 @@ const kNoiseList = [
 const kSiteList = [
   {
     name: 'Google Result',
-    include: '||google.tld/*q=',
+    include: '||google.tld/*?^q=',
     script(aDocument) {
       // Sanitize links.
       [...$S('.g a', aDocument)].forEach((link) => {
@@ -551,18 +551,19 @@ const kSiteList = [
  * URL filter handler.
  *
  * @return {hash}
- *   @key init {function}
+ *   init: {function}
  *
  * [URL filter rules]
  * @value {regexp|string}|{regexp[]|string[]}
- *   {regexp} Used as-is.
+ *   {regexp} Tested as it is.
  *   {string} Usually a partial match.
- *     @note Special symbols are available:
+ *     [Special symbols are converted regexp as follows:]
  *     - The leading '||' -> ^https?:\/\/[\w-.]*?
- *                        -> ^ (if URL scheme follows after.)
  *     - The leading '|'  -> ^https?:\/\/(?:www\d*\.)?
- *                        -> ^ (if URL scheme follows after.)
- *     - The wildcard '*' -> .+?
+ *     - URL scheme follows after '||' or '|' -> ^
+ *     - Wildcard (non-greedy, 1 or more chracters) '*'  -> .+?
+ *     - Wildcard (non-greedy, 0 or more chracters) '*?' -> .*?
+ *     - Path separator '^' -> [/?&#]
  *     - '.tld' will match any top level domain including public suffix.
  *       @see |getTLDURL|
  */
@@ -570,26 +571,26 @@ const URLFilter = (function() {
   /**
    * Create URL filter instance.
    *
-   * @param aList {array}
+   * @param list {array}
    * @return {hash}
-   *   @key test {function}
+   *   test: {function}
    */
-  function init(aList) {
-    let [mergedRegExp, mergedRegExpTLD] = makeMergedRegExp(aList);
+  function init(list) {
+    let [mergedRegExp, mergedRegExpTLD] = makeMergedRegExp(list);
 
     return {
       test: test.bind(null, [mergedRegExp, mergedRegExpTLD])
     };
   }
 
-  function makeMergedRegExp(aList) {
+  function makeMergedRegExp(list) {
     let regExpList = [], regExpTLDList = [];
 
-    if (!Array.isArray(aList)) {
-      aList = [aList];
+    if (!Array.isArray(list)) {
+      list = [list];
     }
 
-    aList.forEach((item) => {
+    list.forEach((item) => {
       if (item instanceof RegExp) {
         regExpList.push(item.source);
 
@@ -617,8 +618,10 @@ const URLFilter = (function() {
       });
 
       item = item.
-        replace(/[.?+\-|${}()\[\]\/\\]/g, '\\$&').
-        replace(/\*+/g, '.+?');
+        replace(/[*.?+\-|^${}()\[\]\/\\]/g, '\\$&').
+        replace(/\\\*\\\?/g, '.*?').
+        replace(/\\\*/g, '.+?').
+        replace(/\\\^/g, '[/?&#]');
 
       if (prefix) {
         item = prefix + item;
@@ -630,25 +633,25 @@ const URLFilter = (function() {
     return [regExpList, regExpTLDList].map(merge);
   }
 
-  function merge(aList) {
-    if (!aList.length) {
+  function merge(list) {
+    if (!list.length) {
       return null;
     }
 
-    if (aList.length < 2) {
-      return RegExp(aList[0]);
+    if (list.length < 2) {
+      return RegExp(list[0]);
     }
 
-    return RegExp(aList.map((data) => '(?:' + data + ')').join('|'));
+    return RegExp(list.map((data) => '(?:' + data + ')').join('|'));
   }
 
-  function test([mergedRegExp, mergedRegExpTLD], aURL) {
-    if (!/^https?:/.test(aURL)) {
+  function test([mergedRegExp, mergedRegExpTLD], url) {
+    if (!/^https?:/.test(url)) {
       return false;
     }
 
-    return (mergedRegExp && mergedRegExp.test(aURL)) ||
-           (mergedRegExpTLD && mergedRegExpTLD.test(getTLDURL(aURL)));
+    return (mergedRegExp && mergedRegExp.test(url)) ||
+           (mergedRegExpTLD && mergedRegExpTLD.test(getTLDURL(url)));
   }
 
   /**
@@ -658,9 +661,9 @@ const URLFilter = (function() {
    * '.aisai.aichi.jp', '.github.io')
    * @see https://wiki.mozilla.org/Public_Suffix_List
    */
-  function getTLDURL(aURL) {
+  function getTLDURL(url) {
     try {
-      let uri = Modules.BrowserUtils.makeURI(aURL);
+      let uri = Modules.BrowserUtils.makeURI(url);
       let tld = Services.eTLD.getPublicSuffix(uri);
 
       uri.host = uri.host.slice(0, -tld.length) + 'tld';
@@ -669,7 +672,7 @@ const URLFilter = (function() {
     }
     catch (ex) {}
 
-    return aURL;
+    return url;
   }
 
   return {
