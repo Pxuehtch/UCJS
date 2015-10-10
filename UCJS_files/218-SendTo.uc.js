@@ -7,7 +7,7 @@
 // @require Util.uc.js, UI.uc.js
 // @require [optional for preset] WebService.uc.js
 
-// @usage Creates items in the main context menu.
+// @usage Some menuitems are appended in the main context menu.
 
 
 (function(window) {
@@ -266,65 +266,78 @@ function onPopupShowing(aEvent) {
     return;
   }
 
-  let [sSep, eSep] = getSeparators();
+  let [startSeparator, endSeparator] = getSeparators();
 
   // Remove existing items.
-  for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
+  for (let item; (item = startSeparator.nextSibling) !== endSeparator; /**/) {
     contextMenu.removeChild(item);
   }
 
   let fragment = window.document.createDocumentFragment();
 
-  getAvailableItems().forEach((item) => {
-    fragment.appendChild(item);
-  });
+  getAvailableItems().then((items) => {
+    items.forEach((item) => {
+      fragment.appendChild(item);
+    });
 
-  contextMenu.insertBefore(fragment, eSep);
+    contextMenu.insertBefore(fragment, endSeparator);
+
+    // Update the visibility of separators because menuitems here are
+    // async-appended after the menu popup is shown.
+    contentAreaContextMenu.repaintSeparators({
+      startSeparator,
+      endSeparator
+    });
+  }).
+  catch(Cu.reportError);
 }
 
 function getAvailableItems() {
-  let items = [];
+  return Task.spawn(function*() {
+    // @see chrome://browser/content/nsContextMenu.js
+    let {onLink, onImage, onTextInput, linkURL, mediaURL} =
+      window.gContextMenu;
+    let pageURL = gBrowser.currentURI.spec;
+    let selection =
+      yield BrowserUtils.promiseSelectionTextAtContextMenuCursor();
+    let onPlainTextLink = selection && !onLink && linkURL;
 
-  // @see chrome://browser/content/nsContextMenu.js
-  let {onLink, onImage, onTextInput, linkURL, mediaURL} =
-    window.gContextMenu;
-  let pageURL = gBrowser.currentURI.spec;
-  let selection = BrowserUtils.getSelectionAtCursor();
-  let onPlainTextLink = selection && !onLink && linkURL;
+    let items = [];
 
-  kPreset.forEach((service) => {
-    let {disabled, types, extensions} = service;
+    kPreset.forEach((service) => {
+      let {disabled, types, extensions} = service;
 
-    if (disabled) {
-      return;
-    }
+      if (disabled) {
+        return;
+      }
 
-    if (!onLink && !onImage && !onTextInput && !selection &&
-        types.indexOf('PAGE') > -1 &&
-        /^https?:/.test(pageURL)) {
-      items.push(makeItem('PAGE', pageURL, service));
-    }
+      if (!onLink && !onImage && !onTextInput && !selection &&
+          types.indexOf('PAGE') > -1 &&
+          /^https?:/.test(pageURL)) {
+        items.push(makeItem('PAGE', pageURL, service));
+      }
 
-    if ((onLink || onPlainTextLink) &&
-        types.indexOf('LINK') > -1 &&
-        /^https?:/.test(linkURL) &&
-        (!extensions || testExtension(extensions, linkURL))) {
-      items.push(makeItem('LINK', linkURL, service));
-    }
+      if ((onLink || onPlainTextLink) &&
+          types.indexOf('LINK') > -1 &&
+          /^https?:/.test(linkURL) &&
+          (!extensions || testExtension(extensions, linkURL))) {
+        items.push(makeItem('LINK', linkURL, service));
+      }
 
-    if (onImage &&
-        types.indexOf('IMAGE') > -1 &&
-        /^https?:/.test(mediaURL)) {
-      items.push(makeItem('IMAGE', mediaURL, service));
-    }
+      if (onImage &&
+          types.indexOf('IMAGE') > -1 &&
+          /^https?:/.test(mediaURL)) {
+        items.push(makeItem('IMAGE', mediaURL, service));
+      }
 
-    if (selection &&
-        types.indexOf('TEXT') > -1) {
-      items.push(makeItem('TEXT', selection, service));
-    }
+      if (selection &&
+          types.indexOf('TEXT') > -1) {
+        items.push(makeItem('TEXT', selection, service));
+      }
+    });
+
+    return items;
   });
-
-  return items;
 }
 
 function makeItem(aType, aData, aService) {
@@ -368,10 +381,12 @@ function testExtension(aExtensions, aURL) {
   }
 
   /**
-   * RegExp pattern for file extensions.
+   * RegExp pattern for testing file extensions.
    *
-   * For http://www.example.com/path/file1.ext?key=file2.ext
-   * Tests 'file2.ext' and then 'file1.ext'.
+   * [Example]
+   * http://www.example.com/path/file.ext0?query1=file.ext1&query2=file.ext2
+   * is tested in order of: firstly 'file.ext2' then 'file.ext1' is ignored and
+   * 'file.ext0'.
    *
    * @note Must specify the global flag 'g'.
    */
@@ -407,7 +422,7 @@ function getSeparators() {
 }
 
 /**
- * Callback function for |ucjsUtil.createNode|.
+ * Attribute handler for |ucjsUtil.DOMUtils.$E|.
  */
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'open') {
