@@ -6,13 +6,12 @@
 
 // @require Util.uc.js, UI.uc.js
 
-// @usage Creates items in the URLbar context menu.
+// @usage Some menus and menuitems are added in the URLbar context menu.
 
-// @note The last computed data is cached and used until the context menu opens
-// in another URL for performance. So the data may become incorrect when the
-// document is modified in the same URL.
+// @note Reopen the context menu for the same document and the cached result
+// will be listed. Open it with the <Alt> key and the list will be rebuilt.
 
-// @note This script scans only the top content document, does not traverse
+// @note This script scans the top content document only and does not traverse
 // frames.
 
 // @note Some functions are exposed (window.ucjsNaviLink.XXX).
@@ -29,14 +28,18 @@ const ucjsNaviLink = (function(window) {
  */
 const {
   Modules,
+  ContentTask,
+  Listeners: {
+    $page,
+    $shutdown
+  },
   DOMUtils: {
     init$E,
-    $ID,
-    $S,
-    $X1
+    $ID
   },
   URLUtils,
   TabUtils,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -57,7 +60,7 @@ const {
  *
  * @key name {string}
  *   A display name in the UI item.
- * @key URL {RegExp}
+ * @key url {RegExp}
  *   A URL of a page that has the navigations.
  *
  * @key prev {XPath}
@@ -65,19 +68,19 @@ const {
  * @key next {XPath}
  *   A navigation element for the next page.
  *   @note Command actions:
- *   - Opens the URL for an element which has 'href' attribute.
- *   - Submits with the form for an <input> element.
+ *   - Opens the URL for the element which has 'href' attribute.
+ *   - Submits with the form for the <input> element.
  */
 const kPresetNavi = [
   {
     name: 'Google Search',
-    URL: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:#|search|webhp).+/,
+    url: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:#|search|webhp).+/,
     prev: 'id("nav")//td[1]/a | id("nf")/parent::a',
     next: 'id("nav")//td[last()]/a | id("nn")/parent::a'
   },
   {
     name: 'DuckDuckGo Search',
-    URL: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
+    url: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
     prev: './/input[@class="navbutton" and @value[contains(.,"Prev")]]',
     next: './/input[@class="navbutton" and @value[contains(.,"Next")]]'
   }
@@ -221,7 +224,7 @@ const kSiblingScanType = {
 /**
  * UI settings.
  *
- * @note %alias% is formatted by |MenuUI::F()|.
+ * @note %alias% is fixed by |MenuUI::$f()|.
  */
 const kUI = {
   upper: {
@@ -305,12 +308,12 @@ const MenuUI = (function() {
     });
   }
 
-  function createMenu(aContextMenu) {
-    setSeparators(aContextMenu);
+  function createMenu(contextMenu) {
+    setSeparators(contextMenu);
   }
 
-  function onClick(aEvent) {
-    let item = aEvent.target;
+  function onClick(event) {
+    let item = event.target;
 
     let data = item[kDataKey.commandData];
 
@@ -318,15 +321,15 @@ const MenuUI = (function() {
       return;
     }
 
-    if (aEvent.button === 1) {
+    if (event.button === 1) {
       // @see chrome://browser/content/utilityOverlay.js::closeMenus
       window.closeMenus(item);
-      onCommand(aEvent);
+      onCommand(event);
     }
   }
 
-  function onCommand(aEvent) {
-    let item = aEvent.target;
+  function onCommand(event) {
+    let item = event.target;
 
     let data = item[kDataKey.commandData];
 
@@ -339,7 +342,7 @@ const MenuUI = (function() {
      * <Ctrl> / <MiddleClick>: Open a new tab.
      * <Ctrl+Shift> / <Shift+MiddleClick>: Open a new tab in background.
      */
-    let {ctrlKey, shiftKey, button} = aEvent;
+    let {ctrlKey, shiftKey, button} = event;
     let [inTab, inBackground] = [ctrlKey || button === 1,  shiftKey];
 
     if (data.open) {
@@ -356,51 +359,65 @@ const MenuUI = (function() {
       });
     }
     else if (data.submit) {
-      let submit = (aDocument) => {
-        try {
-          aDocument.forms[data.submit.formIndex].submit();
-        }
-        catch (ex) {
-          warn(`Cannot submit form: ${data.submit.name}\n${ex.toString()}`);
-        }
-      };
+      let browser;
 
       if (inTab) {
         // TODO: A document sometimes cannot be duplicated with the same
         // content.
-        // @note I have tested only 'DuckDuckGo'.
         let newTab = gBrowser.duplicateTab(gBrowser.selectedTab);
+
+        browser = gBrowser.getBrowserForTab(newTab);
 
         if (!inBackground) {
           gBrowser.selectedTab = newTab;
         }
+      }
 
-        let browser = gBrowser.getBrowserForTab(newTab);
+      $page('pageready', {
+        browser,
+        listener: () => {
+          ContentTask.spawn({
+            browser,
+            params: {
+              formIndex: data.submit.formIndex
+            },
+            task: function*(params) {
+              let {formIndex} = params;
 
-        if (browser.contentDocument.readyState === 'complete') {
-          submit(browser.contentDocument);
-        }
-        else {
-          browser.addEventListener('load', function onLoad(event) {
-            if (event.target === browser.contentDocument) {
-              browser.removeEventListener('load', onLoad, true);
+              try {
+                let form  = content.document.forms[formIndex];
 
-              submit(browser.contentDocument);
+                if (form) {
+                  form.submit();
+
+                  return true;
+                }
+              }
+              catch(ex) {}
+
+              return false;
             }
-          }, true);
+          }).
+          then((submitted) => {
+            if (!submitted) {
+              warn(`Cannot submit form: ${data.submit.name}`);
+            }
+          }).
+          catch(Cu.reportError);
         }
-      }
-      else {
-        submit(gBrowser.contentDocument);
-      }
+      });
     }
   }
 
-  function onPopupShowing(aEvent) {
-    let contextMenu = aEvent.currentTarget;
+  function onPopupShowing(event) {
+    let contextMenu = event.currentTarget;
 
-    if (aEvent.target !== contextMenu) {
+    if (event.target !== contextMenu) {
       return;
+    }
+
+    if (event.altKey) {
+      DataCache.purgeCache();
     }
 
     Promise.all([
@@ -413,39 +430,65 @@ const MenuUI = (function() {
     catch(Cu.reportError);
   }
 
-  function onPopupHiding(aEvent) {
-    let contextMenu = aEvent.currentTarget;
+  function onPopupHiding(event) {
+    let contextMenu = event.currentTarget;
 
-    if (aEvent.target !== contextMenu) {
+    if (event.target !== contextMenu) {
       return;
     }
 
-    let [sSep, eSep] = getSeparators();
+    let [startSeparator, endSeparator] = getSeparators();
 
     // Remove existing items.
-    for (let item; (item = sSep.nextSibling) !== eSep; /**/) {
+    for (let item; (item = startSeparator.nextSibling) !== endSeparator;
+         /**/) {
       contextMenu.removeChild(item);
     }
+  }
+
+  function setSeparators(contextMenu) {
+    [
+      kUI.startSeparator,
+      kUI.endSeparator
+    ].
+    forEach((separatorName) => {
+      contextMenu.appendChild($E('menuseparator', {
+        id: separatorName.id
+      }));
+    });
+  }
+
+  function getSeparators() {
+    return [
+      $ID(kUI.startSeparator.id),
+      $ID(kUI.endSeparator.id)
+    ];
+  }
+
+  function isContextMenuOpen() {
+    let contextMenu = URLBarContextMenu.get();
+
+    return contextMenu.state === 'showing' || contextMenu.state === 'open';
   }
 
   /**
    * Create a promise object for building menu items asynchronously.
    */
-  function createPromiseBuild(aPlaceholder, aBuilder) {
+  function createPromiseBuild(placeholder, builder) {
     let contextMenu = URLBarContextMenu.get();
-    let [, eSep] = getSeparators();
+    let [, endSeparator] = getSeparators();
 
-    contextMenu.insertBefore(aPlaceholder, eSep);
+    contextMenu.insertBefore(placeholder, endSeparator);
 
-    return new Promise(() => {
-      if (contextMenu.state !== 'showing' && contextMenu.state !== 'open') {
+    return Task.spawn(function*() {
+      let item = yield builder();
+
+      if (!isContextMenuOpen()) {
         return;
       }
 
-      let item = aBuilder();
-
       if (item) {
-        contextMenu.replaceChild(item, aPlaceholder);
+        contextMenu.replaceChild(item, placeholder);
       }
     });
   }
@@ -464,131 +507,134 @@ const MenuUI = (function() {
   }
 
   function buildUpperNavi() {
-    let URLList = UpperNavi.getList();
+    return Task.spawn(function*() {
+      let upperURLList = yield UpperNavi.promiseUpperURLList();
 
-    if (!URLList) {
-      return null;
-    }
+      if (!upperURLList) {
+        return null;
+      }
 
-    let popup = $E('menupopup');
+      let upperNaviPopup = $E('menupopup');
 
-    URLList.forEach((URL) => {
-      popup.appendChild($E('menuitem', {
-        crop: 'start',
-        label: URL,
-        [$a('open')]: URL
-      }));
+      upperURLList.forEach((url) => {
+        upperNaviPopup.appendChild($E('menuitem', {
+          crop: 'start',
+          label: url,
+          [$a('open')]: url
+        }));
+      });
+
+      let upperNaviMenu = $E('menu', {
+        id: kUI.upper.id,
+        label: kUI.upper.label
+      });
+
+      upperNaviMenu.appendChild(upperNaviPopup);
+
+      return upperNaviMenu;
     });
-
-    let menu = $E('menu', {
-      id: kUI.upper.id,
-      label: kUI.upper.label
-    });
-
-    menu.appendChild(popup);
-
-    return menu;
   }
 
   /**
    * SiblingNavi builder.
    */
-  function promiseSiblingNavi(aDirection) {
+  function promiseSiblingNavi(direction) {
     let placeholder = $E('menuitem', {
-      id: kUI[aDirection].id,
+      id: kUI[direction].id,
       hidden: true
     });
 
-    return createPromiseBuild(placeholder, () => buildSiblingNavi(aDirection));
+    return createPromiseBuild(placeholder, () => buildSiblingNavi(direction));
   }
 
-  function buildSiblingNavi(aDirection) {
-    let result = SiblingNavi.getResult(aDirection);
+  function buildSiblingNavi(direction) {
+    return Task.spawn(function*() {
+      let siblingData = yield SiblingNavi.promiseSiblingData(direction);
 
-    if (!result) {
-      return null;
-    }
-
-    let {list, scanType} = result;
-
-    let node;
-
-    if (list.length === 1) {
-      let data = list[0];
-      let tooltiptext, command;
-
-      if (data.URL) {
-        tooltiptext = data.URL;
-        command = {
-          key: 'open',
-          value: data.URL
-        };
+      if (!siblingData) {
+        return null;
       }
-      else if (data.formIndex) {
-        tooltiptext = kUI.items.presetSubmitMode;
-        command = {
-          key: 'submit',
-          value: {
-            name: data.name,
-            formIndex: data.formIndex
-          }
-        };
+
+      let {scanType, dataItems} = siblingData;
+
+      let siblingNaviMenuElement;
+
+      if (dataItems.length === 1) {
+        let data = dataItems[0];
+
+        let tooltiptext, command;
+
+        if (data.url) {
+          tooltiptext = data.url;
+          command = {
+            key: 'open',
+            value: data.url
+          };
+        }
+        else if (data.formIndex) {
+          tooltiptext = kUI.items.presetSubmitMode;
+          command = {
+            key: 'submit',
+            value: {
+              name: data.name,
+              formIndex: data.formIndex
+            }
+          };
+        }
+        else {
+          tooltiptext = kUI.items.presetNoNavigation;
+        }
+
+        tooltiptext = formatTooltip(
+          formatText(data, {
+            siblingScanType: scanType
+          }),
+          tooltiptext
+        );
+
+        siblingNaviMenuElement = $E('menuitem', {
+          tooltiptext
+        });
+
+        if (command) {
+          $E(siblingNaviMenuElement, {
+            [$a(command.key)]: command.value
+          });
+        }
+        else {
+          $E(siblingNaviMenuElement, {
+            disabled: true
+          });
+        }
       }
       else {
-        tooltiptext = kUI.items.presetNoNavigation;
+        let siblingNaviPopup = $E('menupopup');
+
+        dataItems.forEach((data) => {
+          let text = formatText(data, {
+            siblingScanType: scanType
+          });
+
+          siblingNaviPopup.appendChild($E('menuitem', {
+            label: text,
+            tooltiptext: formatTooltip(text, data.url),
+            [$a('open')]: data.url
+          }));
+        });
+
+        siblingNaviMenuElement = $E('menu');
+        siblingNaviMenuElement.appendChild(siblingNaviPopup);
       }
 
-      tooltiptext = formatTooltip(
-        formatText(data, {
-          siblingScanType: scanType
-        }),
-        tooltiptext
-      );
-
-      node = $E('menuitem', {
-        tooltiptext
+      $E(siblingNaviMenuElement, {
+        id: kUI[direction].id,
+        label: $f(kUI[direction].label, {
+          scanType: kSiblingScanType[scanType]
+        })
       });
 
-      if (command) {
-        $E(node, {
-          [$a(command.key)]: command.value
-        });
-      }
-      else {
-        $E(node, {
-          disabled: true
-        });
-      }
-    }
-    else {
-      let popup = $E('menupopup');
-
-      list.forEach((data) => {
-        let text = formatText(data, {
-          siblingScanType: scanType
-        });
-
-        let URL = data.URL;
-
-        popup.appendChild($E('menuitem', {
-          label: text,
-          tooltiptext: formatTooltip(text, URL),
-          [$a('open')]: URL
-        }));
-      });
-
-      node = $E('menu');
-      node.appendChild(popup);
-    }
-
-    $E(node, {
-      id: kUI[aDirection].id,
-      label: F(kUI[aDirection].label, {
-        scanType: kSiblingScanType[scanType]
-      })
+      return siblingNaviMenuElement;
     });
-
-    return node;
   }
 
   /**
@@ -605,88 +651,88 @@ const MenuUI = (function() {
   }
 
   function buildNaviLink() {
-    let naviList = NaviLink.getNaviList();
-    let subNaviList = NaviLink.getSubNaviList();;
+    return Task.spawn(function*() {
+      let naviLinkList = yield NaviLink.promiseNaviLinkList();
+      let subNaviLinkList = yield NaviLink.promiseSubNaviLinkList();
 
-    if (!naviList && !subNaviList) {
-      return null;
-    }
-
-    let popup = $E('menupopup');
-
-    [naviList, subNaviList].forEach((result) => {
-      if (!result) {
-        return;
+      if (!naviLinkList && !subNaviLinkList) {
+        return null;
       }
 
-      if (popup.hasChildNodes()) {
-        popup.appendChild($E('menuseparator'));
-      }
+      let naviLinkPopup = $E('menupopup');
 
-      result.forEach(({type, list}) => {
-        let child;
-        let tooltiptext;
-
-        if (list.length === 1) {
-          let data = list[0];
-          let URL = data.URL;
-
-          child = $E('menuitem', {
-            [$a('open')]: URL
-          });
-
-          tooltiptext = URL;
+      [naviLinkList, subNaviLinkList].forEach((linkList) => {
+        if (!linkList) {
+          return;
         }
-        else {
-          let childPopup = $E('menupopup');
 
-          let maxNumMenuItems = kUI.items.maxNumMenuItems;
-          let typeItems = list.slice(0, maxNumMenuItems);
+        if (naviLinkPopup.hasChildNodes()) {
+          naviLinkPopup.appendChild($E('menuseparator'));
+        }
 
-          typeItems.forEach((data) => {
-            let [text, URL] = [formatText(data), data.URL];
+        linkList.forEach(({type, dataItems}) => {
+          let typeMenuElement;
+          let tooltiptext;
 
-            childPopup.appendChild($E('menuitem', {
-              crop: 'center',
-              label: text,
-              tooltiptext: formatTooltip(text, URL),
-              [$a('open')]: URL
-            }));
-          });
+          if (dataItems.length === 1) {
+            let data = dataItems[0];
 
-          child = $E('menu');
-          child.appendChild(childPopup);
+            typeMenuElement = $E('menuitem', {
+              [$a('open')]: data.url
+            });
 
-
-          if (list.length > maxNumMenuItems) {
-            tooltiptext = kUI.items.tooManyMenuItems;
+            tooltiptext = data.url;
           }
-        }
+          else {
+            let typePopup = $E('menupopup');
 
-        let label = F(kUI.items.type, {
-          title: getLabelForType(kNaviLinkType, type),
-          count: formatMenuItemsCount(list)
+            let maxNumMenuItems = kUI.items.maxNumMenuItems;
+            let typeItems = dataItems.slice(0, maxNumMenuItems);
+
+            typeItems.forEach((data) => {
+              let text = formatText(data);
+
+              typePopup.appendChild($E('menuitem', {
+                crop: 'center',
+                label: text,
+                tooltiptext: formatTooltip(text, data.url),
+                [$a('open')]: data.url
+              }));
+            });
+
+            typeMenuElement = $E('menu');
+            typeMenuElement.appendChild(typePopup);
+
+            if (dataItems.length > maxNumMenuItems) {
+              tooltiptext = kUI.items.tooManyMenuItems;
+            }
+          }
+
+          let label = $f(kUI.items.type, {
+            title: getLabelForType(kNaviLinkType, type),
+            count: formatMenuItemsCount(dataItems)
+          });
+
+          if (tooltiptext) {
+            tooltiptext = formatTooltip(label, tooltiptext);
+          }
+
+          naviLinkPopup.appendChild($E(typeMenuElement, {
+            label,
+            tooltiptext
+          }));
         });
-
-        if (tooltiptext) {
-          tooltiptext = formatTooltip(label, tooltiptext);
-        }
-
-        popup.appendChild($E(child, {
-          label,
-          tooltiptext
-        }));
       });
+
+      let naviLinkMenu = $E('menu', {
+        id: kUI.naviLink.id,
+        label: kUI.naviLink.label
+      });
+
+      naviLinkMenu.appendChild(naviLinkPopup);
+
+      return naviLinkMenu;
     });
-
-    let menu = $E('menu', {
-      id: kUI.naviLink.id,
-      label: kUI.naviLink.label
-    });
-
-    menu.appendChild(popup);
-
-    return menu;
   }
 
   /**
@@ -703,117 +749,119 @@ const MenuUI = (function() {
   }
 
   function buildPageInfo() {
-    let result = NaviLink.getInfoList();
+    return Task.spawn(function*() {
+      let pageInfoList = yield NaviLink.promisePageInfoList();
 
-    if (!result) {
-      return null;
-    }
+      if (!pageInfoList) {
+        return null;
+      }
 
-    let popup = $E('menupopup');
+      let pageInfoPopup = $E('menupopup');
 
-    result.forEach(({type, list}) => {
-      let childPopup = $E('menupopup');
+      pageInfoList.forEach(({type, dataItems}) => {
+        let pageInfoTypePopup = $E('menupopup');
 
-      let maxNumMenuItems = kUI.items.maxNumMenuItems;
-      let metaInfo = type === 'meta';
+        let maxNumMenuItems = kUI.items.maxNumMenuItems;
+        let metaInfo = type === 'meta';
 
-      if (metaInfo) {
-        list.sort((a, b) => {
-          return a.name.localeCompare(b.name) ||
-                 a.content.localeCompare(b.content);
-        });
+        if (metaInfo) {
+          dataItems.sort((a, b) => {
+            return a.name.localeCompare(b.name) ||
+                   a.content.localeCompare(b.content);
+          });
 
-        let metaGroupList = {};
-        let metaAloneItems = [];
+          let metaGroupList = {};
+          let metaAloneItems = [];
 
-        list.forEach((data) => {
-          let metaGroupName = (/^(.+?):.+/.exec(data.name) || [])[1];
+          dataItems.forEach((data) => {
+            let metaGroupName = (/^(.+?):.+/.exec(data.name) || [])[1];
 
-          if (metaGroupName) {
-            if (!(metaGroupName in metaGroupList)) {
-              metaGroupList[metaGroupName] = [];
+            if (metaGroupName) {
+              if (!(metaGroupName in metaGroupList)) {
+                metaGroupList[metaGroupName] = [];
+              }
+
+              metaGroupList[metaGroupName].push(data);
             }
-
-            metaGroupList[metaGroupName].push(data);
-          }
-          else {
-            metaAloneItems.push(data);
-          }
-        });
-
-        metaAloneItems.forEach((data) => {
-          childPopup.appendChild(createMetaMenuItem(data));
-        });
-
-        for (let metaGroupName in metaGroupList) {
-          let metaGroupPopup = $E('menupopup');
-
-          let metaGroupItems = metaGroupList[metaGroupName];
-
-          metaGroupItems.forEach((data) => {
-            metaGroupPopup.appendChild(createMetaMenuItem(data));
+            else {
+              metaAloneItems.push(data);
+            }
           });
 
-          let metaGroupMenu = $E('menu', {
-            label: $f(kUI.items.type, {
-              title: metaGroupName,
-              count: formatMenuItemsCount(metaGroupItems, {
-                noLimit: true
+          metaAloneItems.forEach((data) => {
+            pageInfoTypePopup.appendChild(createMetaMenuItem(data));
+          });
+
+          for (let metaGroupName in metaGroupList) {
+            let metaGroupPopup = $E('menupopup');
+
+            let metaGroupItems = metaGroupList[metaGroupName];
+
+            metaGroupItems.forEach((data) => {
+              metaGroupPopup.appendChild(createMetaMenuItem(data));
+            });
+
+            let metaGroupMenu = $E('menu', {
+              label: $f(kUI.items.type, {
+                title: metaGroupName,
+                count: formatMenuItemsCount(metaGroupItems, {
+                  noLimit: true
+                })
               })
-            })
-          });
+            });
 
-          metaGroupMenu.appendChild(metaGroupPopup);
-          childPopup.appendChild(metaGroupMenu);
+            metaGroupMenu.appendChild(metaGroupPopup);
+            pageInfoTypePopup.appendChild(metaGroupMenu);
+          }
         }
-      }
-      else {
-        let typeItems = list.slice(0, maxNumMenuItems);
+        else {
+          let typeItems = dataItems.slice(0, maxNumMenuItems);
 
-        typeItems.forEach((data) => {
-          let [text, URL] = [formatText(data), data.URL];
+          typeItems.forEach((data) => {
+            let text = formatText(data);
 
-          childPopup.appendChild($E('menuitem', {
-            crop: 'center',
-            label: text,
-            tooltiptext: formatTooltip(text, URL),
-            [$a('open')]: URL
-          }));
+            pageInfoTypePopup.appendChild($E('menuitem', {
+              crop: 'center',
+              label: text,
+              tooltiptext: formatTooltip(text, data.url),
+              [$a('open')]: data.url
+            }));
+          });
+        }
+
+        let pageInfoTypeMenu = $E('menu');
+
+        pageInfoTypeMenu.appendChild(pageInfoTypePopup);
+
+        let label = $f(kUI.items.type, {
+          title: getLabelForType(kPageInfoType, type),
+          count: formatMenuItemsCount(dataItems, {
+            noLimit: metaInfo
+          })
         });
-      }
 
-      let child = $E('menu');
+        let tooltiptext;
 
-      child.appendChild(childPopup);
+        if (!metaInfo && dataItems.length > maxNumMenuItems) {
+          tooltiptext = kUI.items.tooManyMenuItems;
+          tooltiptext = formatTooltip(label, tooltiptext);
+        }
 
-      let label = $f(kUI.items.type, {
-        title: getLabelForType(kPageInfoType, type),
-        count: formatMenuItemsCount(list, {
-          noLimit: metaInfo
-        })
+        pageInfoPopup.appendChild($E(pageInfoTypeMenu, {
+          label,
+          tooltiptext
+        }));
       });
 
-      let tooltiptext;
+      let pageInfoMenu = $E('menu', {
+        id: kUI.pageInfo.id,
+        label: kUI.pageInfo.label
+      });
 
-      if (!metaInfo && list.length > maxNumMenuItems) {
-        tooltiptext = kUI.items.tooManyMenuItems;
-        tooltiptext = formatTooltip(label, tooltiptext);
-      }
+      pageInfoMenu.appendChild(pageInfoPopup);
 
-      popup.appendChild($E(child, {
-        label: ,
-        tooltiptext
-      }));
+      return pageInfoMenu;
     });
-
-    let menu = $E('menu', {
-      id: kUI.pageInfo.id,
-      label: kUI.pageInfo.label
-    });
-
-    menu.appendChild(popup);
-
-    return menu;
   }
 
   function createMetaMenuItem(data) {
@@ -832,116 +880,118 @@ const MenuUI = (function() {
   /**
    * String format functions.
    */
-  function formatText(aData, aOption = {}) {
-    if ('siblingScanType' in aOption) {
-      switch (aOption.siblingScanType) {
-        case 'preset':
-          return F(kUI.items.preset, {
-            name: aData.name,
-            title: aData.title
-          });
+  function formatText(dataItem, options = {}) {
+    let {siblingScanType, meta} = options;
 
-        case 'official':
-          return F(kUI.items.official, {
-            title: aData.title
+    if (siblingScanType) {
+      switch (siblingScanType) {
+        case 'preset': {
+          return $f(kUI.items.preset, {
+            name: dataItem.name,
+            title: dataItem.title
           });
+        }
 
-        case 'searching':
-          return F(kUI.items.searching, {
-            title: aData.title,
-            score: formatScore(aData.score)
+        case 'official': {
+          return $f(kUI.items.official, {
+            title: dataItem.title
           });
+        }
 
-        case 'numbering':
-          return F(kUI.items.numbering, {
-            here: aData.here,
-            there: aData.there
+        case 'searching': {
+          return $f(kUI.items.searching, {
+            title: dataItem.title,
+            score: formatScore(dataItem.score)
           });
+        }
+
+        case 'numbering': {
+          return $f(kUI.items.numbering, {
+            here: dataItem.here,
+            there: dataItem.there
+          });
+        }
+
+        default:
+          throw Error(`Unknown siblingScanType: ${siblingScanType}`);
       }
-
-      // @note Unreachable here usually.
-      return null;
     }
 
-    if (aOption.meta) {
-      return F(kUI.items.meta, {
-        name: aData.name,
-        content: aData.content
+    if (meta) {
+      return $f(kUI.items.meta, {
+        name: dataItem.name,
+        content: dataItem.content
       });
     }
 
-    return F(kUI.items.data, {
-      title: aData.title,
-      attributes: formatAttributes(aData.attributes) || null
+    return $f(kUI.items.data, {
+      title: dataItem.title,
+      attributes: formatAttributes(dataItem.attributes) || null
     });
   }
 
   /**
    * Attribute formatter.
    *
-   * @param aAttributes {array}
-   *   [['name', 'value'], ..., ['rel', ['value', 'value', ...]]]
+   * @param attributes {array[]}
+   *   [
+   *     ['attr-name', 'attr-value'], ...,
+   *     ['rel', ['rel-value1', 'rel-value2', ...]]
+   *   ]
    *   @see |NaviLink| for detail.
    * @return {string}
    */
-  function formatAttributes(aAttributes) {
-    const kAttributeFormat = '%name%: %value%',
-          kValuesDelimiter = ',',
-          kAttributesDelimiter = ' ';
+  function formatAttributes(attributes) {
+    const kAttributeFormat = '%name%: %value%';
+    const kValuesDelimiter = ',';
+    const kAttributesDelimiter = ' ';
 
-    if (!aAttributes || !aAttributes.length) {
+    if (!attributes || !attributes.length) {
       return '';
     }
 
-    let attributes = [];
+    let formattedAttributes = [];
 
-    aAttributes.forEach(([name, value]) => {
+    attributes.forEach(([name, value]) => {
       if (Array.isArray(value)) {
         value = value.join(kValuesDelimiter);
       }
 
       if (value) {
-        attributes.push(F(kAttributeFormat, {
-          name,
-          value
-        }));
+        formattedAttributes.push($f(kAttributeFormat, {name, value}));
       }
     });
 
-    return attributes.join(kAttributesDelimiter);
+    return formattedAttributes.join(kAttributesDelimiter);
   }
 
   /**
    * Tooltip text formatter.
    *
-   * TODO: Fix broken tooltip text. Sometimes text wrapping breaks and the
+   * TODO: Fix broken tooltip text. Text wrapping sometimes breaks and the
    * latter text is cut off. It seems to happen when a long text has '-' and
-   * '\n'. Other characters may break it.
+   * '\n'.
    */
-  function formatTooltip(aText, aURL) {
-    if (aText && aText !== getLeaf(aURL)) {
-      return aText + '\n' + aURL;
+  function formatTooltip(text, subText) {
+    if (text && text !== getLeaf(subText)) {
+      return text + '\n' + subText;
     }
 
-    return aURL;
+    return subText;
   }
 
-  function getLabelForType(aTypeList, aType) {
-    function capitalize(aText) {
-      return aText.substr(0, 1).toUpperCase() + aText.substr(1);
-    }
-
-    for (let i = 0, l = aTypeList.length; i < l; i++) {
-      let {type, label} = aTypeList[i];
+  function getLabelForType(typeList, testType) {
+    for (let i = 0, l = typeList.length; i < l; i++) {
+      let {type, label} = typeList[i];
 
       type = type.toLowerCase();
 
-      if (type === aType) {
+      if (type === testType) {
         return label || capitalize(type);
       }
     }
 
-    return aType;
+    return testType;
   }
 
   /**
@@ -965,93 +1015,72 @@ const MenuUI = (function() {
   }
 
   /**
-   * Alias formatter.
+   * The formatter of the score of searching link navigation.
+   */
+  function formatScore(num) {
+    return num.toFixed(3);
+  }
+
+  /**
+   * Alias fixup formatter.
    *
-   * @param aFormat {string|string[]}
-   *   The string including aliases like %foo%.
-   * @param aReplacement {hash}
-   *   The key-value items corresponding to the aliases of |aFormat|.
+   * @param formats {string|string[]}
+   *   The string(s) including aliases like %foo%.
+   * @param replacements {hash}
+   *   The key-value items corresponding to the aliases of |formats|.
    * @return {string}
    *
    * [Example for aliases]
-   * aFormat: 'The number of %foo% is %bar%!'
-   * aReplacement: {foo: 'Foo', bar: 3}
+   * formats: 'The number of %foo% is %bar%!'
+   * replacements: {foo: 'Foo', bar: 3}
    * Returns 'The number of Foo is 3!'
    *
    * @note
-   * 1.If |aFormat| doesn't have all alias keys of |aReplacement|, |aFormat|
-   * string itself returns without replacing.
-   * 2.When an array of strings is passed to |aFormat|, the string that has all
-   * alias keys of |aReplacement| is used for replacing. If no matches, the
-   * first string returns unreplaced.
+   * - If |formats| doesn't have all alias keys of |replacements|, |formats|
+   *   string itself returns without replacing.
+   * - When an array of strings is passed to |formats|, the string that has all
+   *   alias keys of |replacements| is used for replacing. If no matches, the
+   *   first string returns unreplaced.
    *
    * @see |kUI| for the format strings.
    */
-  function F(aFormat, aReplacement) {
-    // Filter items that the value is |null| or |undefined|.
-    let replacement = {};
+  function $f(formats, replacements) {
+    let aliasList = {};
 
-    for (let name in aReplacement) {
-      let value = aReplacement[name];
+    for (let name in replacements) {
+      let value = replacements[name];
 
+      // Pass through 0 or ''.
       if (value !== null && value !== undefined) {
-        replacement['%' + name + '%'] = value;
+        aliasList[`%${name}%`] = value;
       }
     }
 
-    if (!Array.isArray(aFormat)) {
-      aFormat = [aFormat];
+    if (!Array.isArray(formats)) {
+      formats = [formats];
     }
 
-    // Retreive the format that has all alias keys of replacement.
-    let format;
-    let names = Object.keys(replacement);
+    // Try to retreive the format that has all alias keys of replacements.
+    let validFormat;
+    let aliases = Object.keys(aliasList);
 
-    for (let i = 0, l = aFormat.length; i < l; i++) {
-      if (names.every((name) => aFormat[i].includes(name))) {
-        format = aFormat[i];
+    for (let i = 0, l = formats.length; i < l; i++) {
+      if (aliases.every((alias) => formats[i].includes(alias))) {
+        validFormat = formats[i];
+
         break;
       }
     }
 
-    if (!format) {
-      return aFormat[0];
+    if (!validFormat) {
+      return formats[0];
     }
 
-    for (let name in replacement) {
-      format = format.replace(name, replacement[name]);
+    for (let alias in aliasList) {
+      validFormat = validFormat.replace(alias, aliasList[alias]);
     }
 
-    return format;
-  }
-
-  /**
-   * Score formatter.
-   */
-  function formatScore(aScore) {
-    return aScore.toFixed(3);
-  }
-
-  /**
-   * Get/Set the menu separators.
-   */
-  function setSeparators(aContextMenu) {
-    [
-      kUI.startSeparator,
-      kUI.endSeparator
-    ].
-    forEach((aSeparatorName) => {
-      aContextMenu.appendChild($E('menuseparator', {
-        id: aSeparatorName.id
-      }));
-    });
-  }
-
-  function getSeparators() {
-    return [
-      $ID(kUI.startSeparator.id),
-      $ID(kUI.endSeparator.id)
-    ];
+    return validFormat;
   }
 
   /**
@@ -1063,119 +1092,265 @@ const MenuUI = (function() {
 })();
 
 /**
- * Handler of the user preset of the navigation links.
+ * Data cache handler.
+ *
+ * @return {hash}
+ *   create: {function}
+ *   purgeCache: {function}
  */
-const PresetNavi = (function() {
-  let mURL;
-  let mData;
+const DataCache = (function() {
+  const PageState = {
+    id: 0,
+    states: new Map(),
 
-  function init(aDirection) {
-    if (aDirection !== 'prev' && aDirection !== 'next') {
-      throw Error('aDirection should be "prev" or "next": ' + aDirection);
-    }
-
-    let URI = URIUtil.getCurrentURI();
-
-    if (!URI || !isHTMLDocument()) {
-      mURL = null;
-      mData = null;
-
-      return;
-    }
-
-    if (mURL !== URI.spec) {
-      mURL = URI.spec;
-      mData = {};
-    }
-
-    if (!(aDirection in mData)) {
-      mData[aDirection] = createData(aDirection, URI);
-    }
-  }
-
-  /**
-   * Gets the preset data for the previous or next page.
-   *
-   * @param aDirection {string}
-   *   'prev' or 'next'.
-   * @return {hash|null}
-   *   name:
-   *   title:
-   *   URL or formIndex:
-   */
-  function getData(aDirection) {
-    init(aDirection);
-
-    if (!mData) {
-      return null;
-    }
-
-    return mData[aDirection];
-  }
-
-  function createData(aDirection, aURI) {
-    let item;
-
-    let URL = aURI.spec;
-
-    for (let i = 0; i < kPresetNavi.length; i++) {
-      if (kPresetNavi[i].URL.test(URL)) {
-        item = kPresetNavi[i];
-        break;
-      }
-    }
-
-    if (!item) {
-      return null;
-    }
-
-    let contentDocument = gBrowser.contentDocument;
-
-    let node = $X1(item[aDirection], contentDocument);
-
-    if (node && node.href) {
-      return {
-        // <data> for a preset.
-        name: item.name,
-        title: trim(node.title) || trim(node.textContent) || '',
-        URL: node.href
+    create() {
+      let state = {
+        changed: false
       };
+
+      this.states.set(this.id++, state);
+
+      return state;
+    },
+
+    change() {
+      this.states.forEach((state) => {
+        state.changed = true;
+      });
     }
+  };
 
-    if (node instanceof HTMLInputElement && node.form && node.value) {
-      let index = 0;
+  const TabProgressListener = {
+    init() {
+      gBrowser.addProgressListener(TabProgressListener);
 
-      for (let form of contentDocument.forms) {
-        if (node.form === form) {
-          break;
+      $shutdown(() => {
+        gBrowser.removeProgressListener(TabProgressListener);
+      });
+    },
+
+    onLocationChange(webProgress, request, uri) {
+      // TODO: Avoid double processing when |onLocationChange| follows.
+      // TODO: Avoid processing when the tab is only selected.
+      if (webProgress.isTopLevel) {
+        PageState.change();
+      }
+    },
+
+    onStateChange(webProgress, request, flags) {
+      if (webProgress.isTopLevel &&
+          flags & Ci.nsIWebProgressListener.STATE_STOP &&
+          flags & Ci.nsIWebProgressListener.STATE_IS_WINDOW) {
+        PageState.change();
+      }
+    },
+
+    onProgressChange() {},
+    onSecurityChange() {},
+    onStatusChange() {}
+  };
+
+  // Initialize.
+  init();
+
+  function init() {
+    TabProgressListener.init();
+  }
+
+  function purgeCache() {
+    PageState.change();
+  }
+
+  function create(promiseData) {
+    let vars = {
+      promise: null,
+      sequence: Promise.resolve(),
+      pageState: PageState.create()
+    };
+
+    vars.promiseData = promiseData;
+
+    function update(...params) {
+      vars.sequence = vars.sequence.then(() => {
+        let uri = URIUtil.getCurrentURI();
+        let doUpdate = vars.pageState.changed;
+
+        if (doUpdate) {
+          vars.pageState.changed = false;
         }
 
-        index++;
-      }
+        let state = {uri, doUpdate};
 
-      return {
-        // <data> for a submit preset.
-        name: item.name,
-        title: node.value,
-        formIndex: index
-      };
+        return vars.promiseData(state, params);
+      });
+
+      return vars.sequence;
     }
 
-    // A preset element not found.
-    log([
-      'A navigation element is not found.',
-      `Preset: ${item.name}`,
-      `${aDirection}: '${item[aDirection]}'`
-    ]);
-
-    return null;
+    return {
+      update
+    };
   }
 
   /**
    * Expose
    */
   return {
-    getData
+    create,
+    purgeCache
+  };
+})();
+
+/**
+ * Handler of the user preset for the navigation links.
+ */
+const PresetNavi = (function() {
+  const Cache = (function() {
+    let dataCache = DataCache.create(promiseData);
+
+    let data = {
+      presetData: null
+    };
+
+    function promiseData(state, params) {
+      let [direction] = params;
+
+      return Task.spawn(function*() {
+        if (!state.uri || !BrowserUtils.isHTMLDocument()) {
+          data.presetData = null;
+
+          return data;
+        }
+
+        if (state.doUpdate) {
+          data.presetData = {};
+        }
+
+        if (!(direction in data.presetData)) {
+          data.presetData[direction] =
+            yield createPresetData(direction, state.uri);
+        }
+
+        return data;
+      });
+    }
+
+    return {
+      update: dataCache.update
+    };
+  })();
+
+  /**
+   * Promise for the preset data for the previous or next page.
+   *
+   * @param direction {string} 'prev' or 'next'.
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the preset data.
+   *     @param result {hash|null}
+   *
+   * [Preset data hash format]
+   *   <Link preset>
+   *   name: {string}
+   *   title: {string}
+   *   url: {string}
+   *   <Submit preset>
+   *   name: {string}
+   *   title: {string}
+   *   formIndex: {number}
+   */
+  function promisePresetData(direction) {
+    return Cache.update(direction).then(({presetData}) => {
+      if (!presetData) {
+        return null;
+      }
+
+      return presetData[direction];
+    });
+  }
+
+  function createPresetData(direction, uri) {
+    return Task.spawn(function*() {
+      let item;
+
+      let url = uri.spec;
+
+      for (let i = 0, l = kPresetNavi.length; i < l; i++) {
+        if (kPresetNavi[i].url.test(url)) {
+          item = kPresetNavi[i];
+
+          break;
+        }
+      }
+
+      if (!item) {
+        return null;
+      }
+
+      return ContentTask.spawn({
+        params: {
+          xpath: item[direction]
+        },
+        task: function*(params) {
+          '${ContentTask.ContentScripts.DOMUtils}';
+
+          let {xpath} = params;
+
+          let node = DOMUtils.$X1(xpath);
+
+          if (node && node.href) {
+            return {
+              title: node.title || node.textContent,
+              url: node.href
+            };
+          }
+
+          if (node instanceof content.HTMLInputElement &&
+              node.form && node.value) {
+            let formIndex = 0;
+
+            for (let form of content.document.forms) {
+              if (node.form === form) {
+                break;
+              }
+
+              formIndex++;
+            }
+
+            return {
+              title: node.value,
+              formIndex
+            };
+          }
+
+          return null;
+        }
+      }).
+      then((result) => {
+        if (!result) {
+          // The preset page matches but the navigation element is not found.
+          return {
+            name: item.name,
+            title : capitalize(direction)
+          };
+        }
+
+        return {
+          // [Preset data format for preset]
+          name: item.name,
+          title : trim(result.title) || capitalize(direction),
+          url: result.url,
+          formIndex: result.formIndex
+        };
+      });
+    });
+  }
+
+  /**
+   * Expose
+   */
+  return {
+    promisePresetData
   };
 })();
 
@@ -1185,38 +1360,6 @@ const PresetNavi = (function() {
  * @note [additional] Makes a list of the page information.
  */
 const NaviLink = (function() {
-  /**
-   * Helper handler of RSS feed.
-   */
-  const FeedUtil = (function() {
-    const kFeedType = {
-      'application/rss+xml': 'RSS',
-      'application/atom+xml': 'ATOM',
-      'text/xml': 'XML',
-      'application/xml': 'XML',
-      'application/rdf+xml': 'XML'
-    };
-
-    // @see resource:///modules/Feeds.jsm
-    const {Feeds} = Modules.require('/modules/Feeds.jsm');
-
-    function getFeedType(aLink, aIsFeed) {
-      let principal = gBrowser.contentDocument.nodePrincipal;
-
-      let feedType = Feeds.isValidFeed(aLink, principal, aIsFeed);
-
-      if (!feedType) {
-        return null;
-      }
-
-      return kFeedType[feedType] || 'RSS';
-    }
-
-    return {
-      getFeedType
-    };
-  })();
-
   /**
    * Handler of the types of link navigations.
    *
@@ -1236,8 +1379,8 @@ const NaviLink = (function() {
       }
     });
 
-    function registered(aType) {
-      let type = naviLinkTypeConversion[aType] || aType;
+    function registered(type) {
+      type = naviLinkTypeConversion[type] || type;
 
       if (type in naviLinkType) {
         return type;
@@ -1246,8 +1389,8 @@ const NaviLink = (function() {
       return '';
     }
 
-    function unregistered(aType) {
-      let type = naviLinkTypeConversion[aType] || aType;
+    function unregistered(type) {
+      type = naviLinkTypeConversion[type] || type;
 
       if (!(type in naviLinkType)) {
         return type;
@@ -1262,163 +1405,245 @@ const NaviLink = (function() {
     };
   })();
 
-  let mURL;
-  let mNaviList, mSubNaviList, mInfoList;
+  const Cache = (function() {
+    let dataCache = DataCache.create(promiseData);
 
-  function init() {
-    let URI = URIUtil.getCurrentURI();
+    let data = {
+      naviLinkList: null,
+      subNaviLinkList: null,
+      pageInfoList: null
+    };
 
-    if (!URI || !isHTMLDocument()) {
-      mURL = null;
-      mNaviList = null;
-      mSubNaviList = null;
-      mInfoList = null;
+    function promiseData(state) {
+      return Task.spawn(function*() {
+        if (!state.uri || !BrowserUtils.isHTMLDocument()) {
+          data.naviLinkList = null;
+          data.subNaviLinkList = null;
+          data.pageInfoList = null;
 
-      return;
+          return data;
+        }
+
+        if (state.doUpdate) {
+          [
+            data.naviLinkList,
+            data.subNaviLinkList,
+            data.pageInfoList
+          ] = yield createLists();;
+        }
+
+        return data;
+      });
     }
 
-    if (mURL !== URI.spec) {
-      mURL = URI.spec;
-      [mNaviList, mSubNaviList, mInfoList] = createLists();
-    }
+    return {
+      update: dataCache.update
+    };
+  })();
+
+  /**
+   * Promise for each list.
+   *
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the array of list item.
+   *     @param result {hash[]|null}
+   *
+   * [List item hash format]
+   *   type: |kNaviLinkType.type| or |kPageInfoType.type|.
+   *   dataItems: {hash[]}
+   *     @see |promiseFirstDataForType|
+   */
+  function promiseNaviLinkList() {
+    return Cache.update().then((data) => data.naviLinkList);
+  }
+
+  function promiseSubNaviLinkList() {
+    return Cache.update().then((data) => data.subNaviLinkList);
+  }
+
+  function promisePageInfoList() {
+    return Cache.update().then((data) => data.pageInfoList);
   }
 
   /**
-   * Retrieves the first data of the list for the type.
+   * Promise for the first data item of the list for the given type.
    *
-   * @param aType {string}
-   *   |kNaviLinkType.type| or |kPageInfoType.type|.
-   * @return {hash|null}
-   *   title:
-   *   attributes:
-   *   URL:
+   * @param type {string} |kNaviLinkType.type| or |kPageInfoType.type|
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the data item.
+   *     @param result {hash}
+   *   <link>/<script>
+   *   title: {string}
+   *   attributes: {array[]}
+   *   url: {string}
+   *   <meta>
+   *   name: {string}
+   *   content: {string}
    *
-   *   [For <meta>]
-   *   name:
-   *   content:
-   *
-   *   @see |addItem()| for detail.
+   * [attributes array format]
+   *   [
+   *     ['attr-name', 'attr-value'], ...,
+   *     ['rel', ['rel-value1', 'rel-value2', ...]]
+   *   ]
    */
-  function getData(aType) {
-    let result = getNaviList();
+  function promiseFirstDataForType(type) {
+    return Task.spawn(function*() {
+      let naviLinkList = yield promiseNaviLinkList();
+      let pageInfoList = yield promisePageInfoList();
 
-    if (result) {
-      for (let i = 0, l = result.length; i < l; i++) {
-        if (result[i].type === aType) {
-          return result[i].list[0];
+      let list = [];
+
+      if (naviLinkList) {
+        list = list.concat(naviLinkList);
+      }
+
+      if (pageInfoList) {
+        list = list.concat(pageInfoList);
+      }
+
+      if (list.length) {
+        for (let i = 0, l = list.length; i < l; i++) {
+          if (list[i].type === type) {
+            return list[i].dataItems[0];
+          }
         }
       }
-    }
 
-    return null;
-  }
-
-  /**
-   * Retrieves the list by types.
-   *
-   * @return {hash[]|null}
-   *   type: |kNaviLinkType.type| or |kPageInfoType.type|.
-   *   list: {<data>[]}
-   *     @see |getData()| for detail.
-   */
-  function getNaviList() {
-    init();
-
-    return mNaviList;
-  }
-
-  function getSubNaviList() {
-    init();
-
-    return mSubNaviList;
-  }
-
-  function getInfoList() {
-    init();
-
-    return mInfoList;
+      return null;
+    });
   }
 
   function createLists() {
-    let naviList = {},
-        subNaviList = {},
-        infoList = {};
+    return Task.spawn(function*() {
+      let {metaInfo, scriptInfo, linkInfo} = yield promiseInfoData();
 
-    let contentDocument = gBrowser.contentDocument;
+      let naviLinkList = {};
+      let subNaviLinkList = {};
+      let pageInfoList = {};
 
-    scanMeta(infoList, contentDocument);
-    scanScript(infoList, contentDocument);
+      addMetaInfo(pageInfoList, metaInfo);
+      addScriptInfo(pageInfoList, scriptInfo);
 
-    [...$S('[rel][href], [rev][href]', contentDocument)].forEach((node) => {
-      let rel = node.rel || node.rev;
+      linkInfo.forEach((info) => {
+        let {rel, href} = info;
 
-      if (!rel ||
-          !node.href ||
-          !/^(?:https?|mailto):/.test(node.href)) {
-        return;
-      }
+        let rels = createRelList(rel);
 
-      let rels = makeRels(rel);
+        // Process from the list that needs to test special rel values.
+        updatePageInfoList(pageInfoList, info, rels) ||
+        updateNaviLinkList(naviLinkList, info, rels) ||
+        updateSubNaviLinkList(subNaviLinkList, info, rels);
+      });
 
-      scanInfoLink(infoList, node, rels) ||
-      scanNaviLink(naviList, node, rels) ||
-      scanSubNaviLink(subNaviList, node, rels);
+      return [
+        {
+          list: naviLinkList,
+          typeOrder: kNaviLinkType
+        },
+        {
+          list: subNaviLinkList
+          // @note No typeOrder will sort the types in alphabetical order.
+        },
+        {
+          list: pageInfoList,
+          typeOrder: kPageInfoType
+        }
+      ].map(formatList);
     });
-
-    return [
-      {
-        list: naviList,
-        orderList: kNaviLinkType
-      },
-      {
-        list: subNaviList
-      },
-      {
-        list: infoList,
-        orderList: kPageInfoType
-      }
-    ].map(formatList);
   }
 
-  function formatList({list, orderList}) {
+  function createRelList(relAttribute) {
+    let rels = relAttribute.toLowerCase().split(/\s+/);
+
+    let relList = {};
+
+    rels.forEach((rel) => {
+      relList[rel] = true;
+    });
+
+    // The function to filter the rels except for the given rel.
+    Object.defineProperty(relList, 'exceptFor', {
+      value(testRel) {
+        // No exceptions if the numbers of 'rel' attribute values is one.
+        if (rels.length < 2) {
+          return [];
+        }
+
+        return rels.filter((rel) => rel !== testRel);
+      }
+    });
+
+    return relList;
+  }
+
+  function formatList({list, typeOrder}) {
     let types = Object.keys(list);
 
     if (!types.length) {
       return null;
     }
 
-    sortByTypeOrder(types, orderList);
+    sortByType(types, typeOrder);
 
-    let result = [];
+    let resultList = [];
 
     types.forEach((type) => {
-      let resultList = [];
+      let dataItems = [];
 
-      list[type].some((data) => {
-        if (testUniqueData(resultList, data)) {
-          resultList.push(data);
+      for (let data of list[type]) {
+        if (testUniqueData(dataItems, data)) {
+          dataItems.push(data);
         }
-      });
+      }
 
-      result.push({
+      resultList.push({
+        // [List item format]
         type,
-        list: resultList
+        dataItems
       });
     });
 
-    return result;
+    if (!resultList.length) {
+      return null;
+    }
+
+    return resultList;
   }
 
-  function testUniqueData(aArray, aData) {
-    return aArray.every((data) => {
+  function sortByType(types, typeOrder) {
+    if (types.length <= 1) {
+      return;
+    }
+
+    let order;
+
+    if (typeOrder && typeOrder.length) {
+      if (typeOrder.length <= 1) {
+        return;
+      }
+
+      order = typeOrder.map((item) => item.type.toLowerCase());
+    }
+
+    let comparator = order ?
+      (a, b) => order.indexOf(a) - order.indexOf(b) :
+      (a, b) => a.localeCompare(b);
+
+    types.sort(comparator);
+  }
+
+  function testUniqueData(dataItems, testData) {
+    return dataItems.every((data) => {
       for (let key in data) {
-        // |attributes| is {array}, the others are {string}.
+        // |attributes| is {array[]}, the others are {string}.
         if (key === 'attributes') {
-          if (data[key].join() !== aData[key].join()) {
+          if (data[key].join() !== testData[key].join()) {
             return true;
           }
         }
-        else if (data[key] !== aData[key]) {
+        else if (data[key] !== testData[key]) {
           return true;
         }
       }
@@ -1427,82 +1652,139 @@ const NaviLink = (function() {
     });
   }
 
-  function makeRels(aRelAttribute) {
-    let rels = aRelAttribute.toLowerCase().split(/\s+/);
+  function promiseInfoData() {
+    return ContentTask.spawn(function*() {
+      const {Feeds} = Modules.require('/modules/Feeds.jsm');
+      const kFeedTypes = {
+        'application/rss+xml': 'RSS',
+        'application/atom+xml': 'ATOM',
+        'text/xml': 'XML',
+        'application/xml': 'XML',
+        'application/rdf+xml': 'XML'
+      };
 
-    let relsList = {};
+      let doc = content.document;
 
-    rels.forEach((aValue) => {
-      relsList[aValue] = true;
-    });
+      let metas = doc.getElementsByTagName('meta') || [];
+      let metaInfo = [...metas].map((node) => {
+        let name =
+          node.name ||
+          node.httpEquiv ||
+          node.getAttribute('property') ||
+          node.getAttribute('itemprop');
 
-    Object.defineProperty(relsList, 'exceptFor', {
-      value(aSourceValue) {
-        if (rels.length > 1) {
-          return rels.filter((aValue) => aValue !== aSourceValue);
+        // @note Don't name a temp variable |content| to avoid conflict with
+        // the global |content|.
+        let contentData = node.content;
+
+        if (!name && !contentData) {
+          return null;
         }
 
-        return [];
-      }
-    });
+        return {
+          name,
+          content: contentData
+        };
+      }).
+      filter(Boolean);
 
-    return relsList;
+      let scripts = doc.getElementsByTagName('script') || [];
+      let scriptInfo = [...scripts].map(({src, title}) => {
+        if (!src) {
+          return null;
+        }
+
+        return {src, title};
+      }).
+      filter(Boolean);
+
+      let links = doc.querySelectorAll('[rel][href], [rev][href]') || [];
+      let linkInfo = [...links].map((node) => {
+        let {rel, rev, href, title, textContent, media, type, hreflang} = node;
+
+        rel = rel || rev;
+
+        if (!rel || !href || !/^(?:https?|mailto):/.test(href)) {
+          return null;
+        }
+
+        title = title || textContent || undefined;
+        media = media || undefined;
+        type = type || undefined;
+        hreflang = hreflang || undefined;
+
+        let rels = {};
+
+        for (let value of rel.split(/\s+/)) {
+          rels[value] = true;
+        }
+
+        if (rels.feed || (type && rels.alternate && !rels.stylesheet)) {
+          let feedType =
+            Feeds.isValidFeed(node, doc.nodePrincipal, !!rels.feed);
+
+          if (feedType) {
+            rel = 'feed';
+            type = kFeedTypes[feedType] || 'RSS';
+          }
+        }
+
+        return {rel, href, title, media, type, hreflang};
+      }).
+      filter(Boolean);
+
+      return {metaInfo, scriptInfo, linkInfo};
+    });
   }
 
-  function scanMeta(aList, aDocument) {
-    let metas = [...aDocument.getElementsByTagName('meta')];
+  function addMetaInfo(pageInfoList, metaInfo) {
+    // Put at least <content-type> in the meta list.
+    let hasContentType = metaInfo.some(({name, content}) =>
+      name && name.toLowerCase() === 'content-type' && content);
 
-    // Add <content-type> to avoid an empty meta list.
-    let empty = !metas.some((meta) =>
-      meta.httpEquiv &&
-      meta.httpEquiv.toLowerCase() === 'content-type'
-    );
+    if (!hasContentType) {
+      let contentType = gBrowser.selectedBrowser.documentContentType;
+      let characterSet = gBrowser.selectedBrowser.characterSet;
 
-    if (empty) {
-      metas.unshift({
-        httpEquiv: 'Content-Type',
-        content: aDocument.contentType + ';charset=' + aDocument.characterSet
+      metaInfo.unshift({
+        name: 'Content-Type',
+        content: `${contentType}; charset=${characterSet}`
       });
     }
 
-    metas.forEach((node) => {
-      addItem(aList, 'meta', node);
+    metaInfo.forEach((info) => {
+      addListItem(pageInfoList, 'meta', info);
     });
   }
 
-  function scanScript(aList, aDocument) {
-    [...aDocument.getElementsByTagName('script')].forEach((node) => {
-      addItem(aList, 'script', node);
+  function addScriptInfo(pageInfoList, scriptInfo) {
+    scriptInfo.forEach((info) => {
+      addListItem(pageInfoList, 'script', info);
     });
   }
 
-  function scanInfoLink(aList, aNode, aRels) {
-    let type = '';
+  function updatePageInfoList(pageInfoList, info, rels) {
+    let pageInfoType = '';
     let attributes = [];
 
-    if (aRels.feed ||
-        (aNode.type && aRels.alternate && !aRels.stylesheet)) {
-      let feedType = FeedUtil.getFeedType(aNode, aRels.feed);
-
-      if (feedType) {
-        type = 'feed';
-        attributes.push(['type', feedType]);
-      }
+    if (rels.feed) {
+      pageInfoType = 'feed';
+      attributes.push(['type', info.type]);
     }
-    else if (aRels.stylesheet) {
-      type = 'stylesheet';
-      attributes.push(['media', aNode.media || 'all']);
+    else if (rels.stylesheet) {
+      pageInfoType = 'stylesheet';
+      attributes.push(['media', info.media || 'all']);
     }
-    else if (aRels.icon) {
-      type = 'favicon';
+    else if (rels.icon) {
+      pageInfoType = 'favicon';
 
-      if (aNode.type) {
-        attributes.push(['type', aNode.type]);
+      if (info.type) {
+        attributes.push(['type', info.type]);
       }
     }
 
-    if (type) {
-      addItem(aList, type, aNode, attributes);
+    if (pageInfoType) {
+      addListItem(pageInfoList, pageInfoType, info, attributes);
 
       return true;
     }
@@ -1510,27 +1792,30 @@ const NaviLink = (function() {
     return false;
   }
 
-  function scanNaviLink(aList, aNode, aRels) {
+  function updateNaviLinkList(naviLinkList, info, rels) {
     let attributes = [];
 
-    if (aRels.alternate) {
-      if (aNode.media) {
-        attributes.push(['media', aNode.media]);
+    if (rels.alternate) {
+      if (info.media) {
+        attributes.push(['media', info.media]);
       }
 
-      if (aNode.hreflang) {
-        attributes.push(['hreflang', aNode.hreflang]);
+      if (info.hreflang) {
+        attributes.push(['hreflang', info.hreflang]);
       }
     }
 
     let itemNums = 0;
 
-    for (let type in aRels) {
-      type = NaviLinkTypeFixup.registered(type);
+    for (let naviLinkType in rels) {
+      naviLinkType = NaviLinkTypeFixup.registered(naviLinkType);
 
-      if (type) {
-        attributes.push(['rel', aRels.exceptFor(type)]);
-        addItem(aList, type, aNode, attributes);
+      if (naviLinkType) {
+        // The array of 'rel' values except for this type.
+        attributes.push(['rel', rels.exceptFor(naviLinkType)]);
+
+        addListItem(naviLinkList, naviLinkType, info, attributes);
+
         itemNums++;
       }
     }
@@ -1538,114 +1823,55 @@ const NaviLink = (function() {
     return itemNums > 0;
   }
 
-  function scanSubNaviLink(aList, aNode, aRels) {
-    for (let type in aRels) {
-      type = NaviLinkTypeFixup.unregistered(type);
+  function updateSubNaviLinkList(subNaviLinkList, info, rels) {
+    for (let naviLinkType in rels) {
+      naviLinkType = NaviLinkTypeFixup.unregistered(naviLinkType);
 
-      if (type) {
-        addItem(aList, type, aNode, [['rel', aRels.exceptFor(type)]]);
+      if (naviLinkType) {
+        // The array of 'rel' values except for this type.
+        let attributes = [['rel', rels.exceptFor(naviLinkType)]];
+
+        addListItem(subNaviLinkList, naviLinkType, info, attributes);
       }
     }
   }
 
-  function addItem(aList, aType, aNode, aAttributes) {
+  function addListItem(list, type, info, attributes) {
     let data;
 
-    if (aType === 'meta') {
-      data = getMetaData(aNode);
+    if (type === 'meta') {
+      data = {
+        // [Data item format for <meta>]
+        name: trim(info.name) || '[N/A]',
+        content: trim(info.content) || '[N/A]'
+      };
     }
     else {
-      data = getNodeData(aNode, aAttributes);
-    }
+      let url = info.href || info.src;
 
-    if (data) {
-      if (!(aType in aList)) {
-        aList[aType] = [];
-      }
-
-      aList[aType].push(data);
-    }
-  }
-
-  function getMetaData(aNode) {
-    let content = trim(aNode.content);
-
-    if (!content) {
-      return null;
-    }
-
-    let name =
-      trim(aNode.name) ||
-      trim(aNode.httpEquiv) ||
-      trim(aNode.getAttribute('property')) ||
-      trim(aNode.getAttribute('itemprop')) ;
-
-    if (name) {
-      return {
-        // <data> for a meta.
-        name,
-        content
+      data = {
+        // [Data item format for <script>/<link>]
+        url,
+        title: trim(info.title) || getLeaf(url) || '[N/A]',
+        attributes: attributes || []
       };
     }
 
-    return null;
-  }
-
-  function getNodeData(aNode, aAttributes) {
-    let URL = trim(aNode.href) || trim(aNode.src);
-
-    if (!URL) {
-      return null;
+    if (!(type in list)) {
+      list[type] = [];
     }
 
-    let title =
-      trim(aNode.title) ||
-      (!/^(?:script|link)$/.test(aNode.localName) &&
-       trim(aNode.textContent)) ||
-      getLeaf(URL);
-
-    if (title) {
-      return {
-        // <data> for a script or rel.
-        title,
-        attributes: aAttributes || [],
-        URL
-      };
-    }
-
-    return null;
-  }
-
-  function sortByTypeOrder(aTypes, aOrderList) {
-    if (aTypes.length <= 1) {
-      return;
-    }
-
-    let order;
-
-    if (aOrderList && aOrderList.length) {
-      if (aOrderList.length <= 1) {
-        return;
-      }
-
-      order = aOrderList.map((aItem) => aItem.type.toLowerCase());
-    }
-
-    let comparator = order ?
-      (a, b) => order.indexOf(a) - order.indexOf(b) :
-      (a, b) => a.localeCompare(b);
-
-    aTypes.sort(comparator);
+    list[type].push(data);
   }
 
   /**
    * Expose
    */
   return {
-    getData,
-    getNaviList,
-    getSubNaviList,
-    getInfoList
+    promiseNaviLinkList,
+    promiseSubNaviLinkList,
+    promisePageInfoList,
+    promiseFirstDataForType
   };
 })();
 
@@ -1660,193 +1886,219 @@ const SiblingNavi = (function() {
   // Max number of links that are scanned to guess the sibling page.
   const kMaxNumScanningLinks = kMaxNumScoredEntries * 10;
 
-  let mURL;
-  let mResult;
+  const Cache = (function() {
+    let dataCache = DataCache.create(promiseData);
 
-  function init(aDirection) {
-    if (aDirection !== 'prev' && aDirection !== 'next') {
-      throw Error('aDirection should be "prev" or "next": ' + aDirection);
-    }
+    let data = {
+      siblingData: null
+    };
 
-    let URI = URIUtil.getCurrentURI();
+    function promiseData(state, params) {
+      let [direction] = params;
 
-    if (!URI) {
-      mURL = null;
-      mResult = null;
+      return Task.spawn(function*() {
+        if (!state.uri) {
+          data.siblingData = null;
 
-      return;
-    }
+          return data;
+        }
 
-    if (mURL !== URI.spec) {
-      mURL = URI.spec;
-      mResult = {};
-    }
+        if (state.doUpdate) {
+          data.siblingData = {};
+        }
 
-    if (!(aDirection in mResult)) {
-      mResult[aDirection] = createResult(aDirection, URI);
-    }
-  }
+        if (!(direction in data.siblingData)) {
+          data.siblingData[direction] =
+            yield createSiblingData(direction, state.uri);
+        }
 
-  /**
-   * Retrieves the URL string for the direction.
-   *
-   * @param aDirection {string}
-   *   'prev' or 'next'.
-   * @return {string}
-   */
-  function getURLFor(aDirection) {
-    let result = getResult(aDirection);
-
-    if (!result) {
-      return '';
-    }
-
-    return result.list[0].URL;
-  }
-
-  /**
-   * Gets the information for the previous or next page.
-   *
-   * @param aDirection {string}
-   *   'prev' or 'next'.
-   * @return {hash|null}
-   *   list: {<data>[]}
-   *   scanType: {string}
-   *     @see |kSiblingScanType| for detail.
-   *
-   * <data> has the proper members assigned to |kSiblingScanType|.
-   * {name:, title:, URL:} for a |preset|.
-   * {name:, title:, formIndex:} for a submit |preset|.
-   * {name:, content:} for a meta of |official|.
-   * {title:, attributes:, URL:} for a script or rel of |official|.
-   * {title:, score:, URL:} for a sibling by |searching|.
-   * {here:, there:, URL:} for a sibling by |numbering|.
-   */
-  function getResult(aDirection) {
-    init(aDirection);
-
-    if (!mResult) {
-      return null;
-    }
-
-    return mResult[aDirection];
-  }
-
-  function createResult(aDirection, aURI) {
-    let list;
-    let scanType;
-
-    [
-      ['preset', PresetNavi.getData],
-      ['official', NaviLink.getData],
-      ['searching', guessBySearching, aURI],
-      ['numbering', guessByNumbering, aURI]
-    ].
-    some(([type, getter, URI]) => {
-      let data = getter(aDirection, URI);
-
-      if (data) {
-        list = data;
-        scanType = type;
-
-        return true;
-      }
-
-      return false;
-    });
-
-    if (!list) {
-      return null;
+        return data;
+      });
     }
 
     return {
-      list: Array.isArray(list) ? list : [list],
-      scanType
+      update: dataCache.update
     };
+  })();
+
+  /**
+   * Promise for the sibling page info for the previous or next page.
+   *
+   * @param direction {string} 'prev' or 'next'.
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the sibling page info.
+   *     @param result {hash|null}
+   *
+   * [Sibling page info hash format]
+   *   scanType: {string} |kSiblingScanType|
+   *   dataItems: {hash[]}
+   *
+   * [Data item hash format]
+   *   The data item has the proper members assigned to |kSiblingScanType|.
+   *   {name:, title:, url:} for link |preset|.
+   *   {name:, title:, formIndex:} for submit |preset|.
+   *   {name:, content:} for <meta> of |official|.
+   *   {title:, attributes:, url:} for <script> or <link> of |official|.
+   *   {title:, score:, url:} for sibling by |searching|.
+   *   {here:, there:, url:} for sibling by |numbering|.
+   */
+  function promiseSiblingData(direction) {
+    return Cache.update(direction).then(({siblingData}) => {
+      if (!siblingData) {
+        return null;
+      }
+
+      return siblingData[direction];
+    });
   }
 
   /**
-   * Gets a list of the prev/next page by searching links.
+   * Promise for the first URL of sibling pages for the given direction.
    *
-   * @param aDirection {string}
-   *   'prev' or 'next'.
-   * @return {<data>[]|null}
-   * <data> {hash}
-   *   title: {string}
-   *   score: {number}
-   *   URL: {string}
+   * @param direction {string}'prev' or 'next'.
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the URL string of sibling page.
+   *     @param result {string|null}
    *
-   * @note Allows only URL that has the same as the base domain of the document
-   * to avoid jumping to the outside by a |prev|/|next| command.
+   * [The order of finding the URL]
+   *   1.Matching the user preset.
+   *   2.Retrieving the official page.
+   *   3.Guessing by searching of links and the highest scored item.
+   *   4.Guessing by URL numbering.
+   *   @see |createSiblingData|
    */
-  function guessBySearching(aDirection, aURI) {
-    if (!isHTMLDocument()) {
-      return null;
-    }
-
-    let URI = URIUtil.createURI(aURI, {
-      hash: false
-    });
-
-    let naviLinkScorer = NaviLinkScorer.init(URI, aDirection);
-
-    let entries = getSearchEntries();
-    let link, href, text, score;
-
-    for (link of getSearchLinks()) {
-      href = link.href;
-
-      if (!href ||
-          entries.has(href) ||
-          !/^https?:/.test(href) ||
-          URI.isSamePage(href) ||
-          !URI.isSameBaseDomain(href)) {
-        continue;
+  function promiseSiblingURLFor(direction) {
+    return promiseSiblingData(direction).then((siblingData) => {
+      if (!siblingData) {
+        return null;
       }
 
-      for (text of getSearchTexts(link)) {
-        // Normalize white-spaces.
-        text = trim(text);
+      return siblingData.dataItems[0].url;
+    });
+  }
 
-        score = text && naviLinkScorer.score(text, href);
+  function createSiblingData(direction, uri) {
+    return Task.spawn(function*() {
+      let scanType;
+      let dataItems;
 
-        if (score) {
-          entries.add(text, href, score);
+      let handlers = [
+        ['preset', PresetNavi.promisePresetData],
+        ['official', NaviLink.promiseFirstDataForType],
+        ['searching', guessBySearching],
+        ['numbering', guessByNumbering]
+      ];
+
+      for (let [type, handler] of handlers) {
+        let data = yield handler(direction, uri);
+
+        if (data) {
+          dataItems = data;
+          scanType = type;
 
           break;
         }
       }
 
-      if (entries.isFull()) {
-        break;
+      if (!dataItems) {
+        return null;
       }
-    }
 
-    return entries.collect();
+      if (!Array.isArray(dataItems)) {
+        dataItems = [dataItems];
+      }
+
+      return {
+        // [Sibling page info format]
+        scanType,
+        dataItems
+      };
+    });
   }
 
-  function getSearchEntries() {
+  /**
+   * Promise for a list of the prev/next page by searching links.
+   *
+   * @param direction {string} 'prev' or 'next'
+   * @param pageURI {nsIURI}
+   *   The URI of the document to be searched (usually in the current tab).
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the array of data item of sibling page.
+   *     @param result {hash[]|null}
+   *
+   * [Data item format]
+   *   title: {string}
+   *   score: {number}
+   *   url: {string}
+   *
+   * @note Allows only URL that has the same as the base domain of the document
+   * to avoid jumping to the outside by a |prev|/|next| command.
+   */
+  function guessBySearching(direction, pageURI) {
+    return Task.spawn(function*() {
+      if (!BrowserUtils.isHTMLDocument()) {
+        return null;
+      }
+
+      let uri = URIUtil.createURI(pageURI, {
+        hash: false
+      });
+
+      let naviLinkScorer = NaviLinkScorer.create(uri, direction);
+      let entries = createSearchEntries();
+
+      let links = yield promiseLinkList();
+
+      for (let {href, texts} of links) {
+        if (entries.has(href) ||
+            !/^https?:/.test(href) ||
+            uri.isSamePage(href) ||
+            !uri.isSameBaseDomain(href)) {
+          continue;
+        }
+
+        for (let text of texts) {
+          text = trim(text);
+
+          let score = text && naviLinkScorer.score(text, href);
+
+          if (score) {
+            entries.add(text, href, score);
+
+            break;
+          }
+        }
+
+        if (entries.isFull()) {
+          break;
+        }
+      }
+
+      return entries.collect();
+    });
+  }
+
+  function createSearchEntries() {
     let entries = [];
-    let URLs = [];
+    let urls = [];
 
     function detach() {
       entries.length = 0;
-      URLs.length = 0;
+      urls.length = 0;
     }
 
-    function add(aText, aURL, aScore) {
-      entries[entries.length] = {
-        text: aText,
-        URL: aURL,
-        score: aScore
-      };
+    function add(text, url, score) {
+      entries[entries.length] = {text, url, score};
 
       // Cache for |has()|.
-      URLs[URLs.length] = aURL;
+      urls[urls.length] = url;
     }
 
-    function has(aURL) {
-      return URLs.indexOf(aURL) > -1;
+    function has(url) {
+      return urls.indexOf(url) > -1;
     }
 
     function isFull() {
@@ -1861,12 +2113,12 @@ const SiblingNavi = (function() {
       // Sort items in a *descending* of the score.
       entries.sort((a, b) => b.score - a.score);
 
-      let list = entries.map(({text, URL, score}) => {
+      let list = entries.map(({text, url, score}) => {
         return {
-          // <data> for a sibling by searching.
+          // [Data item format for sibling by searching]
           title: text,
           score,
-          URL
+          url
         };
       });
 
@@ -1884,72 +2136,96 @@ const SiblingNavi = (function() {
   }
 
   /**
-   * Generator for hyperlinked elements in the current content document.
+   * Promise for the data list of hyperlinked elements in the current content
+   * document.
    *
-   * @return {Generator}
+   * @return {Promise}
+   *   resolve {function}
+   *     Resolved with the array of link data.
+   *     @param {hash[]}
+   *       href: {string}
+   *       texts: {string[]}
    */
-  function* getSearchLinks() {
-    // <a> or <area> with the 'href' attribute.
-    let links = gBrowser.contentDocument.links;
-    let count = links.length;
+  function promiseLinkList() {
+    return ContentTask.spawn({
+      params: {
+        maxNumScanningLinks: kMaxNumScanningLinks
+      },
+      task: function*(params) {
+        let {maxNumScanningLinks} = params;
 
-    if (kMaxNumScanningLinks < count) {
-      let limit = Math.floor(kMaxNumScanningLinks / 2);
+        let linkList = [];
 
-      for (let i = 0; i < limit; i++) {
-        yield links[i];
-      }
+        let addData = (node) => {
+          let href = node.href;
 
-      for (let i = count - limit; i < count; i++) {
-        yield links[i];
+          if (!href) {
+            return;
+          }
+
+          let images = node.getElementsByTagName('img');
+          let image = images.length ? images[0] : null;
+
+          let texts = [
+            node.textContent,
+            node.title,
+            image && image.alt,
+            image && image.title,
+            image && image.src
+          ].
+          filter(Boolean);
+
+          if (!texts.length) {
+            return;
+          }
+
+          linkList.push({href, texts});
+        };
+
+        // <a> or <area> with the 'href' attribute.
+        let links = content.document.links;
+        let count = links.length;
+
+        if (maxNumScanningLinks < count) {
+          let limit = Math.floor(maxNumScanningLinks / 2);
+
+          for (let i = 0; i < limit; i++) {
+            addData(links[i]);
+          }
+
+          for (let i = count - limit; i < count; i++) {
+            addData(links[i]);
+          }
+        }
+        else {
+          for (let i = 0; i < count; i++) {
+            addData(links[i]);
+          }
+        }
+
+        return linkList;
       }
-    }
-    else {
-      for (let i = 0; i < count; i++) {
-        yield links[i];
-      }
-    }
+    });
   }
 
   /**
-   * Generator for all possible texts of a link.
+   * Promise for a list of the prev/next page by numbering of URL.
    *
-   * @param aNode {Element}
-   *   @note Pass a hyperlinked element that |getSearchLinks| generates.
-   * @return {Generator}
-   */
-  function* getSearchTexts(aNode) {
-    yield aNode.textContent;
-    yield aNode.getAttribute('title');
-
-    let images = aNode.getElementsByTagName('img');
-    let image = images.length ? images[0] : null;
-
-    if (image) {
-      yield image.getAttribute('alt');
-      yield image.getAttribute('title');
-      yield getLeaf(image.getAttribute('src'));
-    }
-  }
-
-  /**
-   * Gets a list of the prev/next page by numbering of URL.
+   * @param direction {string} 'prev' or 'next'
+   * @return {hash[]|null}
    *
-   * @param aDirection {string}
-   *   'prev' or 'next'.
-   * @return {<data>[]|null}
-   *   <data> {hash}
-   *     here: {string}
-   *     there: {string}
-   *     URL: {string}
+   * [Data item format]
+   *   here: {string}
+   *   there: {string}
+   *   url: {string}
    */
-  function guessByNumbering(aDirection, aURI) {
+  function guessByNumbering(direction, pageURI) {
     /**
-     * RegExp patterns for string like the page numbers in URL.
+     * RegExp patterns for string like the page number in URL.
      *
      * @note Must specify the global flag 'g'.
      */
-    const kNumberRE = [
+    const kPageNumberRE = [
       // Parameter with a numeric value: [?&]page=123 or [?&]123
       /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig,
 
@@ -1957,74 +2233,79 @@ const SiblingNavi = (function() {
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
     ];
 
-    let URI = URIUtil.createURI(aURI, {
-      hash: false
-    });
+    // @note The task doesn't receive any iterators, but this function must
+    // return a promise for |createSiblingData|.
+    return Task.spawn(function*() {
+      let uri = URIUtil.createURI(pageURI, {
+        hash: false
+      });
 
-    if (!URI.hasPath()) {
-      return null;
-    }
-
-    let direction = (aDirection === 'next') ? 1 : -1;
-    let list = [];
-
-    kNumberRE.forEach((pattern) => {
-      let URL = URI.spec;
-      let matches;
-
-      while ((matches = pattern.exec(URL))) {
-        let [match, leading , oldNum, trailing] = matches;
-
-        let newNum = parseInt(oldNum, 10) + direction;
-
-        if (newNum > 0) {
-          newNum = newNum + '';
-
-          while (newNum.length < oldNum.length) {
-            newNum = '0' + newNum;
-          }
-
-          let newVal = leading + newNum + (trailing || '');
-
-          list.push({
-            // <data> for a sibling by numbering.
-            here: match,
-            there: newVal,
-            URL: URL.replace(match, newVal)
-          });
-        }
+      if (!uri.hasPath()) {
+        return null;
       }
+
+      direction = (direction === 'next') ? 1 : -1;
+
+      let list = [];
+
+      kPageNumberRE.forEach((pattern) => {
+        let url = uri.spec;
+        let matches;
+
+        while ((matches = pattern.exec(url))) {
+          let [match, leading , oldNum, trailing] = matches;
+
+          let newNum = parseInt(oldNum, 10) + direction;
+
+          if (newNum > 0) {
+            newNum = newNum + '';
+
+            while (newNum.length < oldNum.length) {
+              newNum = '0' + newNum;
+            }
+
+            let newVal = leading + newNum + (trailing || '');
+
+            list.push({
+              // [Data item format for sibling by numbering]
+              here: match,
+              there: newVal,
+              url: url.replace(match, newVal)
+            });
+          }
+        }
+      });
+
+      if (!list.length) {
+        return null;
+      }
+
+      return trimSiblingsList(list);
     });
-
-    if (!list.length) {
-      return null;
-    }
-
-    return trimSiblingsList(list);
   }
 
-  function trimSiblingsList(aList) {
-    return aList.slice(0, kMaxNumSiblings);
+  function trimSiblingsList(list) {
+    return list.slice(0, kMaxNumSiblings);
   }
 
   /**
-   * For the exposed functions.
+   * Wrappers for the exposed functions.
    */
-  function getCurrentPrev() {
-    return getURLFor('prev');
+  function promisePrevPageURL() {
+    return promiseSiblingURLFor('prev');
   }
 
-  function getCurrentNext() {
-    return getURLFor('next');
+  function promiseNextPageURL() {
+    return promiseSiblingURLFor('next');
   }
 
   /**
    * Expose
    */
   return {
-    getResult,
-    getPrev: getCurrentPrev,
-    getNext: getCurrentNext
+    promiseSiblingData,
+    promisePrevPageURL,
+    promiseNextPageURL
   };
 })();
 
@@ -2069,30 +2350,32 @@ const NaviLinkScorer = (function() {
       lessText: 20
     });
 
-    let mNaviSign = null,
-        mNaviWord = null;
+    let vars = {
+      naviSign: null,
+      naviWord: null
+    };
 
-    function init(aDirection) {
+    function init(direction) {
       let sign, word;
       let forward, backward;
 
-      let opposite = (aDirection === 'prev') ? 'next' : 'prev';
+      let opposite = (direction === 'prev') ? 'next' : 'prev';
 
       // Set up data for finding a navigation sign.
       // @note The white-spaces of a test text are normalized.
-      sign = kNaviSign[aDirection];
+      sign = kNaviSign[direction];
       forward = RegExp('^(?:' + sign + ')+|(?:' +  sign + ')+$');
 
       backward = RegExp(kNaviSign[opposite]);
 
-      mNaviSign = initNaviData(forward, backward);
+      vars.naviSign = initNaviData(forward, backward);
 
       // Set up data for finding a text string or an image filename like a
       // navigation.
       // @note The white-spaces of a test text are normalized.
       // @note Allows the short leading words before an english navigation
       // word (e.g. 'Go to next page', 'goto-next-page.png').
-      word = kNaviWord[aDirection];
+      word = kNaviWord[direction];
 
       let en = '(?:^|^[- \\w]{0,10}[-_ ])(?:' + word.en + ')(?:$|[-_. ])';
       let ja = '^(?:' +  word.ja + ')';
@@ -2102,31 +2385,31 @@ const NaviLinkScorer = (function() {
       word = kNaviWord[opposite];
       backward = RegExp(word.en + '|' +  word.ja, 'i');
 
-      mNaviWord = initNaviData(forward, backward);
+      vars.naviWord = initNaviData(forward, backward);
     }
 
-    function initNaviData(aForward, aBackward) {
-      function hasOpposite(aText) {
-        if (!aText) {
+    function initNaviData(forward, backward) {
+      function hasOpposite(text) {
+        if (!text) {
           return false;
         }
 
-        return aBackward.test(aText);
+        return backward.test(text);
       }
 
-      function match(aText) {
-        if (!aText) {
+      function match(text) {
+        if (!text) {
           return null;
         }
 
-        let matches = aForward.exec(aText);
+        let matches = forward.exec(text);
 
         if (!matches) {
           return null;
         }
 
         return {
-          remainingText: aText.replace(matches[0], '').trim()
+          remainingText: text.replace(matches[0], '').trim()
         };
       }
 
@@ -2136,45 +2419,51 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score(aText) {
+    function score(text) {
       let point = 0;
       let match;
 
       // Filter the NG text.
-      if (kNGTextList.some((ng) => ng.test(aText))) {
+      if (kNGTextList.some((ng) => ng.test(text))) {
         return 0;
       }
 
+      if (/^https?:\S+$/.test(text)) {
+        text = getLeaf(text, {
+          removeParams: true
+        });
+      }
+
       // Test signs for navigation.
-      if (!mNaviSign.hasOpposite(aText)) {
-        match = mNaviSign.match(aText);
+      if (!vars.naviSign.hasOpposite(text)) {
+        match = vars.naviSign.match(text);
 
         if (match) {
           point += kScoreWeight.matchSign;
 
-          aText = match.remainingText;
+          text = match.remainingText;
         }
       }
 
       // Test words for navigation.
-      match = mNaviWord.match(aText);
+      match = vars.naviWord.match(text);
 
       if (match) {
         point += kScoreWeight.matchWord;
 
-        aText = match.remainingText;
+        text = match.remainingText;
 
-        if (!mNaviWord.hasOpposite(aText)) {
+        if (!vars.naviWord.hasOpposite(text)) {
           point += kScoreWeight.noOppositeWord;
         }
       }
 
       if (point > 0) {
         // Test the text length.
-        if (aText) {
+        if (text) {
           // The text seems less to be for navigation if more than 10
           // characters remain.
-          let rate = (aText.length < 10) ? 1 - (aText.length / 10) : 0;
+          let rate = (text.length < 10) ? 1 - (text.length / 10) : 0;
 
           point += (kScoreWeight.lessText * rate);
         }
@@ -2199,19 +2488,21 @@ const NaviLinkScorer = (function() {
       intersectionRate: 70
     });
 
-    let mURLData = null;
+    let vars = {
+      URLData: null
+    };
 
-    function init(aURI) {
-      mURLData = initURLData(aURI);
+    function init(uri) {
+      vars.URLData = initURLData(uri);
     }
 
-    function initURLData(aOriginalURI) {
-      let originalPrePath = aOriginalURI.prePath;
-      let originalPath = aOriginalURI.path;
+    function initURLData(originalURI) {
+      let originalPrePath = originalURI.prePath;
+      let originalPath = originalURI.path;
 
       let originalURL = createData(originalPath);
 
-      function match(aURL) {
+      function match(url) {
         // No path for comparison.
         if (originalPath === '/') {
           return null;
@@ -2219,19 +2510,19 @@ const NaviLinkScorer = (function() {
 
         // @note The target URL might be including the original URL encoded.
         // @note Decode only special characters for URL.
-        aURL = URLUtils.unescapeURLCharacters(aURL);
+        url = URLUtils.unescapeURLCharacters(url);
 
         // Search the same pre path as the original in the target URL:
         // - The target pre path equals the original.
         // - The target path has a pre path that equals the original.
-        let index = aURL.indexOf(originalPrePath);
+        let index = url.indexOf(originalPrePath);
 
         // No information of the original URL.
         if (index < 0) {
           return null;
         }
 
-        let otherPath = aURL.substr(index + originalPrePath.length);
+        let otherPath = url.substr(index + originalPrePath.length);
 
         // No path or no difference for comparison.
         if (!otherPath || otherPath === '/' || otherPath === originalPath) {
@@ -2244,16 +2535,12 @@ const NaviLinkScorer = (function() {
         };
       }
 
-      function createData(aPath) {
+      function createData(path) {
         return {
-          path: aPath,
-          parts: breakApart(aPath)
+          path,
+          // Make an array of parts for comparison excluding empty values.
+          parts: path.split(/[-_./?#&=]/).filter(Boolean)
         };
-      }
-
-      function breakApart(aPath) {
-        // Make an array of parts for comparison excluding empty values.
-        return aPath.split(/[-_./?#&=]/).filter(Boolean);
       }
 
       return {
@@ -2261,8 +2548,8 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score(aURL) {
-      let URLData = mURLData.match(aURL);
+    function score(url) {
+      let URLData = vars.URLData.match(url);
 
       if (!URLData) {
         return 0;
@@ -2328,61 +2615,76 @@ const NaviLinkScorer = (function() {
     };
   })();
 
-  let mURL;
-  let mDirection;
+  const Cache = (function() {
+    let vars = {
+      url: null,
+      direction: null
+    };
 
-  function init(aURI, aDirection) {
-    if (mURL !== aURI.spec) {
-      mURL = aURI.spec;
-      mDirection = null;
+    function update(uri, direction) {
+      if (vars.url !== uri.spec) {
+        vars.url = uri.spec;
+        vars.direction = null;
 
-      URLScorer.init(aURI);
+        URLScorer.init(uri);
+      }
+
+      if (vars.direction !== direction) {
+        vars.direction = direction;
+
+        TextScorer.init(direction);
+      }
+
+      return {
+        score
+      };
     }
 
-    if (mDirection !== aDirection) {
-      mDirection = aDirection;
+    function score(text, url) {
+      let point = TextScorer.score(text);
 
-      TextScorer.init(aDirection);
+      if (point) {
+        point += URLScorer.score(url);
+      }
+
+      // Integer ranges:
+      // - Text score [0,1]
+      // - URL score  [0,1]
+      // - Text + URL [0,2]
+      return point;
     }
 
     return {
-      score
+      update
     };
+  })();
+
+  function create(uri, direction) {
+    return Cache.update(uri, direction);
   }
 
-  function score(aText, aURL) {
-    let point = TextScorer.score(aText);
-
-    if (point) {
-      point += URLScorer.score(aURL);
-    }
-
-    // Integer range:
-    // Text score: [0,1]
-    // URL score:  [0,1]
-    // Text + URL: [0,2]
-    return point;
-  }
-
-  function initScoreWeight(aWeights) {
+  /**
+   * Helper functions.
+   */
+  function initScoreWeight(weights) {
     let total = 0;
 
-    for (let key in aWeights) {
-      total += aWeights[key];
+    for (let key in weights) {
+      total += weights[key];
     }
 
-    for (let key in aWeights) {
-      aWeights[key] /= total;
+    for (let key in weights) {
+      weights[key] /= total;
     }
 
-    return aWeights;
+    return weights;
   }
 
   /**
    * Expose
    */
   return {
-    init
+    create
   };
 })();
 
@@ -2390,38 +2692,50 @@ const NaviLinkScorer = (function() {
  * Handler of the links to the upper(top/parent) page.
  */
 const UpperNavi = (function() {
-  let mURL;
-  let mList;
+  const Cache = (function() {
+    let dataCache = DataCache.create(promiseData);
 
-  function init() {
-    let URI = URIUtil.getCurrentURI();
+    let data = {
+      upperURLList: null
+    };
 
-    if (!URI) {
-      mURL = null;
-      mList = null;
+    // @note This task is perfuctory. It doesn't receive any iterators but is
+    // made in accordance with other types of |Cache.update|.
+    function promiseData(state) {
+      return Task.spawn(function*() {
+        if (!state.uri) {
+          data.upperURLList = null;
 
-      return;
+          return data;
+        }
+
+        if (state.doUpdate) {
+          data.upperURLList = createUpperURLList(state.uri);
+        }
+
+        return data;
+      });
     }
 
-    if (mURL !== URI.spec) {
-      mURL = URI.spec;
-      mList = createList(URI);
-    }
-  }
+    return {
+      update: dataCache.update
+    };
+  })();
 
   /**
-   * Gets the list of the upper page URLs from parent to top in order.
+   * Promise for the list of the upper page URLs from parent to top in order.
    *
-   * @return {string[]}
+   * @return {Promise}
+   *   resolve: {function}
+   *     Resolved with the array of URL string.
+   *     @param result {string[]|null}
    */
-  function getList() {
-    init();
-
-    return mList;
+  function promiseUpperURLList() {
+    return Cache.update().then((data) => data.upperURLList);
   }
 
-  function createList(aURI) {
-    let URI = URIUtil.createURI(aURI, {
+  function createUpperURLList(pageURI) {
+    let uri = URIUtil.createURI(pageURI, {
       search: false
     });
 
@@ -2429,10 +2743,10 @@ const UpperNavi = (function() {
 
     let parentURL;
 
-    while ((parentURL = getParent(URI))) {
+    while ((parentURL = getParent(uri))) {
       list.push(parentURL);
 
-      URI = URIUtil.createURI(parentURL);
+      uri = URIUtil.createURI(parentURL);
     }
 
     if (!list.length) {
@@ -2442,30 +2756,30 @@ const UpperNavi = (function() {
     return list;
   }
 
-  function getParent(aURI) {
-    if (aURI.hasPath()) {
-      let path = aURI.path.replace(/\/(?:index\.html?)?$/i, '')
+  function getParent(uri) {
+    if (uri.hasPath()) {
+      let path = uri.path.replace(/\/(?:index\.html?)?$/i, '')
       let segments = path.split('/');
 
       // Remove the last one.
       segments.pop();
 
-      let URL = aURI.prePath + segments.join('/') + '/';
+      let url = uri.prePath + segments.join('/') + '/';
 
-      if (URL === 'file:///') {
+      if (url === 'file:///') {
         return '';
       }
 
-      return URL;
+      return url;
     }
 
-    return getUpperHost(aURI);
+    return getUpperHost(uri);
   }
 
-  function getTop(aURI) {
-    if (aURI.scheme === 'file') {
+  function getTop(uri) {
+    if (uri.scheme === 'file') {
       // Test a drive letter.
-      let match = /^(file:\/\/\/[a-z]:\/).+/i.exec(aURI.spec);
+      let match = /^(file:\/\/\/[a-z]:\/).+/i.exec(uri.spec);
 
       if (!match) {
         return '';
@@ -2474,17 +2788,17 @@ const UpperNavi = (function() {
       return match[1];
     }
 
-    if (aURI.hasPath()) {
-      return aURI.prePath + '/';
+    if (uri.hasPath()) {
+      return uri.prePath + '/';
     }
 
-    return getUpperHost(aURI);
+    return getUpperHost(uri);
   }
 
-  function getUpperHost(aURI) {
-    let host = aURI.host;
+  function getUpperHost(uri) {
+    let host = uri.host;
 
-    if (!host || aURI.baseDomain === host) {
+    if (!host || uri.baseDomain === host) {
       return '';
     }
 
@@ -2492,41 +2806,41 @@ const UpperNavi = (function() {
 
     levels.shift();
 
-    return aURI.scheme + '://' + levels.join('.') + '/';
+    return uri.scheme + '://' + levels.join('.') + '/';
   }
 
   /**
-   * For the exposed functions.
+   * Wrappers for the exposed functions.
    */
   function getCurrentParent() {
-    let URI = URIUtil.getCurrentURI({
+    let uri = URIUtil.getCurrentURI({
       search: false
     });
 
-    if (!URI) {
+    if (!uri) {
       return '';
     }
 
-    return getParent(URI);
+    return getParent(uri);
   }
 
   function getCurrentTop() {
-    let URI = URIUtil.getCurrentURI({
+    let uri = URIUtil.getCurrentURI({
       search: false
     });
 
-    if (!URI) {
+    if (!uri) {
       return '';
     }
 
-    return getTop(URI);
+    return getTop(uri);
   }
 
   /**
    * Expose
    */
   return {
-    getList,
+    promiseUpperURLList,
     getParent: getCurrentParent,
     getTop: getCurrentTop
   };
@@ -2536,31 +2850,33 @@ const UpperNavi = (function() {
  * Custom URI object handler.
  */
 const URIUtil = (function() {
-  function getCurrentURI(aOption) {
-    let currentURI = gBrowser.currentURI;
+  function getCurrentURI(options) {
+    let currentURI = gBrowser.selectedBrowser.currentURI;
 
     if (!/^(?:https?|ftp|file)$/.test(currentURI.scheme)) {
       return null;
     }
 
-    return createURI(currentURI, aOption);
+    return createURI(currentURI, options);
   }
 
-  function createURI(aURI, aOption = {}) {
+  function createURI(sourceURI, options = {}) {
+    let {search, hash} = options;
+
     // @note Returns a valid |nsIURI| object since we always pass a valid
     // |aURI| for now.
-    let URI = makeNSIURI(aURI);
+    let uri = makeNSIURI(sourceURI);
 
-    let {scheme, prePath, path, spec} = URI;
+    let {scheme, prePath, path, spec} = uri;
     let noHashSpec = trimHash(spec);
-    let host = getHost(URI);
+    let host = getHost(uri);
     let baseDomain = getBaseDomain(prePath, host);
 
-    if (aOption.search === false) {
+    if (search === false) {
       path = trimSearch(path);
       spec = trimSearch(spec);
     }
-    else if (aOption.hash === false) {
+    else if (hash === false) {
       path = trimHash(path);
       spec = trimHash(spec);
     }
@@ -2581,79 +2897,79 @@ const URIUtil = (function() {
   /**
    * Binding functions.
    */
-  function hasPath(aPath) {
-    return aPath !== '/';
+  function hasPath(path) {
+    return path !== '/';
   }
 
-  function isSamePage(aNoHashSpec, aTargetURL) {
-    if (!aTargetURL) {
+  function isSamePage(noHashSpec, targetURL) {
+    if (!targetURL) {
       return false;
     }
 
-    return trimHash(aTargetURL) === aNoHashSpec;
+    return trimHash(targetURL) === noHashSpec;
   }
 
-  function isSameBaseDomain(aBaseDomain, aTargetURL) {
-    if (!aTargetURL) {
+  function isSameBaseDomain(baseDomain, targetURL) {
+    if (!targetURL) {
       return false;
     }
 
-    return getBaseDomain(aTargetURL) === aBaseDomain;
+    return getBaseDomain(targetURL) === baseDomain;
   }
 
   /**
    * Helper functions.
    */
-  function trimSearch(aURL) {
-    return aURL.replace(/[?#].*$/, '');
+  function trimSearch(url) {
+    return url.replace(/[?#].*$/, '');
   }
 
-  function trimHash(aURL) {
-    return aURL.replace(/#.*$/, '');
+  function trimHash(url) {
+    return url.replace(/#.*$/, '');
   }
 
-  function makeNSIURI(aURL) {
-    if (aURL instanceof Ci.nsIURI) {
-      return aURL;
+  function makeNSIURI(url) {
+    if (url instanceof Ci.nsIURI) {
+      return url;
     }
 
     // Reform our custom URI object.
     // TODO: Test by some reliable method.
-    if (aURL.spec) {
-      aURL = aURL.spec;
+    if (url.spec) {
+      url = url.spec;
     }
 
     try {
-      return Modules.BrowserUtils.makeURI(aURL);
+      return Modules.BrowserUtils.makeURI(url);
     }
     catch (ex) {}
 
     return null;
   }
 
-  function getHost(aURI) {
-    if (!aURI || /^file:/.test(aURI.prePath)) {
+  function getHost(uri) {
+    if (!uri || /^file:/.test(uri.prePath)) {
       return '';
     }
 
     try {
-      return aURI.host;
+      return uri.host;
     }
     catch (ex) {}
 
-    return aURI.prePath.
+    return uri.prePath.
       match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?$/)[1];
   }
 
-  function getBaseDomain(aURL, aHost) {
-    if (!aURL || /^file:/.test(aURL)) {
+  function getBaseDomain(url, host) {
+    if (!url || /^file:/.test(url)) {
       return '';
     }
 
-    if (!aHost) {
-      aHost = getHost(makeNSIURI(aURL));
+    if (!host) {
+      host = getHost(makeNSIURI(url));
 
-      if (!aHost) {
+      if (!host) {
         return '';
       }
     }
@@ -2661,10 +2977,10 @@ const URIUtil = (function() {
     try {
       /**
        * @note |getBaseDomain| returns:
-       * - the base domain includes the public suffix. (e.g. '.com', '.co.jp',
+       * - The base domain includes the public suffix. (e.g. '.com', '.co.jp',
        *   '.aisai.aichi.jp', '.github.io')
        *   @see https://wiki.mozilla.org/Public_Suffix_List
-       * - a value in ACE format for IDN.
+       * - A string value in ACE format for IDN.
        */
       let baseDomain = Services.eTLD.getBaseDomainFromHost(host);
 
@@ -2675,7 +2991,7 @@ const URIUtil = (function() {
     }
     catch (ex) {}
 
-    return aHost;
+    return host;
   }
 
   /**
@@ -2686,45 +3002,6 @@ const URIUtil = (function() {
     createURI
   };
 })();
-
-/**
- * Utility functions.
- */
-function isHTMLDocument() {
-  let doc = gBrowser.contentDocument;
-
-  if (doc instanceof HTMLDocument) {
-    let mime = doc.contentType;
-
-    return (
-      mime === 'text/html' ||
-      mime === 'text/xml' ||
-      mime === 'application/xml' ||
-      mime === 'application/xhtml+xml'
-    );
-  }
-
-  return false;
-}
-
-function getLeaf(aURL) {
-  if (!aURL) {
-    return '';
-  }
-
-  let lastSlash = aURL.replace(/[?#].*$/, '').lastIndexOf('/');
-
-  return aURL.slice(lastSlash + 1) || aURL;
-}
-
-function trim(aText) {
-  if (!aText) {
-    return '';
-  }
-
-  return aText.trim().replace(/\s+/g, ' ');
-}
-
 
 /**
  * Attribute handler for |ucjsUtil.DOMUtils.$E|.
@@ -2767,21 +3044,64 @@ function parse$a(name) {
 }
 
 /**
- * Warning and Log.
+ * Utility functions.
  */
-function warn(aMessage) {
-  const kMaxMessageLength = 200;
+function getLeaf(url, options = {}) {
+  let {removeParams} = options;
 
-  let message = log(aMessage, Components.stack.caller)
-
-  if (message.length > kMaxMessageLength) {
-    message = message.substr(0, kMaxMessageLength);
-    message += '\n...(Too long and truncated)';
+  if (!url || !/^https?:/.test(url)) {
+    return '';
   }
 
-  message += '\n[Logged in the Browser Console]';
+  let path = url.replace(/^https?:\/\/[^\/]+/, '');
 
-  Services.prompt.alert(null, null, message);
+  if (removeParams) {
+    path = path.replace(/[?#].*$/, '');
+  }
+
+  let leaf = path.split('/').filter(Boolean).pop();
+
+  return leaf || url;
+}
+
+function capitalize(str) {
+  if (!str) {
+    return '';
+  }
+
+  str += '';
+
+  return str.substr(0, 1).toUpperCase() + str.substr(1);
+}
+
+function trim(str) {
+  if (!str) {
+    return '';
+  }
+
+  str += '';
+
+
+  return str.trim().replace(/\s+/g, ' ');
+}
+
+/**
+ * Warning dialog.
+ */
+function warn(message) {
+  const kMaxMessageLength = 200;
+
+  // Log to console.
+  let str = log(message, Components.stack.caller)
+
+  if (str.length > kMaxMessageLength) {
+    str = str.substr(0, kMaxMessageLength);
+    str += '\n...(Too long and truncated)';
+  }
+
+  str += '\n[Logged in the Browser Console]';
+
+  Services.prompt.alert(null, null, str);
 }
 
 /**
@@ -2797,8 +3117,8 @@ NaviLink_init();
  * Expose
  */
 return {
-  getNext: SiblingNavi.getNext,
-  getPrev: SiblingNavi.getPrev,
+  promiseNextPageURL: SiblingNavi.promiseNextPageURL,
+  promisePrevPageURL: SiblingNavi.promisePrevPageURL,
   getParent: UpperNavi.getParent,
   getTop: UpperNavi.getTop
 };

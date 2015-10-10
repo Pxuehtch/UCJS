@@ -111,7 +111,9 @@ const kGestureSet = [
     gestures: ['S&L'],
     name: '前のページへ',
     command() {
-      window.ucjsUtil.TabUtils.loadPage(window.ucjsNaviLink.getPrev());
+      window.ucjsNaviLink.promisePrevPageURL().then((url) => {
+        window.ucjsUtil.TabUtils.loadPage(url);
+      });
     }
   },
   {
@@ -125,7 +127,9 @@ const kGestureSet = [
     gestures: ['S&R'],
     name: '次のページへ',
     command() {
-      window.ucjsUtil.TabUtils.loadPage(window.ucjsNaviLink.getNext());
+      window.ucjsNaviLink.promiseNextPageURL().then((url) => {
+        window.ucjsUtil.TabUtils.loadPage(url);
+      });
     }
   },
   {
