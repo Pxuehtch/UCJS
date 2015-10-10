@@ -8,6 +8,8 @@
 
 // @note Some functions are exported (window.ucjsLinkInfo.XXX).
 
+// !!! This script doesn't yet support e10s. !!!
+
 
 const ucjsLinkInfo = (function(window) {
 

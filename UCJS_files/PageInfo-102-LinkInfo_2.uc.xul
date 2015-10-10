@@ -24,6 +24,8 @@
 // ==/UserScript==
 
 // @require LinkInfo.uc.js
+
+// !!! This script doesn't yet support e10s. !!!
  -->
 
 <radiogroup id="viewGroup">
