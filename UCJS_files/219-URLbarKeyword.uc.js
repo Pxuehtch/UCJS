@@ -7,9 +7,7 @@
 // @require Util.uc.js, UI.uc.js
 // @require [optional] Overlay.uc.xul
 
-// @usage Creates a menu in the URL bar context menu.
-
-// @see https://addons.mozilla.org/en-US/firefox/addon/location-bar-characters/
+// @usage A menu is appended in the URL-bar context menu.
 
 
 (function(window) {
@@ -49,20 +47,30 @@ const kUI = {
     label: 'URLbar keywords',
     accesskey: 'k'
   },
-  separator: {
-    start: 'ucjs_URLbarKeyword_startSeparator',
-    end: 'ucjs_URLbarKeyword_endSeparator'
+
+  startSeparator: {
+    id: 'ucjs_URLbarKeyword_startSeparator'
   },
+  endSeparator: {
+    id: 'ucjs_URLbarKeyword_endSeparator'
+  },
+
+  restrict: {
+    noItems: 'No restrict keywords'
+  },
+  bookmark: {
+    noItems: 'No bookmark keywords',
+  },
+  searchEngine: {
+    noItems: 'No search-engine keywords'
+  },
+
   item: {
     label: '%keyword% : %name%'
   },
-  emptyGroup: {
-    restrict: 'No restrict keywords',
-    bookmark: 'No bookmark keywords',
-    searchEngine: 'No search-engine keywords'
-  },
+
   openSearchEngineManager: {
-    label: 'Open Search-engine Manager',
+    label: 'Open Search-engine manager',
     accesskey: 's'
   }
 };
@@ -87,10 +95,10 @@ function URLbarKeyword_init() {
   });
 }
 
-function handleEvent(aEvent) {
-  switch (aEvent.type) {
+function handleEvent(event) {
+  switch (event.type) {
     case 'popupshowing': {
-      let menu = aEvent.target.parentElement;
+      let menu = event.target.parentElement;
 
       if (menu.id === kUI.menu.id && !menu.itemCount) {
         buildMenuItems(menu.menupopup);
@@ -100,9 +108,9 @@ function handleEvent(aEvent) {
     }
 
     case 'popuphiding': {
-      let contextMenu = aEvent.currentTarget;
+      let contextMenu = event.currentTarget;
 
-      if (aEvent.target === contextMenu) {
+      if (event.target === contextMenu) {
         let menu = $ID(kUI.menu.id);
 
         while (menu.itemCount) {
@@ -114,14 +122,17 @@ function handleEvent(aEvent) {
     }
 
     case 'command': {
-      let item = aEvent.target;
+      let item = event.target;
 
       let keyword = item[kDataKey.keyword];
 
       if (keyword) {
         gURLBar.textValue = keyword + ' ' + gURLBar.textValue.trim();
 
-        // Trigger the auto-complete popup.
+        // Open the auto-complete popup.
+        // TODO: Use reliable API.
+        // WORKAROUND: Updating selection, virtually nothing to change,
+        // triggers the popup open.
         gURLBar.editor.deleteSelection(0, 0);
       }
 
@@ -130,43 +141,58 @@ function handleEvent(aEvent) {
   }
 }
 
-function createMenu(aContextMenu) {
-  let refItem = aContextMenu.firstChild;
+function createMenu(contextMenu) {
+  // TODO: Make the insertion position of the menu fixed for useful access.
+  // WORKAROUND: Inserts to the top of the context menu at this point in time.
+  let referenceNode = contextMenu.firstChild;
 
-  let menu = $E('menu', {
-    id: kUI.menu.id,
-    label: kUI.menu.label,
-    accesskey: kUI.menu.accesskey
-  });
+  let addSeparator = (separatorUI) => {
+    contextMenu.insertBefore($E('menuseparator', {
+      id: separatorUI.id
+    }), referenceNode);
+  };
 
-  menu.appendChild($E('menupopup'));
+  let addMenu = (menuUI) => {
+    let menu = contextMenu.insertBefore($E('menu', {
+      id: menuUI.id,
+      label: menuUI.label,
+      accesskey: menuUI.accesskey
+    }), referenceNode);
 
-  addSeparator(refItem, kUI.separator.start)
-  insertElement(refItem, menu);
-  addSeparator(refItem, kUI.separator.end)
+    menu.appendChild($E('menupopup'));
+  };
+
+  addSeparator(kUI.startSeparator);
+
+  addMenu(kUI.menu);
+
+  addSeparator(kUI.endSeparator);
 }
 
-function buildMenuItems(aPopup) {
-  if (!buildGroup(aPopup, getRestrictKeywordData())) {
-    makeDisabledMenuItem(aPopup, kUI.emptyGroup.restrict);
-  }
+function buildMenuItems(popupMenu) {
+  let makeMenuSeparator = () => {
+    return popupMenu.appendChild($E('menuseparator'));
+  };
 
-  addSeparator(aPopup);
-
-  // Bookmark keywords will be async-appended before this separator.
-  let bkSeparator = addSeparator(aPopup);
-
-  asyncBuildGroup(bkSeparator, getBookmarkKeywordData(), (aBuilt) => {
-    if (!aBuilt) {
-      makeDisabledMenuItem(bkSeparator, kUI.emptyGroup.bookmark);
-    }
+  buildList({
+    listGetter: getRestrictKeywordList,
+    listUI: kUI.restrict,
+    referenceNode: makeMenuSeparator()
   });
 
-  if (!buildGroup(aPopup, getSearchEngineKeywordData())) {
-    makeDisabledMenuItem(aPopup, kUI.emptyGroup.searchEngine);
-  }
+  buildList({
+    listGetter: getBookmarkKeywordList,
+    listUI: kUI.bookmark,
+    referenceNode: makeMenuSeparator()
+  });
 
-  insertElement(aPopup, $E('menuitem', {
+  buildList({
+    listGetter: getSearchEngineKeywordList,
+    listUI: kUI.searchEngine,
+    referenceNode: makeMenuSeparator()
+  });
+
+  popupMenu.appendChild($E('menuitem', {
     label: kUI.openSearchEngineManager.label,
     accesskey: kUI.openSearchEngineManager.accesskey,
     // @require [optional] Overlay.uc.xul
@@ -176,43 +202,57 @@ function buildMenuItems(aPopup) {
   }));
 }
 
-function buildGroup(aRefItem, aData) {
-  if (!aData || !aData.length) {
-    return false;
-  }
+function buildList(params) {
+  let {
+    listGetter,
+    listUI,
+    referenceNode
+  } = params;
 
-  let $label = (aName, aKeyword) =>
-    kUI.item.label.replace('%name%', aName).replace('%keyword%', aKeyword);
+  let append = (menuItems) => {
+    // Append menuitems to the menu popup.
+    referenceNode.parentNode.insertBefore(menuItems, referenceNode);
+  };
 
-  let fragment = window.document.createDocumentFragment();
-
-  aData.forEach(({name, keyword, URL}) => {
-    let item = fragment.appendChild($E('menuitem', {
-      label: $label(name, keyword),
-      tooltiptext: URL
-    }));
-
-    item[kDataKey.keyword] = keyword;
-  });
-
-  insertElement(aRefItem, fragment);
-
-  return true;
-}
-
-function asyncBuildGroup(aRefItem, aPromise, aCallback) {
-  aPromise.then(
-    function onResolve(aData) {
-      if (!isContextMenuOpen()) {
-        return;
-      }
-
-      aCallback(buildGroup(aRefItem, aData));
+  listGetter().then((list) => {
+    // No need to append new items if the context menu has closed.
+    if (!isContextMenuOpen()) {
+      return;
     }
-  ).catch(Cu.reportError);
+
+    if (!list.length) {
+      append($E('menuitem', {
+        label: listUI.noItems,
+        disabled: true
+      }));
+
+      return;
+    }
+  
+    let fragment = window.document.createDocumentFragment();
+
+    let $label = (name, keyword) =>
+      kUI.item.label.
+      replace('%name%', name).
+      replace('%keyword%', keyword);
+
+    list.forEach(({name, keyword, URL}) => {
+      let menuItem = fragment.appendChild($E('menuitem', {
+        label: $label(name, keyword),
+        tooltiptext: URL
+      }));
+
+      menuItem[kDataKey.keyword] = keyword;
+
+      fragment.appendChild(menuItem);
+    });
+
+    append(fragment);
+  }).
+  catch(Cu.reportError);
 }
 
-function getRestrictKeywordData() {
+function getRestrictKeywordList() {
   // @note Displayed in the declared order.
   // @see http://kb.mozillazine.org/Location_Bar_search
   const kRestrictKeys = {
@@ -225,38 +265,27 @@ function getRestrictKeywordData() {
     'browser.urlbar.match.url': 'Page urls'
   };
 
-  let data = [];
+  let list = [];
 
   for (let key in kRestrictKeys) {
     let keyword = Modules.Prefs.get(key);
 
     if (keyword) {
-      data.push({
+      list.push({
         name: kRestrictKeys[key],
         keyword
       });
     }
   }
 
-  return data;
-}
-
-function getSearchEngineKeywordData() {
-  let data = [];
-
-  Services.search.getEngines().forEach((aItem) => {
-    if (aItem.alias) {
-      data.push({
-        name: aItem.description || aItem.name,
-        keyword: aItem.alias
-      });
-    }
+  return new Promise((resolve) => {
+    resolve(list);
   });
-
-  return data.sort((a, b) => a.keyword.localeCompare(b.keyword));
 }
 
-function getBookmarkKeywordData() {
+function getBookmarkKeywordList() {
+  let getPrePath = (URL) =>URL.replace(/^(\w+:[\/]*[^\/]+).*$/, '$1');
+
   let sql = [
     'SELECT b.title, k.keyword, p.url',
     'FROM moz_bookmarks b',
@@ -268,58 +297,46 @@ function getBookmarkKeywordData() {
     sql,
     columns: ['title', 'keyword', 'url']
   }).
-  then((aRows) => {
-    if (!aRows || !aRows.length) {
+  then((rows) => {
+    if (!rows) {
       return [];
     }
 
-    let data = [];
+    let list = [];
 
-    aRows.forEach((aItem) => {
-      data.push({
-        name: aItem.title || getPrePath(aItem.url),
-        URL: aItem.url,
-        keyword: aItem.keyword
+    rows.forEach((item) => {
+      list.push({
+        name: item.title || getPrePath(item.url),
+        URL: item.url,
+        keyword: item.keyword
       });
     });
 
-    return data.sort((a, b) => a.keyword.localeCompare(b.keyword));
+    list.sort((a, b) => a.keyword.localeCompare(b.keyword));
+
+    return list;
   });
 }
 
-function getPrePath(aURL) {
-  return aURL.replace(/^(\w+:[/]*[^/]+).*$/, '$1');
-}
+function getSearchEngineKeywordList() {
+  let list = [];
 
-/**
- * Helper functions for DOM.
- */
-function addSeparator(aRefItem, aId) {
-  return insertElement(aRefItem, $E('menuseparator', {
-    id: aId
-  }));
-}
+  Services.search.getEngines().forEach((item) => {
+    if (item.alias) {
+      list.push({
+        name: item.description || item.name,
+        keyword: item.alias
+      });
+    }
+  });
 
-function makeDisabledMenuItem(aRefItem, aLabel) {
-  return insertElement(aRefItem, $E('menuitem', {
-    label: aLabel,
-    disabled: true
-  }));
-}
-
-function insertElement(aRefItem, aElement) {
-  let popup, refItem;
-
-  if (aRefItem.localName === 'menupopup') {
-    popup = aRefItem;
-    refItem = null;
-  }
-  else {
-    popup = aRefItem.parentNode;
-    refItem = aRefItem;
+  if (list.length) {
+    list.sort((a, b) => a.keyword.localeCompare(b.keyword));
   }
 
-  return popup.insertBefore(aElement, refItem);
+  return new Promise((resolve) => {
+    resolve(list);
+  });
 }
 
 function isContextMenuOpen() {
