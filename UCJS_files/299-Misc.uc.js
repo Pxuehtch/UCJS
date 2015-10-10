@@ -446,23 +446,6 @@ const {
 })();
 
 /**
- * Suppress a rapid moving of focuses with holding the <Tab> key down.
- *
- * @note Applied only in the content area.
- */
-(function() {
-
-  // @note Use the capture mode to surely catch the event in the content area.
-  $event(gBrowser.mPanelContainer, 'keydown', (aEvent) => {
-    if (aEvent.key === 'Tab' && aEvent.repeat) {
-      aEvent.preventDefault();
-      aEvent.stopPropagation();
-    }
-  }, true);
-
-})();
-
-/**
  * Handler of focusing by the <Tab> key.
  *
  * @require UI.uc.js
@@ -496,19 +479,9 @@ const {
 
   $ID('mainKeyset').appendChild($E('key', {
     id: 'ucjs_key_toggleTabFocus',
-    key: 'F',
-    modifiers: 'shift,control,alt',
-    oncommand: command
-  }));
-
-  /**
-   * Gives focus on the content area.
-   */
-  $ID('mainKeyset').appendChild($E('key', {
-    id: 'ucjs_key_focusInContentArea',
     key: 'f',
     modifiers: 'control,alt',
-    oncommand: 'gBrowser.contentDocument.documentElement.focus();'
+    oncommand: command
   }));
 
 })();
