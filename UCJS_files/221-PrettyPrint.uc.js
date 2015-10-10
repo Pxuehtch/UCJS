@@ -6,8 +6,9 @@
 
 // @require Util.uc.js, UI.uc.js
 
-// @usage Creates a menuitem in the context menu of a plain text page of
-// JS/CSS.
+// @usage The prettify menuitem is appended in the context menu of a plain text
+// page of JS/CSS.
+// @note The menuitem appears with the native 'View Page Source' menuitem.
 
 
 (function(window) {
@@ -21,6 +22,7 @@
  */
 const {
   Modules,
+  ContentTask,
   Listeners: {
     $eventOnce
   },
@@ -102,12 +104,12 @@ const kPrettifierOptions = {
  */
 const Menu = (function() {
   const kUI = {
-    // Native menuitem.
+    // The native 'View Page Source' menuitem.
     viewSource: {
       id: 'context-viewsource'
     },
 
-    // Custom menuitem.
+    // Our menuitem.
     prettifyPage: {
       id: 'ucjs_PrettyPrint_prettifyPage_menuitem',
       label: '表示コードを整形',
@@ -119,6 +121,7 @@ const Menu = (function() {
     contentAreaContextMenu.register({
       events: [
         ['popupshowing', onPopupShowing],
+        ['popuphiding', onPopupHiding],
         ['command', onCommand]
       ],
 
@@ -138,29 +141,53 @@ const Menu = (function() {
     let contextMenu = aEvent.currentTarget;
 
     if (aEvent.target === contextMenu) {
-      let contentDocument = gBrowser.contentDocument;
-      let shouldShow =
-        !$ID(kUI.viewSource.id).hidden &&
-        getTextType(contentDocument) &&
-        getTextContainer(contentDocument);
+      let viewSource = $ID(kUI.viewSource.id);
+      let prettifyPage = $ID(kUI.prettifyPage.id);
 
-      // @see chrome://browser/content/nsContextMenu.js::showItem
-      window.gContextMenu.showItem(kUI.prettifyPage.id, shouldShow);
+      // The showing condition of the native view-source menuitem is suitable
+      // for our prettify-page menuitem.
+      // @see chrome://browser/content/nsContextMenu.js::initViewItems
+      if (viewSource.hidden) {
+        showItem(prettifyPage, false);
+
+        return;
+      }
+
+      TextDocument.test().
+      then((shouldShow) => {
+        showItem(prettifyPage, shouldShow);
+      }).
+      catch(Cu.reportError);
+    }
+  }
+
+  function onPopupHiding(aEvent) {
+    let contextMenu = aEvent.currentTarget;
+
+    if (aEvent.target === contextMenu) {
+      TextDocument.clear();
     }
   }
 
   function onCommand(aEvent) {
     if (aEvent.target.id === kUI.prettifyPage.id) {
-      let contentDocument = gBrowser.contentDocument;
       let state = {
-        filename: contentDocument.documentURI,
-        type: getTextType(contentDocument),
-        text: getTextContent(contentDocument),
+        filename: gBrowser.currentURI.spec,
+        type: TextDocument.textType,
+        text: TextDocument.textContent,
         editorOptions: kEditorOptions,
         prettifierOptions: kPrettifierOptions
       };
 
       Scratchpad.prettify(state);
+    }
+  }
+
+  function showItem(item, shouldShow) {
+    let shouldHide = !shouldShow;
+
+    if (item.hidden !== shouldHide) {
+      item.hidden = shouldHide;
     }
   }
 
@@ -491,60 +518,80 @@ const Prettifier = (function() {
 })();
 
 /**
- * Get the text content in a plain text document.
- *
- * @param {HTMLDocument} aDocument
- * @return {string|null}
+ * Text document handler.
  */
-function getTextContent(aDocument) {
-  let container = getTextContainer(aDocument);
+const TextDocument = (function() {
+  let mTextType;
+  let mTextContent;
 
-  return container ? container.textContent : null;
-}
-
-/**
- * Get a <PRE> element that contains the text content in a plain text document.
- *
- * @param {HTMLDocument} aDocument
- * @return {HTMLPreElement|null}
- */
-function getTextContainer(aDocument) {
-  let body = aDocument.body
-
-  let pre =
-    body &&
-    body.childNodes.length === 1 &&
-    body.firstChild instanceof HTMLPreElement &&
-    body.firstChild;
-
-  let textLength =
-    pre &&
-    pre.childNodes.length === 1 &&
-    pre.firstChild instanceof Text &&
-    pre.firstChild.length;
-
-  return !!textLength ? pre : null;
-}
-
-/**
- * Get a text type for the document.
- *
- * @param {HTMLDocument} aDocument
- * @return {kTextType|null}
- */
-function getTextType(aDocument) {
-  switch (aDocument.contentType) {
-    case 'text/javascript':
-    case 'application/javascript':
-    case 'application/x-javascript':
-      return kTextType.js;
-
-    case 'text/css':
-      return kTextType.css;
+  function clear() {
+    mTextType = null;
+    mTextContent = null;
   }
 
-  return null;
-}
+  function test() {
+    return Task.spawn(function*() {
+      let contentType = gBrowser.selectedBrowser.documentContentType;
+      let textType = getTextType(contentType);
+
+      if (!textType) {
+        return false;
+      }
+
+      let textContent = yield ContentTask.spawn(function*() {
+        let body = content.document.body;
+
+        let pre =
+          body &&
+          body.childNodes.length === 1 &&
+          body.firstChild instanceof content.HTMLPreElement &&
+          body.firstChild;
+
+        let textLength =
+          pre &&
+          pre.childNodes.length === 1 &&
+          pre.firstChild instanceof content.Text &&
+          pre.firstChild.length;
+
+        return !!textLength ? pre.textContent : null;
+      });
+
+      if (!textContent) {
+        return false;
+      }
+
+      mTextType = textType;
+      mTextContent = textContent;
+
+      return true;
+    });
+  }
+
+  function getTextType(aContentType) {
+    switch (aContentType) {
+      case 'text/javascript':
+      case 'application/javascript':
+      case 'application/x-javascript':
+        return kTextType.js;
+
+      case 'text/css':
+        return kTextType.css;
+    }
+
+    return null;
+  }
+
+  return {
+    get textType() {
+      return mTextType;
+    },
+    get textContent() {
+      return mTextContent;
+    },
+    clear,
+    test
+  };
+})();
 
 function prompt(aMessage, aOption = {}) {
   let {
