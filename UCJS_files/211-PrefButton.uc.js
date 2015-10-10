@@ -8,7 +8,7 @@
 
 // @usage Creates items on the navigation toolbar.
 
-// @note Some about:config preferences are changed (see @pref).
+// @note Some about:config preferences are changed (see @prefs).
 
 // @note The button styles are adjusted to the themes of my Fx and OS.
 // @see |setStyleSheet()|
@@ -105,30 +105,26 @@ const kItemList = [
     label: 'Ref.',
     description: 'Switch Referrer sending',
 
-    // @pref
+    // @prefs
     // 0: Never send the referrer header.
     // 1: Send when clicking on a link.
     // 2: Send when clicking on a link or loading an image [default].
     // @see http://kb.mozillazine.org/Network.http.sendRefererHeader
-    pref: {
-      key: 'network.http.sendRefererHeader',
-      value: {
-        never: 0,
-        link: 1,
-        linkOrImage: 2
+    prefs: PrefsManager({
+      name: 'network.http.sendRefererHeader',
+      values: {
+        'never': 0,
+        'link': 1,
+        'linkOrImage': 2
       }
-    },
+    }),
 
     get checked() {
-      let {key, value} = this.pref;
-
-      return Modules.Prefs.get(key, value.linkOrImage) !== value.never;
+      return this.prefs.get() !== 'never';
     },
 
     command() {
-      let {key, value} = this.pref;
-
-      Modules.Prefs.set(key, this.checked ? value.never : value.linkOrImage);
+      this.prefs.set(this.checked ? 'linkOrImage' : 'never');
     }
   },
   {
@@ -137,30 +133,26 @@ const kItemList = [
     label: 'GIF',
     description: 'Switch GIF animation',
 
-    // @pref
+    // @prefs
     // 'none': Prevent image animation.
     // 'once': Let the image animate once.
     // 'normal': Allow it to play over and over [default].
     // @see http://kb.mozillazine.org/Animated_images
-    pref: {
-      key: 'image.animation_mode',
-      value: {
-        none: 'none',
-        once: 'once',
-        normal: 'normal'
+    prefs: PrefsManager({
+      name: 'image.animation_mode',
+      values: {
+        'none': 'none',
+        'once': 'once',
+        'normal': 'normal'
       }
-    },
+    }),
 
     get checked() {
-      let {key, value} = this.pref;
-
-      return Modules.Prefs.get(key, value.normal) !== value.none;
+      return this.prefs.get() !== 'none';
     },
 
     command() {
-      let {key, value} = this.pref;
-
-      Modules.Prefs.set(key, this.checked ? value.none : value.normal);
+      this.prefs.set(this.checked ? 'normal' : 'none');
 
       // Immediately apply the new mode in the animate-able image document.
       if (gBrowser.contentDocument instanceof ImageDocument &&
@@ -308,6 +300,37 @@ function setStyleSheet() {
       padding: 0;
     }
   `);
+}
+
+/**
+ * Preferences manager.
+ */
+function PrefsManager(prefsData) {
+  let data = {
+    name: prefsData.name,
+    values: prefsData.values
+  };
+
+  function get() {
+    let value = Modules.Prefs.get(data.name);
+
+    for (let key in data.values) {
+      if (data.values[key] === value) {
+        return key;
+      }
+    }
+
+    return null;
+  }
+
+  function set(value) {
+    return Modules.Prefs.set(data.name, data.values[value]);
+  }
+
+  return {
+    get,
+    set
+  };
 }
 
 /**
