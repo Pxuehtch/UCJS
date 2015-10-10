@@ -272,8 +272,11 @@ const kUI = {
     type: ['%title%', '%title% (%count%)'],
     data: ['%title%', '%title% [%attributes%]'],
     meta: '%name%: %content%',
-    // Item numbers limitation warning.
-    tooManyItems: '項目が多いので表示を制限'
+    // Menu item numbers limitation warning.
+    tooManyMenuItems: '項目が多いので表示を制限',
+    // The max number of menu items in a menu.
+    // @note all <meta> data shows without limit.
+    maxNumMenuItems: 20
   }
 };
 
@@ -355,10 +358,10 @@ const MenuUI = (function() {
     else if (data.submit) {
       let submit = (aDocument) => {
         try {
-          aDocument.forms[data.submit].submit();
+          aDocument.forms[data.submit.formIndex].submit();
         }
         catch (ex) {
-          warn('Error for the <form> element:\n' + ex);
+          warn(`Cannot submit form: ${data.submit.name}\n${ex.toString()}`);
         }
       };
 
@@ -620,7 +623,7 @@ const MenuUI = (function() {
         popup.appendChild($E('menuseparator'));
       }
 
-      result.forEach(({type, list, trimmed}) => {
+      result.forEach(({type, list}) => {
         let child;
         let tooltiptext;
 
@@ -637,7 +640,10 @@ const MenuUI = (function() {
         else {
           let childPopup = $E('menupopup');
 
-          list.forEach((data) => {
+          let maxNumMenuItems = kUI.items.maxNumMenuItems;
+          let typeItems = list.slice(0, maxNumMenuItems);
+
+          typeItems.forEach((data) => {
             let [text, URL] = [formatText(data), data.URL];
 
             childPopup.appendChild($E('menuitem', {
@@ -651,14 +657,15 @@ const MenuUI = (function() {
           child = $E('menu');
           child.appendChild(childPopup);
 
-          if (trimmed) {
-            tooltiptext = kUI.items.tooManyItems;
+
+          if (list.length > maxNumMenuItems) {
+            tooltiptext = kUI.items.tooManyMenuItems;
           }
         }
 
         let label = F(kUI.items.type, {
           title: getLabelForType(kNaviLinkType, type),
-          count: (list.length > 1) ? list.length : null
+          count: formatMenuItemsCount(list)
         });
 
         if (tooltiptext) {
@@ -704,25 +711,66 @@ const MenuUI = (function() {
 
     let popup = $E('menupopup');
 
-    result.forEach(({type, list, trimmed}) => {
+    result.forEach(({type, list}) => {
       let childPopup = $E('menupopup');
 
-      if (type === 'meta') {
-        // Only shows <meta> information with no command.
+      let maxNumMenuItems = kUI.items.maxNumMenuItems;
+      let metaInfo = type === 'meta';
+
+      if (metaInfo) {
+        list.sort((a, b) => {
+          return a.name.localeCompare(b.name) ||
+                 a.content.localeCompare(b.content);
+        });
+
+        let metaGroupList = {};
+        let metaAloneItems = [];
+
         list.forEach((data) => {
-          let text = formatText(data, {
-            meta: true
+          let metaGroupName = (/^(.+?):.+/.exec(data.name) || [])[1];
+
+          if (metaGroupName) {
+            if (!(metaGroupName in metaGroupList)) {
+              metaGroupList[metaGroupName] = [];
+            }
+
+            metaGroupList[metaGroupName].push(data);
+          }
+          else {
+            metaAloneItems.push(data);
+          }
+        });
+
+        metaAloneItems.forEach((data) => {
+          childPopup.appendChild(createMetaMenuItem(data));
+        });
+
+        for (let metaGroupName in metaGroupList) {
+          let metaGroupPopup = $E('menupopup');
+
+          let metaGroupItems = metaGroupList[metaGroupName];
+
+          metaGroupItems.forEach((data) => {
+            metaGroupPopup.appendChild(createMetaMenuItem(data));
           });
 
-          childPopup.appendChild($E('menuitem', {
-            closemenu: 'none',
-            label: text,
-            tooltiptext: text
-          }));
-        });
+          let metaGroupMenu = $E('menu', {
+            label: $f(kUI.items.type, {
+              title: metaGroupName,
+              count: formatMenuItemsCount(metaGroupItems, {
+                noLimit: true
+              })
+            })
+          });
+
+          metaGroupMenu.appendChild(metaGroupPopup);
+          childPopup.appendChild(metaGroupMenu);
+        }
       }
       else {
-        list.forEach((data) => {
+        let typeItems = list.slice(0, maxNumMenuItems);
+
+        typeItems.forEach((data) => {
           let [text, URL] = [formatText(data), data.URL];
 
           childPopup.appendChild($E('menuitem', {
@@ -738,12 +786,23 @@ const MenuUI = (function() {
 
       child.appendChild(childPopup);
 
+      let label = $f(kUI.items.type, {
+        title: getLabelForType(kPageInfoType, type),
+        count: formatMenuItemsCount(list, {
+          noLimit: metaInfo
+        })
+      });
+
+      let tooltiptext;
+
+      if (!metaInfo && list.length > maxNumMenuItems) {
+        tooltiptext = kUI.items.tooManyMenuItems;
+        tooltiptext = formatTooltip(label, tooltiptext);
+      }
+
       popup.appendChild($E(child, {
-        label: F(kUI.items.type, {
-          title: getLabelForType(kPageInfoType, type),
-          count: (list.length > 1) ? list.length : null
-        }),
-        tooltiptext: trimmed ? kUI.items.tooManyItems : null
+        label: ,
+        tooltiptext
       }));
     });
 
@@ -755,6 +814,19 @@ const MenuUI = (function() {
     menu.appendChild(popup);
 
     return menu;
+  }
+
+  function createMetaMenuItem(data) {
+    let text = formatText(data, {
+      meta: true
+    });
+
+    // Shows <meta> information with no command.
+    return $E('menuitem', {
+      closemenu: 'none',
+      label: text,
+      tooltiptext: text
+    });
   }
 
   /**
@@ -870,6 +942,26 @@ const MenuUI = (function() {
     }
 
     return aType;
+  }
+
+  /**
+   * The formatter of menu items count.
+   */
+  function formatMenuItemsCount(items, options = {}) {
+    let {noLimit} = options;
+
+    let count = items.length;
+
+    if (count < 2) {
+      // No use if the numbers is 0 or 1.
+      return null;
+    }
+
+    if (!noLimit && count > kUI.items.maxNumMenuItems) {
+      return kUI.items.maxNumMenuItems + '/' + count;
+    }
+
+    return count + '';
   }
 
   /**
@@ -1093,9 +1185,6 @@ const PresetNavi = (function() {
  * @note [additional] Makes a list of the page information.
  */
 const NaviLink = (function() {
-  // The max number of the items of each type.
-  const kMaxNumItemsOfType = 20;
-
   /**
    * Helper handler of RSS feed.
    */
@@ -1231,8 +1320,6 @@ const NaviLink = (function() {
    *   type: |kNaviLinkType.type| or |kPageInfoType.type|.
    *   list: {<data>[]}
    *     @see |getData()| for detail.
-   *   trimmed: {boolean}
-   *     A list has been limited because of too much items if true.
    */
   function getNaviList() {
     init();
@@ -1306,27 +1393,16 @@ const NaviLink = (function() {
 
     types.forEach((type) => {
       let resultList = [];
-      let trimmed = false;
 
       list[type].some((data) => {
         if (testUniqueData(resultList, data)) {
           resultList.push(data);
-
-          // Stop scanning the source list.
-          if (resultList.length >= kMaxNumItemsOfType) {
-            trimmed = true;
-
-            return true;
-          }
         }
-
-        return false;
       });
 
       result.push({
         type,
-        list: resultList,
-        trimmed
+        list: resultList
       });
     });
 
