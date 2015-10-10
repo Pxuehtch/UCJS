@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 
-// @note Creates a preference menu in 'tools' of the menu bar.
+// @note A preference menu is added in 'tools' of the menu bar.
 
 
 (function(window) {
@@ -19,24 +19,18 @@
  * Imports
  */
 const {
-  Modules: {
-    Timer: {
-      setTimeout,
-      setInterval,
-      clearInterval
-    }
-  },
+  Modules,
+  ContentTask,
   Listeners: {
     $event,
+    $messageOnce,
+    $page,
     $shutdown
   },
   DOMUtils: {
     $E,
-    $ID,
-    $S,
-    $S1
+    $ID
   },
-  CSSUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -47,10 +41,6 @@ const {
  * UI settings.
  */
 const kUI = {
-  pageStyleSheet: {
-    id: 'ucjs_SiteStyle_pageStyleSheet'
-  },
-
   prefMenu: {
     id: 'ucjs_SiteStyle_prefMenu',
     label: 'ucjsSiteStyle',
@@ -169,22 +159,30 @@ const kNoiseList = [
  * @key name {string}
  *   A display name in the preference menu.
  * @key include {regexp|string}|{regexp[]|string[]}
- *   URL where the commands should run.
+ *   The URL where the commands should run.
  *   @see |URLFilter| for filter rules.
  *
- * Must define one or more commands:
+ * Must define least one following commands:
  * ----------
- * @key quickScript {function} [optional]
- *   A function that runs as soon as a location changes.
- *   @param aDocument {Document}
+ * @key preload {function} [optional]
+ *   A function to be executed before the document is loaded.
+ *   @param uri {nsIURI}
+ *     The URI object of the document.
+ *   @param browser {xul:browser} [optional]
+ *     The browser that has the target document.
  *   @return {boolean}
- *     Whether |script| is applied or not after |quickScript|.
+ *     true if allowed |script| or |style| to follow after the document loaded,
+ *     otherwise false.
  * @key script {function} [optional]
- *   A function that runs after the document loaded.
- *   @param aDocument {Document}
+ *   A function to be executed after the document is loaded.
+ *   @param uri {nsIURI}
+ *   @param browser {xul:browser} [optional]
+ *   @return {hash}
+ *     contentTask: {generator}
+ *       A task to be run in the content frame.
  * @key style {function} [optional]
- *   A function that makes CSS to apply to the document.
- *   @param aDocument {Document}
+ *   A function to build CSS to be applied to the document.
+ *   @param uri {nsIURI}
  *   @return {CSS}
  * ----------
  *
@@ -197,136 +195,189 @@ const kSiteList = [
   {
     name: 'Google Result',
     include: '||google.tld/*?^q=',
-    script(aDocument) {
-      // Sanitize links.
-      [...$S('.g a', aDocument)].forEach((link) => {
-        link.removeAttribute('onmousedown');
+    // Adding own property.
+    utils: {
+      testMode: (uri) => {
+        /**
+         * Retrieve the mode parameter from Google search result URL.
+         *
+         * The mode values:
+         * - main: the main result. [own definition]
+         * - isch, nws, shop, app, bks. [Google definition]
+         *
+         * [URL parameters format]
+         * ?q=previous&tbm=app&...#q=current&tbm=shop&...
+         * The search part is for the previous result and the hash part is for
+         * the current result. We need the latter.
+         */
+        let [, search, hash] = /(\?.+)(#.+)$/.exec(uri.spec) || [];
+        let params = hash || search;
+        let [, mode] = params && /[?&#]tb[ms]=([^&]+)/.exec(params) || [];
 
-        let url =
-          /google\./.test(link.hostname) &&
-          /^\/url$/.test(link.pathname) &&
-          /[&?](?:q|url)=([^&]+)/.exec(link.search);
+        return (modeList) => {
+          if (modeList.includes('main')) {
+            return !mode;
+          }
 
-        if (url) {
-          link.href = decodeURIComponent(url[1]);
-        }
-      });
+          return mode && RegExp(`^(?:${modeList})$`).test(mode);
+        };
+      }
+    },
+    script(uri, browser) {
+      let testMode = this.utils.testMode(uri);
 
-      let lastHost = null;
+      // The main result page only.
+      if (!testMode('main')) {
+        return;
+      }
 
-      [...$S('.g', aDocument)].forEach((item) => {
-        let link = $S1('.r>a, .ts a', item);
+      // 1.Receive the result items list from content process.
+      // 2.Add informations to each items.
+      // 3.Send back the list to content process.
+      $messageOnce('ucjs:SiteStyle:resultItemList', (message) => {
+        let {resultItemList} = message.data;
 
-        if (!link) {
+        let mm = browser.messageManager
+
+        if (!mm) {
           return;
         }
 
-        // Weaken noisy item.
-        if (NoisyURLFilter.test(link.href)) {
-          item.classList.add('ucjs_SiteStyle_weaken');
+        // Mark on a noisy item.
+        for (let item of resultItemList) {
+          if (NoisyURLFilter.test(item.href)) {
+            item.noisy = true;
+          }
         }
 
-        // Emphasize the same host item.
-        let host = link.hostname;
-
-        if (host === lastHost) {
-          item.classList.add('ucjs_SiteStyle_sameHost');
-        }
-        else {
-          lastHost = host;
-        }
+        mm.sendAsyncMessage('ucjs:SiteStyle:resultItemList', {
+          resultItemList
+        });
       });
-    },
-    style(aDocument) {
-      let testMode = (function() {
-        let params = aDocument.location.hash || aDocument.location.search;
-        let [, mode] = /[?&#]tb[ms]=([^&]+)/.exec(params) || [];
 
-        return (aModeList) => {
-          if (aModeList) {
-            return mode && RegExp('^(' + aModeList + ')$').test(mode);
+      function* content_task() {
+        '${ContentTask.ContentScripts.Listeners}';
+        '${ContentTask.ContentScripts.DOMUtils}';
+
+        const kSelectors = {
+          allLink: '.g a',
+          resultItem: '.g',
+          resultLink: '.r>a, .ts a'
+        };
+
+        // Sanitize links.
+        for (let link of DOMUtils.$S(kSelectors.allLink)) {
+          link.removeAttribute('onmousedown');
+
+          let url =
+            /google\./.test(link.hostname) &&
+            /^\/url$/.test(link.pathname) &&
+            /[&?](?:q|url)=([^&]+)/.exec(link.search);
+
+          if (url) {
+            link.href = decodeURIComponent(url[1]);
+          }
+        }
+
+        // Process result items.
+        let resultItemList = [];
+        let lastHost = null;
+
+        for (let item of DOMUtils.$S(kSelectors.resultItem)) {
+          let link = DOMUtils.$S1(kSelectors.resultLink, item);
+
+          // Collect items data to be sent to chrome process.
+          resultItemList.push({
+            href: link && link.href
+          });
+
+          if (!link || link.hidden) {
+            continue;
           }
 
-          // The main result page or not.
-          return !mode;
-        };
-      })();
+          // Put a mark on the same host items.
+          let host = link.hostname;
 
-      // Common styles.
+          if (host === lastHost) {
+            item.classList.add('ucjs_SiteStyle_sameHost');
+          }
+          else {
+            lastHost = host;
+          }
+        }
+
+        // 1.Send result items list to chrome process.
+        // 2.Receive the list that has been added informations to each items.
+        Listeners.$messageOnce('ucjs:SiteStyle:resultItemList', (message) => {
+          let {resultItemList} = message.data;
+
+          let items = DOMUtils.$S(kSelectors.resultItem);
+
+          resultItemList.forEach((item, i) => {
+            // Understate noisy items.
+            if (item.noisy) {
+              items[i].classList.add('ucjs_SiteStyle_understate');
+            }
+          });
+        });
+
+        sendAsyncMessage('ucjs:SiteStyle:resultItemList', {
+          resultItemList
+        });
+      }
+
+      return {
+        contentTask: content_task
+      };
+    },
+    style(uri) {
+      let testMode = this.utils.testMode(uri);
+
+      // The common styles.
       let css = `
         /* Search text box. */
         .srp #searchform {
           top: auto !important;
-        }
-        /* Block items. */
-        .nrgt > tbody > tr > td, .ts > tbody > tr >td {
-          float: left !important;
-          width: auto !important;
-        }
-        /* Sub contents items. */
-        .nrgt, .nrgt *, .r ~ div {
-          width: auto !important;
-          margin-top: 0 !important;
-          margin-left: 0 !important;
-          padding-top: 0 !important;
-          padding-left: 0 !important;
-        }
-        .nrgt .l {
-          font-size: small !important;
         }
         /* Footer navi. */
         #foot {
           width: auto !important;
           margin: 0 !important;
         }
-        /* Special result (Wikipedia, delivery tracking, etc.) */
-        .kp-blk {
-          margin: 0 !important;
-          box-shadow: none !important;
-        }
-        .kp-blk .mod {
-          padding: 0 !important;
-        }
       `;
 
-      // Workaround for broken styles.
-      // Except for images, shopping.
-      if (!testMode('isch|shop')) {
+      // Styles for result items except for images.
+      if (!testMode('isch')) {
         css += `
-          /* Content area container */
-          .col {
-            float: none !important;
+          /* Block items. */
+          .nrgt > tbody > tr > td, .ts > tbody > tr >td {
+            float: left !important;
             width: auto !important;
           }
-        `;
-      }
-
-      // Each item styles.
-      // Except for images, shopping, application, books.
-      if (!testMode('isch|shop|app|bks')) {
-        css += `
-          .ucjs_SiteStyle_sameHost cite::before {
-            content: "=";
-            font-weight: bold;
-            color: red;
-            margin-right: 2px;
+          /* Sub contents items. */
+          .nrgt, .nrgt *, .r ~ div {
+            width: auto !important;
+            margin-top: 0 !important;
+            margin-left: 0 !important;
+            padding-top: 0 !important;
+            padding-left: 0 !important;
           }
-          #res .ucjs_SiteStyle_weaken h3{
+          .nrgt .l {
             font-size: small !important;
           }
-          .ucjs_SiteStyle_weaken h3 ~ * {
-            opacity: .3 !important;
+          /* Special result (Wikipedia, delivery tracking, etc.) */
+          .kp-blk {
+            margin: 0 !important;
+            box-shadow: none !important;
           }
-          .ucjs_SiteStyle_weaken:hover * {
-            opacity: 1 !important;
-            transition: opacity .5s !important;
+          .kp-blk .mod {
+            padding: 0 !important;
           }
         `;
       }
 
-      // Multi column.
-      // Except for images, shopping.
-      if (!testMode('isch|shop')) {
+      // Multi column except for images, shopping, applications, books.
+      if (!testMode('isch|shop|app|bks')) {
         css += `
           /* hide right pane */
           #rhs, #rhscol, #leftnav + td + td {
@@ -352,53 +403,142 @@ const kSiteList = [
         `;
       }
 
+      // Workaround for broken styles except for images, shopping.
+      if (!testMode('isch|shop')) {
+        css += `
+          /* Content area container */
+          .col {
+            float: none !important;
+            width: auto !important;
+          }
+        `;
+      }
+
+      // Styles for our customizations only for main.
+      if (testMode('main')) {
+        css += `
+          .ucjs_SiteStyle_sameHost cite::before {
+            content: "=";
+            font-weight: bold;
+            color: red;
+            margin-right: 2px;
+          }
+          #res .ucjs_SiteStyle_understate h3{
+            font-size: small !important;
+          }
+          .ucjs_SiteStyle_understate h3 ~ * {
+            opacity: .3 !important;
+          }
+          .ucjs_SiteStyle_understate:hover * {
+            opacity: 1 !important;
+            transition: opacity .5s !important;
+          }
+        `;
+      }
+
       return css;
     }
   },
   {
     name: 'Yahoo!JAPAN Result',
-    include: '|search.yahoo.co.jp/search',
-    script(aDocument) {
-      // Sanitize links.
-      [...$S('#contents a', aDocument)].forEach((link) => {
-        link.removeAttribute('onmousedown');
+    include: '|search.yahoo.co.jp/search^',
+    script(uri, browser) {
+      // 1.Receive the result items list from content process.
+      // 2.Add informations to each items.
+      // 3.Send back the list to content process.
+      $messageOnce('ucjs:SiteStyle:resultItemList', (message) => {
+        let {resultItemList} = message.data;
 
-        let url =
-          /yahoo\./.test(link.hostname) &&
-          /^\/\*\-/.test(link.pathname) &&
-          /\/\*\-([^?]+)/.exec(link.pathname);
+        let mm = browser.messageManager
 
-        if (url) {
-          link.href = decodeURIComponent(url[1]);
-        }
-      });
-
-      // Process items.
-      [...$S('.w, .cmm', aDocument)].forEach((item) => {
-        let link = $S1('.hd>h3>a', item);
-
-        if (!link) {
+        if (!mm) {
           return;
         }
 
-        // Weaken a noisy item.
-        if (NoisyURLFilter.test(link.href)) {
-          item.classList.add('ucjs_SiteStyle_weaken');
+        // Mark on a noisy item.
+        for (let item of resultItemList) {
+          if (NoisyURLFilter.test(item.href)) {
+            item.noisy = true;
+          }
         }
+
+        mm.sendAsyncMessage('ucjs:SiteStyle:resultItemList', {
+          resultItemList
+        });
       });
+
+      function* content_task() {
+        '${ContentTask.ContentScripts.Listeners}';
+        '${ContentTask.ContentScripts.DOMUtils}';
+
+        const kSelectors = {
+          allLink: '#contents a',
+          resultItem: '.w, .cmm',
+          resultLink: '.hd>h3>a'
+        };
+
+        // Sanitize links.
+        for (let link of DOMUtils.$S(kSelectors.allLink)) {
+          link.removeAttribute('onmousedown');
+
+          let url =
+            /yahoo\./.test(link.hostname) &&
+            /^\/\*\-/.test(link.pathname) &&
+            /\/\*\-([^?]+)/.exec(link.pathname);
+
+          if (url) {
+            link.href = decodeURIComponent(url[1]);
+          }
+        }
+
+        // Process result items.
+        let resultItemList = [];
+
+        for (let item of DOMUtils.$S(kSelectors.resultItem)) {
+          let link = DOMUtils.$S1(kSelectors.resultLink, item);
+
+          // Collect items data to be sent to chrome process.
+          resultItemList.push({
+            href: link && link.href
+          });
+        }
+
+        // 1.Send result items list to chrome process.
+        // 2.Receive the list that has been added informations to each items.
+        Listeners.$messageOnce('ucjs:SiteStyle:resultItemList', (message) => {
+          let {resultItemList} = message.data;
+
+          let items = DOMUtils.$S(kSelectors.resultItem);
+
+          resultItemList.forEach((item, i) => {
+            // Understate noisy items.
+            if (item.noisy) {
+              items[i].classList.add('ucjs_SiteStyle_understate');
+            }
+          });
+        });
+
+        sendAsyncMessage('ucjs:SiteStyle:resultItemList', {
+          resultItemList
+        });
+      }
+
+      return {
+        contentTask: content_task
+      };
     },
-    style(aDocument) {
+    style(uri) {
       let css = `
         /* Custom class. */
-        .ucjs_SiteStyle_weaken h3 {
+        .ucjs_SiteStyle_understate h3 {
           font-size: small !important;
         }
-        .ucjs_SiteStyle_weaken .hd ~ *,
-        .ucjs_SiteStyle_weaken h3 ~ *
+        .ucjs_SiteStyle_understate .hd ~ *,
+        .ucjs_SiteStyle_understate h3 ~ *
         {
           opacity: .3 !important;
         }
-        .ucjs_SiteStyle_weaken:hover * {
+        .ucjs_SiteStyle_understate:hover * {
           opacity: 1 !important;
           transition: opacity .5s !important;
         }
@@ -410,7 +550,7 @@ const kSiteList = [
   {
     name: 'Wikipedia Article',
     include: '||wikipedia.org/wiki/',
-    style(aDocument) {
+    style(uri) {
       let css = `
         /* Popup reference. */
         .references li {
@@ -432,94 +572,82 @@ const kSiteList = [
   {
     name: 'Youtube Player',
     include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|channel|user)/,
-    quickScript(aDocument) {
-      let location = aDocument.location;
+    preload(uri, browser) {
+      // WORKAROUND: Changes a parameter for the start time of a video page
+      // coming from 'Play in Youtube.com' of an embedded player so that we can
+      // pause at that time.
+      if (/#at=\d+/.test(uri.spec)) {
+        browser.loadURI(uri.spec.replace('#at=', '#t='));
 
-      // WORKAROUND: Changes a parameter key for the start time of a video page
-      // that comes from 'Play in Youtube.com' of an embedded player so that we
-      // can pause at that time.
-      if (/#at=\d+/.test(location.href)) {
-        location.replace(location.href.replace('#at=', '#t='));
-
-        return false;
+        // Stop the execution of the following |script|.
+        return false
       }
 
       return true;
     },
-    script(aDocument) {
-      // Excluding the playlist mode.
-      if (!/[?&]list=/.test(aDocument.location.search)) {
-        preventAutoplay(aDocument);
-      }
+    script(uri) {
+      function* content_task() {
+        '${ContentTask.ContentScripts.DOMUtils}';
 
-      function preventAutoplay(aDocument) {
-        let intervalTime = 500;
-        let waitCount = 20;
-        let timerID = null;
+        let window = content.window;
+        let location = window.document.location;
 
-        let clear = () => {
-          aDocument.defaultView.removeEventListener('unload', clear);
-
-          clearInterval(timerID);
-          timerID = null;
+        // Prevent auto play a video not in when playlist mode.
+        if (!/[?&]list=/.test(location.search)) {
+          preventAutoplay();
         }
 
-        aDocument.defaultView.addEventListener('unload', clear);
+        function preventAutoplay() {
+          let intervalTime = 500;
+          let waitCount = 20;
+          let timerID = null;
 
-        timerID = setInterval(() => {
-          if (--waitCount < 0) {
-            clear();
+          let clear = () => {
+            window.removeEventListener('unload', clear);
 
-            return;
-          }
+            window.clearInterval(timerID);
+            timerID = null;
+          };
 
-          if (pauseVideo(aDocument)) {
-            clear();
-          }
-        }, intervalTime);
+          window.addEventListener('unload', clear);
+
+          timerID = window.setInterval(() => {
+            if (--waitCount < 0 || pauseVideo()) {
+              clear();
+            }
+          }, intervalTime);
+        }
 
         /**
          * Pauses a video in an embedded player.
          *
-         * @param aDocument {HTMLDocument}
          * @return {boolean}
          *   true if a video is paused, false otherwise.
          *
          * @note Using Youtube Player API.
          * @see https://developers.google.com/youtube/js_api_reference
          */
-        function pauseVideo(aDocument) {
+        function pauseVideo() {
           let player =
-            // New Flash in channel page.
-            aDocument.getElementById('c4-player') ||
-            // Old Flash in channel page / Flash in watch page.
-            aDocument.getElementById('movie_player') ||
-            // HTML5 in watch page.
-            aDocument.getElementById('watch7-video');
+            DOMUtils.$ID('c4-player') ||
+            DOMUtils.$ID('movie_player') ||
+            DOMUtils.$ID('watch7-video');
 
-          if (player) {
-            player = player.wrappedJSObject;
+          if (!player) {
+            return false;
+          }
 
-            /**
-             * |player.getPlayerState()| returns the state of the player.
-             *
-             * Possible values are:
-             * -1 – unstarted
-             * 0 – ended
-             * 1 – playing
-             * 2 – paused
-             * 3 – buffering
-             * 5 – video cued
-             */
-            if (player.getPlayerState) {
-              switch (player.getPlayerState()) {
-                case 1:
-                case 2: {
-                  player.pauseVideo();
-                  player.seekTo(getStartTime(aDocument.location.href));
+          player = player.wrappedJSObject;
 
-                  return true;
-                }
+          if (player.getPlayerState) {
+            switch (player.getPlayerState()) {
+              // 1:playing or 2:paused
+              case 1:
+              case 2: {
+                player.pauseVideo();
+                player.seekTo(getStartTime(location.href));
+
+                return true;
               }
             }
           }
@@ -527,8 +655,8 @@ const kSiteList = [
           return false;
         }
 
-        function getStartTime(aURL) {
-          let time = /[?&#]t=(\d+h)?(\d+m)?(\d+s?)?/.exec(aURL);
+        function getStartTime(url) {
+          let time = /[?&#]t=(\d+h)?(\d+m)?(\d+s?)?/.exec(url);
 
           if (!time) {
             return 0;
@@ -543,6 +671,10 @@ const kSiteList = [
           return h + m + s;
         }
       }
+
+      return {
+        contentTask: content_task
+      };
     }
   }//,
 ];
@@ -684,158 +816,150 @@ const URLFilter = (function() {
  * Page observer handler.
  *
  * @return {hash}
- *   @key init {function}
- *
- * TODO: Detect surely when the document is loaded.
- * WORKAROUND: Applies a script when the complete request URL equals the
- * document URL.
- *
- * TODO: Detect surely when a request in the same document is loaded (e.g.
- * a next page from a link of the navigation bar of Google result).
- * WORKAROUND: Observes |about:document-onload-blocker| and delays execution
- * of a command.
- *
- * TODO: Detect surely the result page from the Google top page.
+ *   init: {function}
  */
 const PageObserver = (function() {
-  const {
-    LOCATION_CHANGE_SAME_DOCUMENT,
-    STATE_STOP, STATE_IS_WINDOW, STATE_IS_REQUEST
-  } = Ci.nsIWebProgressListener;
+  const BrowserState = {
+    browsersURL: new WeakMap(),
+    selectedBrowser: null,
 
-  let mBrowserState = new WeakMap();
-
-  const mProgressListener = {
     init() {
-      $event(gBrowser.tabContainer, 'TabClose', (aEvent) => {
-        let browser = gBrowser.getBrowserForTab(aEvent.target);
+      $event(gBrowser.tabContainer, 'TabClose', (event) => {
+        let browser = gBrowser.getBrowserForTab(event.target);
 
-        mBrowserState.delete(browser);
+        this.browsersURL.delete(browser);
       });
 
-      gBrowser.addTabsProgressListener(mProgressListener);
-
       $shutdown(() => {
-        gBrowser.removeTabsProgressListener(mProgressListener);
+        this.browsersURL = null;
+        this.selectedBrowser = null;
       });
     },
 
-    onLocationChange(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
-      let URL = aLocation.spec;
+    isNewDocument() {
+      let browser = gBrowser.selectedBrowser;
+      let url = browser.currentURI.spec;
 
-      if (!/^https?/.test(URL)) {
+      let sameTab = browser === this.selectedBrowser;
+      let sameURL = url === this.browsersURL.get(browser);
+
+      this.browsersURL.set(browser, url);
+      this.selectedBrowser = browser;
+
+      // The same tab has changed its URL so that the new document is loaded.
+      // @note The document is reloaded if the URL equals the old one.
+      // WORKAROUND: We consider the new document as be loaded even if only the
+      // hash changes for some updating of document like Google result page.
+      if (sameTab) {
+        return true;
+      }
+
+      // The tab is selected but its URL has been unchanged so that the tab is
+      // just selected.
+      if (sameURL) {
+        return false;
+      }
+
+      // The tab is selected and its URL has changed so that the new document
+      // is loaded.
+      return true;
+    }
+  };
+
+  const TabProgressListener = {
+    init() {
+      gBrowser.addProgressListener(TabProgressListener);
+
+      $shutdown(() => {
+        gBrowser.removeProgressListener(TabProgressListener);
+      });
+    },
+
+    onLocationChange(webProgress, request, uri) {
+      if (!BrowserState.isNewDocument()) {
         return;
       }
 
-      mBrowserState.delete(aBrowser);
-
-      let site = matchSiteList(URL);
+      let site = matchSiteList(uri.spec);
 
       if (!site) {
         return;
       }
 
-      // 1. Apply the stylesheet.
-      if (site.style) {
-        let css = site.style(aBrowser.contentDocument);
+      let browser = gBrowser.selectedBrowser;
 
-        PageCSS.set(aBrowser.contentDocument, css);
-      }
+      if (site.preload) {
+        let canProceed = site.preload(uri, browser);
 
-      // 2. Run the quick script before the document loading.
-      if (site.quickScript) {
-        if (!site.quickScript(aBrowser.contentDocument)) {
-          // Suppress the following script.
+        if (!canProceed) {
           return;
         }
       }
 
-      // 3. Wait the document loads and run the script.
-      if (site.script) {
-        mBrowserState.set(aBrowser, {
-          URL,
-          site,
-          isSameDocument: aFlags & LOCATION_CHANGE_SAME_DOCUMENT
-        });
-      }
-    },
-
-    onStateChange(aBrowser, aWebProgress, aRequest, aFlags, aStatus) {
-      let URL = aBrowser.currentURI.spec;
-
-      if (!/^https?/.test(URL)) {
+      if (!site.style && !site.script) {
         return;
       }
 
-      let state = mBrowserState.get(aBrowser);
+      $page('pageready', {
+        browser,
+        listener: onReady
+      });
 
-      if (!state || state.URL !== URL) {
-        return;
-      }
+      function onReady() {
+        ContentTask.spawn({
+          browser,
+          params: {
+            css: site.style && site.style(uri)
+          },
+          task: function*(params) {
+            '${ContentTask.ContentScripts.CSSUtils}';
 
-      if (aFlags & STATE_STOP) {
-        // Fix up a cached page URL (wyciwyg:).
-        if (fixupURL(aRequest.name) === URL ||
-            (aFlags & STATE_IS_WINDOW &&
-             aWebProgress.DOMWindow === aBrowser.contentWindow) ||
-            (state.isSameDocument &&
-             aFlags & STATE_IS_REQUEST &&
-             aRequest.name === 'about:document-onload-blocker')) {
-          setTimeout((aDocument) => {
-            if (checkAlive(aDocument)) {
-              state.site.script(aDocument);
+            let {css} = params;
+
+            if (css) {
+              CSSUtils.injectStyleSheet(css, {
+                id: 'ucjs_SiteStyle_css'
+              });
             }
-          }, 100, aBrowser.contentDocument);
 
-          mBrowserState.delete(aBrowser);
-        }
+            return new Promise((resolve) => {
+              // WORKAROUND: Wait until the DOM is absolutely built.
+              // Particularly it seems that Google result page needs a long
+              // time for DOM completes.
+              content.setTimeout(resolve, 1000);
+            });
+          }
+        }).
+        then(() => {
+          let script = site.script && site.script(uri, browser);
+
+          if (script && script.contentTask) {
+            ContentTask.spawn({
+              browser,
+              task: script.contentTask
+            });
+          }
+        }).
+        catch(Cu.reportError);
       }
     },
 
+    onStateChange() {},
     onProgressChange() {},
     onSecurityChange() {},
-    onStatusChange() {},
-    onRefreshAttempted() {},
-    onLinkIconAvailable() {}
+    onStatusChange() {}
   };
 
-  /**
-   * Checks whether a document is alive or not.
-   *
-   * @param aDocument {Document}
-   * @return {boolean}
-   *
-   * TODO: This is a workaround for checking a dead object. Make a reliable
-   * method instead.
-   */
-  function checkAlive(aDocument) {
-    try {
-      return !Cu.isDeadWrapper(aDocument);
-    }
-    catch (ex) {}
-
-    return false;
+  function init() {
+    BrowserState.init();
+    TabProgressListener.init();
   }
 
-  function fixupURL(aURL) {
-    let uri;
-
-    try {
-      const uriFixup = Services.uriFixup;
-
-      uri = uriFixup.createFixupURI(aURL, uriFixup.FIXUP_FLAG_NONE);
-      uri = uriFixup.createExposableURI(uri);
-    }
-    catch (ex) {}
-
-    return uri ? uri.spec : aURL;
-  }
-
-  function matchSiteList(aURL) {
+  function matchSiteList(url) {
     let site = null;
 
     kSiteList.some((item) => {
-      if (!item.disabled && testURL(item, aURL)) {
+      if (!item.disabled && testURL(item, url)) {
         site = item;
 
         return true;
@@ -847,19 +971,15 @@ const PageObserver = (function() {
     return site;
   }
 
-  function testURL(aSite, aURL) {
-    // Set the URL filter for inclusion inside each item.
+  function testURL(site, url) {
+    // Injects the URL filter into each item for inclusion test.
     // TODO: Avoid adding a hidden key that could cause an unexpected conflict
     // in a constant |kSiteList|.
-    if (!aSite._includeFilter) {
-      aSite._includeFilter = URLFilter.init(aSite.include);
+    if (!site._includeFilter) {
+      site._includeFilter = URLFilter.init(site.include);
     }
 
-    return aSite._includeFilter.test(aURL);
-  }
-
-  function init() {
-    mProgressListener.init();
+    return site._includeFilter.test(url);
   }
 
   return {
@@ -871,7 +991,7 @@ const PageObserver = (function() {
  * Noisy URL filter.
  *
  * @return {hash}
- *   @key test {function}
+ *   test: {function}
  */
 const NoisyURLFilter = (function() {
   let filter = URLFilter.init(kNoiseList);
@@ -882,51 +1002,10 @@ const NoisyURLFilter = (function() {
 })();
 
 /**
- * Page CSS handler.
- *
- * @return {hash}
- *   @key set {function}
- */
-const PageCSS = (function() {
-  function set(aDocument, aCSS) {
-    if (/^(?:complete|interactive)$/.test(aDocument.readyState)) {
-      setCSS(aDocument, aCSS);
-
-      return;
-    }
-
-    aDocument.addEventListener('DOMContentLoaded', onReady);
-    aDocument.defaultView.addEventListener('unload', cleanup);
-
-    function cleanup() {
-      aDocument.removeEventListener('DOMContentLoaded', onReady);
-      aDocument.defaultView.removeEventListener('unload', cleanup);
-    }
-
-    function onReady() {
-      cleanup();
-
-      setCSS(aDocument, aCSS);
-    }
-  }
-
-  function setCSS(aDocument, aCSS) {
-    CSSUtils.setContentStyleSheet(aCSS, {
-      document: aDocument,
-      id: kUI.pageStyleSheet.id
-    });
-  }
-
-  return {
-    set
-  };
-})();
-
-/**
  * Preference menu handler.
  *
  * @return {hash}
- *   @key init {function}
+ *   init: {function}
  */
 const PrefMenu = (function() {
   function init() {
@@ -964,8 +1043,8 @@ const PrefMenu = (function() {
     $ID('menu_ToolsPopup').appendChild(menu);
   }
 
-  function onCommand(aEvent) {
-    let item = aEvent.target;
+  function onCommand(event) {
+    let item = event.target;
 
     let index = item[kDataKey.itemIndex];
 
