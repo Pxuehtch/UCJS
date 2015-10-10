@@ -9,6 +9,8 @@
 // @note A native function |gFindBar.onFindAgainCommand| is modified (see
 // @modified).
 
+// !!! This script doesn't yet support e10s. !!!
+
 
 (function(window) {
 
