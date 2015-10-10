@@ -125,7 +125,8 @@ const {
     }
 
     if (tab.mOverCloseButton) {
-      mTooltip.label = tab.getAttribute('closetabtext');
+      mTooltip.label =
+        gBrowser.mStringBundle.getString('tabs.closeTab.tooltip');
 
       return;
     }
