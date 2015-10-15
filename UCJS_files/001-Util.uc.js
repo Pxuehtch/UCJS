@@ -97,11 +97,6 @@ const Modules = (function() {
       IID: 'nsIClipboardHelper'
     },
     {
-      name: 'SessionStartup',
-      CID: '@mozilla.org/browser/sessionstartup;1',
-      IID: 'nsISessionStartup'
-    },
-    {
       name: 'SessionStore',
       CID: '@mozilla.org/browser/sessionstore;1',
       IID: 'nsISessionStore'
