@@ -335,6 +335,7 @@ const ContentScripts = (function() {
    */
   const Listeners = `
     const Listeners = (function() {
+      ${content_fixupListener.toString()}
       ${content_listenShutdown.toString()}
 
       return {
@@ -411,7 +412,8 @@ const ContentScripts = (function() {
 
     let onReceive = (event) => {
       removeEventListener(type, onReceive, capture);
-      listener(event);
+
+      content_fixupListener(listener)(event);
     };
 
     addEventListener(type, onReceive, capture);
@@ -436,26 +438,35 @@ const ContentScripts = (function() {
   function content_listenMessageOnce(name, listener) {
     let onReceive = (message) => {
       removeMessageListener(name, onReceive);
-      listener(message);
+
+      content_fixupListener(listener)(message);
     };
 
     addMessageListener(name, onReceive);
   }
 
   /**
-   * Reserves the execution of given handler when the content process is shut
+   * Reserves the execution of given listener when the content process is shut
    * down.
    *
    * @note The 'unload' event on the global scope occurs when the frame script
    * environment is shut down, not when the content document unloads.
    * @see https://developer.mozilla.org/en/Firefox/Multiprocess_Firefox/Frame_script_environment#Events
    */
-  function content_listenShutdown(handler) {
+  function content_listenShutdown(listener) {
     addEventListener('unload', function onUnload() {
       removeEventListener('unload', onUnload);
 
-      handler();
+      content_fixupListener(listener)();
     });
+  }
+
+  function content_fixupListener(listener) {
+    if (typeof listener === 'function') {
+      return listener;
+    }
+
+    return listener.handleEvent || listener.receiveMessage;
   }
 
   function content_getElementById(id) {
@@ -799,21 +810,32 @@ const EventManager = (function() {
 
     let onReceive = (event) => {
       target.removeEventListener(type, onReceive, capture);
-      listener(event);
+
+      fixupListener(listener)(event);
     };
 
     target.addEventListener(type, onReceive, capture);
   }
 
   /**
-   * Reserves the execution of given handler when the window is shut down.
+   * Reserves the execution of given listener when the window is shut down.
    */
-  function listenShutdown(handler) {
-    window.addEventListener('unload', function onUnload() {
-      window.removeEventListener('unload', onUnload);
+  function listenShutdown(listener) {
+    let onReceive = (event) => {
+      window.removeEventListener('unload', onReceive);
 
-      handler();
-    });
+      fixupListener(listener)(event);
+    };
+
+    window.addEventListener('unload', onReceive);
+  }
+
+  function fixupListener(listener) {
+    if (typeof listener === 'function') {
+      return listener;
+    }
+
+    return listener.handleEvent;
   }
 
   return {
@@ -969,10 +991,19 @@ const MessageManager = (function() {
 
     let onReceive = (message) => {
       mm.removeMessageListener(name, onReceive);
-      listener(message);
+
+      fixupListener(listener)(message);
     };
 
     mm.addMessageListener(name, onReceive);
+  }
+
+  function fixupListener(listener) {
+    if (typeof listener === 'function') {
+      return listener;
+    }
+
+    return listener.receiveMessage;
   }
 
   return {
@@ -1072,12 +1103,13 @@ const PageEvents = (function() {
   function listenPageEvent(type, listener) {
     switch (type) {
       case 'pageready': {
-        let browser;
+        let browser, callback;
 
-        if (typeof listener !== 'function') {
+        if (listener.browser) {
           browser = listener.browser;
-          listener = listener.listener;
         }
+
+        callback = fixupListener(listener);
 
         promisePageReady(browser).then((result) => {
           let {persisted} = result;
@@ -1087,7 +1119,7 @@ const PageEvents = (function() {
             persisted
           };
 
-          listener(pseudoEvent);
+          callback(pseudoEvent);
         }).
         catch(Cu.reportError);
 
@@ -1115,7 +1147,7 @@ const PageEvents = (function() {
             persisted
           };
 
-          listener(pseudoEvent, message);
+          fixupListener(listener)(pseudoEvent, message);
         });
 
         break;
@@ -1133,7 +1165,7 @@ const PageEvents = (function() {
               readyState
             };
 
-            listener(pseudoEvent, event);
+            fixupListener(listener)(pseudoEvent, event);
           }).
           catch(Cu.reportError);
         });
@@ -1145,6 +1177,14 @@ const PageEvents = (function() {
         throw Error('Unknown type:' + type);
       }
     }
+  }
+
+  function fixupListener(listener) {
+    if (typeof listener === 'function') {
+      return listener;
+    }
+
+    return listener.handleEvent || listener.listener;
   }
 
   function promisePageReady(browser) {
