@@ -318,7 +318,7 @@ const Tooltip = (function() {
       });
     }
 
-    function* getNodeInfo(point, selector) {
+    function getNodeInfo(point, selector) {
       return ContentTask.spawn({
         params: {point, selector},
         task: `function* content_task(params) {
