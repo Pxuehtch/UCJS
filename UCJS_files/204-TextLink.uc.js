@@ -25,11 +25,12 @@
  */
 const {
   Modules,
+  ContentTask,
   Listeners: {
     $event
   },
-  ContentTask,
   TabUtils,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -46,7 +47,7 @@ function handleEvent(event) {
     return;
   }
 
-  if (!isTextDocument()) {
+  if (!BrowserUtils.isTextDocument()) {
     return;
   }
 
@@ -58,15 +59,6 @@ function handleEvent(event) {
     }
   }).
   catch(Cu.reportError);
-}
-
-function isTextDocument() {
-  // @see resource://gre/modules/BrowserUtils.jsm
-  const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
-
-  let contentType = gBrowser.selectedBrowser.documentContentType;
-
-  return BrowserUtils.mimeTypeIsTextBased(contentType);
 }
 
 function findURL() {

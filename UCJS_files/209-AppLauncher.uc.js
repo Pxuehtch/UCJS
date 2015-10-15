@@ -38,10 +38,10 @@ const {
   checkApp,
   runApp,
   extractFileName,
-  mimeTypeIsTextBased,
   $E,
   $X,
   promiseMessage,
+  isTextDocument,
   contentAreaContextMenu,
   // Logger to console for debug.
   log
@@ -680,8 +680,7 @@ function getAvailableActions() {
     }
   }
   else if (!onMedia && !gContextMenu.onTextInput) {
-    let contentType = gBrowser.selectedBrowser.documentContentType;
-    let inText = mimeTypeIsTextBased(contentType);
+    let inText = isTextDocument();
 
     actions.push('openPage');
 
@@ -1173,10 +1172,6 @@ function makeFile(filePath) {
   return file;
 }
 
-function mimeTypeIsTextBased(mimeType) {
-  return Modules.BrowserUtils.mimeTypeIsTextBased(mimeType);
-}
-
 function warn(params) {
   const kMaxOutputLength = 200;
 
@@ -1210,11 +1205,11 @@ return {
   checkApp,
   runApp,
   extractFileName,
-  mimeTypeIsTextBased,
 
   $E: DOMUtils.$E,
   $X: DOMUtils.$X,
   promiseMessage: MessageManager.promiseMessage,
+  isTextDocument: Modules.BrowserUtils.isTextDocument,
   contentAreaContextMenu,
 
   log

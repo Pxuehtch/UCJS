@@ -2178,6 +2178,16 @@ const BrowserUtils = (function() {
     Modules.BrowserUtils.restartApplication();
   }
 
+  function isTextDocument(browser) {
+    if (!browser) {
+      browser = gBrowser.selectedBrowser;
+    }
+
+    let mime = browser.documentContentType;
+
+    return Modules.BrowserUtils.mimeTypeIsTextBased(mime);
+  }
+
   function isHTMLDocument(browser) {
     if (!browser) {
       browser = gBrowser.selectedBrowser;
@@ -2351,6 +2361,7 @@ const BrowserUtils = (function() {
 
   return {
     restartFx,
+    isTextDocument,
     isHTMLDocument,
     getCursorPointInContent,
     promiseSelectionTextAtContextMenuCursor,
