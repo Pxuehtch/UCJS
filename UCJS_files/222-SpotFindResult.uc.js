@@ -352,7 +352,13 @@ function SpotFindResult_init() {
       return;
     }
 
+    // TODO: We must see whether tasks could be queued or not. If could, we
+    // must terminate the elders.
     promiseFindResultInfo().then((findResultInfo) => {
+      if (!findResultInfo) {
+        return;
+      }
+
       Highlighting.start(findResultInfo);
     }).
     catch(Cu.reportError);
@@ -365,6 +371,10 @@ function promiseFindResultInfo() {
     ${content_getFindResultRect.toString()}
 
     let findResult = content_getFindResult();
+
+    if (!findResult) {
+      return null;
+    }
 
     return {
       findResultRect: content_getFindResultRect(findResult.range),
