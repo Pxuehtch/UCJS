@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 
-// @usage Creates a menu in the tab context menu.
+// @usage A menu is appended in the tab context menu.
 
 
 (function(window) {

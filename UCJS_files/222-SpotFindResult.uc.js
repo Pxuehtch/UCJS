@@ -352,7 +352,7 @@ function SpotFindResult_init() {
       return;
     }
 
-    // TODO: We must see whether tasks could be queued or not. If could, we
+    // TODO: Check whether tasks could be queued or not. If they could, we
     // must terminate the elders.
     promiseFindResultInfo().then((findResultInfo) => {
       if (!findResultInfo) {

@@ -8,7 +8,7 @@
 
 // @note Some functions are exported (window.ucjsTabEx.XXX).
 
-// @note Some about:config preferences are changed (see @pref).
+// @note Some about:config preferences are changed (see @prefs).
 // @note Some native functions are modified (see @modified).
 
 // @note The custom attributes of tabs are saved in the session store file.
@@ -52,19 +52,28 @@ const {
  * Key name for storing data.
  */
 const kDataKey = {
-  // Extended attribute name of a tab.
+  /**
+   * The persisted attribute name of <tab>.
+   * @see |SessionStore.persistTabAttribute|
+   */
   openInfo: 'ucjs_TabEx_openInfo',
   openTime: 'ucjs_TabEx_openTime',
   selectTime: 'ucjs_TabEx_selectTime',
   readTime: 'ucjs_TabEx_readTime',
   ancestors: 'ucjs_TabEx_ancestors',
+
+  /**
+   * Temporary state of <tab>.
+   */
   suspended: 'ucjs_TabEx_suspended',
   read: 'ucjs_TabEx_read',
   startup: 'ucjs_TabEx_startup',
 
-  // Extended property name of a browser for moving tab between windows.
-  // @see |MovingTabObserver|
-  tabData: 'ucjs_TabEx_tabData',
+  /**
+   * The property name of <browser> for moving tab between windows.
+   * @see |MovingTabObserver|
+   */
+  tabData: 'ucjs_TabEx_tabData'
 };
 
 /**
@@ -645,7 +654,6 @@ const Referrer = {
       return Promise.resolve(null);
     }
 
-    // @see https://wiki.mozilla.org/Places:Design_Overview#Models
     let sql = [
       "SELECT p1.url",
       "FROM moz_places p1",
@@ -784,9 +792,10 @@ const TabSuspender = {
       // A document in loading.
       let isBusy = aTab.hasAttribute('busy');
 
-      // A blank page when the default 'tabs on demand' works.
       let isBlank =
         browser.currentURI.spec === 'about:blank' ||
+        // Handle as a blank page when the native 'tabs on demand' works on
+        // resume startup.
         (aTab.hasAttribute('pending') && isBusy);
 
       if (isBusy || isBlank) {
@@ -933,7 +942,7 @@ const Startup = {
         TabSelector.update(tab);
       }
       else {
-        // Immediately stop the loading of a background tab.
+        // Immediately stop loading of background tab.
         TabSuspender.stop(tab);
       }
     });
@@ -1027,7 +1036,7 @@ const MovingTabObserver = {
       case kNotificationName.TabBecomingWindow: {
         let originalTab = aEvent.detail.tab;
 
-        // Evacuate the tab data in the browser. We can refer to it on
+        // Evacuate the tab data into our browser. We can refer to it on
         // 'SwapDocShells' event that fires after a new browser opens. At that
         // point our original tab is removed but the browser still remains.
         // @see chrome://browser/content/browser.js::_delayedStartup
@@ -1110,8 +1119,9 @@ const TabEvent = {
   },
 
   onTabSelect(aTab) {
-    // TODO: Don't pass a undoclosed or duplicated tab because reloadings
-    // are unwanted and the select info will be updated on |onSSTabRestored|.
+    // TODO: Don't pass an undoclosed or a duplicated tab because reloadings
+    // for them are unwanted and the select info of them will be updated on
+    // |onSSTabRestored|.
     // XXX: How can I know that this tab is undoclosed or duplicated?
 
     TabSelector.set(aTab);
@@ -1145,7 +1155,7 @@ const TabEvent = {
   },
 
   onSSTabRestored(aTab) {
-    // 1.Pass a duplicated or undo-closed tab only.
+    // 1.Pass a duplicated or an undoclosed tab only.
     // 2.Do not pass a startup tab because of no relocation needed.
     if (TabData.get(aTab, 'startup')) {
       TabData.remove(aTab, 'startup');
@@ -1819,7 +1829,7 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
  */
 function modifyPreference() {
   const kPrefSet = [
-    // @pref Disable the custom positioning and focusing of tab.
+    // @prefs Disable the custom positioning and focusing of tab.
     {
       key: 'browser.tabs.insertRelatedAfterCurrent',
       value: false
@@ -1829,7 +1839,7 @@ function modifyPreference() {
       value: false
     },
 
-    // @pref Stop loading of background tabs in restoring startup.
+    // @prefs Stop loading of background tabs in resume startup.
     {
       key: 'browser.sessionstore.restore_on_demand',
       value: true

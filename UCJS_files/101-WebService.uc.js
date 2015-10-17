@@ -26,10 +26,10 @@ const {
       clearTimeout
     }
   },
+  ContentTask,
   Listeners: {
     $shutdown
   },
-  ContentTask,
   TabUtils,
   // Logger to console for debug.
   Console: {

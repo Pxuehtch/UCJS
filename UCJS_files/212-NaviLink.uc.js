@@ -3081,7 +3081,6 @@ function trim(str) {
 
   str += '';
 
-
   return str.trim().replace(/\s+/g, ' ');
 }
 

@@ -6,7 +6,7 @@
 
 // @require Util.uc.js, UI.uc.js
 
-// @usage Creates items in the URLbar context menu.
+// @usage Some menus are appended in the URL-bar context menu of.
 
 
 (function(window) {
@@ -352,7 +352,7 @@ function getSeparators() {
 }
 
 /**
- * Callback function for |ucjsUtil.createNode|.
+ * Attribute handler for |ucjsUtil.DOMUtils.$E|.
  */
 function handleAttribute(aNode, aName, aValue) {
   if (aName === 'open') {

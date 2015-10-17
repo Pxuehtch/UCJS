@@ -41,12 +41,9 @@ const {
 const kPref = {
   /**
    * Time threshold from 'mousedown' to 'mouseup' for recognition of the custom
-   * click.
+   * clicking.
    *
    * @value {integer} [millisecond]
-   *
-   * @note The default click is deactivated when 'mouseup' fires in this time
-   * after 'mousedown', otherwise activated.
    */
   clickThresholdTime: 200,
 };

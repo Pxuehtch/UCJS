@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 
-// @usage Adds toggle buttons on the toolbar.
+// @usage The toggle buttons are appended on the toolbar.
 
 // @see resource:///modules/devtools/webconsole/webconsole.js
 
@@ -270,6 +270,7 @@ function logOnMessageAdded(aMessageNode, aOutput) {
     return;
   }
 
+  // Log to console.
   log([aOutput, kLogMark]);
 }
 
