@@ -67,7 +67,7 @@ const {
 
     style: {
       title: 'font-weight:bold;',
-      URL: '',
+      url: '',
       referrer: 'color:blue;'
     }
   };
@@ -146,21 +146,21 @@ const {
       let openInfo = tabState.getData(tab, 'openInfo');
 
       loadingURL =
-        (openInfo && openInfo.URL !== 'about:blank' && openInfo.URL) ||
+        (openInfo && openInfo.url !== 'about:blank' && openInfo.url) ||
         browser.userTypedValue;
     }
 
     buildData({
       title: tab.label,
-      URL: loadingURL || browser.currentURI.spec
+      url: loadingURL || browser.currentURI.spec
     });
 
     // Add the referrer information to a tab without backward history.
     if (!browser.canGoBack && referrer.exists(tab)) {
-      referrer.promiseInfo(tab).then(({title, URL}) => {
+      referrer.promiseInfo(tab).then(({title, url}) => {
         buildData({
           title,
-          URL,
+          url,
           referrer: true
         });
       }).
@@ -168,29 +168,29 @@ const {
     }
   }
 
-  function buildData({title, URL, referrer}) {
+  function buildData({title, url, referrer}) {
     setLabel({
       title,
       referrer
     });
 
-    if (title !== URL) {
+    if (title !== url) {
       setLabel({
-        URL
+        url
       });
     }
   }
 
-  function setLabel({title, URL, referrer}) {
-    let value = title || URL;
+  function setLabel({title, url, referrer}) {
+    let value = title || url;
 
     let style = 'max-width:' + kPref.maxWidth + 'em;';
 
     if (title) {
       style += kUI.style.title
     }
-    else if (URL) {
-      style += kUI.style.URL
+    else if (url) {
+      style += kUI.style.url
     }
 
     if (referrer) {
@@ -285,8 +285,8 @@ const {
     clearTooltip();
   };
 
-  function fillInTooltip(aUrl) {
-    let html = `<label>${buildAccent(aUrl)}</label>`;
+  function fillInTooltip(url) {
+    let html = `<label>${buildAccent(url)}</label>`;
 
     mTooltip.insertAdjacentHTML('afterbegin', html);
   }
@@ -297,11 +297,11 @@ const {
     }
   }
 
-  function buildAccent(aUrl) {
-    let offsets = parseAccent(aUrl);
+  function buildAccent(url) {
+    let offsets = parseAccent(url);
 
     if (!offsets) {
-      return htmlWrap(aUrl);
+      return htmlWrap(url);
     }
 
     // Sort in descending.
@@ -311,22 +311,22 @@ const {
 
     offsets.forEach(({index, from, to}) => {
       // A trailing string outside the range, which needs no styling.
-      segments.unshift(htmlWrap(aUrl.slice(to + 1)));
+      segments.unshift(htmlWrap(url.slice(to + 1)));
 
       // A string to be styled.
-      segments.unshift(htmlWrap(aUrl.slice(from, to + 1), index));
+      segments.unshift(htmlWrap(url.slice(from, to + 1), index));
 
       // Cut off the processed string.
-      aUrl = aUrl.slice(0, from);
+      url = url.slice(0, from);
     });
 
     // Complement the remaining string.
-    segments.unshift(htmlWrap(aUrl));
+    segments.unshift(htmlWrap(url));
 
     return segments.join('');
   }
 
-  function parseAccent(aUrl) {
+  function parseAccent(url) {
     let offsets = [];
 
     let add = (index, match) => {
@@ -349,12 +349,12 @@ const {
       let match;
 
       if (pattern.global) {
-        while ((match = pattern.exec(aUrl))) {
+        while ((match = pattern.exec(url))) {
           add(i, match);
         }
       }
       else {
-        match = pattern.exec(aUrl);
+        match = pattern.exec(url);
 
         if (match) {
           add(i, match);
@@ -677,11 +677,11 @@ const {
     let rectKeys = ['top', 'left', 'width', 'height'];
 
     if (!window.fullScreen) {
-      let URLInputRect = UI.URLInput.getBoundingClientRect();
+      let urlInputRect = UI.URLInput.getBoundingClientRect();
 
       rectKeys.forEach((key) => {
-        if (statusInputStyle[key] !== URLInputRect[key] + 'px') {
-          statusInputStyle[key] = URLInputRect[key] + 'px';
+        if (statusInputStyle[key] !== urlInputRect[key] + 'px') {
+          statusInputStyle[key] = urlInputRect[key] + 'px';
         }
       });
     }
@@ -850,7 +850,7 @@ const {
       let openInfo = tabState.getData(tab, 'openInfo');
 
       loadingURL =
-        (openInfo && openInfo.URL !== 'about:blank' && openInfo.URL) ||
+        (openInfo && openInfo.url !== 'about:blank' && openInfo.url) ||
         gBrowser.getBrowserForTab(tab).userTypedValue;
 
       // @see chrome://browser/content/browser.js::XULBrowserWindow::setOverLink

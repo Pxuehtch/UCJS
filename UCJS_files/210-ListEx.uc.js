@@ -365,9 +365,9 @@ const HistoryList = (function() {
      */
     function openRecentHistory(aURL) {
       let oncommand =
-        'PlacesUIUtils.markPageAsTyped("%URL%");' +
-        'openUILink("%URL%",event);';
-      oncommand = oncommand.replace(/%URL%/g, aURL);
+        'PlacesUIUtils.markPageAsTyped("%url%");' +
+        'openUILink("%url%",event);';
+      oncommand = oncommand.replace(/%url%/g, aURL);
 
       return {
         oncommand,
@@ -499,10 +499,10 @@ const HistoryList = (function() {
       for (let i = end; i >= start; i--) {
         let entry = historyEntries[i];
 
-        let URL, title, className, action;
+        let url, title, className, action;
 
-        URL = entry.URL;
-        title = entry.title || URL;
+        url = entry.url;
+        title = entry.title || url;
         className = ['menuitem-iconic'];
 
         if (i === selectedIndex) {
@@ -520,13 +520,13 @@ const HistoryList = (function() {
         let menuitem = fragment.appendChild($E('menuitem', {
           tooltip: {
             title,
-            URL
+            url
           },
           class: className.join(' '),
           action
         }));
 
-        asyncGetTimeAndIcon(URL, ({time, icon}) => {
+        asyncGetTimeAndIcon(url, ({time, icon}) => {
           $E(menuitem, {
             label: {
               prefix: formatTime(time),
@@ -561,17 +561,17 @@ const HistoryList = (function() {
 
       // Scan history entries in thier visited date order from recent to old.
       recentHistory.forEach((entry) => {
-        let URL, title, className, action;
+        let url, title, className, action;
 
-        URL = entry.url;
-        title = entry.title || URL;
+        url = entry.url;
+        title = entry.title || url;
         className = ['menuitem-iconic'];
 
-        if (currentURL === URL) {
+        if (currentURL === url) {
           className.push('unified-nav-current');
         }
         else {
-          action = Action.openRecentHistory(URL);
+          action = Action.openRecentHistory(url);
         }
 
         fragment.appendChild($E('menuitem', {
@@ -581,7 +581,7 @@ const HistoryList = (function() {
           },
           tooltip: {
             title,
-            URL
+            url
           },
           icon: entry.icon,
           class: className.join(' '),
@@ -743,13 +743,11 @@ const OpenedList = (function() {
 
       for (let i = start; i <= end; i++) {
         let tab = tabs[i];
-        let b = gBrowser.getBrowserForTab(tab);
-
-        let URL = b.currentURI.spec;
+        let browser = gBrowser.getBrowserForTab(tab);
 
         // Scan tab history in their visited date order from new to old around
         // the selected page in this tab.
-        let sessionHistory = yield promiseSessionHistory(b);
+        let sessionHistory = yield promiseSessionHistory(browser);
 
         let historyLength;
         let selectedIndex;
@@ -800,7 +798,7 @@ const OpenedList = (function() {
             let item = {
               label: {
                 prefix: formatOrderNumber(j + 1),
-                value: entry.title || entry.URL
+                value: entry.title || entry.url
               }
             };
 
@@ -828,7 +826,7 @@ const OpenedList = (function() {
           },
           tooltip: {
             title: tab.label,
-            URL,
+            url: browser.currentURI.spec,
             list: history
           },
           icon: gBrowser.getIcon(tab),
@@ -858,7 +856,7 @@ const OpenedList = (function() {
 
       // Scan windows in their Z-order from front(the current window) to back.
       for (let win of getWindows()) {
-        let title, URL, icon, tabList;
+        let title, url, icon, tabList;
 
         if (isBrowser(win)) {
           let b = win.gBrowser;
@@ -867,7 +865,7 @@ const OpenedList = (function() {
           let selectedIndex = tabs.indexOf(b.selectedTab);
 
           title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
-          URL = b.currentURI.spec;
+          url = b.currentURI.spec;
           icon = b.getIcon(b.selectedTab);
 
           // Scan visible tabs in their position order from start to end around
@@ -906,7 +904,7 @@ const OpenedList = (function() {
         }
         else {
           title = win.document.title;
-          URL = win.location.href;
+          url = win.location.href;
           icon = 'moz-icon://.exe?size=16';
         }
 
@@ -925,7 +923,7 @@ const OpenedList = (function() {
           },
           tooltip: {
             title,
-            URL,
+            url,
             list: tabList
           },
           icon,
@@ -1081,7 +1079,7 @@ const ClosedList = (function() {
         let historyLength = tabHistory.length;
         let selectedIndex = closedTab.state.index - 1;
 
-        let URL;
+        let url;
 
         // Scan tab history in their visited date order from new to old around
         // the selected page in this closed tab.
@@ -1113,7 +1111,7 @@ const ClosedList = (function() {
           };
 
           if (j === selectedIndex) {
-            URL = entry.url;
+            url = entry.url;
             item.selected = true;
           }
 
@@ -1126,7 +1124,7 @@ const ClosedList = (function() {
           },
           tooltip: {
             title: closedTab.title,
-            URL,
+            url,
             list: history
           },
           icon: closedTab.image,
@@ -1155,7 +1153,7 @@ const ClosedList = (function() {
         let tabsLength = tabs.length;
         let selectedIndex = closedWindow.selected - 1;
 
-        let URL;
+        let url;
 
         // Scan visible tabs in their position order from start to end around
         // the selected tab in this closed window.
@@ -1187,7 +1185,7 @@ const ClosedList = (function() {
           };
 
           if (j === selectedIndex) {
-            URL = tab.url;
+            url = tab.url;
             item.selected = true;
           }
 
@@ -1200,7 +1198,7 @@ const ClosedList = (function() {
           },
           tooltip: {
             title: closedWindow.title,
-            URL,
+            url,
             list: tabList
           },
           icon: tabs[closedWindow.selected - 1].image,
@@ -1262,7 +1260,7 @@ const Tooltip = (function() {
     }
   }
 
-  function fillInTooltip({title, URL, list}) {
+  function fillInTooltip({title, url, list}) {
     let {maxWidth, maxNumWrapLines} = kPref.tooltip;
     let maxTextLength = maxWidth * maxNumWrapLines;
 
@@ -1274,7 +1272,7 @@ const Tooltip = (function() {
       if (aValue.title) {
         style += 'font-weight:bold;background-color:lightgray;';
       }
-      else if (aValue.URL) {
+      else if (aValue.url) {
         style += '';
       }
       else if (aValue.header) {
@@ -1306,12 +1304,12 @@ const Tooltip = (function() {
       wrapping: true
     });
 
-    if (URL && URL !== title) {
+    if (url && url !== title) {
       add({
         label: {
-          value: URL
+          value: url
         },
-        URL: true,
+        url: true,
         wrapping: true
       });
     }

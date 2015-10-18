@@ -60,10 +60,10 @@ const kUI = {
     /**
      * Format for a tooltip text.
      *
-     * %DATA%: The data being passed to a web service.
-     * %URL%: The URL that is opened actually.
+     * %data%: The data being passed to a web service.
+     * %url%: The URL that is opened actually.
      */
-    tooltip: '%DATA%\n\n%URL%'
+    tooltip: '%data%\n\n%url%'
   },
 
   startSeparator: {
@@ -80,7 +80,7 @@ const kUI = {
  *
  * @key label {string}
  *   A display name for menuitem.
- *   @note A specifier %TYPE% is replaced with |kUI.item.types|.
+ *   @note A specifier %type% is replaced with |kUI.item.types|.
  * @key types {string[]}
  *   Kind of type - Passed data - Case of showing the menuitem.
  *   'PAGE' - Page URL - not on the following cases.
@@ -89,11 +89,11 @@ const kUI = {
  *   'TEXT' - Selected text - on a selection.
  *   @see |kUI.item.types|
  *
- * @key URL {string}
+ * @key url {string}
  *   A URL string of a web service with data.
  *   @note Specify alias for the passed data.
  *   @see |AliasFixup|
- * @key URL {function} [optional for custom formatting]
+ * @key url {function} [optional for custom formatting]
  *   @param aData {string}
  *   @return {string}
  *
@@ -112,16 +112,16 @@ const kPreset = [
     // @require WebService.uc.js
     disabled: !window.ucjsWebService,
     types: ['PAGE'],
-    label: '%TYPE%の はてなブックマーク (-)',
+    label: '%type%の はてなブックマーク (-)',
 
-    URL(aData) {
+    url(aData) {
       let entryURL = 'http://b.hatena.ne.jp/entry/';
 
       if (/^https:/.test(aData)) {
         entryURL += 's/';
       }
 
-      return entryURL + '%SCHEMELESS%';
+      return entryURL + '%schemeless%';
     },
 
     command(aParams) {
@@ -159,32 +159,32 @@ const kPreset = [
     }
   },
   {
-    URL: 'https://www.aguse.jp/?m=w&url=%ENC%',
+    url: 'https://www.aguse.jp/?m=w&url=%enc%',
     types: ['LINK'],
-    label: '%TYPE%を aguse で調査'
+    label: '%type%を aguse で調査'
   },
   {
-    URL: 'https://docs.google.com/viewer?url=%ENC%',
+    url: 'https://docs.google.com/viewer?url=%enc%',
     types: ['LINK'],
     // @see https://support.google.com/drive/answer/2423485
     extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf'],
-    label: '%TYPE%を Google Docs Viewer で表示'
+    label: '%type%を Google Docs Viewer で表示'
   },
   {
-    URL: 'https://www.google.com/searchbyimage?image_url=%ENC%',
+    url: 'https://www.google.com/searchbyimage?image_url=%enc%',
     types: ['IMAGE'],
-    label: '%TYPE%を Google Image で検索'
+    label: '%type%を Google Image で検索'
   },
   {
-    URL: 'https://www.pixlr.com/editor/?image=%ENC%',
+    url: 'https://www.pixlr.com/editor/?image=%enc%',
     types: ['LINK', 'IMAGE'],
     extensions: ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'pxd'],
-    label: '%TYPE%を Pixlr Editor で編集'
+    label: '%type%を Pixlr Editor で編集'
   },
   {
-    URL: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%ENC%',
+    url: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%enc%',
     types: ['TEXT'],
-    label: '%TYPE%を Yahoo!辞書 で引く'
+    label: '%type%を Yahoo!辞書 で引く'
   }
 ];
 
@@ -195,13 +195,13 @@ const kPreset = [
  *   @key create {function}
  *
  * [alias]
- * %RAW% : The data itself.
- * %ENC% : With URI encoded.
- * %SCHEMELESS%, %sl% : Without the URL scheme.
- * %PARAMLESS%, %pl% : Without the URL parameter.
+ * %raw% : The data itself.
+ * %enc% : With URI encoded.
+ * %schemeless%, %sl% : Without the URL scheme.
+ * %paramless%, %pl% : Without the URL parameter.
  *
  * @note Aliases can be combined by '|'.
- * e.g. %SCHEMELESS|ENC% : A data, which is trimmed the scheme and then URI
+ * e.g. %schemeless|enc% : A data, which is trimmed the scheme and then URI
  * encoded (the multiple aliases is applied in the order of settings).
  */
 const AliasFixup = (function() {
@@ -222,18 +222,18 @@ const AliasFixup = (function() {
 
   function fixupModifier(aData, aModifier) {
     switch (aModifier) {
-      case 'SCHEMELESS':
+      case 'schemeless':
       case 'sl':
         return aData.replace(/^https?:\/\//, '');
 
-      case 'PARAMLESS':
+      case 'paramless':
       case 'pl':
         return aData.replace(/[?#].*$/, '');
 
-      case 'ENC':
+      case 'enc':
         return encodeURIComponent(aData);
 
-      case 'RAW':
+      case 'raw':
         return aData;
     }
 
@@ -341,28 +341,28 @@ function getAvailableItems() {
 }
 
 function makeItem(aType, aData, aService) {
-  let URL;
+  let url;
 
-  if (typeof aService.URL === 'function') {
-    URL = aService.URL(aData);
+  if (typeof aService.url === 'function') {
+    url = aService.url(aData);
   }
   else {
-    URL = aService.URL;
+    url = aService.url;
   }
 
-  URL = AliasFixup.create(URL, aData);
+  url = AliasFixup.create(url, aData);
 
   let label = aService.label.
-    replace('%TYPE%', kUI.item.types[aType]);
+    replace('%type%', kUI.item.types[aType]);
 
   let tooltiptext = kUI.item.tooltip.
-    replace('%URL%', URL).
-    replace('%DATA%', aData);
+    replace('%url%', url).
+    replace('%data%', aData);
 
   let item = $E('menuitem', {
     label,
     tooltiptext,
-    open: URL
+    open: url
   });
 
   if (aService.command) {
@@ -444,10 +444,10 @@ function handleAttribute(aNode, aName, aValue) {
  */
 function setAttributeForCommand(aNode, aURL) {
   let command =
-    'ucjsUtil.TabUtils.openTab("%URL%",' +
+    'ucjsUtil.TabUtils.openTab("%url%",' +
     '{inBackground:event.ctrlKey||event.button===1,relatedToCurrent:true});';
 
-  command = command.replace('%URL%', aURL);
+  command = command.replace('%url%', aURL);
 
   aNode.setAttribute('oncommand', command);
 

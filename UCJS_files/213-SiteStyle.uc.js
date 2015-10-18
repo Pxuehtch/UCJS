@@ -600,18 +600,18 @@ const kSiteList = [
         function preventAutoplay() {
           let intervalTime = 500;
           let waitCount = 20;
-          let timerID = null;
+          let timerId = null;
 
           let clear = () => {
             window.removeEventListener('unload', clear);
 
-            window.clearInterval(timerID);
-            timerID = null;
+            window.clearInterval(timerId);
+            timerId = null;
           };
 
           window.addEventListener('unload', clear);
 
-          timerID = window.setInterval(() => {
+          timerId = window.setInterval(() => {
             if (--waitCount < 0 || pauseVideo()) {
               clear();
             }

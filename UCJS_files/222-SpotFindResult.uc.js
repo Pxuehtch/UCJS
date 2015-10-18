@@ -97,14 +97,14 @@ const DurationObserver = {
   },
 
   set() {
-    this.timerID = setTimeout(this.terminate, kPref.duration);
+    this.timerId = setTimeout(this.terminate, kPref.duration);
   },
 
   clear() {
-    if (this.timerID) {
-      clearTimeout(this.timerID);
+    if (this.timerId) {
+      clearTimeout(this.timerId);
 
-      this.timerID = null;
+      this.timerId = null;
     }
   },
 

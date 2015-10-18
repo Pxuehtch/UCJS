@@ -2478,7 +2478,7 @@ const HistoryUtils = (function() {
 
         entries.push({
           title: entry.title,
-          URL: entry.URI && entry.URI.spec
+          url: entry.URI && entry.URI.spec
         });
       }
 

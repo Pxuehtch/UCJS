@@ -81,7 +81,7 @@ const kSystem = {
   /**
    * ID of <overlay> for XUL overlayed scripts.
    */
-  overlayContainerID: 'userChrome_js_overlay',
+  overlayContainerId: 'userChrome_js_overlay',
 
   /**
    * Check the cache of a script whenever the script runs on sub-windows.
@@ -156,12 +156,12 @@ function ScriptLoader() {
   function init() {
     const {document} = window;
 
-    let URL = document.location.href;
+    let url = document.location.href;
     let title = document.title || '[N/A]';
 
-    if (isBlockURL(URL)) {
+    if (isBlockURL(url)) {
       Log.list('Not init window', {
-        'Blocked URL': URL,
+        'Blocked URL': url,
         'Title': title
       });
 
@@ -169,7 +169,7 @@ function ScriptLoader() {
     }
 
     Log.list('Init window', {
-      'URL': URL,
+      'URL': url,
       'Title': title
     });
 
@@ -207,12 +207,12 @@ function ScriptLoader() {
         return;
       }
 
-      let URL = target.location.href;
+      let url = target.location.href;
       let container = getContainerType(target);
 
-      if (container !== 'sidebar' || isBlockURL(URL)) {
+      if (container !== 'sidebar' || isBlockURL(url)) {
         Log.list('Not init inner window', {
-          'Blocked URL': URL,
+          'Blocked URL': url,
           'Container': container
         });
 
@@ -220,7 +220,7 @@ function ScriptLoader() {
       }
 
       Log.list('Init inner window', {
-        'URL': URL,
+        'URL': url,
         'Container': container
       });
 
@@ -277,11 +277,11 @@ function ScriptLoader() {
     return window.location.href === getBrowserURL();
   }
 
-  function isBlockURL(aURL) {
+  function isBlockURL(url) {
     const {testURL} = Util;
 
-    return !/^chrome:.+\.xul$/i.test(aURL) ||
-           kPref.blockXULs.some((xul) => testURL(xul, aURL));
+    return !/^chrome:.+\.xul$/i.test(url) ||
+           kPref.blockXULs.some((xul) => testURL(xul, url));
   }
 
   /**
@@ -459,10 +459,10 @@ function ScriptList() {
     const log = Log.counter('Run JS');
     const {loadJscript} = Util;
 
-    let URL = aDocument.location.href;
+    let url = aDocument.location.href;
 
     mJscripts.forEach((script) => {
-      if (script.testTarget(URL)) {
+      if (script.testTarget(url)) {
         log(script.getURL('IN_CHROME'));
 
         loadJscript(script.getURL('RUN'), aDocument);
@@ -474,30 +474,30 @@ function ScriptList() {
     const log = Log.counter('Run XUL');
     const {loadOverlay} = Util;
 
-    const XUL = '<?xul-overlay href="%URL%"?>';
-    const DATA = [
+    const kXUL = '<?xul-overlay href="%url%"?>';
+    const kDATA = [
       'data:application/vnd.mozilla.xul+xml;charset=utf-8,',
       '<?xml version="1.0"?>',
-      '%XULS%',
-      '<overlay id="%ID%"',
+      '%xuls%',
+      '<overlay id="%id%"',
       ' xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"',
       ' xmlns:html="http://www.w3.org/1999/xhtml">',
       '</overlay>'
-    ].join('').replace('%ID%', kSystem.overlayContainerID);
+    ].join('').replace('%id%', kSystem.overlayContainerId);
 
-    let URL = aDocument.location.href;
+    let url = aDocument.location.href;
     let xuls = '';
 
     mOverlays.forEach((script) => {
-      if (script.testTarget(URL)) {
+      if (script.testTarget(url)) {
         log(script.getURL('IN_CHROME'));
 
-        xuls += XUL.replace('%URL%', script.getURL('RUN'));
+        xuls += kXUL.replace('%url%', script.getURL('RUN'));
       }
     });
 
     if (xuls) {
-      loadOverlay(DATA.replace('%XULS%', xuls), aDocument);
+      loadOverlay(kDATA.replace('%xuls%', xuls), aDocument);
     }
   }
 

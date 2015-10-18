@@ -1231,16 +1231,16 @@ function GestureManager() {
   }
 
   function makeStatusText() {
-    const kFormat = ['Gesture: %GESTURE%', ' (%NAME%)', ' [%ERROR%!]'];
+    const kFormat = ['Gesture: %gesture%', ' (%name%)', ' [%error%!]'];
 
-    let text = kFormat[0].replace('%GESTURE%', buildGesture());
+    let text = kFormat[0].replace('%gesture%', buildGesture());
 
     if (mMatchItem) {
-      text += kFormat[1].replace('%NAME%', mMatchItem.name);
+      text += kFormat[1].replace('%name%', mMatchItem.name);
     }
 
     if (mError) {
-      text += kFormat[2].replace('%ERROR%', mError);
+      text += kFormat[2].replace('%error%', mError);
     }
 
     return text;

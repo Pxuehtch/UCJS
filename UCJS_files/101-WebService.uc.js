@@ -47,7 +47,7 @@ const {
  *     @see |get()|
  * @key name {string}
  *   A preset name.
- * @key URL {string}
+ * @key url {string}
  *   A URL string of a web service.
  *   @note Set alias strings for the parameter data.
  *   @see |AliasFixup|
@@ -64,7 +64,7 @@ const kPresets = [
     type: 'get',
     name: 'HatenaBookmarkCounter',
     // @see http://developer.hatena.ne.jp/ja/documents/bookmark/apis/getcount
-    URL: 'http://api.b.st-hatena.com/entry.count?url=%ENC%',
+    url: 'http://api.b.st-hatena.com/entry.count?url=%enc%',
     parse(aResponseText) {
       return aResponseText || 0;
     }
@@ -72,27 +72,27 @@ const kPresets = [
   {
     type: 'open',
     name: 'GoogleSearch',
-    URL: 'https://www.google.co.jp/search?q=%ENC%'
+    url: 'https://www.google.co.jp/search?q=%enc%'
   },
   {
     type: 'open',
     name: 'GoogleTranslation',
-    URL: 'http://translate.google.co.jp/#auto|ja|%ENC%'
+    url: 'http://translate.google.co.jp/#auto|ja|%enc%'
   },
   {
     type: 'open',
     name: 'Eijiro',
-    URL: 'http://eow.alc.co.jp/%ENC%/UTF-8/'
+    url: 'http://eow.alc.co.jp/%enc%/UTF-8/'
   },
   {
     type: 'open',
     name: 'Weblio',
-    URL: 'http://ejje.weblio.jp/content/%ENC%'
+    url: 'http://ejje.weblio.jp/content/%enc%'
   },
   {
     type: 'open',
     name: 'ExciteTranslationEnToJp',
-    URL: 'http://www.excite.co.jp/world/english/',
+    url: 'http://www.excite.co.jp/world/english/',
     form: {
       form: 'id("formTrans")',
       input: 'id("before")'
@@ -107,13 +107,13 @@ const kPresets = [
  *   @key create {function}
  *
  * [alias]
- * %RAW% : The data itself.
- * %ENC% : With URI encoded.
- * %SCHEMELESS%, %sl% : Without the URL scheme.
- * %PARAMLESS%, %pl% : Without the URL parameter.
+ * %raw% : The data itself.
+ * %enc% : With URI encoded.
+ * %schemeless%, %sl% : Without the URL scheme.
+ * %paramless%, %pl% : Without the URL parameter.
  *
  * @note Aliases can be combined by '|'.
- * e.g. %SCHEMELESS|ENC% : A data that is trimmed the scheme and then URI
+ * e.g. %schemeless|enc% : A data that is trimmed the scheme and then URI
  * encoded (the multiple aliases is applied in the order of settings).
  */
 const AliasFixup = (function() {
@@ -140,18 +140,18 @@ const AliasFixup = (function() {
 
   function fixupModifier(aData, aModifier) {
     switch (aModifier) {
-      case 'SCHEMELESS':
+      case 'schemeless':
       case 'sl':
         return aData.replace(/^https?:\/\//, '');
 
-      case 'PARAMLESS':
+      case 'paramless':
       case 'pl':
         return aData.replace(/[?#].*$/, '');
 
-      case 'ENC':
+      case 'enc':
         return encodeURIComponent(aData);
 
-      case 'RAW':
+      case 'raw':
         return aData;
     }
 
@@ -182,7 +182,7 @@ const RequestHandler = (function() {
 
     update(aURL) {
       // TODO: Validation check for URL.
-      // WORKAROUND: Set a valid |URL| of |kPreset|.
+      // WORKAROUND: Set a valid |url| of |kPreset|.
       let host = (/^https?:\/\/([^\/]+)/.exec(aURL))[1];
 
       let lastRequestTime = this.mRequestTimeList[host] || 0;
@@ -387,7 +387,7 @@ function open(aParams) {
     return;
   }
 
-  let tab = TabUtils.openTab(result.URL, result.tabOption);
+  let tab = TabUtils.openTab(result.url, result.tabOption);
 
   // TODO: Observe the document loaded to manage a form.
   // WORKAROUND:
@@ -443,7 +443,7 @@ function get(aParams) {
     }
   };
 
-  RequestHandler.request(result.URL, options);
+  RequestHandler.request(result.url, options);
 }
 
 function getResult(aParams, aType) {
@@ -482,12 +482,12 @@ function evaluate(aParams, aPreset) {
   }
 
   // Build a URL.
-  if (!result.URL) {
-    throw Error('aPreset.URL is empty');
+  if (!result.url) {
+    throw Error('aPreset.url is empty');
   }
 
   if (result.data) {
-    result.URL = AliasFixup.create(result.URL, result.data);
+    result.url = AliasFixup.create(result.url, result.data);
   }
 
   return result;

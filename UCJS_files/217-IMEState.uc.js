@@ -122,13 +122,13 @@ const SignPanel = (function() {
   const ShowingManager = {
     set() {
       this.clear();
-      this.timerID = setTimeout(show, 100);
+      this.timerId = setTimeout(show, 100);
     },
 
     clear() {
-      if (this.timerID) {
-        clearTimeout(this.timerID);
-        this.timerID = null;
+      if (this.timerId) {
+        clearTimeout(this.timerId);
+        this.timerId = null;
       }
     }
   };

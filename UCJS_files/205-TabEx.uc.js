@@ -490,7 +490,7 @@ const TabOpener = {
 
         if (!aURI || aURI === 'about:blank') {
           openInfo = {
-            URL: 'about:blank',
+            url: 'about:blank',
             flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
           };
         }
@@ -535,7 +535,7 @@ const TabOpener = {
           // @note Set |undefined| not to record a falsy value.
           // TODO: Handle the POST data.
           openInfo = {
-            URL: aURI,
+            url: aURI,
             flags,
             referrerURL: aReferrerURI || undefined,
             charset: aCharset || undefined,
@@ -564,9 +564,9 @@ const TabOpener = {
         let browser = gBrowser.getBrowserForTab(aTab);
         // @note |userTypedValue| holds the URL of a document till it
         // successfully loads.
-        let URL = browser.userTypedValue || browser.currentURI.spec;
+        let url = browser.userTypedValue || browser.currentURI.spec;
         let openInfo = {
-          URL,
+          url,
           flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
         };
 
@@ -621,13 +621,13 @@ const Referrer = {
   },
 
   promiseInfo(tab) {
-    let URL = this.getURL(tab);
+    let url = this.getURL(tab);
 
     // The document title is fetched by async history API.
-    return promisePageTitle(URL).then((title) => {
+    return promisePageTitle(url).then((title) => {
       return {
         title,
-        URL
+        url
       };
     });
   },
@@ -860,11 +860,11 @@ const TabSuspender = {
     }
 
     // 1.A new tab has no |openInfo| when it bypassed our hooked
-    // |gBrowser.addTab|.
+    //   |gBrowser.addTab|.
     // 2.|userTypedValue| holds the URL of a document till it successfully
-    // loads.
-    if (openInfo && openInfo.URL !== 'about:blank') {
-      loadingURL = openInfo.URL;
+    //   loads.
+    if (openInfo && openInfo.url !== 'about:blank') {
+      loadingURL = openInfo.url;
     }
     else {
       loadingURL = browser.userTypedValue;
@@ -930,7 +930,7 @@ const Startup = {
   setStartupTabs() {
     // Scan all tabs (including hidden tabs).
     [...gBrowser.tabs].forEach((tab) => {
-       TabData.set(tab, 'startup', true)
+      TabData.set(tab, 'startup', true)
 
       // A boot startup tab (e.g. homepage).
       if (!TabData.get(tab, 'openInfo')) {
@@ -1405,7 +1405,7 @@ function getFamilyTab(aBaseTab, aStatement) {
 
       // 1.This tab is a descendant of the base tab.
       // 2.The parent of the base tab is an ancestor of this tab (sibling or
-      // its descendant).
+      //   its descendant).
       return ancs.indexOf(baseId) > -1 ||
         (extended && baseAncs && ancs.indexOf(baseAncs[0]) > -1);
     };
@@ -1764,13 +1764,13 @@ function promisePageTitle(url) {
   );
 }
 
-function makeURI(aURL) {
-  if (!aURL) {
+function makeURI(url) {
+  if (!url) {
     return null;
   }
 
   try {
-    return Modules.BrowserUtils.makeURI(aURL);
+    return Modules.BrowserUtils.makeURI(url);
   }
   catch (ex) {}
 

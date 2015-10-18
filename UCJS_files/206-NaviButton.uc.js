@@ -93,7 +93,7 @@ const kUI = {
 
   style: {
     title: 'font-weight:bold;',
-    URL: '',
+    url: '',
     referrer: 'color:blue;'
   }
 };
@@ -312,7 +312,7 @@ const Tooltip = {
       'referrer'
     ].
     forEach((key) => {
-      let [title, URL] = this.formatData(aData, key);
+      let [title, url] = this.formatData(aData, key);
 
       setLabel({
         title,
@@ -320,12 +320,12 @@ const Tooltip = {
       });
 
       setLabel({
-        URL
+        url
       });
     });
 
-    function setLabel({title, URL, referrer}) {
-      let value = title || URL;
+    function setLabel({title, url, referrer}) {
+      let value = title || url;
 
       if (!value) {
         return;
@@ -337,8 +337,8 @@ const Tooltip = {
         style += kUI.style.title
       }
 
-      if (URL) {
-        style += kUI.style.URL
+      if (url) {
+        style += kUI.style.url
       }
 
       if (referrer) {
@@ -357,10 +357,10 @@ const Tooltip = {
 
   formatData(aData, aKey) {
     let backward = aData.backward;
-    let {title, URL, distance} = aData[aKey];
+    let {title, url, distance} = aData[aKey];
     let dir = '';
 
-    if (URL && title === URL) {
+    if (url && title === url) {
       title = kUI.title.noTitle;
     }
 
@@ -377,7 +377,7 @@ const Tooltip = {
 
         if (distance === 1) {
           title = kUI.title.ditto;
-          URL = '';
+          url = '';
         }
 
         break;
@@ -388,11 +388,11 @@ const Tooltip = {
 
         if (distance === 1) {
           title = '';
-          URL = '';
+          url = '';
         }
         else if (distance && aData.border.distance === distance) {
           title = kUI.title.ditto;
-          URL = '';
+          url = '';
         }
 
         break;
@@ -412,7 +412,7 @@ const Tooltip = {
         replace('%title', title);
     }
 
-    return [title, URL];
+    return [title, url];
   }
 };
 
@@ -431,7 +431,7 @@ const History = {
       function Entry() {
         return {
           title: '',
-          URL: '',
+          url: '',
           index: -1,
           distance: 0
         };
@@ -452,7 +452,7 @@ const History = {
         let referrerInfo = yield Referrer.promiseInfo();
 
         this.data.referrer.title = referrerInfo.title;
-        this.data.referrer.URL = referrerInfo.URL;
+        this.data.referrer.url = referrerInfo.url;
       }
 
       return this.data;
@@ -488,10 +488,10 @@ const History = {
       let border = historyIndex + step;
 
       let within = backward ? (i) => -1 < i : (i) => i < historyCount;
-      let host = getHost(historyEntries[historyIndex].URL);
+      let host = getHost(historyEntries[historyIndex].url);
 
       for (/**/; within(border); border += step) {
-        if (host !== getHost(historyEntries[border].URL)) {
+        if (host !== getHost(historyEntries[border].url)) {
           break;
         }
       }
@@ -506,7 +506,7 @@ const History = {
           let info = historyEntries[index];
 
           entry.title = info.title;
-          entry.URL = info.URL;
+          entry.url = info.url;
           entry.index = index;
           entry.distance = Math.abs(index - historyIndex);
         }
@@ -519,7 +519,7 @@ const History = {
   jump(aEvent) {
     let {shiftKey, ctrlKey, button} = aEvent;
 
-    let referrer = this.data.referrer.URL;
+    let referrer = this.data.referrer.url;
 
     if (referrer) {
       if (!gBrowser.canGoBack || (shiftKey && ctrlKey)) {

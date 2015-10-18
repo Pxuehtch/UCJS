@@ -233,7 +233,7 @@ function makeMenuItems(aParseList) {
     }));
   }
 
-  aParseList.URLs.forEach((URL, i) => {
+  aParseList.urls.forEach((url, i) => {
     // @note A separator is not necessary before the first item.
     if (i > 0 && aParseList.checkNewURLStart(i)) {
       fragment.appendChild($E('menuseparator'));
@@ -251,7 +251,7 @@ function makeMenuItems(aParseList) {
     else if (aParseList.preset) {
       let description = aParseList.preset.items[i - 1].description;
 
-      if (URL) {
+      if (url) {
         tips.push(description);
       }
       else {
@@ -264,8 +264,8 @@ function makeMenuItems(aParseList) {
       }
     }
 
-    if (URL) {
-      if (testSchemeToOpen(URL)) {
+    if (url) {
+      if (testSchemeToOpen(url)) {
         action = 'open';
       }
       else {
@@ -275,7 +275,7 @@ function makeMenuItems(aParseList) {
         action = 'copy';
       }
 
-      if (URL === gBrowser.currentURI.spec) {
+      if (url === gBrowser.currentURI.spec) {
         ui = kUI.item.currentpage;
         tips.push(ui.text);
         styles.push(ui.style);
@@ -284,7 +284,7 @@ function makeMenuItems(aParseList) {
 
     // Make the URL of a label readable.
     if (!label) {
-      label = unescURLforUI(URL);
+      label = unescURLforUI(url);
     }
 
     accesskey = getCharFor(i);
@@ -295,7 +295,7 @@ function makeMenuItems(aParseList) {
 
     // Keep the URL of a tooltip as it is to confirm the raw one.
     if (!tooltiptext) {
-      tooltiptext = URL;
+      tooltiptext = url;
     }
 
     if (tips.length) {
@@ -308,7 +308,7 @@ function makeMenuItems(aParseList) {
       accesskey,
       tooltiptext,
       styles,
-      action: [action, URL],
+      action: [action, url],
       disabled
     }));
   });
@@ -385,16 +385,16 @@ function getParseListByPreset(aSourceURL) {
 function getParseListByScan(aSourceURL) {
   let parseList = createParseList();
 
-  let URLs = splitIntoSchemes(aSourceURL.link);
+  let urls = splitIntoSchemes(aSourceURL.link);
 
-  while (URLs.length) {
+  while (urls.length) {
     parseList.markAsNewURL();
 
     // @note Decode only special characters for URL.
-    let baseURL = unescURLChars(URLs.shift());
+    let baseURL = unescURLChars(urls.shift());
 
-    if (URLs.length) {
-      parseList.add(baseURL + URLs.join(''));
+    if (urls.length) {
+      parseList.add(baseURL + urls.join(''));
     }
 
     parseList.add(baseURL);
@@ -425,21 +425,21 @@ function splitIntoSchemes(aURL) {
     return [aURL];
   }
 
-  let URLs = [];
+  let urls = [];
   let slices, scheme = splits.shift() + splits.shift();
 
   while (splits.length > 1) {
     // 'foo.com/...http' -> ['foo.com/...', 'http']
     slices = sliceScheme(splits.shift());
     // 'http://' + 'foo.com/...'
-    URLs.push(scheme + slices[0]);
+    urls.push(scheme + slices[0]);
     // 'http' + '://'
     scheme = slices[1] + splits.shift();
   }
 
-  URLs.push(scheme + splits.shift());
+  urls.push(scheme + splits.shift());
 
-  return URLs.reduce((a, b) => {
+  return urls.reduce((a, b) => {
     let segments = b.split(delimiter);
 
     if (!segments[0] || !segments[2]) {
@@ -545,7 +545,7 @@ function createParseList(aPreset, aSourceURLType) {
 
   function validate() {
     // Invalid: No item except a source URL.
-    // @note URLs[0] is always a source URL itself.
+    // @note urls[0] is always a source URL itself.
     if (mURLs.length <= 1) {
       return false;
     }
@@ -571,7 +571,7 @@ function createParseList(aPreset, aSourceURLType) {
   return {
     preset: mPreset,
     sourceURLType: mSourceURLType,
-    URLs: mURLs,
+    urls: mURLs,
     add,
     validate,
     markAsNewURL,
@@ -620,9 +620,9 @@ function handleAttribute(aNode, aName, aValue) {
  * @require Util.uc.js
  */
 function setAttributeForCommand(aNode, aActionData) {
-  let [action, URL] = aActionData;
+  let [action, url] = aActionData;
 
-  if (!URL) {
+  if (!url) {
     return;
   }
 
@@ -631,14 +631,14 @@ function setAttributeForCommand(aNode, aActionData) {
   switch (action) {
     case 'open': {
       command =
-        'ucjsUtil.TabUtils.openTab("%URL%",' +
+        'ucjsUtil.TabUtils.openTab("%url%",' +
         '{inBackground:event.ctrlKey||event.button===1});';
 
       break;
     }
 
     case 'copy': {
-      command = 'ucjsUtil.Modules.ClipboardHelper.copyString("%URL%");';
+      command = 'ucjsUtil.Modules.ClipboardHelper.copyString("%url%");';
 
       break;
     }
@@ -648,7 +648,7 @@ function setAttributeForCommand(aNode, aActionData) {
     return;
   }
 
-  command = command.replace('%URL%', URL);
+  command = command.replace('%url%', url);
 
   aNode.setAttribute('oncommand', command);
 

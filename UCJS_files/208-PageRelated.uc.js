@@ -65,13 +65,13 @@ const kUI = {
  *   @key disabled {boolean} [optional]
  *   @key name {string}
  *     A display name for menuitem.
- *   @key URL {string}
+ *   @key url {string}
  *     A URL string of a related page.
  *     @note Pass the current page information with alias.
  *     @see |AliasFixup|
- *   @key URL {function} [optional for the custom formatting]
+ *   @key url {function} [optional for the custom formatting]
  *     @param aPageInfo {hash}
- *       @key URL {string}
+ *       @key url {string}
  *       @key title {string}
  *     @return {string}
  *       a URL string.
@@ -84,7 +84,7 @@ const kPreset = [
     items: [
       {
         name: 'Google 翻訳 > JP',
-        URL: 'http://translate.google.com/translate?sl=auto&tl=ja&u=%u%'
+        url: 'http://translate.google.com/translate?sl=auto&tl=ja&u=%u%'
       }
     ]
   },
@@ -93,15 +93,15 @@ const kPreset = [
     items: [
       {
         name: 'Google cache:',
-        URL: 'https://www.google.co.jp/search?q=cache:%u|sl%'
+        url: 'https://www.google.co.jp/search?q=cache:%u|sl%'
       },
       {
         name: 'Internet Archive',
-        URL: 'http://web.archive.org/*/%u%'
+        url: 'http://web.archive.org/*/%u%'
       },
       {
         name: 'WEB 魚拓',
-        URL: 'https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%u|sl%'
+        url: 'https://www.google.co.jp/search?sitesearch=megalodon.jp&q=%u|sl%'
       }
     ]
   },
@@ -110,10 +110,10 @@ const kPreset = [
     items: [
       {
         name: 'はてなブックマーク',
-        URL(aPageInfo) {
+        url(aPageInfo) {
           let entryURL = 'http://b.hatena.ne.jp/entry/';
 
-          if (/^https:/.test(aPageInfo.URL)) {
+          if (/^https:/.test(aPageInfo.url)) {
             entryURL += 's/';
           }
 
@@ -122,7 +122,7 @@ const kPreset = [
       },
       {
         name: 'reddit',
-        URL: 'http://www.reddit.com/submit?url=%u|en%'
+        url: 'http://www.reddit.com/submit?url=%u|enc%'
       }
     ]
   },
@@ -131,19 +131,19 @@ const kPreset = [
     items: [
       {
         name: 'Google link:',
-        URL: 'https://www.google.co.jp/search?q=link:%u|sl%'
+        url: 'https://www.google.co.jp/search?q=link:%u|sl%'
       },
       {
         name: 'Google with Page Title',
-        URL: 'https://www.google.co.jp/search?q="%t%"'
+        url: 'https://www.google.co.jp/search?q="%t%"'
       },
       {
         name: 'Yahoo! link:',
-        URL: 'http://search.yahoo.co.jp/search?p=link:%u%&ei=UTF-8'
+        url: 'http://search.yahoo.co.jp/search?p=link:%u%&ei=UTF-8'
       },
       {
         name: 'Yahoo! with Page Title',
-        URL: 'http://search.yahoo.co.jp/search?p="%t|en%"&ei=UTF-8'
+        url: 'http://search.yahoo.co.jp/search?p="%t|enc%"&ei=UTF-8'
       }
     ]
   }
@@ -156,19 +156,19 @@ const kPreset = [
  *   @key create {function}
  *
  * [alias]
- * %URL%, %u% : A page URL.
- * %TITLE%, %t% : A page title.
+ * %url%, %u% : A page URL.
+ * %title%, %t% : A page title.
  *
  * @note The modifiers can be combined by '|'.
- * SCHEMELESS, sl : Without the URL scheme.
- * PARAMLESS, pl : Without the URL parameter.
- * ENCODE, en : With URI encoded.
+ * schemeless, sl : Without the URL scheme.
+ * paramless, pl : Without the URL parameter.
+ * encode, enc : With URI encoded.
  *
  * e.g.
- * %URL|ENCODE%, %u|en% : A page URL with URI encoded.
- * %URL|SCHEMELESS|ENCODE%, %u|sl|en% : A page URL, which is trimmed the scheme
- * and then URI encoded (the multiple modifiers is applied in the order of
- * settings).
+ * %url|encode%, %u|enc% : A page URL with URI encoded.
+ * %url|schemeless|encode%, %u|sl|enc% : A page URL, which is trimmed the
+ * scheme and then URI encoded (the multiple modifiers is applied in the order
+ * of settings).
  */
 const AliasFixup = (function() {
   const kAliasSplitter = '|';
@@ -189,11 +189,11 @@ const AliasFixup = (function() {
 
   function fixupTarget(aTarget, aPageInfo) {
     switch (aTarget) {
-      case 'URL':
+      case 'url':
       case 'u':
-        return aPageInfo.URL;
+        return aPageInfo.url;
 
-      case 'TITLE':
+      case 'title':
       case 't':
         return aPageInfo.title;
     }
@@ -203,16 +203,16 @@ const AliasFixup = (function() {
 
   function fixupModifier(aText, aModifier) {
     switch (aModifier) {
-      case 'SCHEMELESS':
+      case 'schemeless':
       case 'sl':
         return aText.replace(/^https?:\/\//, '');
 
-      case 'PARAMLESS':
+      case 'paramless':
       case 'pl':
         return aText.replace(/[?#].*$/, '');
 
-      case 'ENCODE':
-      case 'en':
+      case 'encode':
+      case 'enc':
         return encodeURIComponent(aText);
     }
 
@@ -271,15 +271,15 @@ function getAvailableMenus() {
 
   let pageInfo = {
     title: gBrowser.contentTitle || gBrowser.selectedTab.label,
-    URL: gBrowser.currentURI.spec
+    url: gBrowser.currentURI.spec
   };
 
   // Security warning for a URL with parameters.
-  if (/[?#].*$/.test(pageInfo.URL)) {
+  if (/[?#].*$/.test(pageInfo.url)) {
     menus.push($E('menuitem', {
       label: kUI.menu.warnParameter,
       style: 'font-weight:bold;',
-      tooltiptext: pageInfo.URL.replace(/[?#]/, '\n$&'),
+      tooltiptext: pageInfo.url.replace(/[?#]/, '\n$&'),
       disabled: true
     }));
   }
@@ -290,38 +290,38 @@ function getAvailableMenus() {
     });
     let popup = $E('menupopup');
 
-    let URLs = [];
+    let urls = [];
 
     items.forEach(function(data) {
       if (data.disabled) {
         return;
       }
 
-      let URL;
+      let url;
 
-      if (typeof data.URL === 'function') {
-        URL = data.URL(pageInfo);
+      if (typeof data.url === 'function') {
+        url = data.url(pageInfo);
       }
       else {
-        URL = data.URL;
+        url = data.url;
       }
 
-      URL = AliasFixup.create(URL, pageInfo);
+      url = AliasFixup.create(url, pageInfo);
 
       popup.appendChild($E('menuitem', {
         label: data.name,
-        open: [URL],
-        tooltiptext: URL
+        open: [url],
+        tooltiptext: url
       }));
 
-      URLs.push(URL);
+      urls.push(url);
     });
 
-    if (URLs.length > 1) {
+    if (urls.length > 1) {
       popup.appendChild($E('menuseparator'));
       popup.appendChild($E('menuitem', {
         label: kUI.menu.openAll,
-        open: URLs
+        open: urls
       }));
     }
 
@@ -377,12 +377,12 @@ function handleAttribute(aNode, aName, aValue) {
  *
  * @require Util.uc.js
  */
-function setAttributeForCommand(aNode, aURLs) {
-  let URLs = JSON.stringify(aURLs);
-  let inBG = (aURLs.length > 1) ? 'true' : 'event.ctrlKey||event.button===1';
+function setAttributeForCommand(node, urls) {
+  let URLList = JSON.stringify(urls);
+  let inBG = (urls.length > 1) ? 'true' : 'event.ctrlKey||event.button===1';
 
   let command = `
-    ucjsUtil.TabUtils.openTabs(${URLs}, {
+    ucjsUtil.TabUtils.openTabs(${URLList}, {
       inBackground: ${inBG},
       relatedToCurrent: true
     });
@@ -390,10 +390,10 @@ function setAttributeForCommand(aNode, aURLs) {
 
   command = command.replace(/^\s+|\n/gm, '');
 
-  aNode.setAttribute('oncommand', command);
+  node.setAttribute('oncommand', command);
 
   // @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
-  aNode.setAttribute('onclick', 'checkForMiddleClick(this,event);');
+  node.setAttribute('onclick', 'checkForMiddleClick(this,event);');
 }
 
 /**

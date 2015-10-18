@@ -236,10 +236,10 @@ function buildList(params) {
       replace('%name%', name).
       replace('%keyword%', keyword);
 
-    list.forEach(({name, keyword, URL}) => {
+    list.forEach(({name, keyword, url}) => {
       let menuItem = fragment.appendChild($E('menuitem', {
         label: $label(name, keyword),
-        tooltiptext: URL
+        tooltiptext: url
       }));
 
       menuItem[kDataKey.keyword] = keyword;
@@ -284,7 +284,7 @@ function getRestrictKeywordList() {
 }
 
 function getBookmarkKeywordList() {
-  let getPrePath = (URL) =>URL.replace(/^(\w+:[\/]*[^\/]+).*$/, '$1');
+  let getPrePath = (url) =>url.replace(/^(\w+:[\/]*[^\/]+).*$/, '$1');
 
   let sql = [
     'SELECT b.title, k.keyword, p.url',
@@ -307,7 +307,7 @@ function getBookmarkKeywordList() {
     rows.forEach((item) => {
       list.push({
         name: item.title || getPrePath(item.url),
-        URL: item.url,
+        url: item.url,
         keyword: item.keyword
       });
     });

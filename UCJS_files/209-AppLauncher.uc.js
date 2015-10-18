@@ -70,11 +70,11 @@ const kAppList = [
     path: '%ProgF%/Internet Explorer/iexplore.exe',
 
     // [optional] Commandline arguments.
-    // @note %URL% is replaced with the proper URL of each action.
-    // @note If absent or empty array, it equals to <args: ['%URL%']>.
-    // @note If launched as a stand-alone tool, an argument that contains %URL%
+    // @note %url% is replaced with the proper URL of each action.
+    // @note If absent or empty array, it equals to <args: ['%url%']>.
+    // @note If launched as a stand-alone tool, an argument that contains %url%
     // is ignored.
-    args: ['-new', '%URL%'],
+    args: ['-new', '%url%'],
 
     // [optional] This item is disabled.
     //disabled: true
@@ -88,7 +88,7 @@ const kAppList = [
     extensions: ['asx', 'wax', 'wvx'],
 
     path: '%ProgF%/Windows Media Player/wmplayer.exe',
-    args: ['/prefetch:1', '%URL%']
+    args: ['/prefetch:1', '%url%']
   },
   {
     name: 'Foxit',
@@ -110,7 +110,7 @@ const kAppList = [
     name: 'TB',
     type: 'news',
     path: '%ProgF%/Mozilla Thunderbird/thunderbird.exe',
-    args: ['-news', '%URL%']
+    args: ['-news', '%url%']
   },
   {
     name: 'MassiGra',
@@ -647,35 +647,35 @@ function getAvailableActions() {
   }
 
   if (gContextMenu.onLink) {
-    let URL = gContextMenu.linkURL;
+    let url = gContextMenu.linkURL;
 
-    let ext = FileExtUtil.matchExt(URL, 'file');
+    let ext = FileExtUtil.matchExt(url, 'file');
 
     if (ext) {
       actions.push(FileExtUtil.makeFileAction('openFile', ext));
     }
 
-    if (FileExtUtil.matchExt(URL, 'text')) {
+    if (FileExtUtil.matchExt(url, 'text')) {
       actions.push('viewLinkSource');
     }
-    else if (FileExtUtil.matchExt(URL, 'image')) {
+    else if (FileExtUtil.matchExt(url, 'image')) {
       actions.push('viewLinkImage');
     }
-    else if (FileExtUtil.matchExt(URL, 'media')) {
+    else if (FileExtUtil.matchExt(url, 'media')) {
       actions.push('openLinkMedia');
     }
 
-    if (/^https?:/.test(URL)) {
+    if (/^https?:/.test(url)) {
       actions.push('openLink');
       actions.push('downloadLink');
     }
-    else if (/^ftp:/.test(URL)) {
+    else if (/^ftp:/.test(url)) {
       actions.push('openFTP');
     }
-    else if (/^mailto:/.test(URL)) {
+    else if (/^mailto:/.test(url)) {
       actions.push('sendMail');
     }
-    else if (/^s?news:/.test(URL)) {
+    else if (/^s?news:/.test(url)) {
       actions.push('readNews');
     }
   }
@@ -1016,7 +1016,7 @@ function saveAndExecute(appInfo, targetURL, docInfo) {
 }
 
 function getSaveFilePath(uri, docInfo) {
-  const kFileNameForm = 'ucjsAL%NUM%_%FILENAME%';
+  const kFileNameForm = 'ucjsAL%num%_%fileName%';
 
   let fileName = makeFileName(uri, docInfo);
 
@@ -1024,19 +1024,19 @@ function getSaveFilePath(uri, docInfo) {
     throw Error('Invalid URL for download.');
   }
 
-  fileName = kFileNameForm.replace('%FILENAME%', fileName);
+  fileName = kFileNameForm.replace('%fileName%', fileName);
 
   // @see chrome://global/content/contentAreaUtils.js::validateFileName()
   fileName = window.validateFileName(fileName);
 
   let dir = getSpecialDirectory('TmpD');
 
-  dir.append(fileName.replace('%NUM%', ''));
+  dir.append(fileName.replace('%num%', ''));
 
   let uniqueNum = 0;
 
   while (dir.exists()) {
-    dir.leafName = fileName.replace('%NUM%', ++uniqueNum);
+    dir.leafName = fileName.replace('%num%', ++uniqueNum);
   }
 
   return dir.path;
@@ -1140,11 +1140,11 @@ function getAppArgs(args, url) {
   }
 
   if (url) {
-    return args.map((arg) => arg.replace(/%URL%/g, url));
+    return args.map((arg) => arg.replace(/%url%/g, url));
   }
 
-  // Remove arguments with %URL% when the application is launched as 'tool'.
-  return args.filter((arg) => !arg.includes('%URL%'));
+  // Remove arguments with %url% when the application is launched as 'tool'.
+  return args.filter((arg) => !arg.includes('%url%'));
 }
 
 function getSpecialDirectory(aAlias) {
