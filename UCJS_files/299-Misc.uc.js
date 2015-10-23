@@ -25,6 +25,7 @@ const {
   Listeners: {
     $event,
     $page,
+    $pageOnce,
     $shutdown
   },
   DOMUtils: {
@@ -1007,7 +1008,7 @@ const {
           // @note The focus does not move to the findbar.
           gFindBar.open(gFindBar.FIND_NORMAL);
 
-          $page('pageready', () => {
+          $pageOnce('pageready', () => {
             if (FindBar.findText.value !== vars.findString) {
               FindBar.reset();
               FindBar.findText.value = vars.findString;
