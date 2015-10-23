@@ -25,7 +25,10 @@
 
 // @require LinkInfo.uc.js
 
-// !!! This script doesn't yet support e10s. !!!
+// @note The 'load' event of the info page window has already finished when
+// our scripts LinkInfo.uc.xul and LinkInfo.uc.js is executed. So we try to
+// initialize our link list when user selects the link info tab for the first
+// time.
  -->
 
 <radiogroup id="viewGroup">

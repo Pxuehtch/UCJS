@@ -5,10 +5,11 @@
 // ==/UserScript==
 
 // @require LinkInfo.uc.xul
+// @require Util.uc.js
+// @note The page info window has to be opened from the browser window which
+// has |window.ucjsUtil|.
 
 // @note Some functions are exported (window.ucjsLinkInfo.XXX).
-
-// !!! This script doesn't yet support e10s. !!!
 
 
 const ucjsLinkInfo = (function(window) {
@@ -16,6 +17,17 @@ const ucjsLinkInfo = (function(window) {
 
 "use strict";
 
+
+/**
+ * Imports
+ */
+const {
+  ContentTask,
+  // Logger to console for debug.
+  Console: {
+    log
+  }
+} = window.opener.ucjsUtil;
 
 /**
  * UI setting.
@@ -55,16 +67,16 @@ const kUI = {
    * Elements with the attribute about URL.
    */
   type: {
-    a: '<A>',
-    area: '<AREA>',
-    submit: 'Submit', // <INPUT>, <BUTTON>
-    script: '<SCRIPT>',
-    link: '<LINK>',
+    a: '<a>',
+    area: '<area>',
+    submit: 'submit', // for <input> or <button> of <form>.
+    script: '<script>',
+    link: '<link>',
     XLink: 'XLink',
-    q: '<Q>',
-    blockquote: '<BLOCKQUOTE>',
-    ins: '<INS>',
-    del: '<DEL>'
+    q: '<q>',
+    blockquote: '<blockquote>',
+    ins: '<ins>',
+    del: '<del>'
   },
 
   /**
@@ -77,7 +89,7 @@ const kUI = {
 };
 
 /**
- * Link view handler.
+ * Link tree view handler.
  */
 const LinkInfoView = (function() {
   const UI = {
@@ -90,64 +102,86 @@ const LinkInfoView = (function() {
     }
   };
 
-  let mView = null;
-  let mIsBuilt = false;
+  let vars = {
+    treeView: null,
+    isListBuilt: false
+  };
 
   function init() {
-    if (!mView) {
-      // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
-      mView = new window.pageInfoTreeView(kUI.tree.id, UI.addressColumn.index);
-
-      UI.tree.view = mView;
-
-      // Clean up when the Page Info window is closed.
-      // @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
-      window.onUnloadRegistry.push(() => {
-        mView = null;
-        mIsBuilt = null;
-      });
+    if (vars.treeView) {
+      return;
     }
 
-    build();
+    // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
+    vars.treeView =
+      new window.pageInfoTreeView(kUI.tree.id, UI.addressColumn.index);
+
+    UI.tree.view = vars.treeView;
+
+    buildList();
+
+    // Renew the data for the page info window that opens.
+    // @see chrome://browser/content/pageinfo/pageInfo.js::onResetRegistry
+    // @see chrome://browser/content/browser.js::BrowserPageInfo
+    window.onResetRegistry.push(() => {
+      vars.treeView.clear();
+      vars.isListBuilt = false;
+      buildList();
+    });
+
+    // Clean up when the page info window is closed.
+    // @see chrome://browser/content/pageinfo/pageInfo.js::onUnloadRegistry
+    window.onUnloadRegistry.push(() => {
+      vars.treeView = null;
+      vars.isListBuilt = null;
+    });
   }
 
-  function build() {
-    if (!mIsBuilt) {
-      mIsBuilt = true;
-  
-      try {
-        // @see chrome://browser/content/pageinfo/pageInfo.js::goThroughFrames()
-        window.goThroughFrames(window.gDocument, window.gWindow);
-      }
-      catch (ex) {
-        // @throw |NS_ERROR_FAILURE| [nsIDOMWindow.length]
-        // |gWindow.frames.length| is undefined after closing the target page
-        // which has frames.
-        return;
-      }
-  
-      LI_processFrames();
+  function buildList() {
+    if (vars.isListBuilt) {
+      return;
     }
+
+    vars.isListBuilt = true;
+
+    let mm = window.opener.gBrowser.selectedBrowser.messageManager;
+
+    mm.addMessageListener('ucjs:PageInfo:LinkInfo',
+      function onMessage(message) {
+        let {linkInfo, isComplete} = message.data;
+
+        // Terminates the message when:
+        // - The page info window was closed.
+        // - The link info fetching has been completed.
+        if (window.closed || isComplete) {
+          mm.removeMessageListener('ucjs:PageInfo:LinkInfo', onMessage);
+
+          return;
+        }
+
+        addListItem(linkInfo);
+      }
+    );
+
+    LinkInfoCollector.collect();
   }
 
-  function addItem(aItem) {
-    aItem.index = mView.rowCount + 1;
+  function addListItem(listItem) {
+    listItem.index = vars.treeView.rowCount + 1;
 
     let row = [];
 
     // Set data in the column's order of the tree view.
-    // @note No test for the falsy value {number} 0 since it isn't given for
-    // now.
     for (let key of Object.keys(kUI.column)) {
-      if (aItem[key]) {
-        row.push(aItem[key]);
+      if (key in listItem) {
+        row.push(listItem[key]);
       }
       else {
         row.push(kUI.note.error);
       }
     }
 
-    mView.addRow(row);
+    vars.treeView.addRow(row);
   }
 
   /**
@@ -169,171 +203,294 @@ const LinkInfoView = (function() {
       return;
     }
 
-    let URL = mView.data[row][UI.addressColumn.index];
+    let url = vars.treeView.data[row][UI.addressColumn.index];
 
     let opener = window.opener;
 
     if (opener && 'gBrowser' in opener) {
-      opener.gBrowser.addTab(URL);
+      opener.gBrowser.addTab(url);
     }
     else {
-      window.open(URL, '_blank', 'chrome');
+      window.open(url, '_blank', 'chrome');
     }
   }
 
   return {
     init,
-    addItem,
     openLink
   };
 })();
 
-function LI_processFrames() {
-  // @see chrome://browser/content/pageinfo/pageInfo.js::gFrameList
-  let {gFrameList} = window;
 
-  if (gFrameList.length) {
-    let doc = gFrameList[0];
+/**
+ * Link info collector.
+ */
+const LinkInfoCollector = (function() {
+  function collect() {
+    ContentTask.spawn({
+      params: {
+        strings: {
+          type: kUI.type,
+          note: kUI.note
+        }
+      },
+      task: `function*(params) {
+        ${goThroughFrames.toString()}
+        ${processFrames.toString()}
+        ${getLinkInfo.toString()}
+        ${getText.toString()}
+        ${getValueText.toString()}
+        ${getAltText.toString()}
 
-    let iterator = doc.createTreeWalker(
-      doc, NodeFilter.SHOW_ELEMENT, grabLink, true);
+        let {strings} = params;
 
-    gFrameList.shift();
+        let frameList = goThroughFrames();
 
-    setTimeout(LI_doGrab, 10, iterator);
+        // Periodically repeats the link info fetching to avoid blocking the
+        // content process.
+        Task.spawn(() => processFrames(frameList, strings));
+      }`
+    }).
+    catch(Cu.reportError);
   }
-}
 
-function LI_doGrab(aIterator) {
-  for (let i = 0; i < 500; ++i) {
-    if (!aIterator.nextNode()) {
-      LI_processFrames();
-
-      return;
+  function goThroughFrames(view = content.window) {
+    if (!view) {
+      return null;
     }
-  }
 
-  setTimeout(LI_doGrab, 10, aIterator);
-}
+    let frameList = [view];
 
-function grabLink(aNode) {
-  let {addItem} = LinkInfoView;
+    // Recurse through the sub frames.
+    if (view.frames && view.frames.length) {
+      for (let i = 0, l = view.frames.length; i < l; i++) {
+        let subFrameList = goThroughFrames(view.frames[i]);
 
-  if (aNode instanceof HTMLAnchorElement && aNode.href) {
-    let imgs = aNode.getElementsByTagName('img');
-    let note = (imgs && imgs.length) ? kUI.note.image : '';
-
-    addItem({
-      name: note + getText(aNode),
-      address: aNode.href,
-      type: kUI.type.a,
-      target: aNode.target,
-      accesskey: aNode.accessKey
-    });
-  }
-  else if (aNode instanceof HTMLScriptElement && aNode.src) {
-    addItem({
-      name: getText(aNode, kUI.type.script),
-      address: aNode.src,
-      type: kUI.type.script
-    });
-  }
-  else if (aNode instanceof HTMLLinkElement && aNode.href) {
-    let target = aNode.rel || aNode.rev;
-
-    addItem({
-      name: getText(aNode, target),
-      address: aNode.href,
-      type: kUI.type.link,
-      target
-    });
-  }
-  else if ((aNode instanceof HTMLInputElement ||
-            aNode instanceof HTMLButtonElement) && aNode.type) {
-    let name, address, target;
-    let type = aNode.type.toLowerCase();
-
-    if (type === 'submit' || type === 'image') {
-      name = '';
-
-      if (type === 'image') {
-        name += kUI.note.image;
-      }
-
-      name += getText(aNode, aNode.value || kUI.type.submit);
-
-      if (aNode.form) {
-        address = aNode.form.action;
-        target = aNode.form.target;
+        if (subFrameList) {
+          frameList.concat(subFrameList);
+        }
       }
     }
 
-    if (address) {
-      addItem({
-        name,
-        address,
-        type: kUI.type.submit,
+    return frameList;
+  }
+
+  /**
+   * Generator for periodically fetching of link info through all frames.
+   */
+  function* processFrames(frameList, strings) {
+    const kNodeNumsInOneGo = 500;
+    let nodeCount = 0;
+
+    for (let view of frameList) {
+      let d = view.document;
+      let iterator = d.createTreeWalker(d, content.NodeFilter.SHOW_ELEMENT);
+
+      while (iterator.nextNode()) {
+        let linkInfo = getLinkInfo(iterator.currentNode, strings);
+
+        if (linkInfo) {
+          sendAsyncMessage('ucjs:PageInfo:LinkInfo', {
+            linkInfo
+          });
+        }
+
+        if (++nodeCount % kNodeNumsInOneGo === 0) {
+          // Breath regularly so we don't keep blocking the content process.
+          yield new Promise((resolve) => setTimeout(resolve, 10));
+        }
+      }
+    }
+
+    // Send that link info fetching has finished.
+    sendAsyncMessage('ucjs:PageInfo:LinkInfo', {
+      isComplete: true
+    });
+  }
+
+  function getLinkInfo(node, strings) {
+    const XLinkNS = 'http://www.w3.org/1999/xlink';
+
+    let linkInfo;
+
+    let setInfo = (info) => {
+      for (let key in info) {
+        // Sanitize a falsy value except {number} 0.
+        if (info[key] === 0) {
+          info[key] = '0';
+        }
+        else if (key in info && !info[key]) {
+          delete info[key];
+        }
+      }
+
+      linkInfo = info;
+    };
+
+    if (node instanceof content.HTMLAnchorElement && node.href) {
+      let imgs = node.getElementsByTagName('img');
+      let note = (imgs && imgs.length) ? strings.note.image : '';
+
+      setInfo({
+        name: note + getText(node),
+        address: node.href,
+        type: strings.type.a,
+        target: node.target,
+        accesskey: node.accessKey
+      });
+    }
+    else if (node instanceof content.HTMLScriptElement && node.src) {
+      setInfo({
+        name: getText(node, strings.type.script),
+        address: node.src,
+        type: strings.type.script
+      });
+    }
+    else if (node instanceof content.HTMLLinkElement && node.href) {
+      let target = node.rel || node.rev;
+
+      setInfo({
+        name: getText(node, target),
+        address: node.href,
+        type: strings.type.link,
         target
       });
     }
-  }
-  else if (aNode instanceof HTMLAreaElement && aNode.href) {
-    addItem({
-      name: getText(aNode),
-      address: aNode.href,
-      type: kUI.type.area,
-      target: aNode.target
-    });
-  }
-  else if ((aNode instanceof HTMLQuoteElement ||
-            aNode instanceof HTMLModElement) && aNode.cite) {
-    addItem({
-      name: getText(aNode),
-      address: aNode.cite,
-      type: kUI.type[aNode.localName]
-    });
-  }
-  // @see chrome://browser/content/pageinfo/pageInfo.js::XLinkNS
-  else if (aNode.hasAttributeNS(window.XLinkNS, 'href')) {
-    let address;
-    let href = aNode.getAttributeNS(window.XLinkNS, 'href');
-    let charset = aNode.ownerDocument.characterSet;
+    else if ((node instanceof content.HTMLInputElement ||
+              node instanceof content.HTMLButtonElement) && node.type) {
+      let name, address, target;
+      let type = node.type.toLowerCase();
 
-    try {
-      // @see chrome://global/content/contentAreaUtils.js::makeURI
-      address = window.makeURI(href, charset,
-        window.makeURI(aNode.baseURI, charset)).spec;
+      if (type === 'submit' || type === 'image') {
+        name = '';
+
+        if (type === 'image') {
+          name += strings.note.image;
+        }
+
+        name += getText(node, node.value || node.alt || strings.type.submit);
+
+        if (node.form) {
+          address = node.form.action;
+          target = node.form.target;
+        }
+      }
+
+      if (address) {
+        setInfo({
+          name,
+          address,
+          type: strings.type.submit,
+          target
+        });
+      }
     }
-    catch (ex) {}
-
-    if (address) {
-      addItem({
-        name: getText(aNode),
-        address,
-        type: kUI.type.XLink
+    else if (node instanceof content.HTMLAreaElement && node.href) {
+      setInfo({
+        name: getText(node),
+        address: node.href,
+        type: strings.type.area,
+        target: node.target
       });
     }
+    else if ((node instanceof content.HTMLQuoteElement ||
+              node instanceof content.HTMLModElement) && node.cite) {
+      setInfo({
+        name: getText(node),
+        address: node.cite,
+        type: strings.type[node.localName]
+      });
+    }
+    else if (node.hasAttributeNS(XLinkNS, 'href')) {
+      const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
+      const {makeURI} = BrowserUtils;
+
+      let address;
+      let href = node.getAttributeNS(XLinkNS, 'href');
+      let charset = node.ownerDocument.characterSet;
+
+      try {
+        address = makeURI(href, charset, makeURI(node.baseURI, charset)).spec;
+      }
+      catch (ex) {}
+
+      if (address) {
+        setInfo({
+          name: getText(node),
+          address,
+          type: strings.type.XLink
+        });
+      }
+    }
+
+    return linkInfo;
   }
-  else {
-    return NodeFilter.FILTER_SKIP;
+
+  function getText(node, defaultValue) {
+    const kMaxTextLength = 40;
+
+    let trim = (str) => str.trim().replace(/\s+/g, ' ');
+
+    let text = trim(getValueText(node)) || defaultValue || '';
+
+    if (text.length > kMaxTextLength) {
+      return text.substr(0, kMaxTextLength);
+    }
+
+    return text;
   }
 
-  return NodeFilter.FILTER_ACCEPT;
-}
+  function getValueText(node) {
+    if (node.title) {
+      return node.title;
+    }
 
-function getText(aNode, aDefault) {
-  const kMaxTextLength = 40;
+    let valueTexts = [];
 
-  // @see chrome://browser/content/pageinfo/pageInfo.js::getValueText()
-  let text = window.getValueText(aNode) ||
-    aNode.title || aNode.alt || aDefault || '';
+    for (let i = 0, l = node.childNodes.length; i < l; i++) {
+      let childNode = node.childNodes[i];
+      let nodeType = childNode.nodeType;
 
-  if (text.length > kMaxTextLength) {
-    return text.substr(0, kMaxTextLength);
+      if (nodeType === content.Node.TEXT_NODE) {
+        valueTexts.push(childNode.nodeValue);
+      }
+      else if (nodeType === content.Node.ELEMENT_NODE) {
+        // Capture the alt text of image element.
+        if (childNode instanceof content.HTMLImageElement ||
+            childNode instanceof content.HTMLAreaElement) {
+          valueTexts.push(getAltText(childNode));
+        }
+        else {
+          valueTexts.push(getValueText(childNode));
+        }
+      }
+    }
+
+    return (valueTexts.length) ? valueTexts.join(' ') : '';
   }
 
-  return text;
-}
+  function getAltText(node) {
+    if (node.alt) {
+      return node.alt;
+    }
+
+    let altText;
+
+    for (let i = 0, l = node.childNodes.length; i < l; i++) {
+      altText = getAltText(node.childNodes[i]);
+
+      if (altText) {
+        return altText;
+      }
+    }
+
+    return '';
+  }
+
+  return {
+    collect
+  };
+})();
 
 /**
  * Exports
