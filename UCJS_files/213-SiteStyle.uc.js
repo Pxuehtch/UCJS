@@ -864,7 +864,6 @@ const PageObserver = (function() {
 
         if (css) {
           yield ContentTask.spawn({
-            browser,
             params: {
               css
             },
@@ -886,7 +885,6 @@ const PageObserver = (function() {
 
         if (script && script.contentTask) {
           ContentTask.spawn({
-            browser,
             task: script.contentTask
           });
         }
