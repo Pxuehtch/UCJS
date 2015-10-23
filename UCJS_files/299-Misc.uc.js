@@ -936,8 +936,10 @@ const {
     }
   };
 
-  let mIsLocked = false;
-  let mFindString = null;
+  let vars = {
+    isLocked: false,
+    findString: null
+  };
 
   window.ucjsUI.FindBar.register({
     onCreate
@@ -971,10 +973,10 @@ const {
         let lockButton = UI.lockButton;
 
         if (lockButton && button === lockButton) {
-          mIsLocked = button.checked;
-          mFindString = mIsLocked ? FindBar.findText.value : null;
+          vars.isLocked = button.checked;
+          vars.findString = vars.isLocked ? FindBar.findText.value : null;
 
-          if (mIsLocked) {
+          if (vars.isLocked) {
             // @note Ensure the findbar opens in the normal mode.
             gFindBar.open(gFindBar.FIND_NORMAL);
           }
@@ -984,8 +986,8 @@ const {
       }
 
       case 'find': {
-        if (mIsLocked) {
-          mFindString = FindBar.findText.value;
+        if (vars.isLocked) {
+          vars.findString = FindBar.findText.value;
         }
 
         break;
@@ -1000,11 +1002,11 @@ const {
 
         let lockButton = UI.lockButton;
 
-        if (lockButton && lockButton.checked !== mIsLocked) {
-          lockButton.checked = mIsLocked;
+        if (lockButton && lockButton.checked !== vars.isLocked) {
+          lockButton.checked = vars.isLocked;
         }
 
-        if (mIsLocked) {
+        if (vars.isLocked) {
           // @note The focus does not move to the findbar.
           gFindBar.open(gFindBar.FIND_NORMAL);
 
