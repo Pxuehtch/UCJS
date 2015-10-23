@@ -169,21 +169,26 @@ const kNoiseList = [
  *   A function to be executed before the document is loaded.
  *   @param uri {nsIURI}
  *     The URI object of the document.
- *   @param browser {xul:browser} [optional]
- *     The browser that has the target document.
+ *   @param browser {xul:browser}
+ *     The selected browser that has the target document.
  *   @return {boolean}
  *     true if allowed |script| or |style| to follow after the document loaded,
  *     otherwise false.
  * @key script {function} [optional]
  *   A function to be executed after the document is loaded.
  *   @param uri {nsIURI}
- *   @param browser {xul:browser} [optional]
+ *     The URI object of the document.
+ *   @param browser {xul:browser}
+ *     The selected browser that has the target document.
  *   @return {hash}
  *     contentTask: {generator}
  *       A task to be run in the content frame.
  * @key style {function} [optional]
  *   A function to build CSS to be applied to the document.
  *   @param uri {nsIURI}
+ *     The URI object of the document.
+ *   @param browser {xul:browser}
+ *     The selected browser that has the target document.
  *   @return {CSS}
  * ----------
  *
@@ -855,7 +860,7 @@ const PageObserver = (function() {
 
     function onPageReady() {
       Task.spawn(function*() {
-        let css = site.style && site.style(newURI);
+        let css = site.style && site.style(newURI, browser);
 
         if (css) {
           yield ContentTask.spawn({
