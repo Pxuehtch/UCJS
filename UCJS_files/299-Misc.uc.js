@@ -999,32 +999,16 @@ const {
           }
         }
 
-        let isFirstLoaded = false;
-
-        if (event.type === 'pageshow') {
-          isFirstLoaded = !event.persisted;
-        }
-
         if (mIsLocked) {
           // @note The focus does not move to the findbar.
           gFindBar.open(gFindBar.FIND_NORMAL);
 
-          let isUpdated = false;
-
           if (FindBar.findText.value !== mFindString) {
             FindBar.reset();
             FindBar.findText.value = mFindString;
-
-            isUpdated = true;
           }
 
-          // 1.Find again with the new string when a tab is selected.
-          // 2.Find again with the same string when a new document loads in a
-          //   tab. But do nothing for a history cache to retain the last
-          //   view.
-          if (isUpdated || isFirstLoaded) {
-            gFindBar.onFindAgainCommand();
-          }
+          gFindBar.updateControlState();
         }
 
         let lockButton = UI.lockButton;
