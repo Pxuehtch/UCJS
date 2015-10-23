@@ -536,14 +536,18 @@ const kSiteList = [
     style(uri) {
       let css = `
         /* Custom class. */
+        /* '.ah38' lists Q&A sites. */
+        .ah38 h3,
         .ucjs_SiteStyle_understate h3 {
           font-size: small !important;
         }
+        .ah38 .hd ~ *,
         .ucjs_SiteStyle_understate .hd ~ *,
         .ucjs_SiteStyle_understate h3 ~ *
         {
           opacity: .3 !important;
         }
+        .ah38:hover *,
         .ucjs_SiteStyle_understate:hover * {
           opacity: 1 !important;
           transition: opacity .5s !important;
