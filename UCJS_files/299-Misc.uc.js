@@ -945,7 +945,7 @@ const {
   $event(gBrowser.mPanelContainer, 'command', handleEvent);
   $event(gBrowser.mPanelContainer, 'find', handleEvent);
   $page('pageselect', handleEvent);
-  $page('pageshow', handleEvent);
+  $page('pageurlchange', handleEvent);
 
   function onCreate(aParam) {
     let {findBar} = aParam;
@@ -991,30 +991,30 @@ const {
       }
 
       case 'pageselect':
-      case 'pageshow': {
-        if (event.type === 'pageselect') {
-          // 'pageshow' event will fire after a document loads completely.
-          if (event.readyState !== 'complete') {
-            return;
-          }
-        }
-
-        if (mIsLocked) {
-          // @note The focus does not move to the findbar.
-          gFindBar.open(gFindBar.FIND_NORMAL);
-
-          if (FindBar.findText.value !== mFindString) {
-            FindBar.reset();
-            FindBar.findText.value = mFindString;
-          }
-
-          gFindBar.updateControlState();
+      case 'pageurlchange': {
+        // Abort for a redundant event of page selecting.
+        if (event.type === 'pageurlchange' && event.tabSwitched) {
+          return;
         }
 
         let lockButton = UI.lockButton;
 
         if (lockButton && lockButton.checked !== mIsLocked) {
           lockButton.checked = mIsLocked;
+        }
+
+        if (mIsLocked) {
+          // @note The focus does not move to the findbar.
+          gFindBar.open(gFindBar.FIND_NORMAL);
+
+          $page('pageready', () => {
+            if (FindBar.findText.value !== vars.findString) {
+              FindBar.reset();
+              FindBar.findText.value = vars.findString;
+            }
+
+            gFindBar.updateControlState();
+          });
         }
 
         break;

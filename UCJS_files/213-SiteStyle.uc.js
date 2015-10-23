@@ -819,140 +819,79 @@ const URLFilter = (function() {
  *   init: {function}
  */
 const PageObserver = (function() {
-  const BrowserState = {
-    browsersURL: new WeakMap(),
-    selectedBrowser: null,
-
-    init() {
-      $event(gBrowser.tabContainer, 'TabClose', (event) => {
-        let browser = gBrowser.getBrowserForTab(event.target);
-
-        this.browsersURL.delete(browser);
-      });
-
-      $shutdown(() => {
-        this.browsersURL = null;
-        this.selectedBrowser = null;
-      });
-    },
-
-    isNewDocument() {
-      let browser = gBrowser.selectedBrowser;
-      let url = browser.currentURI.spec;
-
-      let sameTab = browser === this.selectedBrowser;
-      let sameURL = url === this.browsersURL.get(browser);
-
-      this.browsersURL.set(browser, url);
-      this.selectedBrowser = browser;
-
-      // The same tab has changed its URL so that the new document is loaded.
-      // @note The document is reloaded if the URL equals the old one.
-      // WORKAROUND: We consider the new document as be loaded even if only the
-      // hash changes for some updating of document like Google result page.
-      if (sameTab) {
-        return true;
-      }
-
-      // The tab is selected but its URL has been unchanged so that the tab is
-      // just selected.
-      if (sameURL) {
-        return false;
-      }
-
-      // The tab is selected and its URL has changed so that the new document
-      // is loaded.
-      return true;
-    }
-  };
-
-  const TabProgressListener = {
-    init() {
-      gBrowser.addProgressListener(TabProgressListener);
-
-      $shutdown(() => {
-        gBrowser.removeProgressListener(TabProgressListener);
-      });
-    },
-
-    onLocationChange(webProgress, request, uri) {
-      if (!BrowserState.isNewDocument()) {
-        return;
-      }
-
-      let site = matchSiteList(uri.spec);
-
-      if (!site) {
-        return;
-      }
-
-      let browser = gBrowser.selectedBrowser;
-
-      if (site.preload) {
-        let canProceed = site.preload(uri, browser);
-
-        if (!canProceed) {
-          return;
-        }
-      }
-
-      if (!site.style && !site.script) {
-        return;
-      }
-
-      $page('pageready', {
-        browser,
-        listener: onReady
-      });
-
-      function onReady() {
-        ContentTask.spawn({
-          browser,
-          params: {
-            css: site.style && site.style(uri)
-          },
-          task: function*(params) {
-            '${ContentTask.ContentScripts.CSSUtils}';
-
-            let {css} = params;
-
-            if (css) {
-              CSSUtils.injectStyleSheet(css, {
-                id: 'ucjs_SiteStyle_css'
-              });
-            }
-
-            return new Promise((resolve) => {
-              // WORKAROUND: Wait until the DOM is absolutely built.
-              // Particularly it seems that Google result page needs a long
-              // time for DOM completes.
-              content.setTimeout(resolve, 1000);
-            });
-          }
-        }).
-        then(() => {
-          let script = site.script && site.script(uri, browser);
-
-          if (script && script.contentTask) {
-            ContentTask.spawn({
-              browser,
-              task: script.contentTask
-            });
-          }
-        }).
-        catch(Cu.reportError);
-      }
-    },
-
-    onStateChange() {},
-    onProgressChange() {},
-    onSecurityChange() {},
-    onStatusChange() {}
-  };
-
   function init() {
-    BrowserState.init();
-    TabProgressListener.init();
+    $page('pageurlchange', onURLChange);
+  }
+
+  function onURLChange(event) {
+    let {newURI, newDocumentLoaded} = event;
+
+    if (!newDocumentLoaded) {
+      return;
+    }
+
+    let site = matchSiteList(newURI.spec);
+
+    if (!site) {
+      return;
+    }
+
+    let browser = gBrowser.selectedBrowser;
+
+    if (site.preload) {
+      let canProceed = site.preload(newURI, browser);
+
+      if (!canProceed) {
+        return;
+      }
+    }
+
+    if (!site.style && !site.script) {
+      return;
+    }
+
+    $page('pageready', {
+      browser,
+      listener: onReady
+    });
+
+    function onReady() {
+      ContentTask.spawn({
+        browser,
+        params: {
+          css: site.style && site.style(uri)
+        },
+        task: function*(params) {
+          '${ContentTask.ContentScripts.CSSUtils}';
+
+          let {css} = params;
+
+          if (css) {
+            CSSUtils.injectStyleSheet(css, {
+              id: 'ucjs_SiteStyle_css'
+            });
+          }
+
+          return new Promise((resolve) => {
+            // WORKAROUND: Wait until the DOM is absolutely built.
+            // Particularly it seems that Google result page needs a long
+            // time for DOM completes.
+            content.setTimeout(resolve, 1000);
+          });
+        }
+      }).
+      then(() => {
+        let script = site.script && site.script(uri, browser);
+
+        if (script && script.contentTask) {
+          ContentTask.spawn({
+            browser,
+            task: script.contentTask
+          });
+        }
+      }).
+      catch(Cu.reportError);
+    }
   }
 
   function matchSiteList(url) {

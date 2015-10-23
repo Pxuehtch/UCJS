@@ -1026,8 +1026,146 @@ const PageEvents = (function() {
     return null;
   }
 
+  /**
+   * URL list for the document is loaded without simple notifications like
+   * 'load', 'pageshow'.
+   *
+   * TODO: Make a generic method to determine silent changes of document.
+   * @see https://developer.mozilla.org/en/Add-ons/Overlay_Extensions/XUL_School/Intercepting_Page_Loads
+   *
+   * Used the following case:
+   * - Regard the document as being renewed though only the hash changes.
+   *   @see |URLChangeObserver::getURLChangeInfo|
+   * - Wait until the DOM is absolutely built.
+   *   @see |promisePageReady|
+   */
+  const SpecialURLs = (function() {
+    const kSpecialURLs = [
+      /^https?:\/\/www\.google\.(?:com|co\.jp)\/.*q=/
+    ];
+
+    function test(targetURL) {
+      return kSpecialURLs.some((url) => url.test(targetURL));
+    }
+
+    return {
+      test
+    };
+  })();
+
+  const URLChangeObserver = (function() {
+    const TabProgressListener = {
+      onLocationChange(webProgress, request, uri) {
+        // Receive location change from top frame only.
+        if (!webProgress.isTopLevel) {
+          return;
+        }
+
+        let urlChangeInfo = getURLChangeInfo();
+
+        vars.listeners.forEach((listener) => {
+          listener(urlChangeInfo);
+        });
+      },
+
+      onStateChange() {},
+      onProgressChange() {},
+      onSecurityChange() {},
+      onStatusChange() {}
+    };
+
+    let vars = {
+      selectedBrowser: null,
+      browsersURI: new WeakMap(),
+      listeners: new Set()
+    };
+
+    function init() {
+      EventManager.listenEvent(gBrowser.tabContainer, 'TabClose', (event) => {
+        vars.browsersURI.delete(gBrowser.getBrowserForTab(event.target));
+      });
+
+      EventManager.listenShutdown(() => {
+        vars.selectedBrowser = null;
+        vars.browsersURI = null;
+        vars.listeners = null;
+
+        gBrowser.removeProgressListener(TabProgressListener);
+      });
+
+      gBrowser.addProgressListener(TabProgressListener);
+    }
+
+    function getURLChangeInfo() {
+      let browser = gBrowser.selectedBrowser;
+      let isSameTab = browser === vars.selectedBrowser;
+
+      let oldURI = vars.browsersURI.get(browser);
+      let newURI = browser.currentURI.clone();
+      let isSameURL = oldURI && oldURI.spec === newURI.spec;
+
+      vars.selectedBrowser = browser;
+      vars.browsersURI.set(browser, newURI);
+
+      let tabSwitched = !isSameTab;
+      let newDocumentLoaded;
+
+      if (isSameTab) {
+        // The new document is loaded because:
+        // - It is reloaded in the same URL.
+        // - It is loaded in the new URL.
+        // - It is renewed in some special URL though only the hash changes.
+        if (isSameURL ||
+            !oldURI.equalsExceptRef(newURI) ||
+            SpecialURLs.test(newURI.spec)) {
+          newDocumentLoaded = true;
+        }
+        // The URL changes with its hash only so that the document remains
+        // still.
+        else {
+          newDocumentLoaded = false;
+        }
+      }
+      else {
+        // The tab is switched and its URL has changed so that the new
+        // document is loaded.
+        if (!isSameURL) {
+          newDocumentLoaded = true;
+        }
+        // The tab is switched but its URL has been unchanged so that the tab
+        // is just selected.
+        else {
+          newDocumentLoaded = false;
+        }
+      }
+
+      return {
+        oldURI,
+        newURI,
+        tabSwitched,
+        newDocumentLoaded
+      };
+    }
+
+    function addListener(listener) {
+      if (!vars.listeners.has(listener)) {
+        vars.listeners.add(listener);
+      }
+    }
+
+    return {
+      init,
+      addListener
+    };
+  })();
+
   // Initialize.
-  setContentScript();
+  init();
+
+  function init() {
+    URLChangeObserver.init();
+    setContentScript();
+  }
 
   function setContentScript() {
     let content_script = () => {
@@ -1169,6 +1307,26 @@ const PageEvents = (function() {
           }).
           catch(Cu.reportError);
         });
+
+        break;
+      }
+
+      case 'pageurlchange': {
+        let listenerWrapper = (urlChangeInfo) => {
+          let {oldURI, newURI, tabSwitched, newDocumentLoaded} = urlChangeInfo;
+
+          let pseudoEvent = {
+            type,
+            oldURI,
+            newURI,
+            tabSwitched,
+            newDocumentLoaded
+          };
+
+          fixupListener(listener)(pseudoEvent);
+        };
+
+        URLChangeObserver.addListener(listenerWrapper);
 
         break;
       }
