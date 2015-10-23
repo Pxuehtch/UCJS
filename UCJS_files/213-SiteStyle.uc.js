@@ -25,6 +25,7 @@ const {
     $event,
     $messageOnce,
     $page,
+    $pageOnce,
     $shutdown
   },
   DOMUtils: {
@@ -850,38 +851,33 @@ const PageObserver = (function() {
       return;
     }
 
-    $page('pageready', {
-      browser,
-      listener: onReady
-    });
+    $pageOnce('pageready', onPageReady);
 
-    function onReady() {
-      ContentTask.spawn({
-        browser,
-        params: {
-          css: site.style && site.style(uri)
-        },
-        task: function*(params) {
-          '${ContentTask.ContentScripts.CSSUtils}';
+    function onPageReady() {
+      Task.spawn(function*() {
+        let css = site.style && site.style(newURI);
 
-          let {css} = params;
+        if (css) {
+          yield ContentTask.spawn({
+            browser,
+            params: {
+              css
+            },
+            task: function*(params) {
+              '${ContentTask.ContentScripts.CSSUtils}';
 
-          if (css) {
-            CSSUtils.injectStyleSheet(css, {
-              id: 'ucjs_SiteStyle_css'
-            });
-          }
+              let {css} = params;
 
-          return new Promise((resolve) => {
-            // WORKAROUND: Wait until the DOM is absolutely built.
-            // Particularly it seems that Google result page needs a long
-            // time for DOM completes.
-            content.setTimeout(resolve, 1000);
+              if (css) {
+                CSSUtils.injectStyleSheet(css, {
+                  id: 'ucjs_SiteStyle_css'
+                });
+              }
+            }
           });
         }
-      }).
-      then(() => {
-        let script = site.script && site.script(uri, browser);
+
+        let script = site.script && site.script(newURI, browser);
 
         if (script && script.contentTask) {
           ContentTask.spawn({

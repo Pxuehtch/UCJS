@@ -1238,32 +1238,75 @@ const PageEvents = (function() {
     MessageManager.loadFrameScript(content_script);
   }
 
-  function listenPageEvent(type, listener) {
-    switch (type) {
-      case 'pageready': {
-        let browser, callback;
+  function promisePageReady(browser) {
+    return ContentTask.spawn({
+      browser,
+      task: function*() {
+        return new Promise((resolve) => {
+          let document = content.document;
 
-        if (listener.browser) {
-          browser = listener.browser;
-        }
-
-        callback = fixupListener(listener);
-
-        promisePageReady(browser).then((result) => {
-          let {persisted} = result;
-
-          let pseudoEvent = {
-            type,
-            persisted
+          // TODO: Examine whether the document is cached or not with reliable
+          // method.
+          let onReady = (persisted) => {
+            resolve({
+              url: document.URL,
+              persisted
+            });
           };
 
-          callback(pseudoEvent);
-        }).
-        catch(Cu.reportError);
+          if (document.readyState === 'complete') {
+            onReady(true);
 
-        break;
+            return;
+          }
+
+          if (document.readyState === 'interactive') {
+            onReady(false);
+
+            return;
+          }
+
+          let onLoad = (event) => {
+            // Abort for sub frames.
+            if (event.originalTarget !== document) {
+              return;
+            }
+
+            document.removeEventListener('DOMContentLoaded', onLoad);
+
+            onReady(false);
+          };
+
+          document.addEventListener('DOMContentLoaded', onLoad)
+        });
       }
+    }).
+    then((result) => {
+      return new Promise((resolve) => {
+        let {url, persisted} = result;
 
+        let onResolve = () => {
+          resolve({
+            persisted
+          });
+        };
+
+        // WORKAROUND: Wait until the DOM is absolutely built in some URL.
+        if (SpecialURLs.test(url)) {
+          setTimeout(onResolve, 1000);
+        }
+        else {
+          onResolve();
+        }
+      });
+    });
+  }
+
+  /**
+   * Register a page event listener that lives until the browser window closed.
+   */
+  function listenPageEvent(type, listener) {
+    switch (type) {
       case 'pageshow':
       case 'pagehide': {
         // We are interested in the selected browser only.
@@ -1331,6 +1374,47 @@ const PageEvents = (function() {
         break;
       }
 
+      case 'pageready': {
+        listenPageEvent('pageurlchange', () => {
+          listenPageEventOnce('pageready', listener);
+        });
+
+        break;
+      }
+
+      default: {
+        throw Error('Unknown type:' + type);
+      }
+    }
+  }
+
+  /**
+   * Register a page event listener that lives until once listened.
+   */
+  function listenPageEventOnce(type, listener) {
+    switch (type) {
+      case 'pageready': {
+        let browser;
+
+        if (listener.browser) {
+          browser = listener.browser;
+        }
+
+        promisePageReady(browser).then((result) => {
+          let {persisted} = result;
+
+          let pseudoEvent = {
+            type,
+            persisted
+          };
+
+          fixupListener(listener)(pseudoEvent);
+        }).
+        catch(Cu.reportError);
+
+        break;
+      }
+
       default: {
         throw Error('Unknown type:' + type);
       }
@@ -1345,49 +1429,9 @@ const PageEvents = (function() {
     return listener.handleEvent || listener.listener;
   }
 
-  function promisePageReady(browser) {
-    return ContentTask.spawn({
-      browser,
-      task: function*() {
-        return new Promise((resolve) => {
-          let document = content.document;
-
-          let onReady = (persisted) => {
-            resolve({
-              persisted
-            });
-          };
-
-          if (document.readyState === 'complete') {
-            onReady(true);
-
-            return;
-          }
-
-          if (document.readyState === 'interactive') {
-            onReady(false);
-
-            return;
-          }
-
-          let onLoad = (event) => {
-            if (event.originalTarget !== document) {
-              return;
-            }
-
-            document.removeEventListener('DOMContentLoaded', onLoad);
-
-            onReady(false);
-          };
-
-          document.addEventListener('DOMContentLoaded', onLoad)
-        });
-      }
-    });
-  }
-
   return {
-    listenPageEvent
+    listenPageEvent,
+    listenPageEventOnce
   };
 })();
 
@@ -1403,7 +1447,8 @@ const Listeners = (function() {
     $message: MessageManager && MessageManager.listenMessage,
     $messageOnce: MessageManager && MessageManager.listenMessageOnce,
 
-    $page: PageEvents && PageEvents.listenPageEvent
+    $page: PageEvents && PageEvents.listenPageEvent,
+    $pageOnce: PageEvents && PageEvents.listenPageEventOnce
   };
 })();
 

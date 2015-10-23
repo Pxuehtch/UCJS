@@ -31,6 +31,7 @@ const {
   ContentTask,
   Listeners: {
     $page,
+    $pageOnce,
     $shutdown
   },
   DOMUtils: {
@@ -373,7 +374,7 @@ const MenuUI = (function() {
         }
       }
 
-      $page('pageready', {
+      $pageOnce('pageready', {
         browser,
         listener: () => {
           ContentTask.spawn({
@@ -1120,41 +1121,13 @@ const DataCache = (function() {
     }
   };
 
-  const TabProgressListener = {
-    init() {
-      gBrowser.addProgressListener(TabProgressListener);
-
-      $shutdown(() => {
-        gBrowser.removeProgressListener(TabProgressListener);
-      });
-    },
-
-    onLocationChange(webProgress, request, uri) {
-      // TODO: Avoid double processing when |onLocationChange| follows.
-      // TODO: Avoid processing when the tab is only selected.
-      if (webProgress.isTopLevel) {
-        PageState.change();
-      }
-    },
-
-    onStateChange(webProgress, request, flags) {
-      if (webProgress.isTopLevel &&
-          flags & Ci.nsIWebProgressListener.STATE_STOP &&
-          flags & Ci.nsIWebProgressListener.STATE_IS_WINDOW) {
-        PageState.change();
-      }
-    },
-
-    onProgressChange() {},
-    onSecurityChange() {},
-    onStatusChange() {}
-  };
-
   // Initialize.
   init();
 
   function init() {
-    TabProgressListener.init();
+    $page('pageready', () => {
+      PageState.change();
+    });
   }
 
   function purgeCache() {
