@@ -202,8 +202,6 @@ const Button = {
 const BrowserProgressListener = {
   onLocationChange(webProgress) {
     // Receive location change from top frame only.
-    // XXX: Do this just to be safe though I don't know the case of sub frames
-    // change.
     if (!webProgress.isTopLevel) {
       return;
     }

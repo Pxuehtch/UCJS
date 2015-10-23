@@ -1615,17 +1615,16 @@ const ContentTask = (function() {
    * Creates a new task in a browser's content.
    *
    * @param data {hash|(function|string)}
-   *   @note You can directly pass only task function or function string that
-   *   does't need any parameters and runs in the selected browser.
+   *   @note You can directly pass only task function or function string if
+   *   the function does't need any parameters and runs in the selected
+   *   browser.
    *   browser: {xul:browser}
    *     A browser that has the target content process.
    *     If omitted, a selected browser works.
    *   params: {hash}
    *     A serializable object that will be passed to the task.
-   *     Passed as the first parameter.
    *   paramsAsCPOW: {hash}
    *     A unserializable object that will be passed to the task as CPOW.
-   *     Passed as the second parameter.
    *   task: {generator|string}
    *     A generator which will be sent to the content process to be executed.
    *     @note A function object will be stringified.

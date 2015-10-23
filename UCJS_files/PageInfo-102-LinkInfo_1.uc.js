@@ -224,6 +224,8 @@ const LinkInfoView = (function() {
 
 /**
  * Link info collector.
+ *
+ * @see chrome://browser/content/content.js::PageInfoListener
  */
 const LinkInfoCollector = (function() {
   function collect() {

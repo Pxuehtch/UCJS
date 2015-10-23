@@ -9,15 +9,16 @@
 // @note For chrome windows that open in the main browser:
 // - in sidebar:
 //   - Good for bookmark panel and history panel.
-//   - TODO: Test for the others.
+//   - TODO: Test the other case.
 // - in devtools pane:
-//   - Only toolbox panel is detected but blocked for now.
+//   - Only toolbox panel can be detected but blocked for now.
 //   - TODO: Detect each tool.
 // - in tab:
-//   - Any chrome window is detected but blocked for now.
+//   - Any chrome window can be detected but blocked for now.
 //   - TODO: Fix errors when access to an in-content chrome window.
 // - others:
-//   - Bookmark edit panel(Star UI) is not detected.
+//   - Bookmark edit panel(Star UI) can not be detected.
+//   - TODO: Test the other case.
 
 // @see http://userchromejs.mozdev.org/
 // @see https://github.com/alice0775/userChrome.js/blob/master/userChrome.js
@@ -798,11 +799,14 @@ function UtilManager() {
       aCaller.filename,
       aCaller.sourceLine,
       aCaller.lineNumber,
-      // Column number
+      // [Column number]
+      // TODO: How can I get a column number?
       null,
-      // Flags: Just a log message.
+      // [Flags]
+      // Just a log message.
       scriptError.infoFlag,
-      // Category
+      // [Category]
+      // Javascript in the chrome frame.
       // @note The browser console displays, but the web console does not.
       'chrome javascript'
     );
@@ -840,7 +844,7 @@ function LogManager(aEnabled) {
   let noop = () => function(){};
 
   // @note Overwrite with the same name functions in the 'Exports' section
-  // below.
+  // below if the logger enables.
   let exports = {
     list: noop,
     counter: noop
