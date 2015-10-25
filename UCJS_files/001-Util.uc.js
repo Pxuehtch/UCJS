@@ -355,6 +355,8 @@ const ContentScripts = (function() {
       ${content_querySelector.toString()}
       ${content_evaluateXPath.toString()}
       ${content_getFrameContentOffset.toString()}
+      ${content_getAreaElementFromPoint.toString()}
+      ${content_isInPolygon.toString()}
       ${content_resolveURL.toString()}
 
       return {
@@ -597,15 +599,18 @@ const ContentScripts = (function() {
   }
 
   /**
-   * Find an element from the given coordinates. This method descends through
-   * frames.
+   * Find an element from the given coordinates.
    *
-   * The original code:
-   * @see resource:///modules/devtools/shared/layout/utils.js
+   * Additional features:
+   * - This method descends through frames.
+   *   @see resource:///modules/devtools/shared/layout/utils.js
+   * - This method can find an <area> element of the image map on <img> and
+   *   <object>.
    */
   function content_getElementFromPoint(x, y, root = content.document) {
     let node = root.elementFromPoint(x, y);
 
+    // Recursively scan through sub frames.
     if (node && node.contentDocument) {
       let rect = node.getBoundingClientRect();
 
@@ -625,6 +630,15 @@ const ContentScripts = (function() {
       }
     }
 
+    // Find an <area> element in the image map of <img> or <object>.
+    if (node && node.useMap) {
+      let area = content_getAreaElementFromPoint(node, x, y);
+
+      if (area) {
+        node = area;
+      }
+    }
+
     return node;
   }
 
@@ -635,14 +649,148 @@ const ContentScripts = (function() {
       return [0, 0];
     }
 
-    let parseInteger = (value) => parseInt(style.getPropertyValue(value), 10);
+    let getInt = (value) => parseInt(style.getPropertyValue(value), 10);
 
-    let paddingTop = parseInteger('padding-top');
-    let paddingLeft = parseInteger('padding-left');
-    let borderTop = parseInteger('border-top-width');
-    let borderLeft = parseInteger('border-left-width');
+    let paddingTop = getInt('padding-top');
+    let paddingLeft = getInt('padding-left');
+    let borderTop = getInt('border-top-width');
+    let borderLeft = getInt('border-left-width');
 
     return [borderTop + paddingTop, borderLeft + paddingLeft];
+  }
+
+  function content_getAreaElementFromPoint(node, x, y) {
+    let useMap = node.useMap;
+
+    if (!useMap) {
+      return null;
+    }
+
+    let mapName = useMap.replace('#', '');
+
+    if (!mapName) {
+      return null;
+    }
+
+    let selector = `map[name="${mapName}"], map#${mapName}`;
+    let map = DOMUtils.$S1(selector, node.ownerDocument);
+
+    if (!map) {
+      return null;
+    }
+
+    let areas = map.areas;
+
+    if (!areas || !areas.length) {
+      return null;
+    }
+
+    // Make the client coordinates of <area> in the image map of the base node.
+    let baseRect = node.getBoundingClientRect();
+
+    x -= baseRect.left;
+    y -= baseRect.top;
+
+    let defaultArea = null;
+
+    for (let i = 0, l = areas.length; i < l; i++) {
+      let area = areas[i];
+
+      if (area.shape === 'default') {
+        defaultArea = area;
+
+        continue;
+      }
+
+      let coords = area.coords;
+
+      if (!coords) {
+        continue;
+      }
+
+      coords = coords.split(',').map((value) => parseInt(value, 10));
+
+      if (coords.some(isNaN)) {
+        continue;
+      }
+
+      switch (area.shape) {
+        case 'rect': {
+          if (coords.length === 4) {
+            let [left, top, right, bottom] = coords;
+
+            if (left <= x && x <= right && top <= y && y <= bottom) {
+              return area;
+            }
+          }
+
+          break;
+        }
+
+        case 'circle': {
+          if (coords.length === 3) {
+            // X/Y coordinates of the circle's center, and radius.
+            let [cx, cy, r] = coords;
+
+            if (Math.pow(x - cx, 2) + Math.pow(y - cy, 2) <= r * r) {
+              return area;
+            }
+          }
+
+          break;
+        }
+
+        case 'poly': {
+          if (content_isInPolygon(coords, x, y)) {
+            return area;
+          }
+
+          break;
+        }
+      }
+    }
+
+    return defaultArea;
+  }
+
+  /**
+   * Point inclusion in polygon test.
+   *
+   * @see http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+   */
+  function content_isInPolygon(coords, x, y) {
+    if (coords.length < 6 || coords.length % 2 === 1) {
+      return false;
+    }
+
+    // Number of vertexes in the polygon.
+    let nv = coords.length;
+
+    // X and Y coordinates of the polygon's vertexes.
+    let vx = [], vy = [];
+
+    coords.forEach((value, i) => {
+      if (i % 2 === 0) {
+        vx.push(value);
+      }
+      else {
+        vy.push(value);
+      }
+    });
+
+    vx.push(coords[0]);
+    vy.push(coords[1]);
+
+    let isInside = false;
+
+    for (let i = 0, j = nv - 1; i < nv; j = i++) {
+      if ((y < vy[i]) !== (y < vy[j]) &&
+          x < (vx[j] - vx[i]) * (y - vy[i]) / (vy[j] - vy[i]) + vx[i]) {
+        isInside = !isInside;
+      }
+    }
+
+    return isInside;
   }
 
   function content_getLinkHref(node) {
