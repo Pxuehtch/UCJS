@@ -1278,8 +1278,7 @@ const PresetNavi = (function() {
             };
           }
 
-          if (node instanceof content.HTMLInputElement &&
-              node.form && node.value) {
+          if (node && node.localName === 'input' && node.form && node.value) {
             let formIndex = 0;
 
             for (let form of content.document.forms) {

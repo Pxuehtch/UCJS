@@ -544,13 +544,13 @@ const TextDocument = (function() {
         let pre =
           body &&
           body.childNodes.length === 1 &&
-          body.firstChild instanceof content.HTMLPreElement &&
+          body.firstChild.localName === 'pre' &&
           body.firstChild;
 
         let textLength =
           pre &&
           pre.childNodes.length === 1 &&
-          pre.firstChild instanceof content.Text &&
+          pre.firstChild.nodeType === content.Node.TEXT_NODE &&
           pre.firstChild.length;
 
         return !!textLength ? pre.textContent : null;

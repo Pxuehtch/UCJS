@@ -329,7 +329,7 @@ const LinkInfoCollector = (function() {
       linkInfo = info;
     };
 
-    if (node instanceof content.HTMLAnchorElement && node.href) {
+    if (node.localName === 'a' && node.href) {
       let imgs = node.getElementsByTagName('img');
       let note = (imgs && imgs.length) ? strings.note.image : '';
 
@@ -341,14 +341,14 @@ const LinkInfoCollector = (function() {
         accesskey: node.accessKey
       });
     }
-    else if (node instanceof content.HTMLScriptElement && node.src) {
+    else if (node.localName === 'script' && node.src) {
       setInfo({
         name: getText(node, strings.type.script),
         address: node.src,
         type: strings.type.script
       });
     }
-    else if (node instanceof content.HTMLLinkElement && node.href) {
+    else if (node.localName === 'link' && node.href) {
       let target = node.rel || node.rev;
 
       setInfo({
@@ -358,8 +358,8 @@ const LinkInfoCollector = (function() {
         target
       });
     }
-    else if ((node instanceof content.HTMLInputElement ||
-              node instanceof content.HTMLButtonElement) && node.type) {
+    else if ((node.localName === 'input' || node.localName === 'button') &&
+             node.type) {
       let name, address, target;
       let type = node.type.toLowerCase();
 
@@ -387,7 +387,7 @@ const LinkInfoCollector = (function() {
         });
       }
     }
-    else if (node instanceof content.HTMLAreaElement && node.href) {
+    else if (node.localName === 'area' && node.href) {
       setInfo({
         name: getText(node),
         address: node.href,
@@ -395,8 +395,9 @@ const LinkInfoCollector = (function() {
         target: node.target
       });
     }
-    else if ((node instanceof content.HTMLQuoteElement ||
-              node instanceof content.HTMLModElement) && node.cite) {
+    else if ((node.localName === 'q' || node.localName === 'blockquote' ||
+              node.localName === 'ins' || node.localName === 'del') &&
+              node.cite) {
       setInfo({
         name: getText(node),
         address: node.cite,
@@ -458,8 +459,7 @@ const LinkInfoCollector = (function() {
       }
       else if (nodeType === content.Node.ELEMENT_NODE) {
         // Capture the alt text of image element.
-        if (childNode instanceof content.HTMLImageElement ||
-            childNode instanceof content.HTMLAreaElement) {
+        if (childNode.localName === 'img' || childNode.localName === 'area') {
           valueTexts.push(getAltText(childNode));
         }
         else {

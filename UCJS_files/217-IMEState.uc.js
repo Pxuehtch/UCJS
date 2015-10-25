@@ -322,12 +322,10 @@ const SignPanel = (function() {
   // For chrome process only.
   function getFocusedEditableNode(focusedElement) {
     // A writable plain-text input field (e.g. URL-bar).
-    if (focusedElement instanceof HTMLInputElement ||
-        focusedElement instanceof HTMLTextAreaElement) {
-      if (/^(?:text|search|textarea)$/.test(focusedElement.type) &&
-          !focusedElement.readOnly) {
-        return focusedElement;
-      }
+    if (focusedElement instanceof Ci.nsIDOMNSEditableElement &&
+        /^(?:text|search|textarea)$/.test(focusedElement.type) &&
+        !focusedElement.readOnly) {
+      return focusedElement;
     }
 
     return null;
@@ -352,12 +350,10 @@ const SignPanel = (function() {
     }
 
     // A writable plain-text input field.
-    if (focusedElement instanceof content.HTMLInputElement ||
-        focusedElement instanceof content.HTMLTextAreaElement) {
-      if (/^(?:text|search|textarea)$/.test(focusedElement.type) &&
-          !focusedElement.readOnly) {
-        return focusedElement;
-      }
+    if (focusedElement instanceof Ci.nsIDOMNSEditableElement &&
+        /^(?:text|search|textarea)$/.test(focusedElement.type) &&
+        !focusedElement.readOnly) {
+      return focusedElement;
     }
 
     return null;

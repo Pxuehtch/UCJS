@@ -1368,8 +1368,7 @@ function inEditableNode(event) {
       let node = DOMUtils.getElementFromPoint(x, y);
 
       return (
-        node instanceof content.HTMLTextAreaElement ||
-        node instanceof content.HTMLInputElement ||
+        node instanceof Ci.nsIDOMNSEditableElement ||
         node.isContentEditable ||
         node.ownerDocument.designMode === 'on'
       );

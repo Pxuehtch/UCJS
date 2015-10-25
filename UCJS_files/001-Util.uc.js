@@ -800,9 +800,9 @@ const ContentScripts = (function() {
       return null;
     }
 
-    if (node instanceof content.HTMLAnchorElement ||
-        node instanceof content.HTMLAreaElement ||
-        node instanceof content.HTMLLinkElement) {
+    if (node.localName === 'a' ||
+        node.localName === 'area' ||
+        node.localName === 'link') {
       return node.href;
     }
 
@@ -824,7 +824,7 @@ const ContentScripts = (function() {
       return null;
     }
 
-    if (node instanceof content.HTMLImageElement && node.src) {
+    if (node.localName === 'img' && node.src) {
       return node.src;
     }
 
@@ -2662,9 +2662,8 @@ const BrowserUtils = (function() {
     }
 
     // 1.Scan selection in a text box (excluding password input).
-    if ((node instanceof content.HTMLInputElement &&
-         node.mozIsTextField(true)) ||
-        node instanceof content.HTMLTextAreaElement) {
+    if ((node.localName === 'input' && node.mozIsTextField(true)) ||
+        node.localName === 'textarea') {
       try {
         return node.QueryInterface(Ci.nsIDOMNSEditableElement).
           editor.selection;

@@ -375,8 +375,7 @@ const Tooltip = (function() {
       };
 
       while (node) {
-        if (node instanceof content.HTMLBodyElement ||
-            node instanceof content.HTMLHtmlElement) {
+        if (node.localName === 'body' || node.localName === 'html') {
           add(node.localName, node);
 
           let view = node.ownerDocument.defaultView;
@@ -392,7 +391,7 @@ const Tooltip = (function() {
           break;
         }
 
-        if (node instanceof content.HTMLElement) {
+        if (node.nodeType === content.Node.ELEMENT_NODE) {
           if (node.id) {
             add('#' + node.id, node);
             selectorCompleted = true;

@@ -540,7 +540,7 @@ const {
 
           let view = node.ownerDocument.defaultView;
 
-          if (view.frameElement instanceof content.HTMLFrameElement) {
+          if (view.frameElement && view.frameElement.localName === 'frame') {
             let target = node.target;
 
             // @note [...window.frames] doesn't work since |window.frames|

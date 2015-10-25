@@ -37,8 +37,8 @@ const {
     $shutdown
   },
   DOMUtils: {
-     $E,
-     $ID
+    $E,
+    $ID
   },
   CSSUtils,
   // Logger to console for debug.
