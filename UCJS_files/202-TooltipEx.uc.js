@@ -378,8 +378,8 @@ const Tooltip = (function() {
 
         let linkText;
 
-        if (DOMUtils.getLinkHref(node)) {
-          linkText = node.textContent
+        if (DOMUtils.getLinkHref(node) && node.textContent) {
+          linkText = node.textContent;
         }
 
         nodeTree.push({
