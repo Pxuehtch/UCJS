@@ -631,10 +631,16 @@ const ContentScripts = (function() {
     }
 
     // Find an <area> element in the image map of <img> or <object>.
+    // @note A found <area> element isn't present in the given point. An node
+    // that has the map image actually exists.
     if (node && node.useMap) {
       let area = content_getAreaElementFromPoint(node, x, y);
 
       if (area) {
+        // Remember the node associated to this map area.
+        // TODO: Make a reliable method instead of extending a property.
+        area['_ucjs_mapOwnerNode'] = node;
+
         node = area;
       }
     }

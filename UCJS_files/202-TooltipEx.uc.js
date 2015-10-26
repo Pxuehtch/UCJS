@@ -334,6 +334,22 @@ const Tooltip = (function() {
             return null;
           }
 
+          // An <area> element that |DOMUtils.getElementFromPoint| returns
+          // isn't present in the given point. An <img> or <object> that has
+          // the image map actually exists.
+          if (node.localName === 'area') {
+            let areaInfo = content_collectInfo(node);
+            let ownerInfo = content_collectInfo(node['_ucjs_mapOwnerNode']);
+
+            // Make a node tree as if <area> is a child of the map owner node.
+            ownerInfo.nodeTree.unshift(areaInfo.nodeTree[0]);
+
+            return {
+              selector: areaInfo.selector,
+              nodeTree: ownerInfo.nodeTree
+            };
+          }
+
           return content_collectInfo(node);
         }`
       });
