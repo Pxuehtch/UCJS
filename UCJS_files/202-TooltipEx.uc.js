@@ -407,31 +407,29 @@ const Tooltip = (function() {
           break;
         }
 
-        if (node.nodeType === content.Node.ELEMENT_NODE) {
-          if (node.id) {
-            add('#' + node.id, node);
-            selectorCompleted = true;
+        if (node.id) {
+          add('#' + node.id, node);
+          selectorCompleted = true;
+        }
+        else {
+          let selector;
+
+          if (node.previousElementSibling || node.nextElementSibling) {
+            let count = 0;
+            let sibling = node;
+
+            while (sibling) {
+              count++;
+              sibling = sibling.previousElementSibling;
+            }
+
+            selector = `${node.localName}:nth-child(${count})`;
           }
           else {
-            let selector;
-
-            if (node.previousElementSibling || node.nextElementSibling) {
-              let count = 0;
-              let sibling = node;
-
-              while (sibling) {
-                count++;
-                sibling = sibling.previousElementSibling;
-              }
-
-              selector = `${node.localName}:nth-child(${count})`;
-            }
-            else {
-              selector = node.localName;
-            }
-
-            add(selector, node);
+            selector = node.localName;
           }
+
+          add(selector, node);
         }
 
         node = node.parentElement;
