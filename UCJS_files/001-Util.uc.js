@@ -764,7 +764,7 @@ const ContentScripts = (function() {
     }
 
     // Number of vertexes in the polygon.
-    let nv = coords.length;
+    let nv = coords.length / 2;
 
     // X and Y coordinates of the polygon's vertexes.
     let vx = [], vy = [];
@@ -777,9 +777,6 @@ const ContentScripts = (function() {
         vy.push(value);
       }
     });
-
-    vx.push(coords[0]);
-    vy.push(coords[1]);
 
     let isInside = false;
 
