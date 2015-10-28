@@ -559,11 +559,11 @@ const ContentScripts = (function() {
 
      root = root.querySelector(rootSelector);
 
-     if (!root || !root.contentWindow) {
+     if (!root || !root.contentDocument) {
        return null;
      }
 
-     return content_querySelector(childSelector, root.contentWindow.document);
+     return content_querySelector(childSelector, root.contentDocument);
    }
   }
 
