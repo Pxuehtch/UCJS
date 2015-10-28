@@ -546,25 +546,25 @@ const ContentScripts = (function() {
    * @see resource:///modules/devtools/shared/frame-script-utils.js
    */
   function content_querySelector(selector, root = content.document) {
-   const kSeparator = '|>';
+    const kFrameSeparator = '|>';
 
-   let frameIndex = selector.indexOf(kSeparator);
+    let frameIndex = selector.indexOf(kFrameSeparator);
 
-   if (frameIndex === -1) {
-     return root.querySelector(selector);
-   }
-   else {
-     let rootSelector = selector.substr(0, frameIndex);
-     let childSelector = selector.substr(frameIndex + kSeparator.length);
+    if (frameIndex === -1) {
+      return root.querySelector(selector);
+    }
+    else {
+      let rootSelector = selector.substr(0, frameIndex);
+      let childSelector = selector.substr(frameIndex + kFrameSeparator.length);
 
-     root = root.querySelector(rootSelector);
+      root = root.querySelector(rootSelector);
 
-     if (!root || !root.contentDocument) {
-       return null;
-     }
+      if (!root || !root.contentDocument) {
+        return null;
+      }
 
-     return content_querySelector(childSelector, root.contentDocument);
-   }
+      return content_querySelector(childSelector, root.contentDocument);
+    }
   }
 
   function content_evaluateXPath(xpath, context, type) {
@@ -678,6 +678,7 @@ const ContentScripts = (function() {
       return null;
     }
 
+    // Sometimes <map> has only 'id' by incorrect usage.
     let selector = `map[name="${mapName}"], map#${mapName}`;
     let map = DOMUtils.$S1(selector, node.ownerDocument);
 
