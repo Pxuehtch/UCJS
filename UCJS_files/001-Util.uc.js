@@ -2635,7 +2635,7 @@ const BrowserUtils = (function() {
     let node = DOMUtils.getElementFromPoint(x, y);
     let selection = content_getSelection(node);
 
-    if (!selection) {
+    if (!selection || !selection.toString()) {
       return null;
     }
 
