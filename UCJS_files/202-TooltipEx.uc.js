@@ -327,7 +327,15 @@ const Tooltip = (function() {
 
           let {point, selector} = params;
 
-          let node = DOMUtils.getElementFromPoint(point.x, point.y);
+          let details = DOMUtils.getElementFromPoint(point.x, point.y, {
+            requestDetails: true
+          });
+
+          if (!details) {
+            return null;
+          }
+
+          let node = details.area || details.node;
 
           // The information of this node has been cached.
           if (selector && node === DOMUtils.$S1(selector)) {
@@ -337,9 +345,9 @@ const Tooltip = (function() {
           // An <area> element that |DOMUtils.getElementFromPoint| returns
           // isn't present in the given point. An <img> or <object> that has
           // the image map actually exists.
-          if (node.localName === 'area') {
-            let areaInfo = content_collectInfo(node);
-            let ownerInfo = content_collectInfo(node['_ucjs_mapOwnerNode']);
+          if (details.area) {
+            let areaInfo = content_collectInfo(details.area);
+            let ownerInfo = content_collectInfo(details.node);
 
             // Make a node tree as if <area> is a child of the map owner node.
             ownerInfo.nodeTree.unshift(areaInfo.nodeTree[0]);

@@ -607,8 +607,27 @@ const ContentScripts = (function() {
    * - This method can find an <area> element of the image map on <img> and
    *   <object>.
    */
-  function content_getElementFromPoint(x, y, root = content.document) {
+  function content_getElementFromPoint(x, y, options = {}) {
+    let {root, requestDetails} = options;
+
+    if (!root) {
+      root = content.document;
+    }
+
     let node = root.elementFromPoint(x, y);
+    let area = null;
+
+    let createResult = (node, area) => {
+      if (!node) {
+        return null;
+      }
+
+      if (requestDetails) {
+        return {node, area};
+      }
+
+      return area || node;
+    };
 
     // Recursively scan through sub frames.
     if (node && node.contentDocument) {
@@ -619,33 +638,28 @@ const ContentScripts = (function() {
       x -= rect.left + offsetLeft;
       y -= rect.top + offsetTop;
 
-      if (x < 0 || y < 0) {
-        return node;
+      if (x >= 0 && y >= 0) {
+        let subDetails = content_getElementFromPoint(x, y, {
+          root: node.contentDocument,
+          requestDetails: true
+        });
+
+        if (subDetails) {
+          return createResult(subDetails.node, subDetails.area);
+        }
       }
 
-      let subnode = content_getElementFromPoint(x, y, node.contentDocument);
-
-      if (subnode) {
-        node = subnode;
-      }
+      return createResult(node, area);
     }
 
     // Find an <area> element in the image map of <img> or <object>.
     // @note A found <area> element isn't present in the given point. An node
     // that has the map image actually exists.
     if (node && node.useMap) {
-      let area = content_getAreaElementFromPoint(node, x, y);
-
-      if (area) {
-        // Remember the node associated to this map area.
-        // TODO: Make a reliable method instead of extending a property.
-        area['_ucjs_mapOwnerNode'] = node;
-
-        node = area;
-      }
+      area = content_getAreaElementFromPoint(node, x, y);
     }
 
-    return node;
+    return createResult(node, area);
   }
 
   function content_getFrameContentOffset(frame) {
