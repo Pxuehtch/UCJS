@@ -127,16 +127,17 @@ const CancelObserver = {
     // Observe the user actions to be cancelled the highlighting.
     // @note Add the events on |window| to cancel by actions on wherever in
     // the browser window.
+    // @note Use the capture mode to catch the events anytime.
     // TODO: Fix disabled text selecting by drag in the highlight box.
-    window.addEventListener('mousedown', this);
-    window.addEventListener('keydown', this);
-    window.addEventListener('wheel', this);
+    window.addEventListener('mousedown', this, true);
+    window.addEventListener('keydown', this, true);
+    window.addEventListener('wheel', this, true);
   },
 
   clear() {
-    window.removeEventListener('mousedown', this);
-    window.removeEventListener('keydown', this);
-    window.removeEventListener('wheel', this);
+    window.removeEventListener('mousedown', this, true);
+    window.removeEventListener('keydown', this, true);
+    window.removeEventListener('wheel', this, true);
   },
 
   handleEvent() {
