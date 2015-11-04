@@ -863,6 +863,7 @@ const {
   Modules,
   MessageManager,
   DOMUtils,
+  BrowserUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -1209,7 +1210,7 @@ return {
   $E: DOMUtils.$E,
   $X: DOMUtils.$X,
   promiseMessage: MessageManager.promiseMessage,
-  isTextDocument: Modules.BrowserUtils.isTextDocument,
+  isTextDocument: BrowserUtils.isTextDocument,
   contentAreaContextMenu,
 
   log
