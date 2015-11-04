@@ -83,7 +83,7 @@ const {
   }));
 
   // Replace the default tooltip 'tabbrowser-tab-tooltip'.
-  // @note Resisters on the tab bar including the margin without tabs.
+  // @note Being registered on the tab bar including the margin without tabs.
   $ID('tabbrowser-tabs').tooltip = kUI.tooltip.id;
 
   $event(mTooltip, 'popupshowing', onPopupShowing);
@@ -995,7 +995,7 @@ const {
 
       case 'pageselect':
       case 'pageurlchange': {
-        // Abort for a redundant event of page selecting.
+        // Abort for a redundant event when tab selecting.
         if (event.type === 'pageurlchange' && event.tabSwitched) {
           return;
         }

@@ -1928,7 +1928,7 @@ const SiblingNavi = (function() {
   /**
    * Promise for the first URL of sibling pages for the given direction.
    *
-   * @param direction {string}'prev' or 'next'.
+   * @param direction {string} 'prev' or 'next'.
    * @return {Promise}
    *   resolve: {function}
    *     Resolved with the URL string of sibling page.
@@ -2007,7 +2007,7 @@ const SiblingNavi = (function() {
    *   url: {string}
    *
    * @note Allows only URL that has the same as the base domain of the document
-   * to avoid jumping to the outside by a |prev|/|next| command.
+   * to avoid jumping to the outer domain.
    */
   function guessBySearching(direction, pageURI) {
     return Task.spawn(function*() {
@@ -2057,7 +2057,7 @@ const SiblingNavi = (function() {
     let entries = [];
     let urls = [];
 
-    function detach() {
+    function clear() {
       entries.length = 0;
       urls.length = 0;
     }
@@ -2094,7 +2094,7 @@ const SiblingNavi = (function() {
         };
       });
 
-      detach();
+      clear();
 
       return trimSiblingsList(list);
     }
@@ -2205,8 +2205,8 @@ const SiblingNavi = (function() {
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
     ];
 
-    // @note The task doesn't receive any iterators, but this function must
-    // return a promise for |createSiblingData|.
+    // @noteThis task is perfuctory. It doesn't receive any iterators, but
+    // this function must return a promise for |createSiblingData|.
     return Task.spawn(function*() {
       let uri = URIUtil.createURI(pageURI, {
         hash: false

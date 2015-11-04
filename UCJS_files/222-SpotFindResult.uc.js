@@ -8,8 +8,8 @@
 // @require Util.uc.js
 
 /**
- * @note The highlight shows with no found text when a hidden text is caught
- * by Fx's behavior.
+ * @note The highlight will show even when a hidden text is caught by Fx's
+ * behavior.
  * @see https://bugzilla.mozilla.org/show_bug.cgi?id=407817
  * @see https://bugzilla.mozilla.org/show_bug.cgi?id=622801
  */

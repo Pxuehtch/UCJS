@@ -270,11 +270,14 @@ const Console = (function() {
       stackCaller.filename,
       stackCaller.sourceLine,
       stackCaller.lineNumber,
-      // Column number
+      // [Column number]
+      // TODO: How can I get a column number?
       null,
-      // Flags: Just a log message.
+      // [Flags]
+      // Just a log message.
       scriptError.infoFlag,
-      // Category
+      // [Category]
+      // Javascript in the chrome frame.
       // @note The browser console displays, but the web console does not.
       'chrome javascript'
     );
@@ -812,8 +815,6 @@ const ContentScripts = (function() {
   }
 
   function content_getLinkHref(node) {
-    const XLinkNS = 'http://www.w3.org/1999/xlink';
-
     if (node.nodeType !== content.Node.ELEMENT_NODE) {
       return null;
     }
@@ -823,6 +824,8 @@ const ContentScripts = (function() {
         node.localName === 'link') {
       return node.href;
     }
+
+    const XLinkNS = 'http://www.w3.org/1999/xlink';
 
     if (node.getAttributeNS(XLinkNS, 'type') === 'simple') {
       let href = node.getAttributeNS(XLinkNS, 'href');
@@ -854,12 +857,12 @@ const ContentScripts = (function() {
   }
 
   function content_resolveURL(url, baseURL) {
-    const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
-    const {makeURI} = BrowserUtils;
-
     if (!url || !/\S/.test(url)) {
       return null;
     }
+
+    const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
+    const {makeURI} = BrowserUtils;
 
     try {
       return makeURI(url, null, makeURI(baseURL)).spec;

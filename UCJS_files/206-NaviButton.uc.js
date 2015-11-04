@@ -18,7 +18,7 @@
  *
  * [Special usage for the back-button with a referrer.]
  * <Shift+Ctrl+Click>: Select a tab with the referrer URL if already opens,
- * Open a tab in *foreground* otherwise.
+ * open a tab in *foreground* otherwise.
  * @note The referrer's tab will open in *background* by middle-button-click.
  * @note Does the same action by <Click> for the back-button without backward
  * history.
