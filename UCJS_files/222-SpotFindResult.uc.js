@@ -33,7 +33,7 @@ const {
   },
   ContentTask,
   Listeners: {
-    $message,
+    $event,
     $shutdown
   },
   DOMUtils: {
@@ -342,28 +342,29 @@ function SpotFindResult_init() {
   Highlighting.init();
 
   // Observe the execution of Fx's find command.
-  // WORKAROUND: 'Finder:Result' returns the rect of found text, but its value
-  // seems not to be suitable for our use. So we retrieve it by own function.
-  $message('Finder:Result', () => {
-    // Terminate the active highlighting.
-    Highlighting.stop();
+  $event(gBrowser.mPanelContainer, 'find', spotFindResult);
+  $event(gBrowser.mPanelContainer, 'findagain', spotFindResult);
+}
 
-    // Don't highlight in quick repeating of command.
-    if (FindCommandObserver.isRepeating()) {
+function spotFindResult() {
+  // Terminate the active highlighting.
+  Highlighting.stop();
+
+  // Don't highlight in quick repeating of command.
+  if (FindCommandObserver.isRepeating()) {
+    return;
+  }
+
+  // TODO: Check whether tasks could be queued or not. If they could, we
+  // must terminate the elders.
+  promiseFindResultInfo().then((findResultInfo) => {
+    if (!findResultInfo) {
       return;
     }
 
-    // TODO: Check whether tasks could be queued or not. If they could, we
-    // must terminate the elders.
-    promiseFindResultInfo().then((findResultInfo) => {
-      if (!findResultInfo) {
-        return;
-      }
-
-      Highlighting.start(findResultInfo);
-    }).
-    catch(Cu.reportError);
-  });
+    Highlighting.start(findResultInfo);
+  }).
+  catch(Cu.reportError);
 }
 
 function promiseFindResultInfo() {
