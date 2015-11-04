@@ -88,98 +88,114 @@ const kPref = {
 };
 
 /**
- * Terminates highlighting when the duration period expires.
- */
-const DurationObserver = {
-  init() {
-    // Make sure to clean up when the browser closes.
-    $shutdown(this.terminate);
-  },
-
-  set() {
-    this.timerId = setTimeout(this.terminate, kPref.duration);
-  },
-
-  clear() {
-    if (this.timerId) {
-      clearTimeout(this.timerId);
-
-      this.timerId = null;
-    }
-  },
-
-  terminate() {
-    // @note |Highlighting.stop| calls |DurationObserver.clear|.
-    Highlighting.stop();
-  }
-};
-
-/**
- * Cancels useless highlighting.
- */
-const CancelObserver = {
-  init() {
-    // Make sure to clean up when the browser closes.
-    $shutdown(this);
-  },
-
-  set() {
-    // Observe the user actions to be cancelled the highlighting.
-    // @note Add the events on |window| to cancel by actions on wherever in
-    // the browser window.
-    // @note Use the capture mode to catch the events anytime.
-    // TODO: Fix disabled text selecting by drag in the highlight box.
-    window.addEventListener('mousedown', this, true);
-    window.addEventListener('keydown', this, true);
-    window.addEventListener('wheel', this, true);
-  },
-
-  clear() {
-    window.removeEventListener('mousedown', this, true);
-    window.removeEventListener('keydown', this, true);
-    window.removeEventListener('wheel', this, true);
-  },
-
-  handleEvent() {
-    // @note |Highlighting.stop| calls |CancelObserver.clear|.
-    Highlighting.stop();
-  }
-};
-
-/**
  * Highlighting handler.
+ *
+ * @return {hash}
+ *   init: {function}
+ *   start: {function}
+ *   stop: {function}
  */
-const Highlighting = {
-  init() {
+const Highlighting = (function() {
+  /**
+   * Terminates highlighting when the duration period expires.
+   */
+  const DurationObserver = {
+    init() {
+      // Make sure to clean up when the browser closes.
+      $shutdown(this.terminate);
+    },
+
+    set() {
+      this.timerId = setTimeout(this.terminate, kPref.duration);
+    },
+
+    clear() {
+      if (this.timerId) {
+        clearTimeout(this.timerId);
+
+        this.timerId = null;
+      }
+    },
+
+    terminate() {
+      // @note |Highlighting.stop| calls |DurationObserver.clear|.
+      stop();
+    }
+  };
+
+  /**
+   * Cancels useless highlighting.
+   */
+  const CancelObserver = {
+    init() {
+      // Make sure to clean up when the browser closes.
+      $shutdown(this);
+    },
+
+    set() {
+      // Observe the user actions to be cancelled the highlighting.
+      // @note Add the events on |window| to cancel by actions on wherever in
+      // the browser window.
+      // @note Use the capture mode to catch the events anytime.
+      // TODO: Fix disabled text selecting by drag in the highlight box.
+      window.addEventListener('mousedown', this, true);
+      window.addEventListener('keydown', this, true);
+      window.addEventListener('wheel', this, true);
+    },
+
+    clear() {
+      window.removeEventListener('mousedown', this, true);
+      window.removeEventListener('keydown', this, true);
+      window.removeEventListener('wheel', this, true);
+    },
+
+    handleEvent() {
+      // @note |Highlighting.stop| calls |CancelObserver.clear|.
+      stop();
+    }
+  };
+
+  let vars = {
+    initialized: false,
+    highlightBox: null
+  };
+
+  function init() {
     DurationObserver.init();
     CancelObserver.init();
-  },
+  }
 
-  start(findResultInfo) {
-    this.highlightBox = HighlightBox(findResultInfo);
+  function start(findResultInfo) {
+    vars.highlightBox = HighlightBox(findResultInfo);
 
     DurationObserver.set();
     CancelObserver.set();
 
-    this.highlightBox.show();
+    vars.highlightBox.show();
 
-    this.initialized = true;
-  },
+    vars.initialized = true;
+  }
 
-  stop() {
-    if (!this.initialized) {
+  function stop() {
+    if (!vars.initialized) {
       return;
     }
 
-    this.initialized = null;
+    vars.initialized = null;
 
     DurationObserver.clear();
     CancelObserver.clear();
 
-    this.highlightBox.clear();
-    this.highlightBox = null;
+    vars.highlightBox.clear();
+    vars.highlightBox = null;
   }
-};
+
+  return {
+    init,
+    start,
+    stop
+  };
+})();
 
 /**
  * Find command observer.
