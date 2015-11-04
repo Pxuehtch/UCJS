@@ -199,17 +199,11 @@ const Highlighting = (function() {
 
 /**
  * Find command observer.
+ *
+ * @return {hash}
+ *   init: {function}
  */
-const FindCommandObserver = {
-  /**
-   * Max threshold interval time for a repeating command.
-   *
-   * @value {integer} [millisecond]
-   */
-  maxIntervalForRepeating: 500,
-
-  lastTime: 0,
-
+const FindCommandObserver = (function() {
   /**
    * Detects a short time interval of calls of command.
    *
@@ -217,15 +211,132 @@ const FindCommandObserver = {
    * quick repeating (e.g. holding <F3> key down) because a highlighting is
    * useless when it is reset in a short time.
    */
-  isRepeating() {
-    let currentTime = window.performance.now();
-    let interval = currentTime - this.lastTime;
+  let isRepeating = (function() {
+    /**
+     * Max threshold interval time for a repeating command.
+     *
+     * @value {integer} [millisecond]
+     */
+    const kMaxInterval = 500;
 
-    this.lastTime = currentTime;
+    let lastTime = 0;
 
-    return interval < this.maxIntervalForRepeating;
+    return () => {
+      let currentTime = window.performance.now();
+      let interval = currentTime - lastTime;
+
+      lastTime = currentTime;
+
+      return interval < kMaxInterval;
+    };
+  })();
+
+  function init() {
+    Highlighting.init();
+
+    // Observe the execution of Fx's find command.
+    $event(gBrowser.mPanelContainer, 'find', spotFindResult);
+    $event(gBrowser.mPanelContainer, 'findagain', spotFindResult);
   }
-};
+
+  function spotFindResult() {
+    // Terminate the active highlighting.
+    Highlighting.stop();
+
+    // Don't highlight in quick repeating of command.
+    if (isRepeating()) {
+      return;
+    }
+
+    // TODO: Check whether tasks could be queued or not. If they could, we
+    // must terminate the elders.
+    promiseFindResultInfo().then((findResultInfo) => {
+      if (!findResultInfo) {
+        return;
+      }
+
+      Highlighting.start(findResultInfo);
+    }).
+    catch(Cu.reportError);
+  }
+
+  /**
+   * Promise for the information of the found result in the content process.
+   */
+  function promiseFindResultInfo() {
+    return ContentTask.spawn(`function*() {
+      ${content_getFindResult.toString()}
+      ${content_getFindResultRect.toString()}
+
+      let findResult = content_getFindResult();
+
+      if (!findResult) {
+        return null;
+      }
+
+      return {
+        findResultRect: content_getFindResultRect(findResult.range),
+        innerScreenY: findResult.view.mozInnerScreenY,
+        fullZoom: findResult.view.getInterface(Ci.nsIDOMWindowUtils).fullZoom
+      };
+    }`);
+  }
+
+  function content_getFindResult(view = content.window) {
+    // Recursively scan into sub frame windows.
+    if (view.frames.length) {
+      for (let i = 0, l = view.frames.length; i < l; i++) {
+        let findResult = content_getFindResult(view.frames[i]);
+
+        if (findResult) {
+          return findResult;
+        }
+      }
+    }
+
+    let testSelection = (selection) =>
+      selection && selection.rangeCount && !selection.isCollapsed;
+
+    let selection = view.getSelection();
+
+    if (testSelection(selection)) {
+      return {
+        view,
+        range: selection.getRangeAt(0)
+      };
+    }
+
+    // The selection can be into an input or a textarea element.
+    for (let node of view.document.querySelectorAll('input, textarea')) {
+      if (node instanceof Ci.nsIDOMNSEditableElement && node.editor) {
+        selection =
+          node.editor.selectionController.
+          getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
+
+        if (testSelection(selection)) {
+          return {
+            view,
+            range: selection.getRangeAt(0)
+          };
+        }
+      }
+    }
+
+    // No find result in this window.
+    return null;
+  }
+
+  function content_getFindResultRect(range) {
+    // Collect necessary properties for our use.
+    let {top, bottom} = range.getBoundingClientRect();
+
+    return {top, bottom};
+  }
+
+  return {
+    init
+  };
+})();
 
 /**
  * Creates HighlightBox handler.
@@ -354,108 +465,13 @@ function HighlightBox(findResultInfo) {
   };
 }
 
-function SpotFindResult_init() {
-  Highlighting.init();
-
-  // Observe the execution of Fx's find command.
-  $event(gBrowser.mPanelContainer, 'find', spotFindResult);
-  $event(gBrowser.mPanelContainer, 'findagain', spotFindResult);
-}
-
-function spotFindResult() {
-  // Terminate the active highlighting.
-  Highlighting.stop();
-
-  // Don't highlight in quick repeating of command.
-  if (FindCommandObserver.isRepeating()) {
-    return;
-  }
-
-  // TODO: Check whether tasks could be queued or not. If they could, we
-  // must terminate the elders.
-  promiseFindResultInfo().then((findResultInfo) => {
-    if (!findResultInfo) {
-      return;
-    }
-
-    Highlighting.start(findResultInfo);
-  }).
-  catch(Cu.reportError);
-}
-
-function promiseFindResultInfo() {
-  return ContentTask.spawn(`function*() {
-    ${content_getFindResult.toString()}
-    ${content_getFindResultRect.toString()}
-
-    let findResult = content_getFindResult();
-
-    if (!findResult) {
-      return null;
-    }
-
-    return {
-      findResultRect: content_getFindResultRect(findResult.range),
-      innerScreenY: findResult.view.mozInnerScreenY,
-      fullZoom: findResult.view.getInterface(Ci.nsIDOMWindowUtils).fullZoom
-    };
-  }`);
-}
-
-function content_getFindResult(view = content.window) {
-  // Recursively scan into sub frame windows.
-  if (view.frames.length) {
-    for (let i = 0, l = view.frames.length; i < l; i++) {
-      let findResult = content_getFindResult(view.frames[i]);
-
-      if (findResult) {
-        return findResult;
-      }
-    }
-  }
-
-  let testSelection = (selection) =>
-    selection && selection.rangeCount && !selection.isCollapsed;
-
-  let selection = view.getSelection();
-
-  if (testSelection(selection)) {
-    return {
-      view,
-      range: selection.getRangeAt(0)
-    };
-  }
-
-  // The selection can be into an input or a textarea element.
-  for (let node of view.document.querySelectorAll('input, textarea')) {
-    if (node instanceof Ci.nsIDOMNSEditableElement && node.editor) {
-      selection =
-        node.editor.selectionController.
-        getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
-
-      if (testSelection(selection)) {
-        return {
-          view,
-          range: selection.getRangeAt(0)
-        };
-      }
-    }
-  }
-
-  // No find result in this window.
-  return null;
-}
-
-function content_getFindResultRect(range) {
-  // Collect necessary properties for our use.
-  let {top, bottom} = range.getBoundingClientRect();
-
-  return {top, bottom};
-}
-
 /**
  * Entry point
  */
+function SpotFindResult_init() {
+  FindCommandObserver.init();
+}
+
 SpotFindResult_init()
 
 
