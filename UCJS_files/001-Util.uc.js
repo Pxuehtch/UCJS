@@ -97,11 +97,6 @@ const Modules = (function() {
       IID: 'nsIClipboardHelper'
     },
     {
-      name: 'SessionStore',
-      CID: '@mozilla.org/browser/sessionstore;1',
-      IID: 'nsISessionStore'
-    },
-    {
       name: 'StyleSheetService',
       CID: '@mozilla.org/content/style-sheet-service;1',
       IID: 'nsIStyleSheetService'
@@ -131,6 +126,11 @@ const Modules = (function() {
       name: 'Prefs',
       moduleURL: 'gre/modules/Preferences.jsm',
       moduleName: 'Preferences'
+    },
+    {
+      // @see resource:///modules/SessionStore.jsm
+      name: 'SessionStore',
+      moduleURL: '/modules/sessionstore/SessionStore.jsm'
     },
     {
       // @see resource://gre/modules/commonjs/sdk/timers.js

@@ -916,10 +916,7 @@ const Startup = {
      * loaded. I'm not sure that it has done so wait a moment just in case.
      * TODO: Observe a reliable notification, or no need to wait?
      */
-    const {SessionStore} =
-      Modules.require('/modules/sessionstore/SessionStore.jsm');
-
-    SessionStore.promiseInitialized.then(() => {
+    Modules.SessionStore.promiseInitialized.then(() => {
       setTimeout(() => {
         Startup.setStartupTabs();
         SessionStore.persistTabAttribute();
