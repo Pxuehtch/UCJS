@@ -398,6 +398,10 @@ const TabBarClickEvent = {
     let {target, originalTarget} = aEvent;
 
     // Ignore a UI element to let its native action work.
+    // [Examples]
+    // - A close button on a tab <toolbarbutton>
+    // - A new tab button <toolbarbutton>
+    //
     // TODO: The probable elements, <menu*> or <toolbar*>, are examined. We may
     // need to test others.
     if (/^(?:menu|toolbar)/.test(originalTarget.localName)) {
@@ -406,6 +410,10 @@ const TabBarClickEvent = {
 
     // On a tab.
     if (target.localName === 'tab') {
+      if (target._overPlayingIcon) {
+        return null;
+      }
+
       return this.isForegroundTab ? kClickArea.foreTab : kClickArea.backTab;
     }
 

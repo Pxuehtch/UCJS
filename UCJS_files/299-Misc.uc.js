@@ -128,13 +128,40 @@ const {
       return;
     }
 
+    // Set a default tooltip label on a special element.
+    //
+    // TODO: Some keys will be appended in Fx43:
+    // - tabs.closeSelectedTab.tooltip
+    // - tabs.muteAudio.background.tooltip
+    // - tabs.unmuteAudio.background.tooltip
+    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1199609
+    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1199929
+    let setDefaultTooltip = (stringId) => {
+      let label = gBrowser.mStringBundle.getString(stringId);
+
+      // WORKAROUND: Remove a template symbol because I don't need a string for
+      // shortcut key.
+      label = label.replace('(%S)', '').trim();
+
+      mTooltip.label = label;
+    };
+
     if (tab.mOverCloseButton) {
-      mTooltip.label =
-        gBrowser.mStringBundle.getString('tabs.closeTab.tooltip');
+      setDefaultTooltip('tabs.closeTab.tooltip');
 
       return;
     }
 
+    if (tab._overPlayingIcon) {
+      let stringId = tab.linkedBrowser.audioMuted ?
+        'tabs.unmuteAudio.tooltip' : 'tabs.muteAudio.tooltip';
+
+      setDefaultTooltip(stringId);
+
+      return;
+    }
+
+    // Set a custom tooltip label.
     const {tabState, referrer} = window.ucjsTabEx;
 
     let loadingURL;
