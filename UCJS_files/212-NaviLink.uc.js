@@ -672,53 +672,35 @@ const MenuUI = (function() {
         }
 
         linkList.forEach(({type, dataItems}) => {
-          let typeMenuElement;
-          let tooltiptext;
+          let typeMenu = $E('menu');
+          let typePopup = typeMenu.appendChild($E('menupopup'));
 
-          if (dataItems.length === 1) {
-            let data = dataItems[0];
+          let maxNumMenuItems = kUI.items.maxNumMenuItems;
+          let typeItems = dataItems.slice(0, maxNumMenuItems);
 
-            typeMenuElement = $E('menuitem', {
+          typeItems.forEach((data) => {
+            let text = formatText(data);
+
+            typePopup.appendChild($E('menuitem', {
+              crop: 'center',
+              label: text,
+              tooltiptext: formatTooltip(text, data.url),
               [$a('open')]: data.url
-            });
-
-            tooltiptext = data.url;
-          }
-          else {
-            let typePopup = $E('menupopup');
-
-            let maxNumMenuItems = kUI.items.maxNumMenuItems;
-            let typeItems = dataItems.slice(0, maxNumMenuItems);
-
-            typeItems.forEach((data) => {
-              let text = formatText(data);
-
-              typePopup.appendChild($E('menuitem', {
-                crop: 'center',
-                label: text,
-                tooltiptext: formatTooltip(text, data.url),
-                [$a('open')]: data.url
-              }));
-            });
-
-            typeMenuElement = $E('menu');
-            typeMenuElement.appendChild(typePopup);
-
-            if (dataItems.length > maxNumMenuItems) {
-              tooltiptext = kUI.items.tooManyMenuItems;
-            }
-          }
+            }));
+          });
 
           let label = $f(kUI.items.type, {
             title: getLabelForType(kNaviLinkType, type),
             count: formatMenuItemsCount(dataItems)
           });
 
-          if (tooltiptext) {
-            tooltiptext = formatTooltip(label, tooltiptext);
+          let tooltiptext;
+
+          if (dataItems.length > maxNumMenuItems) {
+            tooltiptext = formatTooltip(label, kUI.items.tooManyMenuItems);
           }
 
-          naviLinkPopup.appendChild($E(typeMenuElement, {
+          naviLinkPopup.appendChild($E(typeMenu, {
             label,
             tooltiptext
           }));
