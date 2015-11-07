@@ -1782,10 +1782,17 @@ const NaviLink = (function() {
       naviLinkType = NaviLinkTypeFixup.registered(naviLinkType);
 
       if (naviLinkType) {
-        // The array of 'rel' values except for this type.
-        attributes.push(['rel', rels.exceptFor(naviLinkType)]);
+        // Make a temporary attributes to append the array of 'rel' values
+        // except for this link type.
+        let thisAttributes = attributes.slice();
 
-        addListItem(naviLinkList, naviLinkType, info, attributes);
+        let extraRels = rels.exceptFor(naviLinkType);
+
+        if (extraRels.length) {
+          thisAttributes.push(['rel', extraRels]);
+        }
+
+        addListItem(naviLinkList, naviLinkType, info, thisAttributes);
 
         itemNums++;
       }
