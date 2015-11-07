@@ -1136,12 +1136,10 @@ const DataCache = (function() {
 
   function create(promiseData) {
     let vars = {
-      promise: null,
+      promiseData,
       sequence: Promise.resolve(),
       pageState: PageState.create()
     };
-
-    vars.promiseData = promiseData;
 
     function update(...params) {
       vars.sequence = vars.sequence.then(() => {
