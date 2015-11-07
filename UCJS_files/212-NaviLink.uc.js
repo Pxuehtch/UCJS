@@ -742,7 +742,8 @@ const MenuUI = (function() {
       let pageInfoPopup = $E('menupopup');
 
       pageInfoList.forEach(({type, dataItems}) => {
-        let pageInfoTypePopup = $E('menupopup');
+        let typeMenu = $E('menu');
+        let typePopup = typeMenu.appendChild($E('menupopup'));
 
         let maxNumMenuItems = kUI.items.maxNumMenuItems;
         let metaInfo = type === 'meta';
@@ -772,7 +773,7 @@ const MenuUI = (function() {
           });
 
           metaAloneItems.forEach((data) => {
-            pageInfoTypePopup.appendChild(createMetaMenuItem(data));
+            typePopup.appendChild(createMetaMenuItem(data));
           });
 
           for (let metaGroupName in metaGroupList) {
@@ -794,7 +795,7 @@ const MenuUI = (function() {
             });
 
             metaGroupMenu.appendChild(metaGroupPopup);
-            pageInfoTypePopup.appendChild(metaGroupMenu);
+            typePopup.appendChild(metaGroupMenu);
           }
         }
         else {
@@ -803,7 +804,7 @@ const MenuUI = (function() {
           typeItems.forEach((data) => {
             let text = formatText(data);
 
-            pageInfoTypePopup.appendChild($E('menuitem', {
+            typePopup.appendChild($E('menuitem', {
               crop: 'center',
               label: text,
               tooltiptext: formatTooltip(text, data.url),
@@ -811,10 +812,6 @@ const MenuUI = (function() {
             }));
           });
         }
-
-        let pageInfoTypeMenu = $E('menu');
-
-        pageInfoTypeMenu.appendChild(pageInfoTypePopup);
 
         let label = $f(kUI.items.type, {
           title: getLabelForType(kPageInfoType, type),
@@ -826,11 +823,10 @@ const MenuUI = (function() {
         let tooltiptext;
 
         if (!metaInfo && dataItems.length > maxNumMenuItems) {
-          tooltiptext = kUI.items.tooManyMenuItems;
-          tooltiptext = formatTooltip(label, tooltiptext);
+          tooltiptext = formatTooltip(label, kUI.items.tooManyMenuItems);
         }
 
-        pageInfoPopup.appendChild($E(pageInfoTypeMenu, {
+        pageInfoPopup.appendChild($E(typeMenu, {
           label,
           tooltiptext
         }));
