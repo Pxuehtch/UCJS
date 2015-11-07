@@ -51,10 +51,10 @@ const {
  * UI setting.
  */
 const kUI = {
-	highlightBox: {
-		id: 'ucjs_SpotFindResult_highlightBox',
-		animationName: 'ucjs_SpotFindResult_highlightAnimation'
-	}
+  highlightBox: {
+    id: 'ucjs_SpotFindResult_highlightBox',
+    animationName: 'ucjs_SpotFindResult_highlightAnimation'
+  }
 };
 
 /**

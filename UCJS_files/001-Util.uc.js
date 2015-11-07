@@ -73,10 +73,7 @@ const Modules = (function() {
    * moduleName: {string} [optional for JSM]
    *   The native module name.
    *
-   * XXX: My setting guide:
-   * - [Method] Some useful functions.
-   * - [XPCOM services] I want to gather all used modules here.
-   * - [JS modules] I only register frequently used modules.
+   * XXX: I only register frequently used modules.
    */
   const kModulesData = [
     {

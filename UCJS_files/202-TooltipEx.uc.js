@@ -459,7 +459,7 @@ const Tooltip = (function() {
     // Create the tooltip panel.
     Panel.create();
 
-    // Clear the tooltip content when a document closes.
+    // Clear the tooltip content when the page changes.
     $page('pageselect', handleEvent);
     $page('pagehide', handleEvent);
 

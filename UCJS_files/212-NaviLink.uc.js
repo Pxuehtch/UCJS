@@ -1142,6 +1142,7 @@ const DataCache = (function() {
     };
 
     function update(...params) {
+      // Make a sequential promise for waiting the previous process.
       vars.sequence = vars.sequence.then(() => {
         let uri = URIUtil.getCurrentURI();
         let doUpdate = vars.pageState.changed;
@@ -1905,13 +1906,13 @@ const SiblingNavi = (function() {
    *   dataItems: {hash[]}
    *
    * [Data item hash format]
-   *   The data item has the proper members assigned to |kSiblingScanType|.
-   *   {name:, title:, url:} for link |preset|.
-   *   {name:, title:, formIndex:} for submit |preset|.
-   *   {name:, content:} for <meta> of |official|.
-   *   {title:, attributes:, url:} for <script> or <link> of |official|.
-   *   {title:, score:, url:} for sibling by |searching|.
-   *   {here:, there:, url:} for sibling by |numbering|.
+   *   The data item has the proper members assigned to |kSiblingScanType|:
+   *   - {name, title, url} for link |preset|.
+   *   - {name, title, formIndex} for submit |preset|.
+   *   - {name, content} for <meta> of |official|.
+   *   - {title, attributes, url} for <script> or <link> of |official|.
+   *   - {title, score, url} for sibling by |searching|.
+   *   - {here, there, url} for sibling by |numbering|.
    */
   function promiseSiblingData(direction) {
     return Cache.update(direction).then(({siblingData}) => {
@@ -2157,6 +2158,8 @@ const SiblingNavi = (function() {
         let count = links.length;
 
         if (maxNumScanningLinks < count) {
+          // Examines near the top and near the bottom of the page that seem to
+          // contain informations for navigation.
           let limit = Math.floor(maxNumScanningLinks / 2);
 
           for (let i = 0; i < limit; i++) {
@@ -2203,7 +2206,7 @@ const SiblingNavi = (function() {
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
     ];
 
-    // @noteThis task is perfuctory. It doesn't receive any iterators, but
+    // @note This task is perfuctory. It doesn't receive any iterators, but
     // this function must return a promise for |createSiblingData|.
     return Task.spawn(function*() {
       let uri = URIUtil.createURI(pageURI, {
