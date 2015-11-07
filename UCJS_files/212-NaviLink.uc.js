@@ -3029,7 +3029,16 @@ function parse$a(name) {
 function getLeaf(url, options = {}) {
   let {removeParams} = options;
 
-  if (!url || !/^https?:/.test(url)) {
+  if (!url) {
+    return '';
+  }
+
+  // Return back a mail address to display the whole text as title.
+  if (/^mailto:/.test(url)) {
+    return url;
+  }
+
+  if (!/^https?:/.test(url)) {
     return '';
   }
 
