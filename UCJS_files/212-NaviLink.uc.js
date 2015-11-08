@@ -1712,28 +1712,28 @@ const NaviLink = (function() {
     });
   }
 
-  function updatePageInfoList(pageInfoList, info, rels) {
+  function updatePageInfoList(pageInfoList, itemInfo, rels) {
     let pageInfoType = '';
     let attributes = [];
 
     if (rels.feed) {
       pageInfoType = 'feed';
-      attributes.push(['type', info.type]);
+      attributes.push(['type', itemInfo.type]);
     }
     else if (rels.stylesheet) {
       pageInfoType = 'stylesheet';
-      attributes.push(['media', info.media || 'all']);
+      attributes.push(['media', itemInfo.media || 'all']);
     }
     else if (rels.icon) {
       pageInfoType = 'favicon';
 
-      if (info.type) {
-        attributes.push(['type', info.type]);
+      if (itemInfo.type) {
+        attributes.push(['type', itemInfo.type]);
       }
     }
 
     if (pageInfoType) {
-      addListItem(pageInfoList, pageInfoType, info, attributes);
+      addListItem(pageInfoList, pageInfoType, itemInfo, attributes);
 
       return true;
     }
@@ -1741,16 +1741,16 @@ const NaviLink = (function() {
     return false;
   }
 
-  function updateNaviLinkList(naviLinkList, info, rels) {
+  function updateNaviLinkList(naviLinkList, itemInfo, rels) {
     let attributes = [];
 
     if (rels.alternate) {
-      if (info.media) {
-        attributes.push(['media', info.media]);
+      if (itemInfo.media) {
+        attributes.push(['media', itemInfo.media]);
       }
 
-      if (info.hreflang) {
-        attributes.push(['hreflang', info.hreflang]);
+      if (itemInfo.hreflang) {
+        attributes.push(['hreflang', itemInfo.hreflang]);
       }
     }
 
@@ -1770,7 +1770,7 @@ const NaviLink = (function() {
           thisAttributes.push(['rel', extraRels]);
         }
 
-        addListItem(naviLinkList, naviLinkType, info, thisAttributes);
+        addListItem(naviLinkList, naviLinkType, itemInfo, thisAttributes);
 
         itemNums++;
       }
@@ -1779,7 +1779,7 @@ const NaviLink = (function() {
     return itemNums > 0;
   }
 
-  function updateSubNaviLinkList(subNaviLinkList, info, rels) {
+  function updateSubNaviLinkList(subNaviLinkList, itemInfo, rels) {
     for (let naviLinkType in rels) {
       naviLinkType = NaviLinkTypeFixup.unregistered(naviLinkType);
 
@@ -1787,37 +1787,37 @@ const NaviLink = (function() {
         // The array of 'rel' values except for this type.
         let attributes = [['rel', rels.exceptFor(naviLinkType)]];
 
-        addListItem(subNaviLinkList, naviLinkType, info, attributes);
+        addListItem(subNaviLinkList, naviLinkType, itemInfo, attributes);
       }
     }
   }
 
-  function addListItem(list, type, info, attributes) {
+  function addListItem(list, itemType, itemInfo, attributes) {
     let data;
 
-    if (type === 'meta') {
+    if (itemType === 'meta') {
       data = {
         // [Data item format for <meta>]
-        name: trim(info.name) || '[N/A]',
-        content: trim(info.content) || '[N/A]'
+        name: trim(itemInfo.name) || '[N/A]',
+        content: trim(itemInfo.content) || '[N/A]'
       };
     }
     else {
-      let url = info.href || info.src;
+      let url = itemInfo.href || itemInfo.src;
 
       data = {
         // [Data item format for <script>/<link>]
         url,
-        title: trim(info.title) || getLeaf(url) || '[N/A]',
+        title: trim(itemInfo.title) || getLeaf(url) || '[N/A]',
         attributes: attributes || []
       };
     }
 
-    if (!(type in list)) {
-      list[type] = [];
+    if (!(itemType in list)) {
+      list[itemType] = [];
     }
 
-    list[type].push(data);
+    list[itemType].push(data);
   }
 
   /**
