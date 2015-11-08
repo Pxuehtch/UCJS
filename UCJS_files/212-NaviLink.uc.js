@@ -1795,21 +1795,21 @@ const NaviLink = (function() {
   function addListItem(list, itemType, itemInfo, attributes) {
     let data;
 
-    if (itemType === 'meta') {
-      data = {
-        // [Data item format for <meta>]
-        name: trim(itemInfo.name) || '[N/A]',
-        content: trim(itemInfo.content) || '[N/A]'
-      };
-    }
-    else {
-      let url = itemInfo.href || itemInfo.src;
+    let url = itemInfo.href || itemInfo.src;
 
+    if (url) {
       data = {
         // [Data item format for <script>/<link>]
         url,
         title: trim(itemInfo.title) || getLeaf(url) || '[N/A]',
         attributes: attributes || []
+      };
+    }
+    else {
+      data = {
+        // [Data item format for <meta>]
+        name: trim(itemInfo.name) || '[N/A]',
+        content: trim(itemInfo.content) || '[N/A]'
       };
     }
 
