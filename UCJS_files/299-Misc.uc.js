@@ -262,8 +262,8 @@ const {
     },
     {
       // Parameter names.
-      pattern: /(?:[?#&]|%(?:25)*(?:3f|23|26))[\w-]+(?:=|%(?:25)*3d)/ig,
-      style: 'background-color:pink;'
+      pattern: /(?:[?#&;]|%(?:25)*(?:3f|23|26|3b))[\w-]*(?:=|%(?:25)*3d)/ig,
+      style: 'background-color:bisque;'
     }//,
   ];
 
