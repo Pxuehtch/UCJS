@@ -45,9 +45,7 @@ const {
     $E,
     $ID
   },
-  HistoryUtils: {
-    promiseSessionHistory
-  },
+  HistoryUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -465,7 +463,7 @@ const History = {
         return data;
       }
 
-      let sessionHistory = yield promiseSessionHistory();
+      let sessionHistory = yield HistoryUtils.promiseSessionHistory();
 
       if (!sessionHistory) {
         return data;
@@ -545,7 +543,7 @@ const History = {
 
     if (button === 1) {
       Task.spawn(function*() {
-        let sessionHistory = yield promiseSessionHistory();
+        let sessionHistory = yield HistoryUtils.promiseSessionHistory();
         let delta = index - sessionHistory.index;
 
         // @see chrome://browser/content/browser.js::duplicateTabIn

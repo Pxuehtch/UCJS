@@ -29,9 +29,7 @@ const {
     $ID
   },
   PlacesUtils,
-  HistoryUtils: {
-    promiseSessionHistory
-  },
+  HistoryUtils,
   // Logger to console for debug.
   Console: {
     log
@@ -474,7 +472,7 @@ const HistoryList = (function() {
 
   function buildTabHistory() {
     return Task.spawn(function*() {
-      let sessionHistory = yield promiseSessionHistory();
+      let sessionHistory = yield HistoryUtils.promiseSessionHistory();
 
       if (!sessionHistory) {
         return null;
@@ -747,7 +745,7 @@ const OpenedList = (function() {
 
         // Scan tab history in their visited date order from new to old around
         // the selected page in this tab.
-        let sessionHistory = yield promiseSessionHistory(browser);
+        let sessionHistory = yield HistoryUtils.promiseSessionHistory(browser);
 
         let historyLength;
         let selectedIndex;
