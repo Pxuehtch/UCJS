@@ -365,7 +365,7 @@ const SignPanel = (function() {
   }
 
   // For content process only.
-  function  content_getNodeRect(node) {
+  function content_getNodeRect(node) {
     const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
 
     let {left, top} = BrowserUtils.getElementBoundingScreenRect(node);

@@ -344,7 +344,7 @@ const MenuUI = (function() {
      * <Ctrl+Shift> / <Shift+MiddleClick>: Open a new tab in background.
      */
     let {ctrlKey, shiftKey, button} = event;
-    let [inTab, inBackground] = [ctrlKey || button === 1,  shiftKey];
+    let [inTab, inBackground] = [ctrlKey || button === 1, shiftKey];
 
     if (data.open) {
       if (!/^(?:https?|ftp|file):/.test(data.open)) {
@@ -386,7 +386,7 @@ const MenuUI = (function() {
               let {formIndex} = params;
 
               try {
-                let form  = content.document.forms[formIndex];
+                let form = content.document.forms[formIndex];
 
                 if (form) {
                   form.submit();
@@ -2322,7 +2322,7 @@ const NaviLinkScorer = (function() {
       // Set up data for finding a navigation sign.
       // @note The white-spaces of a test text are normalized.
       sign = kNaviSign[direction];
-      forward = RegExp('^(?:' + sign + ')+|(?:' +  sign + ')+$');
+      forward = RegExp('^(?:' + sign + ')+|(?:' + sign + ')+$');
 
       backward = RegExp(kNaviSign[opposite]);
 
@@ -2336,12 +2336,12 @@ const NaviLinkScorer = (function() {
       word = kNaviWord[direction];
 
       let en = '(?:^|^[- \\w]{0,10}[-_ ])(?:' + word.en + ')(?:$|[-_. ])';
-      let ja = '^(?:' +  word.ja + ')';
+      let ja = '^(?:' + word.ja + ')';
 
-      forward = RegExp(en + '|' +  ja, 'i');
+      forward = RegExp(en + '|' + ja, 'i');
 
       word = kNaviWord[opposite];
-      backward = RegExp(word.en + '|' +  word.ja, 'i');
+      backward = RegExp(word.en + '|' + word.ja, 'i');
 
       vars.naviWord = initNaviData(forward, backward);
     }

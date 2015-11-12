@@ -13,7 +13,7 @@
 // @usage Access to functions through the global scope (window.ucjsUtil.XXX).
 
 // @note This file should be loaded earlier than other scripts.
-// @see |Modules|.
+// @see |Modules|
 
 
 const ucjsUtil = (function(window) {
@@ -535,7 +535,7 @@ const ContentScripts = (function() {
   }
 
   /**
-   * Like document.querySelector but can go into frames too.
+   * Like |document.querySelector| but can go into frames too.
    *
    * ".container iframe |> .sub-container div" will first try to find the node
    * matched by ".container iframe" in the root document, then try to get the
@@ -1087,7 +1087,7 @@ const MessageManager = (function() {
     /**
      * Strip unnecessary parts:
      * - Block comment: /\/\*[^\*]*?\*\//gm
-     * - Line comment:  /^\s*\/\/.+$/gm
+     * - Line comment: /^\s*\/\/.+$/gm
      * - Leading indentation: /^\s+/gm
      * - Line break: /\n/gm
      */
@@ -1869,7 +1869,7 @@ const DOMUtils = (function() {
    *   - An existing attribute will be removed if the value is |null|.
    * @param attributeHandler {function} [optional]
    *   A function for custom processing of attributes.
-   *   @see |initCreateElement|.
+   *   @see |initCreateElement|
    *   @param node {Element}
    *     An element node that is referenced.
    *   @param name {string}
@@ -2016,11 +2016,11 @@ const DOMUtils = (function() {
     let doc, base;
 
     if (context instanceof Document) {
-      doc  = context;
+      doc = context;
       base = doc.documentElement;
     }
     else {
-      doc  = context ? context.ownerDocument : window.document;
+      doc = context ? context.ownerDocument : window.document;
       base = context || doc.documentElement;
     }
 
@@ -2822,8 +2822,6 @@ const HistoryUtils = (function() {
    *   reject: {function}
    *     Rejected with an error message string.
    *     @param error {string}
-   *
-   * TODO: Handle cancelling by user.
    */
   function promiseSessionHistory(browser) {
     return ContentTask.spawn({

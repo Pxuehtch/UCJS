@@ -227,10 +227,10 @@ const kTypeAction = [
  */
 const kLinkExtension = {
   // For <openFile>.
-  // @note *SET NO VALUES* they will be automatically created with
+  // @note Set no values. They will be automatically created with
   // |kAppList.extensions|.
   // @see |FileExtUtil::updateFileExt()|
-  file:  [],
+  file:  [/* SET NO VALUES */],
   // For <viewLinkSource>.
   text:  ['css', 'js', 'txt', 'xml'],
   // For <viewLinkImage>.

@@ -705,7 +705,7 @@ const kSiteList = [
  *     - URL scheme follows after '||' or '|' -> ^
  *     - Wildcard (non-greedy, 1 or more chracters) '*'  -> .+?
  *     - Wildcard (non-greedy, 0 or more chracters) '*?' -> .*?
- *     - Path separator '^' -> [/?&#]
+ *     - Separators '^' -> [/?&#]
  *     - '.tld' will match any top level domain including public suffix.
  *       @see |getTLDURL|
  */

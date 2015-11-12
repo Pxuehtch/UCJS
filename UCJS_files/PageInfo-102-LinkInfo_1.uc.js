@@ -43,16 +43,16 @@ const kUI = {
    * @note Define items in the column's order in |LinkInfo.uc.xul|.
    */
   column: {
-    index:  {
+    index: {
       id: 'ucjs_LinkInfo_indexColumn'
     },
-    name:  {
+    name: {
       id: 'ucjs_LinkInfo_nameColumn'
     },
-    address:  {
+    address: {
       id: 'ucjs_LinkInfo_addressColumn'
     },
-    type:  {
+    type: {
       id: 'ucjs_LinkInfo_typeColumn'
     },
     target: {

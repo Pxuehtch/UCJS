@@ -245,7 +245,7 @@ const {
 })();
 
 /**
- * Shows a long URL text without cropped in a tooltip of the URL bar.
+ * Shows a long URL text without being cropped in a tooltip of the URL bar.
  */
 (function() {
 
@@ -253,6 +253,8 @@ const {
    * Preset for styling of the accent portion of URL.
    *
    * @note A higher item takes priority to be styled.
+   * @note The full matched text will be styled.
+   * TODO: Support capture groups.
    */
   const kAccentPreset = [
     {
@@ -606,9 +608,9 @@ const {
   }));
 
   [
-    ['about:home',   'H'],
+    ['about:home', 'H'],
     ['about:newtab', 'N'],
-    ['about:blank',  'B']
+    ['about:blank', 'B']
   ].
   forEach(([url, accesskey]) => {
     popup.appendChild($E('menuitem', {
