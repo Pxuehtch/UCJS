@@ -1079,15 +1079,14 @@ const MenuUI = (function() {
  */
 const DataCache = (function() {
   const PageState = {
-    id: 0,
-    states: new Map(),
+    states: new Set(),
 
     create() {
       let state = {
         changed: false
       };
 
-      this.states.set(this.id++, state);
+      this.states.add(state);
 
       return state;
     },
