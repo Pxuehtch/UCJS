@@ -379,6 +379,10 @@ const kSiteList = [
           .kp-blk .mod {
             padding: 0 !important;
           }
+          /* Translation link. */
+          .fl {
+            display: none !important
+          }
         `;
       }
 
