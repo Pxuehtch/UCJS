@@ -1091,6 +1091,11 @@ const DataCache = (function() {
       return state;
     },
 
+    uninit() {
+      this.states.clear();
+      this.states = null;
+    },
+
     change() {
       this.states.forEach((state) => {
         state.changed = true;
@@ -1104,6 +1109,10 @@ const DataCache = (function() {
   function init() {
     $page('pageready', () => {
       PageState.change();
+    });
+
+    $shutdown(() => {
+      PageState.uninit();
     });
   }
 
