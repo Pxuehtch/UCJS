@@ -39,6 +39,7 @@
  * Imports
  */
 const {
+  Modules,
   ContentTask,
   Listeners: {
     $event,
@@ -432,6 +433,14 @@ function MouseGesture() {
   let mGesture = GestureManager();
 
   /**
+   * Limit the execution rate of an event that is dispatched more often than
+   * we need to process.
+   */
+  const FunctionalUtils = Modules.require('sdk/lang/functional');
+  let onMouseMoveThrottled = FunctionalUtils.throttle(onMouseMove, 100);
+  let onDragOverThrottled = FunctionalUtils.throttle(onDragOver, 100);
+
+  /**
    * Register the events to observe that a gesture starts and stops.
    *
    * @note The events that are necessary only in progress of a gesture are
@@ -467,7 +476,7 @@ function MouseGesture() {
     let pc = gBrowser.mPanelContainer;
 
     if (mState === kState.Gesturing) {
-      pc.addEventListener('mousemove', onMouseMove);
+      pc.addEventListener('mousemove', onMouseMoveThrottled);
       pc.addEventListener('wheel', onMouseWheel);
       pc.addEventListener('keydown', onKeyDown);
       pc.addEventListener('keyup', onKeyUp);
@@ -477,7 +486,7 @@ function MouseGesture() {
       window.addEventListener('mouseup', onGlobalMouseUp);
     }
     else if (mState === kState.Dragging) {
-      pc.addEventListener('dragover', onDragOver);
+      pc.addEventListener('dragover', onDragOverThrottled);
       pc.addEventListener('keydown', onKeyDown);
       pc.addEventListener('keyup', onKeyUp);
     }
@@ -487,14 +496,14 @@ function MouseGesture() {
     let pc = gBrowser.mPanelContainer;
 
     if (mState === kState.Gesturing) {
-      pc.removeEventListener('mousemove', onMouseMove);
+      pc.removeEventListener('mousemove', onMouseMoveThrottled);
       pc.removeEventListener('wheel', onMouseWheel);
       pc.removeEventListener('keydown', onKeyDown);
       pc.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('mouseup', onGlobalMouseUp);
     }
     else if (mState === kState.Dragging) {
-      pc.removeEventListener('dragover', onDragOver);
+      pc.removeEventListener('dragover', onDragOverThrottled);
       pc.removeEventListener('keydown', onKeyDown);
       pc.removeEventListener('keyup', onKeyUp);
     }

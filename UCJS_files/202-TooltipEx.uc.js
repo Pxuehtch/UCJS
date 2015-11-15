@@ -198,7 +198,7 @@ const Tooltip = (function() {
         onpopupshowing: 'goUpdateCommand("cmd_copy");'
       });
 
-      $event(popup, 'command', handleEvent);
+      $event(popup, 'command', onCommand);
 
       popup.appendChild($E('menuitem', {
         id: kUI.copy.id,
@@ -460,14 +460,19 @@ const Tooltip = (function() {
     Panel.create();
 
     // Clear the tooltip content when the page changes.
-    $page('pageselect', handleEvent);
-    $page('pagehide', handleEvent);
+    $page('pageselect', onPageChange);
+    $page('pagehide', onPageChange);
 
     // Observe mouse moving to show the tooltip only while trigger keys are
     // pressed down in an HTML document.
     let isObserving = false;
 
     $event(window, 'keydown', (event) => {
+      // Limit the execution rate of an event that is dispatched more often
+      // than we need to process.
+      const FunctionalUtils = Modules.require('sdk/lang/functional');
+      let onMouseMoveThrottled = FunctionalUtils.throttle(onMouseMove, 100);
+
       let triggerKey = event.ctrlKey && event.altKey;
 
       if (!isObserving && triggerKey && BrowserUtils.isHTMLDocument()) {
@@ -478,12 +483,12 @@ const Tooltip = (function() {
         let stopObserving = () => {
           isObserving = false;
 
-          pc.removeEventListener('mousemove', handleEvent);
+          pc.removeEventListener('mousemove', onMouseMoveThrottled);
           window.removeEventListener('keyup', stopObserving);
           window.removeEventListener('unload', stopObserving);
         };
 
-        pc.addEventListener('mousemove', handleEvent);
+        pc.addEventListener('mousemove', onMouseMoveThrottled);
 
         // Stop observing when any key is released.
         window.addEventListener('keyup', stopObserving);
@@ -494,32 +499,21 @@ const Tooltip = (function() {
     });
   }
 
-  function handleEvent(event) {
-    switch (event.type) {
-      // Show the tooltip of a target node in the content area.
-      case 'mousemove': {
-        show(event);
+  function onMouseMove(event) {
+    // Show the tooltip of a target node in the content area.
+    show(event);
+  }
 
-        break;
-      }
+  function onPageChange(event) {
+    // Close the tooltip when the document changes.
+    clear();
+  }
 
-      // Close the tooltip when the document is switched.
-      case 'pageselect':
-      case 'pagehide': {
-        clear();
-
-        break;
-      }
-
-      // Command of the context menu of a tooltip.
-      case 'command': {
-        switch (event.target.id) {
-          case kUI.copyAll.id: {
-            copyAllData();
-
-            break;
-          }
-        }
+  function onCommand(event) {
+    // Command of the context menu of a tooltip.
+    switch (event.target.id) {
+      case kUI.copyAll.id: {
+        copyAllData();
 
         break;
       }
