@@ -27,7 +27,8 @@ const {
   ContentTask,
   Listeners: {
     $event,
-    $page
+    $page,
+    throttleEvent
   },
   DOMUtils: {
     init$E,
@@ -470,8 +471,7 @@ const Tooltip = (function() {
     $event(window, 'keydown', (event) => {
       // Limit the execution rate of an event that is dispatched more often
       // than we need to process.
-      const FunctionalUtils = Modules.require('sdk/lang/functional');
-      let onMouseMoveThrottled = FunctionalUtils.throttle(onMouseMove, 100);
+      let onMouseMoveThrottled = throttleEvent(onMouseMove);
 
       let triggerKey = event.ctrlKey && event.altKey;
 

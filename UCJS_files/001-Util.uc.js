@@ -1004,10 +1004,31 @@ const EventManager = (function() {
     return listener.handleEvent;
   }
 
+  /**
+   * Limit the execution rate of an event that is frequently dispatched.
+   */
+  function throttleEvent(listener) {
+    // Execute the listener 10 times per second.
+    let wait = 100;
+
+    let options = {
+      // Execute the listener as soon as it is called for the first time.
+      leading: true,
+      // Discard remaining calls during the last wait period. We don't want
+      // the trailing-edge call that may run after the event is over.
+      trailing: false
+    };
+
+    const FunctionalUtils = Modules.require('sdk/lang/functional');
+
+    return FunctionalUtils.throttle(listener, wait, options);
+  }
+
   return {
     listenEvent,
     listenEventOnce,
-    listenShutdown
+    listenShutdown,
+    throttleEvent
   };
 })();
 
@@ -1609,6 +1630,7 @@ const Listeners = (function() {
     $event: EventManager && EventManager.listenEvent,
     $eventOnce: EventManager && EventManager.listenEventOnce,
     $shutdown: EventManager && EventManager.listenShutdown,
+    throttleEvent: EventManager && EventManager.throttleEvent,
 
     $message: MessageManager && MessageManager.listenMessage,
     $messageOnce: MessageManager && MessageManager.listenMessageOnce,
