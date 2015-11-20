@@ -1019,6 +1019,7 @@ const EventManager = (function() {
       trailing: false
     };
 
+    // @see resource://gre/modules/commonjs/sdk/lang/functional.js
     const FunctionalUtils = Modules.require('sdk/lang/functional');
 
     return FunctionalUtils.throttle(listener, wait, options);
@@ -1072,7 +1073,8 @@ const MessageManager = (function() {
       `$& ${ContentScripts.GlobalUtils}`
     );
 
-    /** Evaluate the formatted injections of |ContentScripts|.
+    /**
+     * Evaluate the formatted injections of |ContentScripts|.
      *
      * [Format]
      * function() {

@@ -1128,7 +1128,7 @@ const DataCache = (function() {
     };
 
     function update(...params) {
-      // Make a sequential promise for waiting the previous process.
+      // Make a sequential promise to wait for the previous process.
       vars.sequence = vars.sequence.then(() => {
         let uri = URIUtil.getCurrentURI();
         let doUpdate = vars.pageState.changed;
@@ -2025,6 +2025,7 @@ const SiblingNavi = (function() {
         }
 
         for (let text of texts) {
+          // Normalize white-spaces.
           text = trim(text);
 
           // Examine the filename of a URL-like text.
@@ -2337,7 +2338,8 @@ const NaviLinkScorer = (function() {
       let opposite = (direction === 'prev') ? 'next' : 'prev';
 
       // Set up data for finding a navigation sign.
-      // @note The white-spaces of a test text are normalized.
+      // @note Assume that the white-spaces of a test text has been normalized.
+      // @see |guessBySearching|
       sign = kNaviSign[direction];
       forward = RegExp('^(?:' + sign + ')+|(?:' + sign + ')+$');
 
@@ -2347,7 +2349,8 @@ const NaviLinkScorer = (function() {
 
       // Set up data for finding a text string or an image filename like a
       // navigation.
-      // @note The white-spaces of a test text are normalized.
+      // @note Assume that the white-spaces of a test text has been normalized.
+      // @see |guessBySearching|
       // @note Allows the short leading words before an english navigation
       // word (e.g. 'Go to next page', 'goto-next-page.png').
       word = kNaviWord[direction];
@@ -2832,8 +2835,8 @@ const URIUtil = (function() {
   function createURI(sourceURI, options = {}) {
     let {search, hash} = options;
 
-    // @note Returns a valid |nsIURI| object since we always pass a valid
-    // |aURI| for now.
+    // TODO: Validation check for URI.
+    // WORKAROUND: Passes a valid |sourceURI| for now.
     let uri = makeNSIURI(sourceURI);
 
     let {scheme, prePath, path, spec} = uri;

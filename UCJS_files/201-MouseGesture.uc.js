@@ -86,7 +86,8 @@ const kGestureSign = {
  * Gesture setting.
  *
  * @key gestures {string[]}
- *   The combination of values of |kGestureSign|.
+ *   The array of a combination of values of |kGestureSign|.
+ *   @note You can assign different gestures to one command.
  * @key name {string}
  * @key command {function}
  *   @param {hash}
@@ -750,7 +751,7 @@ function MouseEventManager() {
   // Whether the left/middle(wheel) button is pressed down or not.
   let mOtherDown;
 
-  // Whether the context menu is disabled or not.
+  // Whether the context menu is suppressed or not.
   let mSuppressMenu;
 
   // Whether the default click action of the left/middle(wheel) button is
@@ -794,7 +795,7 @@ function MouseEventManager() {
             mSuppressMenu = mOtherDown;
           }
 
-          // Allow a gesture starts.
+          // A normal gesture can start or not.
           return !mOtherDown;
         }
         else {
@@ -828,7 +829,7 @@ function MouseEventManager() {
         if (button === 2) {
           mRightDown = false;
 
-          // Allow a gesture stops.
+          // A normal gesture can stop or not.
           return !mOtherDown;
         }
         else {
@@ -967,7 +968,7 @@ function GestureManager() {
    *   data: {string}
    *     A selected text or a link <href> URL or an image <src> URL.
    *
-   * @note Retrieves only one from a composite data:
+   * @note Retrieves only one data from a composite data:
    * - A selected text in a link string.
    * - A link href URL of a linked image.
    */
