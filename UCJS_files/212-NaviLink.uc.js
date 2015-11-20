@@ -2027,12 +2027,21 @@ const SiblingNavi = (function() {
         for (let text of texts) {
           text = trim(text);
 
-          let score = text && naviLinkScorer.score(text, href);
+          // Examine the filename of a URL-like text.
+          if (/^https?:\S+$/.test(text)) {
+            text = getLeaf(text, {
+              removeParams: true
+            });
+          }
 
-          if (score) {
-            entries.add(text, href, score);
+          if (text) {
+            let score = naviLinkScorer.score(text, href);
 
-            break;
+            if (score) {
+              entries.add(text, href, score);
+
+              break;
+            }
           }
         }
 
@@ -2392,12 +2401,6 @@ const NaviLinkScorer = (function() {
       // Filter the NG text.
       if (kNGTextList.some((ng) => ng.test(text))) {
         return 0;
-      }
-
-      if (/^https?:\S+$/.test(text)) {
-        text = getLeaf(text, {
-          removeParams: true
-        });
       }
 
       // Test signs for navigation.
