@@ -2209,8 +2209,8 @@ const SiblingNavi = (function() {
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
     ];
 
-    // @note This task is perfuctory. It doesn't receive any iterators, but
-    // this function must return a promise for |createSiblingData|.
+    // @note This task doesn't receive any iterators but this function must
+    // return a promise for |createSiblingData|.
     return Task.spawn(function*() {
       let uri = URIUtil.createURI(pageURI, {
         hash: false
@@ -2338,7 +2338,8 @@ const NaviLinkScorer = (function() {
       let opposite = (direction === 'prev') ? 'next' : 'prev';
 
       // Set up data for finding a navigation sign.
-      // @note Assume that the white-spaces of a test text has been normalized.
+      // @note Assume that the white-spaces of a test text have been
+      // normalized.
       // @see |guessBySearching|
       sign = kNaviSign[direction];
       forward = RegExp('^(?:' + sign + ')+|(?:' + sign + ')+$');
@@ -2349,7 +2350,8 @@ const NaviLinkScorer = (function() {
 
       // Set up data for finding a text string or an image filename like a
       // navigation.
-      // @note Assume that the white-spaces of a test text has been normalized.
+      // @note Assume that the white-spaces of a test text have been
+      // normalized.
       // @see |guessBySearching|
       // @note Allows the short leading words before an english navigation
       // word (e.g. 'Go to next page', 'goto-next-page.png').
@@ -2671,9 +2673,9 @@ const UpperNavi = (function() {
       upperURLList: null
     };
 
-    // @note This task is perfuctory. It doesn't receive any iterators but is
-    // made in accordance with other types of |Cache.update|.
     function promiseData(state) {
+      // @note This task doesn't receive any iterators but is made in
+      // accordance with other cases of |promiseData|.
       return Task.spawn(function*() {
         if (!state.uri) {
           data.upperURLList = null;

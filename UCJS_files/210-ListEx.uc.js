@@ -845,8 +845,8 @@ const OpenedList = (function() {
   }
 
   function buildOpenedWindows() {
-    // @note This task is perfuctory. It doesn't receive any iterators but is
-    // made in accordance with other builder functions.
+    // @note This task doesn't receive any iterators but this function must
+    // return a promise for |buildMenuItems|.
     return Task.spawn(function*() {
       let {getWindows, isBrowser, getIdFor} = WindowUtil;
 
