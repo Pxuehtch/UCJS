@@ -284,18 +284,16 @@ function getRestrictKeywordList() {
 }
 
 function getBookmarkKeywordList() {
-  let getPrePath = (url) =>url.replace(/^(\w+:[\/]*[^\/]+).*$/, '$1');
-
   let sql = [
-    'SELECT b.title, k.keyword, p.url',
-    'FROM moz_bookmarks b',
-    'JOIN moz_keywords k ON k.id = b.keyword_id',
-    'JOIN moz_places p ON p.id = b.fk'
+    'SELECT k.keyword, b.title, p.url',
+    'FROM moz_keywords k',
+    'JOIN moz_bookmarks b ON b.fk = k.place_id',
+    'JOIN moz_places p ON p.id = k.place_id'
   ].join(' ');
 
   return PlacesUtils.promisePlacesDBResult({
     sql,
-    columns: ['title', 'keyword', 'url']
+    columns: ['keyword', 'title', 'url']
   }).
   then((rows) => {
     if (!rows) {
@@ -303,16 +301,32 @@ function getBookmarkKeywordList() {
     }
 
     let list = [];
+    let keywords = new Set();
 
-    rows.forEach((item) => {
+    rows.forEach(({keyword, title, url}) => {
+      // WORKAROUND: Skip an item without bookmark title. It may be a deleted
+      // bookmark being cached.
+      if (!title) {
+        return;
+      }
+
+      // Collect one item for one keyword.
+      if (keywords.has(keyword)) {
+        return;
+      }
+
+      keywords.add(keyword);
+
       list.push({
-        name: item.title || getPrePath(item.url),
-        url: item.url,
-        keyword: item.keyword
+        name: title,
+        url,
+        keyword
       });
     });
 
-    list.sort((a, b) => a.keyword.localeCompare(b.keyword));
+    if (list.length) {
+      list.sort((a, b) => a.keyword.localeCompare(b.keyword));
+    }
 
     return list;
   });
