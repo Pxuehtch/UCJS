@@ -208,8 +208,8 @@ const kSiteList = [
          * Retrieve the mode parameter from Google search result URL.
          *
          * The mode values:
-         * - main: the main result. [own definition]
-         * - isch, nws, shop, app, bks. [Google definition]
+         * - main: the main result. [Our own definition]
+         * - isch, vid, nws, shop, app, bks. [Google definition]
          *
          * [URL parameters format]
          * ?q=previous&tbm=app&...#q=current&tbm=shop&...
@@ -230,8 +230,8 @@ const kSiteList = [
     script(uri, browser) {
       let testMode = this.utils.testMode(uri);
 
-      // The main result page only.
-      if (!testMode('main')) {
+      // Apply to main, videos and news.
+      if (!testMode('main|vid|nws')) {
         return;
       }
 
@@ -354,7 +354,7 @@ const kSiteList = [
       if (!testMode('isch')) {
         css += `
           /* Block items. */
-          .nrgt > tbody > tr > td, .ts > tbody > tr >td {
+          .nrgt > tbody > tr > td, .ts > tbody > tr > td {
             float: left !important;
             width: auto !important;
           }
@@ -422,16 +422,19 @@ const kSiteList = [
         `;
       }
 
-      // Styles for our customizations only for main.
-      if (testMode('main')) {
+      // Styles for our customizations for main, videos and news.
+      if (testMode('main|vid|nws')) {
         css += `
-          .ucjs_SiteStyle_sameHost cite::before {
+          /* For main and news. */
+          .ucjs_SiteStyle_sameHost cite::before,
+          /* For videos. */
+          .ucjs_SiteStyle_sameHost h3 + .slp::before {
             content: "=";
             font-weight: bold;
             color: red;
             margin-right: 2px;
           }
-          #res .ucjs_SiteStyle_understate h3{
+          .ucjs_SiteStyle_understate h3 {
             font-size: small !important;
           }
           .ucjs_SiteStyle_understate h3 ~ * {
