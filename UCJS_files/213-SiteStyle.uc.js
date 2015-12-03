@@ -218,7 +218,7 @@ const kSiteList = [
          */
         let [, search, hash] = /(\?.+)(#.+)$/.exec(uri.spec) || [];
         let params = hash || search;
-        let [, mode] = params && /[?&#]tb[ms]=([^&]+)/.exec(params) || [];
+        let [, mode] = params && /[?&#]tbm=([^&]+)/.exec(params) || [];
 
         return (modeList) => {
           if (modeList.includes('main')) {
