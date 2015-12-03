@@ -220,13 +220,11 @@ const kSiteList = [
         let params = hash || search;
         let [, mode] = params && /[?&#]tbm=([^&]+)/.exec(params) || [];
 
-        return (modeList) => {
-          if (modeList.includes('main')) {
-            return !mode;
-          }
+        if (!mode) {
+          mode = 'main';
+        }
 
-          return mode && RegExp(`^(?:${modeList})$`).test(mode);
-        };
+        return (modeList) => RegExp(`^(?:${modeList})$`).test(mode);
       }
     },
     script(uri, browser) {
