@@ -758,7 +758,7 @@ const MenuUI = (function() {
           let metaAloneItems = [];
 
           dataItems.forEach((data) => {
-            let metaGroupName = (/^(.+?):.+/.exec(data.name) || [])[1];
+            let metaGroupName = (/^(.+?)[:.].+/.exec(data.name) || [])[1];
 
             if (metaGroupName) {
               if (!(metaGroupName in metaGroupList)) {
