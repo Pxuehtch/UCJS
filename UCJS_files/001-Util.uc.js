@@ -66,7 +66,7 @@ const Modules = (function() {
    *   [SDK] Your favorite name.
    * moduleURL: {string}
    *   The module resource URL.
-   *   [JSM] A full path, but can drop the prefix 'resource://'.
+   *   [JSM] A shortcut path for some typical module locations.
    *     @see |require|
    *   [SDK] A special path.
    *     @see https://developer.mozilla.org/en/Add-ons/SDK/Guides/Module_structure_of_the_SDK#SDK_Modules
@@ -193,7 +193,12 @@ const Modules = (function() {
     } = options;
 
     // Loads JSM.
-    if (/^(?:gre)?\/modules\/.+\.jsm$|^services\-.+\.js$/.test(moduleURL)) {
+    // Shortcut path for some typical module locations:
+    // - /modules/*.jsm?
+    // - gre/modules/*.jsm?
+    // - services-*/*.jsm?
+    if (/^(?:\/modules|gre\/modules|services\-.+?)\/.+\.jsm?$/.
+        test(moduleURL)) {
       let scope = {};
 
       Cu.import('resource://' + moduleURL, scope);
