@@ -842,12 +842,12 @@ const ContentScripts = (function() {
       return null;
     }
 
-    if (node.localName === 'img' && node.src) {
-      return node.src;
+    if (node instanceof content.SVGImageElement) {
+      return node.href && content_resolveURL(node.href.baseVal, node.baseURI);
     }
 
-    if (node instanceof content.SVGImageElement && node.href) {
-      return content_resolveURL(node.href.baseVal, node.baseURI);
+    if (node.localName === 'img') {
+      return node.src;
     }
 
     return null;
