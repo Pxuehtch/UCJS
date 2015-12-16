@@ -348,7 +348,7 @@ const FileExtUtil = {
 
     let ext = result.extension;
 
-    if (ext && kLinkExtension[aType].indexOf(ext) > -1) {
+    if (ext && kLinkExtension[aType].includes(ext)) {
       return ext;
     }
 

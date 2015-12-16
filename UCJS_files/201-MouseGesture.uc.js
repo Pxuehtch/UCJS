@@ -1081,7 +1081,7 @@ function GestureManager() {
   function updateKey(aEvent) {
     const {shift, ctrl} = kGestureSign;
 
-    let has = (aKey) => mKey.indexOf(aKey) > -1;
+    let has = (aKey) => mKey.includes(aKey);
 
     let key = '';
     let pressed = false;
@@ -1156,7 +1156,7 @@ function GestureManager() {
         }
 
         return item.gestures.some((gesture) => {
-          let isQuickShot = gesture.indexOf(kGestureSign.quickShot) > -1;
+          let isQuickShot = gesture.includes(kGestureSign.quickShot);
 
           if (isQuickShot) {
             gesture = gesture.replace(kGestureSign.quickShot, '');

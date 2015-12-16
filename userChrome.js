@@ -435,16 +435,16 @@ function ScriptList() {
       if (dot > -1) {
         let ext = aFile.leafName.substr(dot);
 
-        if (kPref.jscriptExts.indexOf(ext) > -1) {
+        if (kPref.jscriptExts.includes(ext)) {
           return 'js';
         }
 
-        if (kPref.overlayExts.indexOf(ext) > -1) {
+        if (kPref.overlayExts.includes(ext)) {
           return 'xul';
         }
       }
 
-      return '';
+      return null;
     }
   }
 

@@ -565,7 +565,7 @@ function createParseList(aPreset, aSourceURLType) {
   }
 
   function checkNewURLStart(aIndex) {
-    return mNewURLIndexes.indexOf(aIndex) > -1;
+    return mNewURLIndexes.includes(aIndex);
   }
 
   return {

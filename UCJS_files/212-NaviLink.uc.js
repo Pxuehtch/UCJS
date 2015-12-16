@@ -2072,7 +2072,7 @@ const SiblingNavi = (function() {
     }
 
     function has(url) {
-      return urls.indexOf(url) > -1;
+      return urls.includes(url);
     }
 
     function isFull() {

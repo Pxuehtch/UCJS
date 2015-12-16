@@ -1388,7 +1388,7 @@ function getFamilyTab(aBaseTab, aStatement) {
       let id = TabData.get(tab, 'openTime');
 
       // 1.This tab is an ancestor of the base tab.
-      return baseAncs.indexOf(id) > -1;
+      return baseAncs.includes(id);
     };
   }
   else /* family === 'descendant' */ {
@@ -1403,8 +1403,8 @@ function getFamilyTab(aBaseTab, aStatement) {
       // 1.This tab is a descendant of the base tab.
       // 2.The parent of the base tab is an ancestor of this tab (sibling or
       //   its descendant).
-      return ancs.indexOf(baseId) > -1 ||
-        (extended && baseAncs && ancs.indexOf(baseAncs[0]) > -1);
+      return ancs.includes(baseId) ||
+        (extended && baseAncs && ancs.includes(baseAncs[0]));
     };
   }
 
@@ -1799,7 +1799,7 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
     let statement = aStatement.trim().replace(delimiterRE, aDelimiter);
 
     if (aSupportedStatements &&
-        aSupportedStatements.indexOf(statement) < 0) {
+        !aSupportedStatements.includes(statement)) {
       throw Error('unsupported aStatement');
     }
 
@@ -1808,7 +1808,7 @@ function StatementParser(aStatement, aDelimiter, aSupportedStatements) {
 
   function matchKey(aSortOfKeys) {
     for (let i = 0; i < aSortOfKeys.length; i++) {
-      if (mKeys.indexOf(aSortOfKeys[i]) > -1) {
+      if (mKeys.includes(aSortOfKeys[i])) {
         return aSortOfKeys[i];
       }
     }

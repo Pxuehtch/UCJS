@@ -312,26 +312,26 @@ function getAvailableItems() {
       }
 
       if (!onLink && !onImage && !onTextInput && !selection &&
-          types.indexOf('PAGE') > -1 &&
+          types.includes('PAGE') &&
           /^https?:/.test(pageURL)) {
         items.push(makeItem('PAGE', pageURL, service));
       }
 
       if ((onLink || onPlainTextLink) &&
-          types.indexOf('LINK') > -1 &&
+          types.includes('LINK') &&
           /^https?:/.test(linkURL) &&
           (!extensions || testExtension(extensions, linkURL))) {
         items.push(makeItem('LINK', linkURL, service));
       }
 
       if (onImage &&
-          types.indexOf('IMAGE') > -1 &&
+          types.includes('IMAGE') &&
           /^https?:/.test(mediaURL)) {
         items.push(makeItem('IMAGE', mediaURL, service));
       }
 
       if (selection &&
-          types.indexOf('TEXT') > -1) {
+          types.includes('TEXT')) {
         items.push(makeItem('TEXT', selection, service));
       }
     });
@@ -399,7 +399,7 @@ function testExtension(aExtensions, aURL) {
     targets.unshift(match[1]);
   }
 
-  return targets.some((item) => aExtensions.indexOf(item) > -1);
+  return targets.some((item) => aExtensions.includes(item));
 }
 
 function setSeparators(aContextMenu, aReferenceNode = null) {

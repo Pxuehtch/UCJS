@@ -96,7 +96,7 @@ function handleEvent(event) {
       ];
 
       SignPanel.update({
-        doClear: IMEkeys.indexOf(event.key) < 0
+        doClear: !IMEkeys.includes(event.key)
       });
 
       break;
