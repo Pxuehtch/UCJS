@@ -816,22 +816,18 @@ const ContentScripts = (function() {
       return null;
     }
 
-    if (node.localName === 'a' ||
-        node.localName === 'area' ||
-        node.localName === 'link') {
-      return node.href;
-    }
-
     const XLinkNS = 'http://www.w3.org/1999/xlink';
 
-    if (node.getAttributeNS(XLinkNS, 'type') === 'simple') {
+    if (node.hasAttributeNS(XLinkNS, 'href')) {
       let href = node.getAttributeNS(XLinkNS, 'href');
 
       return content_resolveURL(href, node.baseURI);
     }
 
-    if (node instanceof content.SVGAElement && node.href) {
-      return content_resolveURL(node.href.baseVal, node.baseURI);
+    if (node.localName === 'a' ||
+        node.localName === 'area' ||
+        node.localName === 'link') {
+      return node.href;
     }
 
     return null;

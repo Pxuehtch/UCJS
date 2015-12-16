@@ -72,7 +72,7 @@ const kUI = {
     submit: 'submit', // for <input> or <button> of <form>.
     script: '<script>',
     link: '<link>',
-    XLink: 'XLink',
+    xlink: 'XLink',
     q: '<q>',
     blockquote: '<blockquote>',
     ins: '<ins>',
@@ -240,6 +240,7 @@ const LinkInfoCollector = (function() {
         ${goThroughFrames.toString()}
         ${processFrames.toString()}
         ${getLinkInfo.toString()}
+        ${resolveURL.toString()}
         ${getText.toString()}
         ${getValueText.toString()}
         ${getAltText.toString()}
@@ -329,19 +330,7 @@ const LinkInfoCollector = (function() {
       linkInfo = info;
     };
 
-    if (node.localName === 'a' && node.href) {
-      let imgs = node.getElementsByTagName('img');
-      let note = (imgs && imgs.length) ? strings.note.image : '';
-
-      setInfo({
-        name: note + getText(node),
-        address: node.href,
-        type: strings.type.a,
-        target: node.target,
-        accesskey: node.accessKey
-      });
-    }
-    else if (node.localName === 'script' && node.src) {
+    if (node.localName === 'script' && node.src) {
       setInfo({
         name: getText(node, strings.type.script),
         address: node.src,
@@ -405,28 +394,48 @@ const LinkInfoCollector = (function() {
       });
     }
     else if (node.hasAttributeNS(XLinkNS, 'href')) {
-      const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
-      const {makeURI} = BrowserUtils;
-
-      let address;
       let href = node.getAttributeNS(XLinkNS, 'href');
-      let charset = node.ownerDocument.characterSet;
-
-      try {
-        address = makeURI(href, charset, makeURI(node.baseURI, charset)).spec;
-      }
-      catch (ex) {}
+      let address = resolveURL(href, node.baseURI);
 
       if (address) {
+        // TODO: get |target| and |accesskey|.
         setInfo({
           name: getText(node),
           address,
-          type: strings.type.XLink
+          type: strings.type.xlink
         });
       }
     }
+    else if (node.localName === 'a' && node.href) {
+      let imgs = node.getElementsByTagName('img');
+      let note = (imgs && imgs.length) ? strings.note.image : '';
+
+      setInfo({
+        name: note + getText(node),
+        address: node.href,
+        type: strings.type.a,
+        target: node.target,
+        accesskey: node.accessKey
+      });
+    }
 
     return linkInfo;
+  }
+
+  function resolveURL(url, baseURL) {
+    if (!url || !/\S/.test(url)) {
+      return null;
+    }
+
+    const {BrowserUtils} = Modules.require('gre/modules/BrowserUtils.jsm');
+    const {makeURI} = BrowserUtils;
+
+    try {
+      return makeURI(url, null, makeURI(baseURL)).spec;
+    }
+    catch (ex) {}
+
+    return null;
   }
 
   function getText(node, defaultValue) {
