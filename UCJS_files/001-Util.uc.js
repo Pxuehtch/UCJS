@@ -608,7 +608,7 @@ const ContentScripts = (function() {
    *
    * Additional features:
    * - This method descends through frames.
-   *   @see resource:///modules/devtools/shared/layout/utils.js
+   *   @see resource://gre/modules/devtools/layout/utils.js
    * - This method can find an <area> element of the image map on <img> and
    *   <object>.
    */

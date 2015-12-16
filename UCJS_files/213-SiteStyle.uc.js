@@ -873,9 +873,7 @@ const PageObserver = (function() {
 
         if (css) {
           yield ContentTask.spawn({
-            params: {
-              css
-            },
+            params: {css},
             task: function*(params) {
               '${ContentTask.ContentScripts.CSSUtils}';
 

@@ -1029,7 +1029,7 @@ const MenuUI = (function() {
     for (let name in replacements) {
       let value = replacements[name];
 
-      // Pass through 0 or ''.
+      // @note Pass through falsy value 0 or ''.
       if (value !== null && value !== undefined) {
         aliasList[`%${name}%`] = value;
       }
@@ -2202,10 +2202,10 @@ const SiblingNavi = (function() {
      * @note Must specify the global flag 'g'.
      */
     const kPageNumberRE = [
-      // Parameter with a numeric value: [?&]page=123 or [?&]123
+      // Parameter with a numeric value: [?&]foo=123 or [?&]123
       /([?&](?:[a-z_-]{1,20}=)?)(\d{1,12})(?=$|&)/ig,
 
-      // Path ended with numbers: (abc)123 or (abc)123.jpg or (abc)123/
+      // Path ended with numbers: (foo)123 or (foo)123.jpg or (foo)123/
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
     ];
 
@@ -2674,8 +2674,8 @@ const UpperNavi = (function() {
     };
 
     function promiseData(state) {
-      // @note This task doesn't receive any iterators but is made in
-      // accordance with other cases of |promiseData|.
+      // @note This task doesn't receive any iterators but this function must
+      // return a promise for |DataCache.update|.
       return Task.spawn(function*() {
         if (!state.uri) {
           data.upperURLList = null;

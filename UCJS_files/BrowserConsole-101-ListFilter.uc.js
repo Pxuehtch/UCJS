@@ -103,8 +103,8 @@ function setStyleSheet() {
 
   // Set the style of our 'checkbox' type button to the same style of the
   // native 'menu-button' type button.
-  // @note I use the light theme.
-  // @see chrome://browser/skin/devtools/light-theme.css
+  // @note This is adjusted to the light theme.
+  // @see https://developer.mozilla.org/en/docs/Tools/DevToolsColors
   CSSUtils.setChromeStyleSheet(`
     ${filteredBy} {
       display: none;
@@ -123,19 +123,6 @@ function setStyleSheet() {
       background-color: rgba(76, 158, 217, .4) !important;
     }
   `);
-
-  /**
-   * For the dark theme.
-   *
-    .theme-dark .${kUI.button.id}[checked] {
-      background-color: rgba(29, 79, 115, .7) !important;
-      color: #f5f7fa !important;
-    }
-    .theme-dark .${kUI.button.id}[checked]:hover {
-      background-color: rgba(29, 79, 115, .8) !important;
-      color: #f5f7fa !important;
-    }
-   */
 }
 
 function makeUI() {

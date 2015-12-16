@@ -129,13 +129,6 @@ const {
     }
 
     // Set a default tooltip label on a special element.
-    //
-    // TODO: Some keys will be appended in Fx43:
-    // - tabs.closeSelectedTab.tooltip
-    // - tabs.muteAudio.background.tooltip
-    // - tabs.unmuteAudio.background.tooltip
-    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1199609
-    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1199929
     let setDefaultTooltip = (stringId) => {
       let label = gBrowser.mStringBundle.getString(stringId);
 

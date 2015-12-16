@@ -515,10 +515,7 @@ function inputAndSubmit(formInfo, inputData) {
 
 function updateFormInput(inputData, options = {}) {
   ContentTask.spawn({
-    params: {
-      inputData,
-      options
-    },
+    params: {inputData, options},
     task: `function*(params) {
       ${ContentTask.ContentScripts.DOMUtils}
       ${content_updateFormInput.toString()}
