@@ -218,7 +218,7 @@ const Modules = (function() {
     // Loads SDK.
     let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
 
-    return loader.devtools.require(moduleURL);
+    return loader.require(moduleURL);
   }
 
   return modules;
