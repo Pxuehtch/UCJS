@@ -807,6 +807,7 @@ function promiseDocInfo() {
   };
 
   let params = {
+    strings: {},
     frameOuterWindowID: gContextMenu.frameOuterWindowID
   };
 
