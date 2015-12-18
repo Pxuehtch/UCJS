@@ -216,7 +216,7 @@ const kSiteList = [
          * The search part is for the previous result and the hash part is for
          * the current result. We need the latter.
          */
-        let [, search, hash] = /(\?.+)(#.+)$/.exec(uri.spec) || [];
+        let {search, hash} = new window.URL(uri.spec);
         let params = hash || search;
         let [, mode] = params && /[?&#]tbm=([^&]+)/.exec(params) || [];
 
