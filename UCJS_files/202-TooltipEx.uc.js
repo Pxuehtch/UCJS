@@ -416,8 +416,8 @@ const Tooltip = (function() {
           break;
         }
 
-        if (node.id) {
-          add('#' + node.id, node);
+        if (node.id && !/\s/.test(node.id)) {
+          add('#' + content.CSS.escape(node.id), node);
           selectorCompleted = true;
         }
         else {
