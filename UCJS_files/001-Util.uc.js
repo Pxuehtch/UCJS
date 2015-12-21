@@ -1729,11 +1729,11 @@ const ContentTask = (function() {
         let sendResponse = (data) => {
           data.messageId = messageId;
 
-          if (data.error instanceof Error) {
+          if (data.error) {
             data.error = data.error.toString();
 
             // Log to the console.
-            content.console.error(data.error);
+            content.console.log(data.error);
           }
 
           sendAsyncMessage('ucjs:ContentTask:response', data);
