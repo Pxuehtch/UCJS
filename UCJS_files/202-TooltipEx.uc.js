@@ -365,20 +365,25 @@ const Tooltip = (function() {
     }
 
     function content_collectInfo(node) {
-      let selectors = [];
+      const {CssLogic} = Modules.require('devtools/styleinspector/css-logic');
+
+      let selector = '';
       let nodeTree = [];
 
-      let selectorCompleted = false;
+      let setSelector = (node) => {
+        // TODO: Handle exception and no value returned.
+        let thisSelector = CssLogic.findCssSelector(node) || node.localName;
 
-      let add = (selector, node) => {
-        if (selector && !selectorCompleted) {
-          if (selectors.length && /^i?frame$/.test(node.localName)) {
-            selector += '|';
-          }
-
-          selectors.unshift(selector);
+        if (selector) {
+          // Add a frame separator.
+          // @see |ucjsUtil.ContentScripts.content_querySelector|
+          thisSelector += '|>';
         }
 
+        selector = thisSelector + selector;
+      };
+
+      let setNodeTree = (node) => {
         let attributes = {};
 
         [...node.attributes].forEach((attribute) => {
@@ -399,53 +404,31 @@ const Tooltip = (function() {
         });
       };
 
-      while (node) {
-        if (node.localName === 'body' || node.localName === 'html') {
-          add(node.localName, node);
+      setSelector(node);
 
+      while (node) {
+        setNodeTree(node);
+
+        if (/^(?:html|body)$/.test(node.localName)) {
           let view = node.ownerDocument.defaultView;
 
-          // Enter the parent document.
           if (view.frameElement) {
             node = view.frameElement;
-            selectorCompleted = false;
+            setSelector(node);
 
+            // Enter the parent document.
             continue;
           }
 
+          // No more parents and exit the loop.
           break;
-        }
-
-        if (node.id && !/\s/.test(node.id)) {
-          add('#' + content.CSS.escape(node.id), node);
-          selectorCompleted = true;
-        }
-        else {
-          let selector;
-
-          if (node.previousElementSibling || node.nextElementSibling) {
-            let count = 0;
-            let sibling = node;
-
-            while (sibling) {
-              count++;
-              sibling = sibling.previousElementSibling;
-            }
-
-            selector = `${node.localName}:nth-child(${count})`;
-          }
-          else {
-            selector = node.localName;
-          }
-
-          add(selector, node);
         }
 
         node = node.parentElement;
       }
 
       return {
-        selector: selectors.join('>'),
+        selector,
         nodeTree
       };
     }
