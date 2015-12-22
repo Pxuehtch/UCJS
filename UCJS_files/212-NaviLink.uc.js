@@ -1622,7 +1622,7 @@ const NaviLink = (function() {
 
       let doc = content.document;
 
-      let metas = doc.getElementsByTagName('meta') || [];
+      let metas = doc.getElementsByTagName('meta');
       let metaInfo = [...metas].map((node) => {
         let name =
           node.name ||
@@ -1645,7 +1645,7 @@ const NaviLink = (function() {
       }).
       filter(Boolean);
 
-      let scripts = doc.getElementsByTagName('script') || [];
+      let scripts = doc.getElementsByTagName('script');
       let scriptInfo = [...scripts].map(({src, title}) => {
         if (!src) {
           return null;
@@ -1655,7 +1655,7 @@ const NaviLink = (function() {
       }).
       filter(Boolean);
 
-      let links = doc.querySelectorAll('[rel][href], [rev][href]') || [];
+      let links = doc.querySelectorAll('[rel][href], [rev][href]');
       let linkInfo = [...links].map((node) => {
         let {rel, rev, href, title, textContent, media, type, hreflang} = node;
 
