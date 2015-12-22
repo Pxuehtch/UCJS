@@ -709,6 +709,7 @@ const ContentScripts = (function() {
     }
 
     // Sometimes <map> has only 'id' by incorrect usage.
+    mapName = content.CSS.escape(mapName);
     let selector = `map[name="${mapName}"], map#${mapName}`;
     let map = DOMUtils.$S1(selector, node.ownerDocument);
 
