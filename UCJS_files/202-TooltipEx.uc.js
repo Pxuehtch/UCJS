@@ -6,11 +6,14 @@
 
 // @require Util.uc.js
 
-// @usage A tooltip panel opens with <Ctrl+Alt+MouseMove> on an element, with
-// the various informations including the ancestor elements'.
-// @note You can move the panel with dragging the frame margin of the content.
-// @note You can select and copy texts and also can copy the whole data by the
-// 'Copy All' menu item of the context menu.
+/**
+ * @usage A tooltip panel opens with <Ctrl+Alt+MouseMove> on an element, with
+ * the various informations including the ancestor elements'.
+ * @note You can move the panel with dragging the frame margin of the tooltip
+ * panel.
+ * @note You can select and copy texts and also can copy the whole data by the
+ * 'Copy All' menu item of the context menu.
+ */
 
 
 (function(window) {
@@ -244,7 +247,7 @@ const Tooltip = (function() {
     }
 
     function isOpen() {
-      // WORKAROUND: This tests whether the panel is alive or not.
+      // WORKAROUND: This also tests whether the panel is alive or not.
       return vars.panel && vars.panel.state === 'open';
     }
 

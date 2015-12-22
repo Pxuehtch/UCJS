@@ -1104,7 +1104,10 @@ const MessageManager = (function() {
       ($0, $1) => eval($1)
     );
 
-    return minifyJS(source);
+    // Minify a source string into one-liner.
+    source = minifyJS(source);
+
+    return source;
   }
 
   /**
@@ -1745,7 +1748,8 @@ const ContentTask = (function() {
             data.error = data.error.toString();
 
             // Log to the console.
-            content.console.log(data.error);
+            // TODO: Specify the error line.
+            content.console.log(`Content task error:\n${data.error}`);
           }
 
           sendAsyncMessage('ucjs:ContentTask:response', data);
