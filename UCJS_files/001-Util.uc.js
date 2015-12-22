@@ -322,11 +322,22 @@ const ContentScripts = (function() {
    * @note This is pre-injected for all content scripts.
    * @see |MessageManager.makeInjectionSource|
    */
-  const GlobalUtils = `
+  const GlobalUtils = String.raw`
     const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 
     const Modules = {
-      require: (url) => Cu.import('resource://' + url, {}),
+      require: (url) => {
+        // Loads JSM.
+        if (/^(?:\/modules|gre\/modules)\/.+\.jsm?$/.test(url)) {
+          return Cu.import('resource://' + url, {});
+        }
+
+        // Loads SDK.
+        let loader =
+          Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+
+        return loader.require(url);
+      },
       $S: (CID, IID) => Cc[CID].getService(Ci[IID]),
       $I: (CID, IID) => Cc[CID].createInstance(Ci[IID])
     };
