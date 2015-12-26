@@ -248,7 +248,8 @@ const AliasFixup = (function() {
 function SendTo_init() {
   contentAreaContextMenu.register({
     events: [
-      ['popupshowing', onPopupShowing]
+      ['popupshowing', onPopupShowing],
+      ['popuphiding', onPopupHiding]
     ],
 
     onCreate: createMenu
@@ -259,26 +260,21 @@ function createMenu(aContextMenu) {
   setSeparators(aContextMenu, aContextMenu.firstChild);
 }
 
-function onPopupShowing(aEvent) {
-  let contextMenu = aEvent.currentTarget;
+function onPopupShowing(event) {
+  let contextMenu = event.currentTarget;
 
-  if (aEvent.target !== contextMenu) {
+  if (event.target !== contextMenu) {
     return;
   }
 
-  let [startSeparator, endSeparator] = getSeparators();
-
-  // Remove existing items.
-  for (let item; (item = startSeparator.nextSibling) !== endSeparator; /**/) {
-    contextMenu.removeChild(item);
-  }
-
-  let fragment = window.document.createDocumentFragment();
-
   getAvailableItems().then((items) => {
+    let fragment = window.document.createDocumentFragment();
+
     items.forEach((item) => {
       fragment.appendChild(item);
     });
+
+    let [startSeparator, endSeparator] = getSeparators();
 
     contextMenu.insertBefore(fragment, endSeparator);
 
@@ -290,6 +286,21 @@ function onPopupShowing(aEvent) {
     });
   }).
   catch(Cu.reportError);
+}
+
+function onPopupHiding(event) {
+  let contextMenu = event.currentTarget;
+
+  if (event.target !== contextMenu) {
+    return;
+  }
+
+  let [startSeparator, endSeparator] = getSeparators();
+
+  // Remove existing items.
+  while (startSeparator.nextSibling !== endSeparator) {
+    startSeparator.nextSibling.remove();
+  }
 }
 
 function getAvailableItems() {

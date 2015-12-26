@@ -441,9 +441,8 @@ const MenuUI = (function() {
     let [startSeparator, endSeparator] = getSeparators();
 
     // Remove existing items.
-    for (let item; (item = startSeparator.nextSibling) !== endSeparator;
-         /**/) {
-      contextMenu.removeChild(item);
+    while (startSeparator.nextSibling !== endSeparator) {
+      startSeparator.nextSibling.remove();
     }
   }
 

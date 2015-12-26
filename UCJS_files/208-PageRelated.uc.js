@@ -227,7 +227,8 @@ const AliasFixup = (function() {
 function PageRelated_init() {
   URLBarContextMenu.register({
     events: [
-      ['popupshowing', onPopupShowing]
+      ['popupshowing', onPopupShowing],
+      ['popuphiding', onPopupHiding]
     ],
 
     onCreate: createMenu
@@ -238,18 +239,11 @@ function createMenu(aContextMenu) {
   setSeparators(aContextMenu);
 }
 
-function onPopupShowing(aEvent) {
-  let contextMenu = aEvent.currentTarget;
+function onPopupShowing(event) {
+  let contextMenu = event.currentTarget;
 
-  if (aEvent.target !== contextMenu) {
+  if (event.target !== contextMenu) {
     return;
-  }
-
-  let [sSep, eSep] = getSeparators();
-
-  // Remove existing menus.
-  for (let menu; (menu = sSep.nextSibling) !== eSep; /**/) {
-    contextMenu.removeChild(menu);
   }
 
   // Allow only HTTP page.
@@ -263,7 +257,24 @@ function onPopupShowing(aEvent) {
     fragment.appendChild(menu);
   });
 
-  contextMenu.insertBefore(fragment, eSep);
+  let [, endSeparator] = getSeparators();
+
+  contextMenu.insertBefore(fragment, endSeparator);
+}
+
+function onPopupHiding(event) {
+  let contextMenu = event.currentTarget;
+
+  if (event.target !== contextMenu) {
+    return;
+  }
+
+  let [startSeparator, endSeparator] = getSeparators();
+
+  // Remove existing items.
+  while (startSeparator.nextSibling !== endSeparator) {
+    startSeparator.nextSibling.remove();
+  }
 }
 
 function getAvailableMenus() {
