@@ -215,8 +215,8 @@ function buildList(params) {
   };
 
   listGetter().then((list) => {
-    // No need to append new items if the context menu has closed.
-    if (!isContextMenuOpen()) {
+    // Do nothing if the context menu has been closed.
+    if (!URLBarContextMenu.isOpen()) {
       return;
     }
 
@@ -351,12 +351,6 @@ function getSearchEngineKeywordList() {
   return new Promise((resolve) => {
     resolve(list);
   });
-}
-
-function isContextMenuOpen() {
-  let contextMenu = URLBarContextMenu.get();
-
-  return contextMenu.state === 'showing' || contextMenu.state === 'open';
 }
 
 /**

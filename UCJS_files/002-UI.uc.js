@@ -85,8 +85,20 @@ const PopupMenuHandler = (function() {
     return {
       get: aPopupMenuGetter,
       register: handlerManager.register,
+      isOpen: isOpen.bind(null, aPopupMenuGetter()),
       repaintSeparators: repaintSeparators.bind(null, aPopupMenuGetter())
     };
+  }
+
+  /**
+   * Determines whether a popup menu is open or not.
+   *
+   * @param popupMenu {<menupopup>}
+   * @return {boolean}
+   *   true if opening or opened, false otherwise.
+   */
+  function isOpen(popupMenu) {
+    return popupMenu.state === 'showing' || popupMenu.state === 'open';
   }
 
   /**

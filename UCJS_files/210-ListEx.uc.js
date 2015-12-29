@@ -1414,8 +1414,8 @@ function buildMenuItems(params) {
   } = params;
 
   builder().then((list) => {
-    // No need to append new menu items if the context menu has closed.
-    if (!isContextMenuOpen()) {
+    // Do nothing if the context menu has been closed.
+    if (!contentAreaContextMenu.isOpen()) {
       return;
     }
 
@@ -1446,12 +1446,6 @@ function appendMenuItem(menuItem, listUI, referenceNode) {
   if (menuItem) {
     popup.insertBefore(menuItem, reference);
   }
-}
-
-function isContextMenuOpen() {
-  let contextMenu = contentAreaContextMenu.get();
-
-  return contextMenu.state === 'showing' || contextMenu.state === 'open';
 }
 
 /**

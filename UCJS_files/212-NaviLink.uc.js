@@ -465,12 +465,6 @@ const MenuUI = (function() {
     ];
   }
 
-  function isContextMenuOpen() {
-    let contextMenu = URLBarContextMenu.get();
-
-    return contextMenu.state === 'showing' || contextMenu.state === 'open';
-  }
-
   /**
    * Create a promise object for building menu items asynchronously.
    */
@@ -483,7 +477,8 @@ const MenuUI = (function() {
     return Task.spawn(function*() {
       let item = yield builder();
 
-      if (!isContextMenuOpen()) {
+      // Do nothing if the context menu has been closed.
+      if (!URLBarContextMenu.isOpen()) {
         return;
       }
 
