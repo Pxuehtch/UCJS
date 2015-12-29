@@ -268,6 +268,11 @@ function onPopupShowing(event) {
   }
 
   getAvailableItems().then((items) => {
+    // Do nothing if the context menu has been closed.
+    if (!contentAreaContextMenu.isOpen()) {
+      return;
+    }
+
     let fragment = window.document.createDocumentFragment();
 
     items.forEach((item) => {
