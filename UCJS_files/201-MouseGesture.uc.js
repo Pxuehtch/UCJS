@@ -734,7 +734,7 @@ function MouseGesture() {
 /**
  * Mouse event manager.
  *
- * - Determines whether a gesture can start or stop.
+ * - Checks whether a gesture can start or stop.
  * - Manages enabling and disabling the context menu and the default click
  *   action of the left/middle button.
  *

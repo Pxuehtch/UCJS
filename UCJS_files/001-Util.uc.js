@@ -1235,7 +1235,7 @@ const PageEvents = (function() {
    * URL list for the document is loaded without simple notifications like
    * 'load', 'pageshow'.
    *
-   * TODO: Make a generic method to determine silent changes of document.
+   * TODO: Make a generic method to check silent changes of document.
    * @see https://developer.mozilla.org/en/Add-ons/Overlay_Extensions/XUL_School/Intercepting_Page_Loads
    *
    * Used the following case:

@@ -91,7 +91,7 @@ const PopupMenuHandler = (function() {
   }
 
   /**
-   * Determines whether a popup menu is open or not.
+   * Checks whether a popup menu is open or not.
    *
    * @param popupMenu {<menupopup>}
    * @return {boolean}
@@ -614,7 +614,7 @@ const StatusField = (function() {
     let mMessageStatus = '';
 
     /**
-     * Determines if a message text exists.
+     * Checks if a message text exists.
      */
     function hasMessage() {
       return !!mMessageStatus;
