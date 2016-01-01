@@ -61,8 +61,10 @@ const PopupMenuHandler = (function() {
    *     Whether observe UI customization to restore user settings.
    *     @see |HandlerManager|
    * @return {hash}
-   *   @key get {function}
-   *   @key register {function}
+   *   get: {function}
+   *   register: {function}
+   *   isOpen: {function}
+   *   repaintSeparators: {function}
    */
   function init(aPopupMenuGetter, aOption) {
     let handlerManager = HandlerManager(aPopupMenuGetter, aOption);
@@ -82,11 +84,21 @@ const PopupMenuHandler = (function() {
       ]
     });
 
+    /**
+     * Binds the current popup menu to a function as the first parameter.
+     *
+     * @note We must refer to the current popup menu since it may have been
+     * rebuilt by UI customization.
+     */
+    let bindPopupMenu = (handler) => {
+      return (...params) => handler(aPopupMenuGetter(), ...params);
+    };
+
     return {
       get: aPopupMenuGetter,
       register: handlerManager.register,
-      isOpen: isOpen.bind(null, aPopupMenuGetter()),
-      repaintSeparators: repaintSeparators.bind(null, aPopupMenuGetter())
+      isOpen: bindPopupMenu(isOpen),
+      repaintSeparators: bindPopupMenu(repaintSeparators)
     };
   }
 
