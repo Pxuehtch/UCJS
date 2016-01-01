@@ -53,10 +53,10 @@ const PopupMenuHandler = (function() {
   /**
    * Creates a new handler.
    *
-   * @param aPopupMenuGetter {function}
+   * @param popupMenuGetter {function}
    *   A function to get the <popupmenu> element.
    *   @see |HandlerManager|
-   * @param aOption {hash}
+   * @param options {hash}
    *   @key observeUICustomization {boolean}
    *     Whether observe UI customization to restore user settings.
    *     @see |HandlerManager|
@@ -66,8 +66,8 @@ const PopupMenuHandler = (function() {
    *   isOpen: {function}
    *   repaintSeparators: {function}
    */
-  function init(aPopupMenuGetter, aOption) {
-    let handlerManager = HandlerManager(aPopupMenuGetter, aOption);
+  function init(popupMenuGetter, options) {
+    let handlerManager = HandlerManager(popupMenuGetter, options);
 
     handlerManager.register({
       events: [
@@ -91,11 +91,11 @@ const PopupMenuHandler = (function() {
      * rebuilt by UI customization.
      */
     let bindPopupMenu = (handler) => {
-      return (...params) => handler(aPopupMenuGetter(), ...params);
+      return (...params) => handler(popupMenuGetter(), ...params);
     };
 
     return {
-      get: aPopupMenuGetter,
+      get: popupMenuGetter,
       register: handlerManager.register,
       isOpen: bindPopupMenu(isOpen),
       repaintSeparators: bindPopupMenu(repaintSeparators)
@@ -188,11 +188,11 @@ const PopupMenuHandler = (function() {
   /**
    * Manager of handlers on create/destroy the target popup menu.
    *
-   * @param aTargetGetter {function}
+   * @param targetGetter {function}
    *   A function to get the target popup menu element.
    *   @note It is not the element itself since we should update the reference
    *   to the new target when cleaned up and rebuilt.
-   * @param aOption {hash}
+   * @param options {hash}
    *   @key observeUICustomization {boolean}
    *     If UI customization breaks user settings to the target, set true to
    *     observe UI customization to restore user settings.
@@ -200,12 +200,12 @@ const PopupMenuHandler = (function() {
    * @return {hash}
    *   @key register {function}
    */
-  function HandlerManager(aTargetGetter, aOption = {}) {
+  function HandlerManager(targetGetter, options = {}) {
     const {
       observeUICustomization
-    } = aOption;
+    } = options;
 
-    let setTarget = () => aTargetGetter();
+    let setTarget = () => targetGetter();
 
     let mTarget;
     let mEventData = [];

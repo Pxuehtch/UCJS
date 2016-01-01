@@ -477,7 +477,7 @@ const LinkInfoCollector = (function() {
       }
     }
 
-    return (valueTexts.length) ? valueTexts.join(' ') : '';
+    return valueTexts.length ? valueTexts.join(' ') : '';
   }
 
   function getAltText(node) {

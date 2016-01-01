@@ -27,8 +27,7 @@ const ucjsTabEx = (function(window) {
 const {
   Modules,
   Listeners: {
-    $event,
-    $shutdown
+    $event
   },
   TabUtils,
   PlacesUtils,

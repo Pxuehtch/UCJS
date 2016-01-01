@@ -25,8 +25,7 @@ const {
     $event,
     $messageOnce,
     $page,
-    $pageOnce,
-    $shutdown
+    $pageOnce
   },
   DOMUtils: {
     $E,
