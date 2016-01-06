@@ -150,7 +150,7 @@ const kNoiseList = [
   '||twitmunin.com',
   '||tyudon.com',
   '||wdclip.com',
-  '||xmarks.com'//,
+  '||xmarks.com'
 ];
 
 /**
@@ -690,7 +690,7 @@ const kSiteList = [
         contentTask: content_task
       };
     }
-  }//,
+  }
 ];
 
 /**

@@ -85,7 +85,6 @@ const kPresetNavi = [
     prev: './/input[@class="navbutton" and @value[contains(.,"Prev")]]',
     next: './/input[@class="navbutton" and @value[contains(.,"Next")]]'
   }
-  //,
 ];
 
 /**

@@ -1382,7 +1382,7 @@ function inEditableNode(event) {
         node.isContentEditable ||
         node.ownerDocument.designMode === 'on'
       );
-    },
+    }
   });
 }
 

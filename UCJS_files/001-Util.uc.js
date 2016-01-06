@@ -133,7 +133,7 @@ const Modules = (function() {
       // @see resource://gre/modules/commonjs/sdk/timers.js
       name: 'Timer',
       moduleURL: 'sdk/timers'
-    }//,
+    }
   ];
 
   let modules = {};
@@ -2136,7 +2136,7 @@ const DOMUtils = (function() {
     $S: getLiveNodesBySelector,
     $SS: getStaticNodesBySelector,
     $X1: getFirstNodeByXPath,
-    $X: getNodesByXPath,
+    $X: getNodesByXPath
   };
 })();
 
@@ -2921,7 +2921,7 @@ return {
   CSSUtils,
   BrowserUtils,
   PlacesUtils,
-  HistoryUtils//,
+  HistoryUtils
 };
 
 

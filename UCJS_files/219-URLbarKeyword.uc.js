@@ -59,7 +59,7 @@ const kUI = {
     noItems: 'No restrict keywords'
   },
   bookmark: {
-    noItems: 'No bookmark keywords',
+    noItems: 'No bookmark keywords'
   },
   searchEngine: {
     noItems: 'No search-engine keywords'

@@ -173,7 +173,7 @@ const kItemList = [
         window.BrowserReload();
       }
     }
-  }//,
+  }
 ];
 
 function PrefButton_init() {
