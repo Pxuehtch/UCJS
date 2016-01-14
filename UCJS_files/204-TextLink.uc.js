@@ -66,14 +66,20 @@ function findURL() {
     ${ContentTask.ContentScripts.DOMUtils}
     ${ContentTask.ContentScripts.TextUtils}
     ${content_createURLUtil.toString()}
-    ${content_getSelection.toString()}
+    ${content_getSelectionInfo.toString()}
     ${content_findURL.toString()}
     ${content_createRange.toString()}
     ${content_findBorder.toString()}
 
     let URLUtil = content_createURLUtil();
 
-    let {document, selection} = content_getSelection();
+    let selectionInfo = content_getSelectionInfo();
+
+    if (!selectionInfo) {
+      return null;
+    }
+
+    let {document, selection} = selectionInfo;
     let url = content_findURL(document, selection);
 
     if (url) {
@@ -206,7 +212,7 @@ function content_createURLUtil() {
   }
 }
 
-function content_getSelection() {
+function content_getSelectionInfo() {
   let {focusedWindow} = Services.focus;
 
   if (!focusedWindow) {
