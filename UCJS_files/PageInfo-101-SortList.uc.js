@@ -88,9 +88,9 @@ window.pageInfoTreeView.prototype.cycleHeader =
 
 function sort(aData, aColumnIndex, aAscending) {
   let comparator =
-    !isNaN(aData[0][aColumnIndex]) ?
-    (a, b) => a - b :
-    (a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase());
+    aData.some((row) => typeof row[aColumnIndex] === 'string') ?
+    (a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()) :
+    (a, b) => a - b;
 
   aData.sort((a, b) => comparator(a[aColumnIndex], b[aColumnIndex]));
 
