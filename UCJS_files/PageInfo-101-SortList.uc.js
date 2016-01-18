@@ -87,10 +87,24 @@ window.pageInfoTreeView.prototype.cycleHeader =
 };
 
 function sort(aData, aColumnIndex, aAscending) {
-  let comparator =
-    aData.some((row) => typeof row[aColumnIndex] === 'string') ?
-    (a, b) => (a || '').toLowerCase().localeCompare((b || '').toLowerCase()) :
-    (a, b) => a - b;
+  let comparator;
+
+  if (aData.some((row) => typeof row[aColumnIndex] === 'string')) {
+    comparator = (a, b) => {
+      let toString = (value) => {
+        if (value === undefined || value === null) {
+          return '';
+        }
+
+        return (value + '').toLowerCase();
+      };
+
+      return toString(a).localeCompare(toString(b));
+    };
+  }
+  else {
+    comparator = (a, b) => a - b;
+  }
 
   aData.sort((a, b) => comparator(a[aColumnIndex], b[aColumnIndex]));
 
