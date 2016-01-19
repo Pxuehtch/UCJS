@@ -2784,11 +2784,11 @@ const PlacesUtils = (function() {
   /**
    * Promise for querying the Places database asynchronously.
    *
-   * @param parameters {hash}
+   * @param params {hash}
    *   sql: {string}
    *     A SQL statement to execute.
    *     @see https://wiki.mozilla.org/Places:Design_Overview#Models
-   *   params: {hash} [optional]
+   *   parameters: {hash} [optional]
    *     The binding parameters.
    *   columns: {array}
    *     The column names.
@@ -2850,7 +2850,7 @@ const HistoryUtils = (function() {
    *
    * @param browser {xul:browser}
    *   A browser that has the session history.
-   *   If omitted, retrieves the session history of a selected brower.
+   *   If omitted, retrieves the session history of a selected browser.
    * @return {Promise}
    *   resolve: {function}
    *     Resolved with a session histoy data, or null if no data.

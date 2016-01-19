@@ -112,15 +112,18 @@ const LinkInfoView = (function() {
       return;
     }
 
-    // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
-    vars.treeView =
-      new window.pageInfoTreeView(kUI.tree.id, UI.addressColumn.index);
+    // The column number for copy-n-paste.
+    let copyColumnNum = UI.addressColumn.index
 
+    // @see chrome://browser/content/pageinfo/pageInfo.js::pageInfoTreeView()
+    vars.treeView = new window.pageInfoTreeView(kUI.tree.id, copyColumnNum);
+
+    // Initialize the tree view.
     UI.tree.view = vars.treeView;
 
     buildList();
 
-    // Renew the data for the page info window that opens.
+    // Renew the data when the page info window is reset.
     // @see chrome://browser/content/pageinfo/pageInfo.js::onResetRegistry
     // @see chrome://browser/content/browser.js::BrowserPageInfo
     window.onResetRegistry.push(() => {

@@ -110,8 +110,9 @@ function content_createURLUtil() {
    *
    * [94 characters]
    * !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
-   * and [back-tick] (can't write here the character for template string)
-   * abcdefghijklmnopqrstuvwxyz{|}~
+   * abcdefghijklmnopqrstuvwxyz{|}~ and [back-tick]
+   * @note The [back-tick] character itself can't be written here in template
+   * string.
    *
    * [Unicode]
    * Half width: 0x0021-0x007E
