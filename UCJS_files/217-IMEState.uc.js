@@ -84,7 +84,6 @@ function handleEvent(event) {
 
     case 'keyup': {
       // Update the sign if IME is toggled, or clear all with the other keys.
-      //
       // TODO: Detect the <Caps Lock> key for opening IME.
       // XXX: But the key can be found for closing IME ('Hiragana' in my case).
       let IMEkeys = [
@@ -272,7 +271,13 @@ const SignPanel = (function() {
     }
 
     // Focused on the chrome area.
-    if (focusedElement !== gBrowser.selectedBrowser) {
+
+    /**
+     * WORKAROUND: Test whether focused on chrome or not for non-e10s.
+     * @note Replace the test condition when e10s is enabled.
+     */
+    if (focusedWindow.top === window) {
+    // For e10s: if (focusedElement !== gBrowser.selectedBrowser) {
       return Task.spawn(function*() {
         let node = getFocusedEditableNode(focusedElement);
 
