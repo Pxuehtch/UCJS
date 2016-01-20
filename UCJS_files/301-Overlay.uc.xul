@@ -37,10 +37,11 @@
     oncommand="(function(tb){tb.collapsed=!tb.collapsed;document.getElementById('ucjs_ToolbarContextMenu_toggleTabbar').setAttribute('checked',!tb.collapsed);})(document.getElementById('TabsToolbar'));"/>
 
   <!--
-   * @see chrome://browser/content/search/search.xml#searchbar::openManager
+   * Open the search engine manager.
+   * @see chrome://browser/content/utilityOverlay.js::openPreferences
    -->
   <command id="ucjs_cmd_openSearchEngineManager"
-    oncommand="(function(sm){sm?sm.focus():setTimeout(()=>open('chrome://browser/content/search/engineManager.xul','','chrome,dialog,modal,centerscreen,resizable'),0);})(Services.wm.getMostRecentWindow('Browser:SearchManager'));"/>
+    oncommand="openPreferences('paneSearch');"/>
 </commandset>
 
 <!-- Key -->
