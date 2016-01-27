@@ -16,7 +16,7 @@
 // @see |Modules|
 
 
-const ucjsUtil = (function(window) {
+window.ucjsUtil = (function(window) {
 
 
 "use strict";

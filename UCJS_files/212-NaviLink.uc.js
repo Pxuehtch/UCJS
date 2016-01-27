@@ -17,7 +17,7 @@
 // @note Some functions are exposed (window.ucjsNaviLink.XXX).
 
 
-const ucjsNaviLink = (function(window) {
+window.ucjsNaviLink = (function(window) {
 
 
 "use strict";
