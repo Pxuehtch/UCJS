@@ -49,8 +49,8 @@ const {
  * the Scratchpad editor.
  */
 const kTextType = (function() {
-  // @see resource:///modules/devtools/sourceeditor/editor.js
-  const {modes} = Modules.require('devtools/sourceeditor/editor');
+  // @see resource://devtools/client/sourceeditor/editor.js
+  const {modes} = Modules.require('devtools/client/sourceeditor/editor');
 
   return {
     js:  modes.js,
@@ -62,11 +62,11 @@ const kTextType = (function() {
  * Optional settings for the CodeMirror editor.
  *
  * Initial settings:
- * @see resource:///modules/devtools/sourceeditor/editor.js::Editor
- * @see chrome://browser/content/devtools/scratchpad.js::Scratchpad::onLoad
+ * @see resource://devtools/client/sourceeditor/editor.js::Editor
+ * @see chrome://devtools/content/scratchpad/scratchpad.js::Scratchpad::onLoad
  *
  * Available options in the built-in version:
- * @see chrome://browser/content/devtools/codemirror/codemirror.js::OPTION DEFAULTS
+ * @see chrome://devtools/content/sourceeditor/codemirror/codemirror.js::OPTION DEFAULTS
  *
  * Available options in the recent version:
  * @see http://codemirror.net/doc/manual.html#config
@@ -272,9 +272,9 @@ const Scratchpad = (function() {
    *   The new window object that holds Scratchpad.
    */
   function open(aState) {
-    // @see resource:///modules/devtools/scratchpad-manager.jsm
+    // @see resource://devtools/client/scratchpad/scratchpad-manager.jsm
     const {ScratchpadManager} =
-      Modules.require('/modules/devtools/scratchpad-manager.jsm');
+      Modules.require('devtools/client/scratchpad/scratchpad-manager.jsm');
 
     let scratchpadWindow = ScratchpadManager.openScratchpad();
 
@@ -465,7 +465,7 @@ const Prettifier = (function() {
    * JS Prettifier.
    *
    * @note Calls the built-in function.
-   * @see resource://gre/modules/devtools/jsbeautify/beautify-js.js
+   * @see resource://devtools/shared/jsbeautify/src/beautify-js.js
    */
   function prettifyJS(aText, aOptions) {
     let options = {
@@ -473,7 +473,7 @@ const Prettifier = (function() {
       indent_char: aOptions.indentChar
     };
 
-    const {js} = Modules.require('devtools/jsbeautify');
+    const {js} = Modules.require('devtools/shared/jsbeautify/beautify');
 
     return js(aText, options);
   }
@@ -482,7 +482,7 @@ const Prettifier = (function() {
    * CSS Prettifier.
    *
    * @note Calls the built-in function.
-   * @see resource://gre/modules/devtools/jsbeautify/beautify-css.js
+   * @see resource://devtools/shared/jsbeautify/src/beautify-css.js
    */
   function prettifyCSS(aText, aOptions) {
     let options = {
@@ -490,7 +490,7 @@ const Prettifier = (function() {
       indent_char: aOptions.indentChar
     };
 
-    const {css} = Modules.require('devtools/jsbeautify');
+    const {css} = Modules.require('devtools/shared/jsbeautify/beautify');
 
     /**
      * WORKAROUND: Fix missing 'at-rule' variables.

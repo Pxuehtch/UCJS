@@ -2,7 +2,7 @@
 // @name Util.uc.js
 // @description The common utility functions for user scripts.
 // @include main
-// @include chrome://browser/content/devtools/webconsole.xul
+// @include chrome://devtools/content/webconsole/webconsole.xul
 // ==/UserScript==
 
 // Chrome window examples:
@@ -196,8 +196,9 @@ const Modules = (function() {
     // Shortcut path for some typical module locations:
     // - /modules/*.jsm?
     // - gre/modules/*.jsm?
+    // - devtools/*.jsm?
     // - services-*/*.jsm?
-    if (/^(?:\/modules|gre\/modules|services\-.+?)\/.+\.jsm?$/.
+    if (/^(?:\/modules|gre\/modules|devtools|services\-.+?)\/.+\.jsm?$/.
         test(moduleURL)) {
       let scope = {};
 
@@ -216,7 +217,7 @@ const Modules = (function() {
     }
 
     // Loads SDK.
-    let loader = Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+    let loader = Cu.import('resource://devtools/shared/Loader.jsm', {});
 
     return loader.require(moduleURL);
   }
@@ -333,8 +334,7 @@ const ContentScripts = (function() {
         }
 
         // Loads SDK.
-        let loader =
-          Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+        let loader = Cu.import('resource://devtools/shared/Loader.jsm', {});
 
         return loader.require(url);
       },
@@ -559,7 +559,7 @@ const ContentScripts = (function() {
    * side this document.
    *
    * The original code:
-   * @see resource:///modules/devtools/shared/frame-script-utils.js
+   * @see resource://devtools/client/shared/frame-script-utils.js
    */
   function content_querySelector(selector, root = content.document) {
     const kFrameSeparator = '|>';
@@ -619,7 +619,7 @@ const ContentScripts = (function() {
    *
    * Additional features:
    * - This method descends through frames.
-   *   @see resource://gre/modules/devtools/layout/utils.js
+   *   @see resource://devtools/shared/layout/utils.js
    * - This method can find an <area> element of the image map on <img> and
    *   <object>.
    */

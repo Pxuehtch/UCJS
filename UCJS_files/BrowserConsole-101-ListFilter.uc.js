@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name ListFilter.uc.js
 // @description Filters messages by category in the Browser Console window.
-// @include chrome://browser/content/devtools/webconsole.xul
+// @include chrome://devtools/content/webconsole/webconsole.xul
 // ==/UserScript==
 
 // @require Util.uc.js
 
 // @usage The toggle buttons are appended on the toolbar.
 
-// @see resource:///modules/devtools/webconsole/webconsole.js
+// @see resource://devtools/client/webconsole/webconsole.js
 
 
 (function(window) {
@@ -132,7 +132,7 @@ function makeUI() {
   // TODO: The clear button has the last index in the console window on the
   // current version of Fx. So if a new index has been appended after the
   // clear button in the future, we would need to re-index it.
-  // @see chrome://browser/content/devtools/webconsole.xul::tabindex
+  // @see chrome://devtools/content/webconsole/webconsole.xul::tabindex
   let lastTabIndex = clearButton.tabIndex;
 
   kItemList.forEach(({category, description}, i) => {
@@ -165,8 +165,8 @@ function setObserver() {
     });
   }
 
-  // @see resource:///modules/devtools/webconsole/hudservice.js
-  const HUDService = Modules.require('devtools/webconsole/hudservice');
+  // @see resource://devtools/client/webconsole/hudservice.js
+  const HUDService = Modules.require('devtools/client/webconsole/hudservice');
 
   let browserConsole = HUDService.getBrowserConsole();
 
