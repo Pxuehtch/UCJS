@@ -257,7 +257,7 @@ const LinkInfoCollector = (function() {
         Task.spawn(() => processFrames(frameList, strings));
       }`
     }).
-    catch(Cu.reportError);
+    catch(Components.utils.reportError);
   }
 
   function goThroughFrames(view = content.window) {
