@@ -1511,10 +1511,8 @@ function fitIntoLabel(text, wrapping) {
 
 function fixFaviconURL(iconURL) {
   if (!iconURL) {
-    iconURL = Modules.PlacesUtils.favicons.defaultFavicon.spec;
+    return Modules.PlacesUtils.favicons.defaultFavicon.spec;
   }
-
-  iconURL = Modules.PlacesUtils.getImageURLForResolution(window, iconURL);
 
   if (/^https?:/.test(iconURL)) {
     iconURL = 'moz-anno:favicon:' + iconURL;
