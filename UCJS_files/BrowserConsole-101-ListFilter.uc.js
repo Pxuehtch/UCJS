@@ -159,7 +159,7 @@ function setObserver() {
   function observeMessageAdded(aBrowserConsole) {
     aBrowserConsole.ui.on('new-messages', onMessageAdded);
 
-    // Clean up when the browser window closes.
+    // Clean up when the console window closes.
     $shutdown(() => {
       aBrowserConsole.ui.off('new-messages', onMessageAdded);
     });

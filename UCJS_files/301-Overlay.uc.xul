@@ -22,8 +22,10 @@
 
 <!-- Command -->
 <commandset id="mainCommandSet">
-  <!-- Toggles the find bar. -->
-  <!-- @note Overwrite the default setting. -->
+  <!--
+   * Toggles the find bar.
+   * @note Overwrite the default setting.
+   -->
   <command id="cmd_find"
     oncommand="ucjsUI.FindBar.toggle();"/>
 
@@ -70,9 +72,10 @@
     keycode="VK_ESCAPE" modifiers="shift"
     oncommand="BrowserStop();"/>
 
-  <!-- Add-on: Opens DOM Inspector. -->
-  <!-- @note Overwrite the default setting. -->
   <!--
+   * Add-on: Opens DOM Inspector.
+   * @note Overwrite the default setting.
+   *
    * Shortcut keys with 'i':
    * <Ctrl-Shift-i>: Opens the Browser Console.
    * <Ctrl-Alt-Shift-i>: Opens the Browser Toolbox.
