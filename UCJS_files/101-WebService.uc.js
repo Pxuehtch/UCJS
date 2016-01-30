@@ -282,10 +282,10 @@ const RequestHandler = (function() {
       let message = `<XHR error>\nURL:${aURL}\n${eventType}:${statusText}`;
 
       // Log to console.
-      log([message, aError]);
+      log(aError ? [message, aError] : [message]);
 
       if (aOption.onError) {
-        aOption.onError(statusText, aError);
+        aOption.onError(statusText, aError || null);
       }
     };
 
