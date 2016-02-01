@@ -229,6 +229,8 @@ function ScriptLoader() {
     }
 
     function getContainerType(aDocument) {
+      const {importModule} = Util;
+
       const ContainerTester = {
         'sidebar': (aDocument) => {
           let container = window.SidebarUI.browser;
@@ -237,11 +239,10 @@ function ScriptLoader() {
         },
 
         'devtool': (aDocument) => {
-          const {devtools} =
-            Cu.import('resource://gre/modules/devtools/Loader.jsm', {});
+          // @see resource://gre/modules/commonjs/dev/utils.js
+          const {getToolbox} = importModule('dev/utils');
 
-          let target = devtools.TargetFactory.forTab(gBrowser.selectedTab)
-          let toolbox = gDevTools.getToolbox(target);
+          let toolbox = getToolbox();
           let container = toolbox && toolbox.frame;
 
           return container && container.contentDocument === aDocument;
