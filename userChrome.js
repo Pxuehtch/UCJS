@@ -680,11 +680,35 @@ function UserScript_getURL(aFile, aType) {
  * @return {hash}
  */
 function UtilManager() {
-  const {classes: Cc, interfaces: Ci} = window.Components;
+  const {classes: Cc, interfaces: Ci, Cu: utils} = window.Components;
 
   let $S = (aCID, aIID) => Cc[aCID].getService(Ci[aIID]);
   let $I = (aCID, aIID) => Cc[aCID].createInstance(Ci[aIID]);
   let QI = (aNode, aIID) => aNode.QueryInterface(Ci[aIID]);
+
+  function importModule(moduleURL) {
+    /**
+     * Loads JS module.
+     *
+     * Shortcut path for some typical module locations:
+     * - /modules/*.jsm?
+     * - gre/modules/*.jsm?
+     * - devtools/*.jsm?
+     */
+    if (/^(?:\/modules|gre\/modules|devtools)\/.+\.jsm?$/.test(moduleURL)) {
+      return Cu.import('resource://' + moduleURL, {});
+    }
+
+    /**
+     * Loads SDK module.
+     *
+     * Special path for SDK.
+     * @see https://developer.mozilla.org/en/Add-ons/SDK/Guides/Module_structure_of_the_SDK#SDK_Modules
+     */
+    let loader = Cu.import('resource://devtools/shared/Loader.jsm', {});
+
+    return loader.require(moduleURL);
+  }
 
   function getLastModifiedTime(aFile) {
     let localFile = $I('@mozilla.org/file/local;1', 'nsIFile');
@@ -819,6 +843,7 @@ function UtilManager() {
    * Exports
    */
   return {
+    importModule,
     getLastModifiedTime,
     readFile,
     getChromeDirectory,
