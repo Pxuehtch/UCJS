@@ -681,7 +681,7 @@ function UserScript_getURL(aFile, aType) {
  * @return {hash}
  */
 function UtilManager() {
-  const {classes: Cc, interfaces: Ci, Cu: utils} = window.Components;
+  const {classes: Cc, interfaces: Ci, utils: Cu} = window.Components;
 
   let $S = (aCID, aIID) => Cc[aCID].getService(Ci[aIID]);
   let $I = (aCID, aIID) => Cc[aCID].createInstance(Ci[aIID]);
