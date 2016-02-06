@@ -338,10 +338,6 @@ const kSiteList = [
 
       // The common styles.
       let css = `
-        /* Search text box. */
-        .srp #searchform {
-          top: auto !important;
-        }
         /* Footer navi. */
         #foot {
           width: auto !important;
