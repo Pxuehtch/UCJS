@@ -75,10 +75,20 @@ const kPref = {
  * @key image {regexp}
  *   The link URL or image source URL.
  *   @note |link| will be valid on a linked image if both keys are defined.
- *   @note Capturing parentheses replace |$n| in |items.replacement|.
+ *   @note Capturing parentheses are available in |items.replacement|.
  * @key items {hash[]}
- *   @key replacement {string}
- *   @key description {string}
+ *   replacement: {string}
+ *     The retrieved URL string.
+ *     @note The replacement pattern (starts with '$') inserts the matched
+ *     substring corresponds to |String.replace|.
+ *   replacement: {function}
+ *     @param match {string}
+ *       The matched substring.
+ *     @param $1, $2, ... {string}
+ *       The nth parenthesized submatch string.
+ *     @return {string}
+ *       The processed URL string.
+ *   description: {string}
  * @key disabled {boolean} [optional]
  */
 const kPreset = [
@@ -103,6 +113,28 @@ const kPreset = [
       {
         replacement: '$2',
         description: 'ページ URL'
+      }
+    ]
+  },
+  {
+    name: 'Yahoo! Japan リンク',
+    link: /^(?:http:\/\/.+?\.yahoo\.co\.jp\/.+?\/\*)?http:\/\/rdsig\.yahoo\.co\.jp\/.+?\/RU=(\w+).*$/,
+    items: [
+      {
+        replacement: (match, $1) => {
+          try {
+            let url = atob($1.replace(/_/g, '/'));
+
+            // WORKAROUND: Sanitize the last broken character.
+            url = url.replace(/.$/, (c) => /[\w\/]/.test(c) ? c : '');
+
+            return url;
+          }
+          catch (ex) {}
+
+          return `[Decode error] ${$1}`;
+        },
+        description: '飛び先 URL'
       }
     ]
   }
