@@ -373,7 +373,7 @@ const kSiteList = [
             padding: 0 !important;
           }
           /* Translation link. */
-          .fl {
+          .fl[href^="https://translate.google."] {
             display: none !important
           }
         `;
