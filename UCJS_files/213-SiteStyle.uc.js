@@ -399,7 +399,8 @@ const kSiteList = [
             width: auto !important;
             margin: 0 2em !important;
           }
-          h2.hd + div > ol, #mn #ires > ol {
+          h2.hd + div > ol,  #mn #ires > ol,
+          h2.hd + div > div, #mn #ires > div {
             -moz-column-count: 2;
             -moz-column-gap: 1em;
           }
