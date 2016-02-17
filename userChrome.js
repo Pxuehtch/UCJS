@@ -306,21 +306,24 @@ function ScriptLoader() {
  *   @key run {function}
  */
 function ScriptList() {
-  let mJscripts, mOverlays;
+  let dataLists = {
+    jscripts: new Set(),
+    overlays: new Set()
+  };
 
   function uninit() {
-    let uninitData = (aData) => {
-      aData.forEach((item) => item.uninit());
+    let uninitDataList = (list) => {
+      list.forEach((data) => data.uninit());
     };
 
-    if (mJscripts) {
-      uninitData(mJscripts);
-      mJscripts = null;
+    if (dataLists.jscripts) {
+      uninitDataList(dataLists.jscripts);
+      dataLists.jscripts = null;
     }
 
-    if (mOverlays) {
-      uninitData(mOverlays);
-      mOverlays = null;
+    if (dataLists.overlays) {
+      uninitDataList(dataLists.overlays);
+      dataLists.overlays = null;
     }
   }
 
@@ -331,7 +334,7 @@ function ScriptList() {
     let loader = win && win[kSystem.loaderName];
 
     if (loader) {
-      copyData(loader.scriptList);
+      copyDataList(loader.scriptList);
 
       Log.list('Copy script data from', {
         'URL': win.location.href,
@@ -339,46 +342,43 @@ function ScriptList() {
       });
     }
     else {
-      scanData();
+      buildDataList();
     }
   }
 
-  function getData() {
+  function getDataList() {
     return {
-      jscripts: mJscripts,
-      overlays: mOverlays
+      jscripts: dataLists.jscripts,
+      overlays: dataLists.overlays
     };
   }
 
-  function copyData(aData) {
+  function copyDataList(sourceDataLists) {
     // @note Reference copy.
-    mJscripts = aData.jscripts;
-    mOverlays = aData.overlays;
+    dataLists.jscripts = sourceDataLists.jscripts;
+    dataLists.overlays = sourceDataLists.overlays;
   }
 
-  function scanData() {
+  function buildDataList() {
     const log = Log.counter('Scan');
     const {getChromeDirectory, getEntryList, getNextEntry} = Util;
-
-    mJscripts = [];
-    mOverlays = [];
 
     let chrome = getChromeDirectory();
 
     kPref.scriptFolders.forEach((folder) => {
-      let match, deeper, directory, exists;
-
       // 'dir1/dir2' -> match[1]='dir1/dir2', match[2]=''
       // 'dir1/dir2/' -> match[1]='dir1/dir2', match[2]='/'
-      match = /^(.+?)(\/?)$/.exec(folder);
+      let match = /^(.+?)(\/?)$/.exec(folder);
+
       if (!match) {
         return;
       }
 
-      deeper = !!match[2];
-      directory = chrome.clone();
+      let doScanDeeper = !!match[2];
 
-      exists = match[1].split('/').every((segment) => {
+      let directory = chrome.clone();
+
+      let exists = match[1].split('/').every((segment) => {
         if (segment) {
           try {
             directory.append(segment);
@@ -394,85 +394,78 @@ function ScriptList() {
       });
 
       if (exists) {
-        scanDirectory(directory, deeper);
+        scanDirectory(directory, doScanDeeper);
       }
     });
 
-    function scanDirectory(aDirectory, aDeeper) {
-      let list = getEntryList(aDirectory), entry;
-      let ext, script;
+    function scanDirectory(directory, doScanDeeper) {
+      let list = getEntryList(directory);
+      let entry;
 
       while ((entry = getNextEntry(list))) {
         if (entry.isHidden()) {
           continue;
         }
 
-        if (aDeeper && entry.isDirectory()) {
+        if (doScanDeeper && entry.isDirectory()) {
           // Recursively check into the descendant directory.
-          scanDirectory(entry, aDeeper);
+          scanDirectory(entry, doScanDeeper);
         }
         else if (entry.isFile()) {
-          ext = checkExt(entry);
-
-          if (ext) {
-            script = UserScript(entry);
-
-            if (ext === 'js') {
-              mJscripts.push(script);
-            }
-            else {
-              mOverlays.push(script);
-            }
-
-            log(script.getURL('IN_CHROME'));
-          }
+          checkScriptFile(entry);
         }
       }
     }
 
-    function checkExt(aFile) {
-      let dot = aFile.leafName.indexOf('.');
+    function checkScriptFile(file) {
+      let dot = file.leafName.indexOf('.');
 
       if (dot > -1) {
-        let ext = aFile.leafName.substr(dot);
+        let ext = file.leafName.substr(dot);
+        let list;
 
         if (kPref.jscriptExts.includes(ext)) {
-          return 'js';
+          list = dataLists.jscripts;
+        }
+        else if (kPref.overlayExts.includes(ext)) {
+          list = dataLists.overlays;
         }
 
-        if (kPref.overlayExts.includes(ext)) {
-          return 'xul';
+        if (list) {
+          let script = UserScript(file);
+
+          list.add(script);
+
+          log(script.getURL('IN_CHROME'));
         }
       }
-
-      return null;
     }
   }
 
-  function runData(aDocument) {
+  function runDataList(document) {
     // TODO: I want to ensure that scripts run at the end of this loader.
     setTimeout((doc) => {
       setTimeout(runJscripts, 0, doc);
       setTimeout(runOverlays, 0, doc);
-    }, 0, aDocument);
+    }, 0, document);
   }
 
-  function runJscripts(aDocument) {
+  function runJscripts(document) {
     const log = Log.counter('Run JS');
     const {loadJscript} = Util;
 
-    let url = aDocument.location.href;
+    let url = document.location.href;
 
-    mJscripts.forEach((script) => {
+    for (let script of dataLists.jscripts) {
       if (script.testTarget(url)) {
         log(script.getURL('IN_CHROME'));
 
-        loadJscript(script.getURL('RUN'), aDocument);
+        loadJscript(script.getURL('RUN'), document);
       }
-    });
+    }
   }
 
-  function runOverlays(aDocument) {
+  function runOverlays(document) {
     const log = Log.counter('Run XUL');
     const {loadOverlay} = Util;
 
@@ -487,19 +480,19 @@ function ScriptList() {
       '</overlay>'
     ].join('').replace('%id%', kSystem.overlayContainerId);
 
-    let url = aDocument.location.href;
+    let url = document.location.href;
     let xuls = '';
 
-    mOverlays.forEach((script) => {
+    for (let script of dataLists.overlays) {
       if (script.testTarget(url)) {
         log(script.getURL('IN_CHROME'));
 
         xuls += kXUL.replace('%url%', script.getURL('RUN'));
       }
-    });
+    }
 
     if (xuls) {
-      loadOverlay(kDATA.replace('%xuls%', xuls), aDocument);
+      loadOverlay(kDATA.replace('%xuls%', xuls), document);
     }
   }
 
@@ -509,8 +502,8 @@ function ScriptList() {
   return {
     init,
     uninit,
-    get: getData,
-    run: runData
+    get: getDataList,
+    run: runDataList
   };
 }
 
