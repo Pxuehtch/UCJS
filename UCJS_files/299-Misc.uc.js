@@ -596,7 +596,7 @@ const {
 
   popup.appendChild($E('menuitem', {
     label: 'スタートページ',
-    oncommand: 'ucjsUtil.openHomePages();',
+    oncommand: 'ucjsUtil.TabUtils.openHomePages();',
     accesskey: 'S'
   }));
 
