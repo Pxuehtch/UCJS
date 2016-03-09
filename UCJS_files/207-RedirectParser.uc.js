@@ -118,7 +118,7 @@ const kPreset = [
   },
   {
     name: 'Yahoo! Japan リンク',
-    link: /^(?:http:\/\/.+?\.yahoo\.co\.jp\/.+?\/\*)?http:\/\/rdsig\.yahoo\.co\.jp\/.+?\/RU=(\w+).*$/,
+    link: /^(?:https?:\/\/ard\.yahoo\.co\.jp\/.+?\/\*)?https?:\/\/rdsig\.yahoo\.co\.jp\/.+?\/RU=(\w+).*$/,
     items: [
       {
         replacement: (match, $1) => {
