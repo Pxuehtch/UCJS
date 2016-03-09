@@ -15,6 +15,7 @@
 // @see |doAction()|, |Util::getSaveFilePath()|
 // @note This download is recorded to the download history if not in private
 // mode.
+// TODO: Fix the 'Failed' status for a completed download in the history list.
 
 
 /**
@@ -1031,6 +1032,7 @@ function getSaveFilePath(uri, docInfo) {
   // @see chrome://global/content/contentAreaUtils.js::validateFileName()
   fileName = window.validateFileName(fileName);
 
+  // Windows temporary folder.
   let dir = getSpecialDirectory('TmpD');
 
   dir.append(fileName.replace('%num%', ''));
