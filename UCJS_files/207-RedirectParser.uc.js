@@ -81,7 +81,7 @@ const kPref = {
  *     The retrieved URL string.
  *     @note The replacement pattern (starts with '$') inserts the matched
  *     substring corresponds to |String.replace|.
- *   replacement: {function}
+ *   replacement: {function} [alternative to {string} for a complex parsing]
  *     @param match {string}
  *       The matched substring.
  *     @param $1, $2, ... {string}
@@ -97,7 +97,13 @@ const kPreset = [
     link: /^http:\/\/(?:ime\.nu\/|jump\.2ch\.net\/\?|2ch\.io\/)(.+)$/,
     items: [
       {
-        replacement: 'http://$1',
+        replacement: (match, $1) => {
+          if (/^https?:\/\//.test($1)) {
+            return $1;
+          }
+
+          return 'http://' + $1;
+        },
         description: 'リダイレクト先 URL'
       }
     ]
