@@ -2641,10 +2641,10 @@ const BrowserUtils = (function() {
     return {x, y};
   }
 
-  function promiseSelectionTextAtContextMenuCursor() {
+  function promiseSelectionTextAtContextMenuCursor(options) {
     let {x, y} = getCursorPointInContent();
 
-    return promiseSelectionTextAtPoint(x, y);
+    return promiseSelectionTextAtPoint(x, y, options);
   }
 
   /**
@@ -2652,16 +2652,20 @@ const BrowserUtils = (function() {
    *
    * @param x {float}
    * @param y {float}
-   * @return {string}
+   * @param options {hash}
+   *   @see |content_getSelectionTextAtPoint|
+   * @return {Promise}
+   *   @resolved {string|hash}
+   *   @see |content_getSelectionTextAtPoint|
    */
-  function promiseSelectionTextAtPoint(x, y) {
+  function promiseSelectionTextAtPoint(x, y, options) {
     return Task.spawn(function*() {
       if (isNaN(x) || isNaN(y)) {
         return null;
       }
 
       return ContentTask.spawn({
-        params: {x, y},
+        params: {x, y, options},
         task: `function*(params) {
           ${ContentTask.ContentScripts.DOMUtils}
           ${ContentTask.ContentScripts.TextUtils}
@@ -2669,9 +2673,9 @@ const BrowserUtils = (function() {
           ${content_getSelection.toString()}
           ${content_trimText.toString()}
 
-          let {x, y} = params;
+          let {x, y, options} = params;
 
-          return content_getSelectionTextAtPoint(x, y);
+          return content_getSelectionTextAtPoint(x, y, options);
         }`
       });
     });
@@ -2680,6 +2684,21 @@ const BrowserUtils = (function() {
   /**
    * Gets selection text at the given coordinates.
    *
+   * @param x {float}
+   * @param y {float}
+   * @param options {hash}
+   *   requestDetails: {boolean}
+   * @return {string|hash}
+   *   {string}: The selection text.
+   *   {hash}: The selection details if |requestDetails| is true.
+   *     texts: {string[]}
+   *       The array of text for each ranges in the selection.
+   *     currentIndex: {integer} [>= -1]
+   *       The index in the texts array for the selection at the coordinates.
+   *   @note The empty string will be returned for the selection that contains
+   *   only white-spaces.
+   *   @note The long text string can be cut to a useful length.
+   *
    * TODO: It seems more reliable to find a focused range by using
    * |caretPositionFromPoint| and |range.isPointInRange|. But the former is
    * unstable for editable elements.
@@ -2687,7 +2706,9 @@ const BrowserUtils = (function() {
    * WORKAROUND: Compares the coordinates of cursor and range by using
    * |range.getBoundingClientRect|.
    */
-  function content_getSelectionTextAtPoint(x, y) {
+  function content_getSelectionTextAtPoint(x, y, options = {}) {
+    let {requestDetails} = options;
+
     let node = DOMUtils.getElementFromPoint(x, y);
     let selection = content_getSelection(node);
 
@@ -2695,21 +2716,39 @@ const BrowserUtils = (function() {
       return null;
     }
 
-    let focusedRange;
+    let getRangeText = (range) =>
+      content_trimText(TextUtils.getTextInRange(range)) || '';
+
+    let texts = [];
+    let currentIndex = -1;
 
     for (let i = 0, l = selection.rangeCount; i < l; i++) {
       let range = selection.getRangeAt(i);
+
+      if (requestDetails) {
+        texts.push(getRangeText(range));
+      }
+
       let rect = range.getBoundingClientRect();
 
       if (rect.left <= x && x <= rect.right &&
           rect.top <= y && y <= rect.bottom) {
-        focusedRange = range;
+        if (!requestDetails) {
+          return getRangeText(range);
+        }
 
-        break;
+        currentIndex = i;
       }
     }
 
-    return content_trimText(TextUtils.getTextInRange(focusedRange));
+    if (requestDetails) {
+      return {
+        texts,
+        currentIndex
+      };
+    }
+
+    return null;
   }
 
   /**
