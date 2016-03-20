@@ -91,12 +91,15 @@ const kGestureSign = {
  * @key name {string}
  * @key command {function}
  *   @param {hash}
- *     @key event {MouseEvent}
+ *     event: {MouseEvent}
  *       The mouse event at when the gesture ends.
- *     @key gesture {string}
+ *     gesture: {string}
  *       The built gesture signs.
- *     @key dragData {string}
- *       The drag data on the D&D mode.
+ *     dragData: {string|hash}
+ *       The drag data in D&D mode.
+ *       {string} for the link or image URL.
+ *       {hash} for the selection details.
+ *         @see |ucjsUtil.BrowserUtils.promiseSelectionTextAtPoint|
  * @key disabled {boolean} [optional]
  */
 const kGestureSet = [
@@ -303,7 +306,7 @@ const kGestureSet = [
     command({dragData}) {
       window.ucjsWebService.open({
         name: 'Weblio',
-        data: dragData
+        data: getDragText(dragData)
       });
     }
   },
@@ -313,7 +316,7 @@ const kGestureSet = [
     command({dragData}) {
       window.ucjsWebService.open({
         name: 'GoogleTranslation',
-        data: dragData
+        data: getDragText(dragData)
       });
     }
   },
@@ -323,7 +326,9 @@ const kGestureSet = [
     command({dragData}) {
       window.ucjsWebService.open({
         name: 'GoogleSearch',
-        data: dragData
+        data: getDragText(dragData, {
+          joinSeparator: ' '
+        })
       });
     }
   },
@@ -331,11 +336,15 @@ const kGestureSet = [
     gestures: ['S&TEXT#R'],
     name: 'Google検索 site:',
     command({dragData}) {
-      dragData += ' site:' + gBrowser.currentURI.spec;
+      let data = getDragText(dragData, {
+        joinSeparator: ' '
+      });
+
+      data += ' site:' + gBrowser.currentURI.spec;
 
       window.ucjsWebService.open({
         name: 'GoogleSearch',
-        data: dragData
+        data
       });
     }
   },
@@ -343,7 +352,7 @@ const kGestureSet = [
     gestures: ['TEXT#D'],
     name: 'ページ内検索',
     command({dragData}) {
-      window.ucjsUI.FindBar.find(dragData, {
+      window.ucjsUI.FindBar.find(getDragText(dragData), {
         doHighlight: true
       });
     }
@@ -352,7 +361,7 @@ const kGestureSet = [
     gestures: ['TEXT#UR'],
     name: '加えて再検索 (Focus)',
     command({dragData}) {
-      window.ucjsWebService.updateFormInput(dragData, {
+      window.ucjsWebService.updateFormInput(getDragText(dragData), {
         moreData: true,
         doFocus: true
       });
@@ -362,7 +371,7 @@ const kGestureSet = [
     gestures: ['S&TEXT#UR'],
     name: '加えて再検索 (Submit)',
     command({dragData}) {
-      window.ucjsWebService.updateFormInput(dragData, {
+      window.ucjsWebService.updateFormInput(getDragText(dragData), {
         moreData: true,
         doSubmit: true
       });
@@ -372,7 +381,7 @@ const kGestureSet = [
     gestures: ['TEXT#DR'],
     name: '除いて再検索 (Focus)',
     command({dragData}) {
-      window.ucjsWebService.updateFormInput(dragData, {
+      window.ucjsWebService.updateFormInput(getDragText(dragData), {
         lessData: true,
         doFocus: true
       });
@@ -382,7 +391,7 @@ const kGestureSet = [
     gestures: ['S&TEXT#DR'],
     name: '除いて再検索 (Submit)',
     command({dragData}) {
-      window.ucjsWebService.updateFormInput(dragData, {
+      window.ucjsWebService.updateFormInput(getDragText(dragData), {
         lessData: true,
         doSubmit: true
       });
@@ -965,12 +974,14 @@ function GestureManager() {
    * @return {hash}
    *   type: {string}
    *     'text' or 'link' or 'image' of |kGestureSign|.
-   *   data: {string}
-   *     A selected text or a link <href> URL or an image <src> URL.
+   *   data: {string|hash}
+   *     {string} for a link <href> URL or an image <src> URL.
+   *     {hash} for a selection details.
+   *       @see |ucjsUtil.BrowserUtils.promiseSelectionTextAtPoint|
    *
-   * @note Retrieves only one data from a composite data:
-   * - A selected text in a link string.
-   * - A link href URL of a linked image.
+   * @note Retrieves only one data in a composite case:
+   * - A selection text in a link string.
+   * - A link URL of a linked image.
    */
   function getDragInfo(event) {
     return Task.spawn(function*() {
@@ -979,7 +990,9 @@ function GestureManager() {
 
       // 1.A selected text.
       if (!type) {
-        let text = yield BrowserUtils.promiseSelectionTextAtPoint(x, y);
+        let text = yield BrowserUtils.promiseSelectionTextAtPoint(x, y, {
+          requestDetails: true
+        });
 
         if (text) {
           type = kGestureSign.text;
@@ -1338,6 +1351,22 @@ function doCommand(aCommand) {
     // @see chrome://global/content/globalOverlay.js::goDoCommand
     window.goDoCommand(aCommand);
   }
+}
+
+function getDragText(dragData, options = {}) {
+  if (!dragData) {
+    return '';
+  }
+
+  // @see |ucjsUtil.BrowserUtils.promiseSelectionTextAtPoint|
+  let {texts, currentIndex} = dragData;
+  let {joinSeparator} = options;
+
+  if (joinSeparator) {
+    return texts.filter(Boolean).join(joinSeparator);
+  }
+
+  return (currentIndex > -1) ? texts[currentIndex] : '';
 }
 
 function inPrintPreviewMode() {
