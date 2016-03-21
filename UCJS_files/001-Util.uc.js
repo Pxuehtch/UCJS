@@ -73,7 +73,7 @@ const Modules = (function() {
    * moduleName: {string} [optional for JSM]
    *   The native module name.
    *
-   * XXX: I only register frequently used modules.
+   * XXX: I register frequently used modules only.
    */
   const kModulesData = [
     {

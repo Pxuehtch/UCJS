@@ -52,7 +52,7 @@ const {
  *   @note Used as the tooltip of a button.
  * @param condition {string}
  *   XPath condition for filtering.
- *   @note applied to items of listview |div.message|.
+ *   @note Applied to items of listview |div.message|.
  */
 const kItemList = [
   {

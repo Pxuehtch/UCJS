@@ -6,7 +6,7 @@
 
 // @require Util.uc.js, UI.uc.js
 
-// @usage Some menus are appended in the URL-bar context menu of.
+// @usage Some menus are appended in the URL-bar context menu.
 
 
 (function(window) {
