@@ -368,9 +368,9 @@ const Tooltip = (function() {
     }
 
     function content_collectInfo(node) {
-      // @see resource://devtools/shared/styleinspector/css-logic.js
+      // @see resource://devtools/shared/inspector/css-logic.js
       const {CssLogic} =
-        Modules.require('devtools/shared/styleinspector/css-logic');
+        Modules.require('devtools/shared/inspector/css-logic');
 
       let selector = '';
       let nodeTree = [];
