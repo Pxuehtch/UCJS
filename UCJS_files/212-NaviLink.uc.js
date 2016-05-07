@@ -29,6 +29,7 @@ window.ucjsNaviLink = (function(window) {
 const {
   Modules,
   ContentTask,
+  EventManager,
   Listeners: {
     $page,
     $pageOnce,
@@ -359,53 +360,57 @@ const MenuUI = (function() {
       });
     }
     else if (data.submit) {
-      let browser;
+      Task.spawn(function*() {
+        let browser;
 
-      if (inTab) {
-        // TODO: A document sometimes cannot be duplicated with the same
-        // content.
-        let newTab = gBrowser.duplicateTab(gBrowser.selectedTab);
+        if (inTab) {
+          let newTab = gBrowser.duplicateTab(gBrowser.selectedTab);
 
-        browser = gBrowser.getBrowserForTab(newTab);
+          // Wait for the duplicated tab to complete.
+          yield EventManager.promiseEvent(newTab, 'SSTabRestored');
 
-        if (!inBackground) {
-          gBrowser.selectedTab = newTab;
+          browser = gBrowser.getBrowserForTab(newTab);
+
+          if (!inBackground) {
+            gBrowser.selectedTab = newTab;
+          }
         }
-      }
 
-      $pageOnce('pageready', {
-        browser,
-        listener: () => {
-          ContentTask.spawn({
-            browser,
-            params: {
-              formIndex: data.submit.formIndex
-            },
-            task: function*(params) {
-              let {formIndex} = params;
+        $pageOnce('pageready', {
+          browser,
+          listener: () => {
+            ContentTask.spawn({
+              browser,
+              params: {
+                formIndex: data.submit.formIndex
+              },
+              task: function*(params) {
+                let {formIndex} = params;
 
-              try {
-                let form = content.document.forms[formIndex];
+                try {
+                  let form = content.document.forms[formIndex];
 
-                if (form) {
-                  form.submit();
+                  if (form) {
+                    form.submit();
 
-                  return true;
+                    return true;
+                  }
                 }
-              }
-              catch(ex) {}
+                catch(ex) {}
 
-              return false;
-            }
-          }).
-          then((submitted) => {
-            if (!submitted) {
-              warn(`Cannot submit form: ${data.submit.name}`);
-            }
-          }).
-          catch(Cu.reportError);
-        }
-      });
+                return false;
+              }
+            }).
+            then((submitted) => {
+              if (!submitted) {
+                warn(`Cannot submit form: ${data.submit.name}`);
+              }
+            }).
+            catch(Cu.reportError);
+          }
+        });
+      }).
+      catch(Cu.reportError);;
     }
   }
 
