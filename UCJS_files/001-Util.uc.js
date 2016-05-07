@@ -1018,6 +1018,27 @@ const EventManager = (function() {
   }
 
   /**
+   * Promise for the one-shot event to dispatch.
+   */
+  function promiseEvent(target, type, capture) {
+    if (!target || !type) {
+      throw Error('Missing required parameter.');
+    }
+
+    capture = !!capture;
+
+    return new Promise((resolve) => {
+      let onReceive = (event) => {
+        target.removeEventListener(type, onReceive, capture);
+
+        resolve(event);
+      };
+
+      target.addEventListener(type, onReceive, capture);
+    });
+  }
+
+  /**
    * Limit the execution rate of an event that is frequently dispatched.
    */
   function throttleEvent(listener) {
@@ -1042,6 +1063,7 @@ const EventManager = (function() {
     listenEvent,
     listenEventOnce,
     listenShutdown,
+    promiseEvent,
     throttleEvent
   };
 })();
@@ -1135,6 +1157,10 @@ const MessageManager = (function() {
     return script.replace(kStripRE, '');
   }
 
+
+  /**
+   * Promise for the one-shot message to respond.
+   */
   function promiseMessage(messageName, params = {}, paramsAsCPOW = {}) {
     let requestName, responseName;
 
