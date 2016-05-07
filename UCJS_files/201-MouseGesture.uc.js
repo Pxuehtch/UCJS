@@ -41,10 +41,10 @@
 const {
   Modules,
   ContentTask,
+  EventManager,
   Listeners: {
     $event,
-    $shutdown,
-    throttleEvent
+    $shutdown
   },
   DOMUtils: {
     $ID
@@ -447,8 +447,8 @@ function MouseGesture() {
    * Limit the execution rate of an event that is dispatched more often than
    * we need to process.
    */
-  let onMouseMoveThrottled = throttleEvent(onMouseMove);
-  let onDragOverThrottled = throttleEvent(onDragOver);
+  let onMouseMoveThrottled = EventManager.throttleEvent(onMouseMove);
+  let onDragOverThrottled = EventManager.throttleEvent(onDragOver);
 
   /**
    * Register the events to observe that a gesture starts and stops.

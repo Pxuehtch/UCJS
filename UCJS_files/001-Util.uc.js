@@ -347,7 +347,7 @@ const ContentScripts = (function() {
   `;
 
   /**
-   * Alias names for event/message listeners.
+   * Alias names for registration functions of event/message listeners.
    */
   const Listeners = `
     const Listeners = (function() {
@@ -1641,14 +1641,14 @@ const PageEvents = (function() {
 })();
 
 /**
- * Alias names for event/message/page-event listeners.
+ * Alias names for registration functions of event/message/page-event
+ * listeners.
  */
 const Listeners = (function() {
   return {
     $event: EventManager && EventManager.listenEvent,
     $eventOnce: EventManager && EventManager.listenEventOnce,
     $shutdown: EventManager && EventManager.listenShutdown,
-    throttleEvent: EventManager && EventManager.throttleEvent,
 
     $message: MessageManager && MessageManager.listenMessage,
     $messageOnce: MessageManager && MessageManager.listenMessageOnce,
