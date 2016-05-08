@@ -275,7 +275,60 @@ const RequestHandler = (function() {
 
     xhr.timeout = aOption.timeout;
 
+    let handleEvent = (aEvent) => {
+      RequestList.sendings.delete(xhr);
+
+      switch (aEvent.type) {
+        case 'load': {
+          try {
+            if (xhr.status === 200) {
+              reportSuccess(xhr.responseText);
+            }
+            else {
+              reportError(aEvent, xhr.statusText);
+            }
+          }
+          catch (ex) {
+            reportError(aEvent, null, ex);
+          }
+
+          break;
+        }
+
+        case 'error': {
+          try {
+            let request = xhr.status ?
+              xhr :
+              xhr.channel.QueryInterface(Ci.nsIRequest);
+
+            reportError(aEvent, request.statusText);
+          }
+          catch (ex) {
+            reportError(aEvent, null, ex);
+          }
+
+          break;
+        }
+
+        case 'timeout': {
+          reportError(aEvent, 'request is timed out');
+
+          break;
+        }
+      }
+    };
+
+    let reportSuccess = (responseText) => {
+      uninit();
+
+      if (aOption.onLoad) {
+        aOption.onLoad(responseText);
+      }
+    };
+
     let reportError = (aEvent, aStatusText, aError) => {
+      uninit();
+
       let eventType = aEvent ? aEvent.type : 'before request';
       let statusText = aStatusText || 'No status';
 
@@ -289,70 +342,23 @@ const RequestHandler = (function() {
       }
     };
 
-    let handleEvent = (aEvent) => {
-      RequestList.sendings.delete(xhr);
-
-      switch (aEvent.type) {
-        case 'load': {
-          try {
-            // may throw.
-            let {status, responseText} = xhr;
-
-            if (status !== 200) {
-              reportError(aEvent, xhr.statusText);
-
-              return;
-            }
-
-            if (aOption.onLoad) {
-              aOption.onLoad(responseText);
-            }
-          }
-          catch (ex) {
-            reportError(aEvent, null, ex);
-          }
-
-          break;
-        }
-
-        case 'error': {
-          let request = xhr;
-          let status;
-
-          try {
-            status = request.status;
-          }
-          catch (ex) {}
-
-          if (!status) {
-            request = request.channel.QueryInterface(Ci.nsIRequest);
-          }
-
-          reportError(aEvent, request.statusText);
-
-          break;
-        }
-
-        case 'timeout': {
-          reportError(aEvent, 'request is timed out');
-
-          break;
-        }
-      }
+    let uninit = () => {
+      xhr.onload = null;
+      xhr.onerror = null;
+      xhr.ontimeout = null;
+      xhr = null;
     };
 
-    xhr.onload = handleEvent;
-    xhr.onerror = handleEvent;
-    xhr.ontimeout = handleEvent;
-
     try {
+      xhr.onload = handleEvent;
+      xhr.onerror = handleEvent;
+      xhr.ontimeout = handleEvent;
+
       xhr.send(null);
 
       RequestList.sendings.add(xhr);
     }
     catch (ex) {
-      xhr = null;
-
       reportError(null, 'send() fails', ex);
     }
   }
