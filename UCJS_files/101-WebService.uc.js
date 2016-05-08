@@ -259,7 +259,8 @@ const RequestHandler = (function() {
    *     @param aError {Error|null}
    */
   function doRequest(aURL, aOption) {
-    let xhr = new XMLHttpRequest();
+    // Creates a new request in anonymous mode.
+    let xhr = new XMLHttpRequest({mozAnon: true});
 
     // No error dialogs.
     xhr.mozBackgroundRequest = true;
@@ -267,9 +268,8 @@ const RequestHandler = (function() {
     // Asynchronous GET request.
     xhr.open('GET', aURL, true);
 
-    // Doesn't send cookies and prevents any cache.
+    // Prevents any caching.
     xhr.channel.loadFlags =
-      Ci.nsIChannel.LOAD_ANONYMOUS |
       Ci.nsIChannel.LOAD_BYPASS_CACHE |
       Ci.nsIChannel.INHIBIT_CACHING;
 
