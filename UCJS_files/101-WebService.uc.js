@@ -297,9 +297,14 @@ const RequestHandler = (function() {
 
         case 'error': {
           try {
-            let request = xhr.status ?
-              xhr :
-              xhr.channel.QueryInterface(Ci.nsIRequest);
+            let request = xhr;
+
+            try {
+              request.status;
+            }
+            catch (ex) {
+              request = xhr.channel.QueryInterface(Ci.nsIRequest);
+            }
 
             reportError(aEvent, request.statusText);
           }
