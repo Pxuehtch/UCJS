@@ -295,7 +295,7 @@ function moveTabToWindow(aTab, aWindow) {
   let win = window.OpenBrowserWindow();
 
   $eventOnce(win, 'load', () => {
-    // WORKAROUND: Wait for initialization of the new browser.
+    // WORKAROUND: Wait for the new browser to initialize.
     setTimeout(() => {
       let newTab = moveTabToOtherWindow(aTab, win);
 
@@ -310,6 +310,9 @@ function moveTabToOtherWindow(aTab, aWindow) {
   let otherTabBrowser = aWindow.gBrowser;
 
   // Create a new blank tab in the other window.
+  // TODO: From fx47, |addTab| needs a new param for a tab moved between
+  // windows.
+  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1244496
   let newTab = otherTabBrowser.addTab();
 
   // Make sure the new browser has a docshell.

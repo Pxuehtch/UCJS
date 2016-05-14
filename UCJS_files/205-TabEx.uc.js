@@ -1319,7 +1319,7 @@ function selectTabAt(aBaseTab, aPosTypes) {
         throw Error('unknown kPosType for SELECTPOS');
     }
 
-    // Never reached, but avoid warning.
+    // Never reached, but avoid lint warning.
     return true;
   });
 }
