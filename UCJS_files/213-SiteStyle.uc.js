@@ -897,19 +897,7 @@ const PageObserver = (function() {
   }
 
   function matchSiteList(url) {
-    let site = null;
-
-    kSiteList.some((item) => {
-      if (!item.disabled && testURL(item, url)) {
-        site = item;
-
-        return true;
-      }
-
-      return false;
-    });
-
-    return site;
+    return kSiteList.find((item) => !item.disabled && testURL(item, url));
   }
 
   function testURL(site, url) {
