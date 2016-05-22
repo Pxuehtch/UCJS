@@ -763,10 +763,6 @@ function MouseEventManager() {
   // Whether the context menu is suppressed or not.
   let mSuppressMenu;
 
-  // Whether the default click action of the left/middle(wheel) button is
-  // suppressed or not.
-  let mSuppressClick;
-
   // Initialize the state.
   clear();
 
@@ -774,7 +770,6 @@ function MouseEventManager() {
     mRightDown = false;
     mOtherDown = false;
     mSuppressMenu = false;
-    mSuppressClick = false;
   }
 
   /**
@@ -817,14 +812,13 @@ function MouseEventManager() {
           // Disable the default click action of the left/middle button while
           // the right button is down.
           // RightDown -> OtherClick
-          mSuppressClick = mRightDown;
-
-          // Ready to suppress the default click in the content process.
-          // @note The 'click' event here, it is too late to cancel the system
-          // click action in the content process. So, in this 'mousedown'
-          // event before click, send a ready message to cancel it and the
-          // content process will prevent the default click.
-          if (mSuppressClick) {
+          if (mRightDown) {
+            // Ready to suppress the default click in the content process.
+            // @note In the 'click' event here, it is too late to cancel the
+            // system click action in the content process. So, in this
+            // 'mousedown' event before 'click', we send a ready message to
+            // cancel it and then the content process will prevent the default
+            // click.
             let mm = gBrowser.selectedBrowser.messageManager;
 
             mm.sendAsyncMessage('ucjs:PageEvent:PreventDefaultClick');
