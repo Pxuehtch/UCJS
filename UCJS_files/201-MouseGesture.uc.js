@@ -1360,7 +1360,13 @@ function getDragText(dragData, options = {}) {
     return texts.filter(Boolean).join(joinSeparator);
   }
 
-  return (currentIndex > -1) ? texts[currentIndex] : '';
+  if (currentIndex > -1) {
+    return texts[currentIndex];
+  }
+
+  // Returns the whole text if the array index for the drag text cannot be
+  // found.
+  return texts.join('');
 }
 
 function inPrintPreviewMode() {
