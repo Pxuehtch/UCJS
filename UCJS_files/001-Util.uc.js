@@ -2656,7 +2656,7 @@ const BrowserUtils = (function() {
       let {
         screenX: left,
         screenY: top
-      } = gBrowser.mPanelContainer.boxObject;
+      } = gBrowser.getBrowserContainer().boxObject;
 
       // Convert the screen coordinates of a cursor to the client ones in the
       // content area.
