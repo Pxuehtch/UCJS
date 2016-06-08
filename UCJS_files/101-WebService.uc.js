@@ -273,7 +273,7 @@ const RequestHandler = (function() {
       Ci.nsIChannel.LOAD_BYPASS_CACHE |
       Ci.nsIChannel.INHIBIT_CACHING;
 
-    xhr.timeout = aOption.timeout;
+    xhr.timeout = aOption.timeout || 0;
 
     let handleEvent = (aEvent) => {
       RequestList.sendings.delete(xhr);
