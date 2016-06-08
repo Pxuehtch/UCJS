@@ -304,29 +304,16 @@ function moveTabToWindow(aTab, aWindow) {
   });
 }
 
-function moveTabToOtherWindow(aTab, aWindow) {
-  aWindow.focus();
+function moveTabToOtherWindow(tab, otherWindow) {
+  otherWindow.focus();
 
-  let otherTabBrowser = aWindow.gBrowser;
+  let tabBrowser = otherWindow.gBrowser;
 
-  // Create a new blank tab in the other window.
-  // TODO: From fx47, |addTab| needs a new param for a tab moved between
-  // windows.
-  // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1244496
-  let newTab = otherTabBrowser.addTab();
-
-  // Make sure the new browser has a docshell.
-  let newBrowser = otherTabBrowser.getBrowserForTab(newTab);
-  newBrowser.stop();
-  newBrowser.docShell;
-
-  // Swap the given tab with a new tab, and then close the original tab.
-  otherTabBrowser.swapBrowsersAndCloseOther(newTab, aTab);
-
-  // Select the moved tab.
-  otherTabBrowser.selectedTab = newTab;
-
-  return newTab;
+  // Adopts a tab to an other window, and selects it at the end position.
+  // @note |adoptTab| creates a new tab and the number of tabs increases by
+  // one. So the last index of tabs will be equal to the current number of
+  // tabs.
+  return tabBrowser.adoptTab(tab, tabBrowser.tabs.length, true);
 }
 
 /**
