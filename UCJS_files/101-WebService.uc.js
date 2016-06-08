@@ -263,6 +263,7 @@ const RequestHandler = (function() {
     let xhr = new XMLHttpRequest({mozAnon: true});
 
     // No error dialogs.
+    // @note Must be set before calling open().
     xhr.mozBackgroundRequest = true;
 
     // Asynchronous GET request.

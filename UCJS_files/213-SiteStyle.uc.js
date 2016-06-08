@@ -544,8 +544,7 @@ const kSiteList = [
         }
         .ah38 .hd ~ *,
         .ucjs_SiteStyle_understate .hd ~ *,
-        .ucjs_SiteStyle_understate h3 ~ *
-        {
+        .ucjs_SiteStyle_understate h3 ~ * {
           opacity: .3 !important;
         }
         .ah38:hover *,

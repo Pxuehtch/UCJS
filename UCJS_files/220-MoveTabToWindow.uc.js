@@ -292,14 +292,14 @@ function moveTabToWindow(aTab, aWindow) {
   }
 
   // @see chrome://browser/content/browser.js::OpenBrowserWindow
-  let win = window.OpenBrowserWindow();
+  let newWindow = window.OpenBrowserWindow();
 
-  $eventOnce(win, 'load', () => {
+  $eventOnce(newWindow, 'load', () => {
     // WORKAROUND: Wait for the new browser to initialize.
     setTimeout(() => {
-      let newTab = moveTabToOtherWindow(aTab, win);
+      let newTab = moveTabToOtherWindow(aTab, newWindow);
 
-      win.gBrowser.removeAllTabsBut(newTab);
+      newWindow.gBrowser.removeAllTabsBut(newTab);
     }, 500);
   });
 }
