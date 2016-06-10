@@ -249,7 +249,7 @@ const SignPanel = (function() {
     } = nodeInfo.rect;
 
     if (nodeInfo.isContentNode) {
-      let contentAreaTop = gBrowser.mPanelContainer.boxObject.screenY;
+      let contentAreaTop = gBrowser.selectedBrowser.boxObject.screenY;
 
       // Set the upper limit position of the panel for the content node.
       if (y < contentAreaTop) {

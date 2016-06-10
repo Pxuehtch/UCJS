@@ -1385,7 +1385,7 @@ function inGestureArea(event) {
   const kMarginWidth = 16;
 
   let {x, y} = BrowserUtils.getCursorPointInContent(event);
-  let {width, height} = gBrowser.mPanelContainer.boxObject;
+  let {width, height} = gBrowser.selectedBrowser.boxObject;
 
   return kMarginWidth < x && x < (width - kMarginWidth) &&
          kMarginWidth < y && y < (height - kMarginWidth);
