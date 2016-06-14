@@ -593,8 +593,14 @@ function MouseGesture() {
     if (mState === kState.Gesturing) {
       mMouseEvent.update(aEvent);
 
-      suppressDefault(aEvent);
       progress(aEvent);
+
+      // Suppress the wheel event in the content area.
+      PageEvents.preventEvent('wheel');
+
+      // WORKAROUND: Suppress the wheel event for non-e10s.
+      // @note Remove this when e10s is enabled.
+      aEvent.preventDefault();
     }
   }
 
@@ -678,11 +684,6 @@ function MouseGesture() {
       }
     }).
     catch(Cu.reportError);
-  }
-
-  function suppressDefault(aEvent) {
-    aEvent.preventDefault();
-    aEvent.stopPropagation();
   }
 
   /**
