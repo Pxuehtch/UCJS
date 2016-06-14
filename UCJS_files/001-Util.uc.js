@@ -1402,7 +1402,10 @@ const PageEvents = (function() {
     let content_script = () => {
       '${MessageManager.ContentScripts.Listeners}';
 
-      let doPreventDefaultClick = false;
+      let doPreventEvent = {
+        click: false,
+        wheel: false
+      };
 
       let handleEvent = (event) => {
         switch (event.type) {
@@ -1423,13 +1426,17 @@ const PageEvents = (function() {
             break;
           }
 
-          case 'click': {
-            if (event.button === 2) {
+          case 'click':
+          case 'wheel': {
+            let type = event.type;
+
+            // Don't prevent the contextmenu to open.
+            if (type === 'click' && event.button === 2) {
               return;
             }
 
-            if (doPreventDefaultClick) {
-              doPreventDefaultClick = false;
+            if (doPreventEvent[type]) {
+              doPreventEvent[type] = false;
 
               event.preventDefault();
             }
@@ -1441,8 +1448,14 @@ const PageEvents = (function() {
 
       let receiveMessage = (message) => {
         switch (message.name) {
-          case 'ucjs:PageEvent:PreventDefaultClick': {
-            doPreventDefaultClick = true;
+          case 'ucjs:PreventEvent:click': {
+            doPreventEvent.click = true;
+
+            break;
+          }
+
+          case 'ucjs:PreventEvent:wheel': {
+            doPreventEvent.wheel = true;
 
             break;
           }
@@ -1452,14 +1465,16 @@ const PageEvents = (function() {
       [
         'pageshow',
         'pagehide',
-        'click'
+        'click',
+        'wheel'
       ].
       forEach((type) => {
         Listeners.$event(type, handleEvent);
       });
 
       [
-        'ucjs:PageEvent:PreventDefaultClick'
+        'ucjs:PreventEvent:click',
+        'ucjs:PreventEvent:wheel'
       ].
       forEach((name) => {
         Listeners.$message(name, receiveMessage);
@@ -1467,6 +1482,12 @@ const PageEvents = (function() {
     };
 
     MessageManager.loadFrameScript(content_script);
+  }
+
+  function preventEvent(type) {
+    let mm = gBrowser.selectedBrowser.messageManager;
+
+    mm.sendAsyncMessage('ucjs:PreventEvent:' + type);
   }
 
   function promisePageReady(browser) {
@@ -1661,6 +1682,7 @@ const PageEvents = (function() {
   }
 
   return {
+    preventEvent,
     listenPageEvent,
     listenPageEventOnce
   };
@@ -2978,6 +3000,7 @@ return {
   Console,
   EventManager,
   MessageManager,
+  PageEvents,
   Listeners,
   ContentTask,
   DOMUtils,

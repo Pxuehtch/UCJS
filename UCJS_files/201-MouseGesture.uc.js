@@ -42,6 +42,7 @@ const {
   Modules,
   ContentTask,
   EventManager,
+  PageEvents,
   Listeners: {
     $event,
     $shutdown
@@ -813,15 +814,13 @@ function MouseEventManager() {
           // the right button is down.
           // RightDown -> OtherClick
           if (mRightDown) {
-            // Ready to suppress the default click in the content process.
+            // Suppress the click event in the content area.
             // @note In the 'click' event here, it is too late to cancel the
             // system click action in the content process. So, in this
             // 'mousedown' event before 'click', we send a ready message to
             // cancel it and then the content process will prevent the default
             // click.
-            let mm = gBrowser.selectedBrowser.messageManager;
-
-            mm.sendAsyncMessage('ucjs:PageEvent:PreventDefaultClick');
+            PageEvents.preventEvent('click');
           }
         }
 
