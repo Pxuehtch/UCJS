@@ -144,7 +144,7 @@ function makeUI() {
       class: ['devtools-toolbarbutton', kUI.button.id].join(' '),
       type: 'checkbox',
       checked: true,
-      tabindex: ++lastTabIndex
+      tabindex: lastTabIndex++
     });
 
     $event(toolbarButton, 'command', onCommand);
