@@ -126,14 +126,14 @@ function setStyleSheet() {
 }
 
 function makeUI() {
-  let clearButton = $S1('.webconsole-clear-console-button');
+  // Append our buttons after the native filter buttons in the buttons
+  // container.
+  let lastFilterButton =
+    $S1('.devtools-toolbarbutton-group > toolbarbutton:last-child');
+  let filterButtonContainer = lastFilterButton.parentNode;
 
-  // Insert the tab index of our buttons before the clear button.
-  // TODO: The clear button has the last index in the console window on the
-  // current version of Fx. So if a new index has been appended after the
-  // clear button in the future, we would need to re-index it.
-  // @see chrome://devtools/content/webconsole/webconsole.xul::tabindex
-  let lastTabIndex = clearButton.tabIndex;
+  // Make tab indexes of our buttons follow after the native buttons.
+  let tabIndex = lastFilterButton.tabIndex;
 
   kItemList.forEach(({category, description}, i) => {
     let toolbarButton = $E('toolbarbutton', {
@@ -144,15 +144,19 @@ function makeUI() {
       class: ['devtools-toolbarbutton', kUI.button.id].join(' '),
       type: 'checkbox',
       checked: true,
-      tabindex: lastTabIndex++
+      tabindex: ++tabIndex
     });
 
     $event(toolbarButton, 'command', onCommand);
 
-    clearButton.parentNode.insertBefore(toolbarButton, clearButton);
+    filterButtonContainer.appendChild(toolbarButton);
   });
 
-  clearButton.tabIndex = lastTabIndex;
+  // Re-index the tab index of the clear button.
+  // @note The clear button is the only element that has a large tab index than
+  // the last native filter button's on Fx47.
+  // @see chrome://devtools/content/webconsole/webconsole.xul::tabindex
+  $S1('.webconsole-clear-console-button').tabIndex = ++tabIndex;
 }
 
 function setObserver() {
