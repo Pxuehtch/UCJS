@@ -57,7 +57,7 @@ const {
 const kItemList = [
   {
     category: 'Content',
-    description: 'Log messages on the content window',
+    description: 'Log messages of the content window',
     condition: '[.//a[starts-with(@href, "http") and not(contains(@class, "learn-more-link"))]]'
   }
 ];

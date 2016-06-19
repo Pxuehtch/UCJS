@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name TooltipEx.uc.js
-// @description The tooltip of element with the informations.
+// @description Show the extended tooltip of an element.
 // @include main
 // ==/UserScript==
 
@@ -9,10 +9,12 @@
 /**
  * @usage A tooltip panel opens with <Ctrl+Alt+MouseMove> on an element, with
  * the various informations including the ancestor elements'.
- * @note You can move the panel with dragging the frame margin of the tooltip
- * panel.
- * @note You can select and copy texts and also can copy the whole data by the
- * 'Copy All' menu item of the context menu.
+ *
+ * @note
+ * - You can move the panel with dragging the frame margin of the tooltip
+ *   panel.
+ * - You can select and copy texts and also can copy the whole data by the
+ *   'Copy All' menu item of the context menu.
  */
 
 
@@ -457,16 +459,16 @@ const Tooltip = (function() {
     let isObserving = false;
 
     $event(window, 'keydown', (event) => {
-      // Limit the execution rate of an event that is dispatched more often
-      // than we need to process.
-      let onMouseMoveThrottled = EventManager.throttleEvent(onMouseMove);
-
       let triggerKey = event.ctrlKey && event.altKey;
 
       if (!isObserving && triggerKey && BrowserUtils.isHTMLDocument()) {
         isObserving = true;
 
         let pc = gBrowser.mPanelContainer;
+
+        // Limit the execution rate of an event that is dispatched more often
+        // than we need to process.
+        let onMouseMoveThrottled = EventManager.throttleEvent(onMouseMove);
 
         let stopObserving = () => {
           isObserving = false;
