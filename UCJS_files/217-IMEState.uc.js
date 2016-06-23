@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name IMEState.uc.js
-// @description Shows a sign of IME state on an editable field.
+// @description Shows a sign of IME state on an editable area.
 // @include main
 // ==/UserScript==
 
@@ -66,10 +66,11 @@ const UIEvent = (function() {
   let isCancellerEventAttached = false;
 
   function init() {
-    // Show a sign when a textbox is clicked.
+    // Show a sign when an editable element is clicked or hide it for the
+    // other place.
     $event(window, 'click', handleEvent);
 
-    // Show a sign when keys for IME are pressed or hide it for the other keys.
+    // Show a sign when an IME key is pressed or hide it for the other keys.
     $event(window, 'keyup', handleEvent);
 
     // Show a sign when a content page shows and a textbox is focused.
@@ -175,7 +176,7 @@ const SignPanel = (function() {
    * Guarantees that a callback function |showInternal()| is executed only once
    * at the very end of a series of calls until the delay period expires.
    */
-  const ShowingManager = {
+  const DebounceShowing = {
     set() {
       this.clear();
       this.timerId = setTimeout(showInternal, 100);
@@ -204,7 +205,7 @@ const SignPanel = (function() {
     }
   };
 
-  // Initialization.
+  // Initialize.
   init();
 
   function init() {
@@ -238,7 +239,7 @@ const SignPanel = (function() {
     Animation.stop();
 
     // Determine the proper height of the panel for the first showing.
-    // TODO: Implement in a more smart way.
+    // TODO: Implement in a reliable way.
     panelBox.label = kUI.IMESign['OFF'];
     panelBox.openPopupAtScreen(0, 0);
     setTimeout(panelBox.hidePopup, 0);
@@ -274,10 +275,10 @@ const SignPanel = (function() {
     hideInternal();
 
     if (doClear) {
-      ShowingManager.clear();
+      DebounceShowing.clear();
     }
     else {
-      ShowingManager.set();
+      DebounceShowing.set();
     }
   }
 
@@ -429,6 +430,7 @@ const SignPanel = (function() {
 
   // For chrome process only.
   function getNodeRect(node) {
+    // @note We can use the function for the content process.
     return content_getNodeRect(node);
   }
 
