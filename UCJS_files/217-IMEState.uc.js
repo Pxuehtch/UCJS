@@ -172,13 +172,13 @@ const SignPanel = (function() {
   /**
    * Debounce showing manager.
    *
-   * Guarantees that a callback function |show()| is executed only once at the
-   * very end of a series of calls until the delay period expires.
+   * Guarantees that a callback function |showInternal()| is executed only once
+   * at the very end of a series of calls until the delay period expires.
    */
   const ShowingManager = {
     set() {
       this.clear();
-      this.timerId = setTimeout(show, 100);
+      this.timerId = setTimeout(showInternal, 100);
     },
 
     clear() {
