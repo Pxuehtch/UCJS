@@ -277,13 +277,13 @@ const SignPanel = (function() {
   }
 
   function showInternal() {
-    promiseIMEState().then((result) => {
+    promiseIMEState().then((nodeInfo) => {
       // No editable element is focused.
-      if (!result) {
+      if (!nodeInfo) {
         return;
       }
 
-      let {nodeInfo, isActive} = result;
+      let {isActive} = getIMEInfo();
 
       panelBox.label = kUI.IMESign[isActive ? 'ON' : 'OFF'];
 
@@ -351,15 +351,8 @@ const SignPanel = (function() {
           return null;
         }
 
-        let nodeInfo = {
-          rect: getNodeRect(node)
-        };
-
-        let isActive = isIMEActive(node);
-
         return {
-          nodeInfo,
-          isActive
+          rect: getNodeRect(node)
         };
       });
     }
@@ -368,7 +361,6 @@ const SignPanel = (function() {
     return ContentTask.spawn(`function*() {
       ${content_getFocusedEditableNode.toString()}
       ${content_getNodeRect.toString()}
-      ${content_isIMEActive.toString()}
 
       let node = content_getFocusedEditableNode();
 
@@ -376,16 +368,9 @@ const SignPanel = (function() {
         return null;
       }
 
-      let nodeInfo = {
+      return {
         isContentNode: true,
         rect: content_getNodeRect(node)
-      };
-
-      let isActive = content_isIMEActive(node);
-
-      return {
-        nodeInfo,
-        isActive
       };
     }`);
   }
@@ -444,31 +429,22 @@ const SignPanel = (function() {
     return {left, top};
   }
 
-  // For chrome process only.
-  function isIMEActive(node) {
-    return content_isIMEActive(node, window);
-  }
-
-  // For content process only.
-  function content_isIMEActive(node, chromeWindow) {
-    let imeMode = node.
-      ownerDocument.defaultView.
-      getComputedStyle(node).imeMode;
-
-    // chromeWindow: for the chrome process.
-    // content: for the content process.
-    let utils = (chromeWindow || content).
+  function getIMEInfo() {
+    let utils = window.
       QueryInterface(Ci.nsIInterfaceRequestor).
       getInterface(Ci.nsIDOMWindowUtils);
 
+    let isActive = false;
+
     try {
-      return imeMode !== 'disabled' &&
-        utils.IMEStatus === utils.IME_STATUS_ENABLED &&
-        utils.IMEIsOpen;
+      isActive = utils.IMEStatus === utils.IME_STATUS_ENABLED &&
+                 utils.IMEIsOpen;
     }
     catch (ex) {}
 
-    return false;
+    return {
+      isActive
+    };
   }
 
   return {
