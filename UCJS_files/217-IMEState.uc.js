@@ -58,50 +58,75 @@ const kUI = {
   }
 };
 
-function IMEState_init() {
-  $event(window, 'click', handleEvent);
-  $event(window, 'keyup', handleEvent);
+/**
+ * UI event handler.
+ */
+const UIEvent = (function() {
+  function init() {
+    // Show a sign when a textbox is clicked.
+    $event(window, 'click', handleEvent);
 
-  $page('pageselect', handleEvent);
-  $page('pageshow', handleEvent);
+    // Show a sign when keys for IME are pressed or hide it for the other keys.
+    $event(window, 'keyup', handleEvent);
 
-  // Make sure to clean up when the browser window closes.
-  $shutdown(() => {
-    SignPanel.uninit();
-  });
-}
+    // Show a sign when a content page shows and a textbox is focused.
+    $page('pageselect', handleEvent);
+    $page('pageshow', handleEvent);
 
-function handleEvent(event) {
-  switch (event.type) {
-    case 'click':
-    case 'pageselect':
-    case 'pageshow': {
-      // Show a sign if an editable field is focused.
-      SignPanel.update();
+    // Make sure to clean up when the browser window closes.
+    $shutdown(() => {
+      SignPanel.uninit();
+    });
+  }
 
-      break;
-    }
+  function showSign() {
+    SignPanel.show();
+  }
 
-    case 'keyup': {
-      // Update the sign if IME is toggled, or clear all with the other keys.
-      // TODO: Detect the <Caps Lock> key for opening IME.
-      // XXX: But the key can be found for closing IME ('Hiragana' in my case).
-      let IMEkeys = [
-        'Hankaku',
-        'Zenkaku',
-        'Alphanumeric',
-        'Convert',
-        'Hiragana'
-      ];
+  function hideSign() {
+    SignPanel.hide();
+  }
 
-      SignPanel.update({
-        doClear: !IMEkeys.includes(event.key)
-      });
+  function handleEvent(event) {
+    switch (event.type) {
+      case 'click':
+      case 'pageselect':
+      case 'pageshow': {
+        // Try to show a sign on a textbox.
+        showSign();
 
-      break;
+        break;
+      }
+
+      case 'keyup': {
+        // Show a sign when IME is toggled with the assigned keys, or hide it
+        // with the other keys.
+        // TODO: Detect the <Caps Lock> key for opening IME.
+        // XXX: The key can be found for closing IME ('Hiragana' in my case).
+        let IMEkeys = [
+          'Hankaku',
+          'Zenkaku',
+          'Alphanumeric',
+          'Convert',
+          'Hiragana'
+        ];
+
+        if (IMEkeys.includes(event.key)) {
+          showSign();
+        }
+        else {
+          hideSign();
+        }
+
+        break;
+      }
     }
   }
-}
+
+  return {
+    init
+  };
+})();
 
 /**
  * Sign panel handler.
@@ -191,6 +216,16 @@ const SignPanel = (function() {
     panelBox = null;
   }
 
+  function show() {
+    update();
+  }
+
+  function hide() {
+    update({
+      doClear: true
+    });
+  }
+
   function update(options = {}) {
     let {doClear} = options;
 
@@ -199,8 +234,8 @@ const SignPanel = (function() {
       return;
     }
 
-    // Hide an opening panel.
-    hide();
+    // Hide an active panel.
+    hideInternal();
 
     if (doClear) {
       ShowingManager.clear();
@@ -210,7 +245,7 @@ const SignPanel = (function() {
     }
   }
 
-  function show() {
+  function showInternal() {
     promiseIMEState().then((result) => {
       // No editable element is focused.
       if (!result) {
@@ -230,7 +265,7 @@ const SignPanel = (function() {
     catch(Cu.reportError);
   }
 
-  function hide() {
+  function hideInternal() {
     if (isOpen()) {
       panelBox.hidePopup();
 
@@ -407,13 +442,18 @@ const SignPanel = (function() {
 
   return {
     uninit,
-    update
+    show,
+    hide
   };
 })();
 
 /**
  * Entry point.
  */
+function IMEState_init() {
+  UIEvent.init();
+}
+
 IMEState_init();
 
 
