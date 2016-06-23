@@ -49,7 +49,8 @@ const {
 const kUI = {
   signPanel: {
     id: 'ucjs_IMEState_panel',
-    animationName: 'ucjs_IMEState_panelAnimation'
+    animationName: 'ucjs_IMEState_panelAnimation',
+    imeDisabled: 'ucjs_IMEState_imeDisabled'
   },
 
   IMESign: {
@@ -207,21 +208,25 @@ const SignPanel = (function() {
   init();
 
   function init() {
-    let {id, animationName} = kUI.signPanel;
+    let {id, animationName, imeDisabled} = kUI.signPanel;
 
     // @note Remove the native margin of our panel to show at the right
     // position.
     CSSUtils.setChromeStyleSheet(`
       #${id} {
         margin: 0;
+        color: rgb(255, 0, 0);
         animation: ${animationName} 1s infinite alternate;
+      }
+      .${imeDisabled} {
+        color: rgb(100, 100, 100) !important;
       }
       @keyframes ${animationName} {
         from {
-          color: rgba(255, 0, 0, 0.2);
+          text-shadow: 0 0 1px;
         }
         to {
-          color: rgba(255, 0, 0, 0.8);
+          text-shadow: 0 0 10px;
         }
       }
     `);
@@ -283,7 +288,14 @@ const SignPanel = (function() {
         return;
       }
 
-      let {isActive} = getIMEInfo();
+      let {isEnabled, isActive} = getIMEInfo();
+
+      if (!isEnabled) {
+        panelBox.classList.add(kUI.signPanel.imeDisabled);
+      }
+      else {
+        panelBox.classList.remove(kUI.signPanel.imeDisabled);
+      }
 
       panelBox.label = kUI.IMESign[isActive ? 'ON' : 'OFF'];
 
@@ -434,15 +446,17 @@ const SignPanel = (function() {
       QueryInterface(Ci.nsIInterfaceRequestor).
       getInterface(Ci.nsIDOMWindowUtils);
 
+    let isEnabled = false;
     let isActive = false;
 
     try {
-      isActive = utils.IMEStatus === utils.IME_STATUS_ENABLED &&
-                 utils.IMEIsOpen;
+      isEnabled = utils.IMEStatus === utils.IME_STATUS_ENABLED;
+      isActive = isEnabled && utils.IMEIsOpen;
     }
     catch (ex) {}
 
     return {
+      isEnabled,
       isActive
     };
   }
