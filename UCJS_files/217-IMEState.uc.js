@@ -62,6 +62,8 @@ const kUI = {
  * UI event handler.
  */
 const UIEvent = (function() {
+  let isCancellerEventAttached = false;
+
   function init() {
     // Show a sign when a textbox is clicked.
     $event(window, 'click', handleEvent);
@@ -75,15 +77,37 @@ const UIEvent = (function() {
 
     // Make sure to clean up when the browser window closes.
     $shutdown(() => {
+      detachCancellerEvent();
       SignPanel.uninit();
     });
   }
 
+  function attachCancellerEvent() {
+    if (!isCancellerEventAttached) {
+      isCancellerEventAttached = true;
+
+      // Hide a sign by the mouse wheel.
+      // @note It is enough to observe this event only while the panel is open.
+      // TODO: Observe the 'scroll' event.
+      window.addEventListener('wheel', handleEvent);
+    }
+  }
+
+  function detachCancellerEvent() {
+    if (isCancellerEventAttached) {
+      isCancellerEventAttached = false;
+
+      window.removeEventListener('wheel', handleEvent);
+    }
+  }
+
   function showSign() {
     SignPanel.show();
+    attachCancellerEvent();
   }
 
   function hideSign() {
+    detachCancellerEvent();
     SignPanel.hide();
   }
 
@@ -94,6 +118,13 @@ const UIEvent = (function() {
       case 'pageshow': {
         // Try to show a sign on a textbox.
         showSign();
+
+        break;
+      }
+
+      case 'wheel': {
+        // Hide a sign immediately.
+        hideSign()
 
         break;
       }
