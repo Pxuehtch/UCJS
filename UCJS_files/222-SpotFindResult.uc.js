@@ -294,30 +294,33 @@ const FindCommandObserver = (function() {
       }
     }
 
-    let testSelection = (selection) =>
-      selection && selection.rangeCount && !selection.isCollapsed;
+    let getResult = (selection) => {
+      if (selection && selection.rangeCount && !selection.isCollapsed) {
+        return {
+          view,
+          range: selection.getRangeAt(0)
+        };
+      }
 
-    let selection = view.getSelection();
+      return null;
+    };
 
-    if (testSelection(selection)) {
-      return {
-        view,
-        range: selection.getRangeAt(0)
-      };
+    let result = getResult(view.getSelection());
+
+    if (result) {
+      return result;
     }
 
     // The selection can be into an input or a textarea element.
     for (let node of view.document.querySelectorAll('input, textarea')) {
       if (node instanceof Ci.nsIDOMNSEditableElement && node.editor) {
-        selection =
+        let selection =
           node.editor.selectionController.
           getSelection(Ci.nsISelectionController.SELECTION_NORMAL);
+        let result = getResult(selection);
 
-        if (testSelection(selection)) {
-          return {
-            view,
-            range: selection.getRangeAt(0)
-          };
+        if (result) {
+          return result;
         }
       }
     }
