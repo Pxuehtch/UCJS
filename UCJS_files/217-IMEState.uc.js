@@ -283,7 +283,7 @@ const SignPanel = (function() {
   }
 
   function showInternal() {
-    promiseIMEState().then((nodeInfo) => {
+    promiseFocusedEditableNodeInfo().then((nodeInfo) => {
       // No editable element is focused.
       if (!nodeInfo) {
         return;
@@ -342,7 +342,7 @@ const SignPanel = (function() {
     return {x, y};
   }
 
-  function promiseIMEState() {
+  function promiseFocusedEditableNodeInfo() {
     let {focusedWindow, focusedElement} = Services.focus;
 
     if (!focusedWindow) {
