@@ -235,6 +235,7 @@ const FindCommandObserver = (function() {
     Highlighting.init();
 
     // Observe the execution of Fx's find command.
+    // TODO: Observe 'Finder:Result' message for e10s.
     $event(gBrowser.mPanelContainer, 'find', spotFindResult);
     $event(gBrowser.mPanelContainer, 'findagain', spotFindResult);
   }
@@ -305,13 +306,14 @@ const FindCommandObserver = (function() {
       return null;
     };
 
+    // Test the normal selection.
     let result = getResult(view.getSelection());
 
     if (result) {
       return result;
     }
 
-    // The selection can be into an input or a textarea element.
+    // The selection can be into an editable element.
     for (let node of view.document.querySelectorAll('input, textarea')) {
       if (node instanceof Ci.nsIDOMNSEditableElement && node.editor) {
         let selection =

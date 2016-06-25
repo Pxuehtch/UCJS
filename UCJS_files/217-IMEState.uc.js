@@ -346,6 +346,7 @@ const SignPanel = (function() {
     let {focusedWindow, focusedElement} = Services.focus;
 
     if (!focusedWindow) {
+      // Resolved with null as no result.
       return Promise.resolve(null);
     }
 

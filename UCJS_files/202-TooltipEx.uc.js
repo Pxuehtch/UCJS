@@ -307,7 +307,7 @@ const Tooltip = (function() {
         let point = BrowserUtils.getCursorPointInContent(event);
         let newInfo = yield getNodeInfo(point, vars.selector);
 
-        // The new task is requested so that this task should be abandoned.
+        // The new task is requested so that this task should be discarded.
         if (vars.doUpdate) {
           return Promise.reject();
         }
