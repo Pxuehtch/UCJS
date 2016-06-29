@@ -809,7 +809,9 @@ function MouseEventManager() {
 
           // Disable the context menu while the left/middle button is down.
           // RightDown -> OtherDown -> RightUp
-          mSuppressMenu = mRightDown;
+          if (mSuppressMenu !== mRightDown) {
+            mSuppressMenu = mRightDown;
+          }
 
           // Disable the default click action of the left/middle button while
           // the right button is down.
