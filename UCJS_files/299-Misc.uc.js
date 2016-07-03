@@ -24,6 +24,7 @@ const {
   ContentTask,
   Listeners: {
     $event,
+    $eventOnce,
     $page,
     $pageOnce,
     $shutdown
@@ -273,11 +274,28 @@ const {
   const kTooltipShowDelay = 500; // [millisecond]
   let mTooltipTimer = null;
 
-  // TODO: In Fx29, a URL tooltip shows even if the first URL does not overflow
-  // at startup. And leave |gURLBar._contentIsCropped| to true until a long URL
-  // newly loads.
-  // WORKAROUND: Reset to false here.
-  gURLBar._contentIsCropped = false;
+  /**
+   * Workaround for useless display of the tooltip.
+   * XXX: It might be caused by stylings for the urlbar in my userChrome.css
+   */
+
+  // 1. A tooltip shows for a short URL at startup because
+  // |gURLBar._contentIsCropped| is still set to true until the URL bar
+  // actually overflows with a long URL and then underflows with another short
+  // URL.
+  // WORKAROUND: Reset it at the first mouse over.
+  $eventOnce(gURLBar, 'mouseenter', () => {
+    gURLBar._contentIsCropped = false;
+  });
+
+  // 2. The overflow event fires when the first character is put in the empty
+  // URL bar, and then |gURLBar._contentIsCropped| is still set to true.
+  // WORKAROUND: Reset it whenever the URL bar fires the useless overflow.
+  $event(gURLBar, 'overflow', () => {
+    if (gURLBar.textValue.length === 1) {
+      gURLBar._contentIsCropped = false;
+    }
+  });
 
   // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
   gURLBar._initURLTooltip =
