@@ -31,8 +31,7 @@ const {
   },
   DOMUtils: {
     $E,
-    $ID,
-    $ANONID
+    $ID
   },
   CSSUtils,
   BrowserUtils,
@@ -661,7 +660,7 @@ const {
 
     get URLInput() {
       // <input.urlbar-input>
-      return $ANONID('input', gURLBar);
+      return gURLBar.inputField;
     }
   };
 
