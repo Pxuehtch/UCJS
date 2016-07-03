@@ -81,6 +81,17 @@ const kAppList = [
     //disabled: true
   },
   {
+    name: 'Edge',
+    type: 'browse',
+    path: 'C:/Windows/System32/cmd.exe',
+    args: ['/c', 'start', 'microsoft-edge:%url%']
+  },
+  {
+    name: 'Chrome',
+    type: 'browse',
+    path: '%ProgF%/Google/Chrome/Application/chrome.exe'
+  },
+  {
     name: 'WMP',
 
     // @note If |type| is 'file', you should also set |extensions| to describe
@@ -96,11 +107,6 @@ const kAppList = [
     type: 'file',
     extensions: ['pdf'],
     path: 'C:/PF/FoxitReader/Foxit Reader.exe'
-  },
-  {
-    name: 'Chrome',
-    type: 'browse',
-    path: '%LocalAppData%/Google/Chrome/Application/chrome.exe'
   },
   {
     name: 'TB',
