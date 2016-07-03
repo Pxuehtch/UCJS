@@ -64,10 +64,8 @@ const kAppList = [
     type: 'browse',
 
     // An executable file path.
-    // @note Some alias of the special folder is available.
+    // @note You can use the alias %ProgF% for Program files folder.
     // @see |kSpecialFolderAliases|
-    //   %ProgF%: Program files folder.
-    //   %LocalAppData%: Local application data folder.
     path: '%ProgF%/Internet Explorer/iexplore.exe',
 
     // [optional] Commandline arguments.
@@ -891,11 +889,7 @@ const {
 const kSpecialFolderAliases = [
   // Windows "Program files" folder.
   // C:/Program Files/
-  '%ProgF%',
-
-  // Windows "Local application data" folder.
-  // C:/Users/{username}/AppData/Local/
-  '%LocalAppData%'
+  '%ProgF%'
 ];
 
 /**
