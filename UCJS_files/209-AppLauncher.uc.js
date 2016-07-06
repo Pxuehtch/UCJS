@@ -884,7 +884,7 @@ const {
 
 /**
  * Aliases for local special folders.
- * @see http://mxr.mozilla.org/mozilla-central/source/xpcom/io/nsDirectoryServiceDefs.h
+ * @see http://dxr.mozilla.org/mozilla-release/source/xpcom/io/nsDirectoryServiceDefs.h
  */
 const kSpecialFolderAliases = [
   // Windows "Program files" folder.

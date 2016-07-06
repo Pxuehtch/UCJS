@@ -1710,7 +1710,7 @@ const Listeners = (function() {
  * Content task manager.
  *
  * The original code:
- * @see http://mxr.mozilla.org/mozilla-central/source/testing/mochitest/BrowserTestUtils/ContentTask.jsm
+ * @see http://dxr.mozilla.org/mozilla-release/source/testing/mochitest/BrowserTestUtils/ContentTask.jsm
 */
 const ContentTask = (function() {
   // Available to a browser window only.
