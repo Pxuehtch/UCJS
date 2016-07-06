@@ -24,7 +24,6 @@ const {
   ContentTask,
   Listeners: {
     $event,
-    $eventOnce,
     $page,
     $pageOnce,
     $shutdown
@@ -274,24 +273,31 @@ const {
   let mTooltipTimer = null;
 
   /**
-   * Workaround for useless display of the tooltip.
+   * WORKAROUND: Don't show a useless tooltip for a short URL within the URL
+   * bar.
+   * The overflow event sometimes fires for a short URL and the flag
+   * |gURLBar._contentIsCropped| is still set to true until the URL bar
+   * actually overflows with a long URL and then underflows with another short
+   * URL. So reset the flag whenever the URL bar fires a useless overflow.
    * XXX: It might be caused by stylings for the urlbar in my userChrome.css
    */
 
-  // 1. A tooltip shows for a short URL at startup because
-  // |gURLBar._contentIsCropped| is still set to true until the URL bar
-  // actually overflows with a long URL and then underflows with another short
-  // URL.
-  // WORKAROUND: Reset it at the first mouse over.
-  $eventOnce(gURLBar, 'mouseenter', () => {
-    gURLBar._contentIsCropped = false;
-  });
+  // Max 'width' of a URL string that is likely to fit within the URL bar.
+  // @note Counts 1 for each ASCII character and 2 for the others.
+  // @note 150 for the URL bar of my Fx.
+  const kMaxWidthShortURL = 150;
 
-  // 2. The overflow event fires when the first character is put in the empty
-  // URL bar, and then |gURLBar._contentIsCropped| is still set to true.
-  // WORKAROUND: Reset it whenever the URL bar fires the useless overflow.
   $event(gURLBar, 'overflow', () => {
-    if (gURLBar.textValue.length === 1) {
+    let url = gURLBar.textValue;
+    let urlWidth = 0;
+
+    if (url) {
+      let nonASCIIs = [...url].filter((char) => /[^!-~]/.test(char));
+
+      urlWidth = [...url, ...nonASCIIs].length;
+    }
+
+    if (urlWidth <= kMaxWidthShortURL) {
       gURLBar._contentIsCropped = false;
     }
   });
