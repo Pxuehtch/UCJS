@@ -64,15 +64,13 @@ const kPref = {
   /**
    * Duration time of highlighting.
    *
-   * @value {integer} [millisecond]
+   * @value {integer} [millisecond > 0]
    */
-  duration: 2000,
+  highlightDuration: 2000,
 
   /**
    * Setting of the blinking border of the highlight box.
    *
-   * interval: {integer} [millisecond]
-   *   Interval time for one blink.
    * width: {integer} [px]
    * color: {string} [CSS color]
    *
@@ -81,7 +79,6 @@ const kPref = {
    * @see |HighlightBox()|
    */
   blink: {
-    interval: 200,
     width: 2,
     color: 'red'
   }
@@ -106,7 +103,7 @@ const Highlighting = (function() {
     },
 
     set() {
-      this.timerId = setTimeout(this.terminate, kPref.duration);
+      this.timerId = setTimeout(this.terminate, kPref.highlightDuration);
     },
 
     clear() {
@@ -422,7 +419,12 @@ function HighlightBox(findResultInfo) {
       return box;
     }
 
-    let {interval, width: innerWidth, color: innerColor} = kPref.blink;
+    // The duration time for one cycle of a highlighting animation.
+    // @note Divide the whole duration of highlighting by a proper value for
+    // smooth animation.
+    let animationDuration = kPref.highlightDuration / 10;
+
+    let {width: innerWidth, color: innerColor} = kPref.blink;
     let {width: outerWidth, color: outerColor} = kOuterBorder;
 
     let borderWidth = innerWidth + outerWidth;
@@ -441,7 +443,7 @@ function HighlightBox(findResultInfo) {
         border-right: none;
         -moz-border-top-colors: ${borderColors};
         -moz-border-bottom-colors: ${borderColors};
-        animation: ${animationName} ${interval}ms infinite alternate;
+        animation: ${animationName} ${animationDuration}ms infinite alternate;
       }
       @keyframes ${animationName} {
         from {
