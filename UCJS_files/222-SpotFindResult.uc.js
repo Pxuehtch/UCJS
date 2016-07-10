@@ -69,18 +69,27 @@ const kPref = {
   highlightDuration: 2000,
 
   /**
-   * Setting of the blinking border of the highlight box.
+   * Setting of the border of a highlight box.
    *
-   * width: {integer} [px]
-   * color: {string} [CSS color]
-   *
-   * @note Another bright color border is added outside of this border for
-   * clearer visibility against dark background.
-   * @see |HighlightBox()|
+   * inner: {hash}
+   *   The inner portion of the border.
+   *   width: {integer} [px > 0]
+   *   color: {string} [CSS color]
+   * outer: {hash}
+   *   The outermost border for clearer visibility against dark background.
+   *   width: {integer} [px > 0]
+   *   color: {string} [CSS color]
+   *     @note Set a bright color.
    */
-  blink: {
-    width: 2,
-    color: 'red'
+  highlightBoxBorder: {
+    inner: {
+      width: 2,
+      color: 'red'
+    },
+    outer: {
+      width: 2,
+      color: 'white'
+    }
   }
 };
 
@@ -349,18 +358,6 @@ const FindCommandObserver = (function() {
  *   clear: {function}
  */
 function HighlightBox(findResultInfo) {
-  /**
-   * The outermost border for clearer visibility against dark background.
-   *
-   * width: {integer} [px]
-   * color: {string} [CSS color]
-   *   @note Set a bright color.
-   */
-  const kOuterBorder = {
-    width: 2,
-    color: 'white'
-  };
-
   let vars = {
     box: null
   };
@@ -375,7 +372,17 @@ function HighlightBox(findResultInfo) {
     let {top, bottom} = findResultInfo.findResultRect;
     let innerScreenY = findResultInfo.innerScreenY;
     let fullZoom = findResultInfo.fullZoom;
-    let borderWidth = kPref.blink.width + kOuterBorder.width;
+
+    let {
+      inner: {
+        width: innerBorderWidth
+      },
+      outer: {
+        width: outerBorderWidth
+      }
+    } = kPref.highlightBoxBorder;
+
+    let borderWidth = innerBorderWidth + outerBorderWidth;
 
     box.left = screenX;
     box.top = ((top + innerScreenY) * fullZoom) - borderWidth;
@@ -424,12 +431,23 @@ function HighlightBox(findResultInfo) {
     // smooth animation.
     let animationDuration = kPref.highlightDuration / 10;
 
-    let {width: innerWidth, color: innerColor} = kPref.blink;
-    let {width: outerWidth, color: outerColor} = kOuterBorder;
+    let {
+      inner: {
+        width: innerBorderWidth,
+        color: innerBorderColor
+      },
+      outer: {
+        width: outerBorderWidth,
+        color: outerBorderColor
+      }
+    } = kPref.highlightBoxBorder;
 
-    let borderWidth = innerWidth + outerWidth;
+    let borderWidth = innerBorderWidth + outerBorderWidth;
+
+    // The list of colors for '-moz-border-*-colors'.
     let borderColors =
-      Array(outerWidth).fill(outerColor).concat(innerColor).join(' ');
+      Array(outerBorderWidth).fill(outerBorderColor).concat(innerBorderColor).
+      join(' ');
 
     CSSUtils.setChromeStyleSheet(`
       #${id} {
