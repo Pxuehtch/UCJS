@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name SpotFindResult.uc.js
-// @description Highlight a result of the page find command to be easily
-// noticed.
+// @description Highlight a result of the page find command.
 // @include main
 // ==/UserScript==
 
@@ -139,7 +138,7 @@ const Highlighting = (function() {
     },
 
     set() {
-      // Observe the user actions to be cancelled the highlighting.
+      // Observe the user actions to cancel the highlighting.
       // @note Add the events on |window| to cancel by actions on wherever in
       // the browser window.
       // @note Use the capture mode to catch the events anytime.
