@@ -2288,13 +2288,13 @@ const SiblingNavi = (function() {
  */
 const NaviLinkScorer = (function() {
   const TextScorer = (function() {
-    // &lsaquo;(<):\u2039, &laquo;(<<):\u00ab, ＜:\uff1c, ≪:\u226a,
-    // ←:\u2190
-    // &rsaquo;(>):\u203a, &raquo;(>>):\u00bb, ＞:\uff1e, ≫:\u226b,
-    // →:\u2192
+    // ‹(&lsaquo;):\u2039, «(&laquo;):\u00ab, ＜:\uff1c, ≪:\u226a,
+    // ←(&larr;):\u2190, ◀:\u25c0
+    // ›(&rsaquo;):\u203a, »(&raquo;):\u00bb, ＞:\uff1e, ≫:\u226b,
+    // →(&rarr;):\u2192, ▶:\u25b6
     const kNaviSign = {
-      prev: '<|\\u2039|\\u00ab|\\uff1c|\\u226a|\\u2190',
-      next: '>|\\u203a|\\u00bb|\\uff1e|\\u226b|\\u2192'
+      prev: '<|\\u2039|\\u00ab|\\uff1c|\\u226a|\\u2190|\\u25c0',
+      next: '>|\\u203a|\\u00bb|\\uff1e|\\u226b|\\u2192|\\u25b6'
     };
 
     // 前:\u524D, 古い:\u53e4\u3044
