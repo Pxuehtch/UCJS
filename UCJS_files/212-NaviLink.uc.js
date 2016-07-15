@@ -2288,13 +2288,13 @@ const SiblingNavi = (function() {
  */
 const NaviLinkScorer = (function() {
   const TextScorer = (function() {
-    // ‹(&lsaquo;):\u2039, «(&laquo;):\u00ab, ＜:\uff1c, ≪:\u226a,
-    // ←(&larr;):\u2190, ◀:\u25c0
-    // ›(&rsaquo;):\u203a, »(&raquo;):\u00bb, ＞:\uff1e, ≫:\u226b,
-    // →(&rarr;):\u2192, ▶:\u25b6
+    // «(&laquo;):\u00ab, ‹(&lsaquo;):\u2039, ←(&larr;):\u2190,
+    // ≪(&Lt;):\u226a, ◀:\u25c0, ◂(&ltrif;):\u25c2, ＜:\uff1c
+    // »(&raquo;):\u00bb, ›(&rsaquo;):\u203a, →(&rarr;):\u2192,
+    // ≫(&Gt;):\u226b, ▶:\u25b6, ▸(&rtrif;):\u25b8, ＞:\uff1e
     const kNaviSign = {
-      prev: '<|\\u2039|\\u00ab|\\uff1c|\\u226a|\\u2190|\\u25c0',
-      next: '>|\\u203a|\\u00bb|\\uff1e|\\u226b|\\u2192|\\u25b6'
+      prev: '<|\\u00ab|\\u2039|\\u2190|\\u226a|\\u25c0|\\u25c2|\\uff1c',
+      next: '>|\\u00bb|\\u203a|\\u2192|\\u226b|\\u25b6|\\u25b8|\\uff1e'
     };
 
     // 前:\u524D, 古い:\u53e4\u3044
