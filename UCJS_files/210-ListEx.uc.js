@@ -264,6 +264,7 @@ const MainMenu = (function() {
       });
     }
     else {
+      // Sub menu opens.
       let menu = menupopup.parentElement;
 
       [
@@ -272,8 +273,10 @@ const MainMenu = (function() {
         [kUI.closedMenu, ClosedList]
       ].
       some(([menuUI, menuHandler]) => {
-        if (menu.id === menuUI.id && !menu.itemCount) {
-          menuHandler.build(menupopup);
+        if (menu.id === menuUI.id) {
+          if (!menu.itemCount) {
+            menuHandler.build(menupopup);
+          }
 
           return true;
         }
