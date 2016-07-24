@@ -2288,24 +2288,27 @@ const SiblingNavi = (function() {
  */
 const NaviLinkScorer = (function() {
   const TextScorer = (function() {
-    // «(&laquo;):\u00ab, ‹(&lsaquo;):\u2039, ←(&larr;):\u2190,
-    // ≪(&Lt;):\u226a, ◀:\u25c0, ◂(&ltrif;):\u25c2, ＜:\uff1c
-    // »(&raquo;):\u00bb, ›(&rsaquo;):\u203a, →(&rarr;):\u2192,
-    // ≫(&Gt;):\u226b, ▶:\u25b6, ▸(&rtrif;):\u25b8, ＞:\uff1e
     const kNaviSign = {
+      // «(&laquo;):\u00ab, ‹(&lsaquo;):\u2039, ←(&larr;):\u2190,
+      // ≪(&Lt;):\u226a, ◀:\u25c0, ◂(&ltrif;):\u25c2, ＜:\uff1c
       prev: '<|\\u00ab|\\u2039|\\u2190|\\u226a|\\u25c0|\\u25c2|\\uff1c',
+
+      // »(&raquo;):\u00bb, ›(&rsaquo;):\u203a, →(&rarr;):\u2192,
+      // ≫(&Gt;):\u226b, ▶:\u25b6, ▸(&rtrif;):\u25b8, ＞:\uff1e
       next: '>|\\u00bb|\\u203a|\\u2192|\\u226b|\\u25b6|\\u25b8|\\uff1e'
     };
 
-    // 前:\u524D, 古い:\u53e4\u3044
-    // 次:\u6b21, 新し:\u65b0\u3057
     const kNaviWord = {
       prev: {
         en: 'prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
+
+        // 前:\u524D, 古い:\u53e4\u3044
         ja: '\\u524d|\\u53e4\\u3044'
       },
       next: {
         en: 'next|new(?:er)?|forward|more',
+
+        // 次:\u6b21, 新し:\u65b0\u3057
         ja: '\\u6b21|\\u65b0\\u3057'
       }
     };

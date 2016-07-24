@@ -279,6 +279,7 @@ const MainMenu = (function() {
       ].
       some(([menuUI, menuHandler]) => {
         if (menu.id === menuUI.id) {
+          // Build menu items at the first open while the context menu shows.
           if (!menu.itemCount) {
             menuHandler.build(menupopup);
           }
