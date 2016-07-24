@@ -56,7 +56,7 @@ const kPref = {
    * Max number of entry items of each list.
    *
    * @value {integer} [>0]
-   * @note A list is not created if set to 0.
+   * @note A list doesn't appear if set to 0.
    * !!! WARNING !!!
    * @note All items is listed if set to -1.
    * It can cause performance problems for too many items.
@@ -230,8 +230,13 @@ const MainMenu = (function() {
       kUI.closedMenu
     ].
     forEach((menuUI) => {
-      let hasEnabledList =
-        Object.keys(menuUI.list).some((key) => !!kPref.maxNumListItems[key])
+      // Add a menu that has lists to be created.
+      // @see |kPref.maxNumListItems|
+      let hasEnabledList = Object.keys(menuUI.list).some((key) => {
+        let maxNum = kPref.maxNumListItems[key];
+
+        return maxNum > 0 || maxNum === -1;
+      });
 
       if (hasEnabledList) {
         addMenu(menuUI);
