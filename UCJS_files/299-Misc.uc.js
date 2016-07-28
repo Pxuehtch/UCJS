@@ -273,21 +273,21 @@ const {
   let mTooltipTimer = null;
 
   /**
-   * WORKAROUND: Don't show a useless tooltip for a short URL within the URL
+   * Check whether the URL string is within the URL bar or not.
+   *
+   * This is a workaround for a useless tooltip for a short URL within the URL
    * bar.
-   * The overflow event sometimes fires for a short URL and the flag
-   * |gURLBar._contentIsCropped| is still set to true until the URL bar
-   * actually overflows with a long URL and then underflows with another short
-   * URL. So reset the flag whenever the URL bar fires a useless overflow.
+   * The overflow event sometimes fires for a short URL and the native flag
+   * |gURLBar._contentIsCropped| is still set to true. So we can't refer to it
+   * to show a tooltip suitably.
    * XXX: It might be caused by stylings for the urlbar in my userChrome.css
    */
+  function isShortURL() {
+    // Max 'width' of a URL string that is likely to fit within the URL bar.
+    // @note Counts 1 for each ASCII character and 2 for the others.
+    // @note 150 for the URL bar of my Fx.
+    const kMaxWidthShortURL = 150;
 
-  // Max 'width' of a URL string that is likely to fit within the URL bar.
-  // @note Counts 1 for each ASCII character and 2 for the others.
-  // @note 150 for the URL bar of my Fx.
-  const kMaxWidthShortURL = 150;
-
-  $event(gURLBar, 'overflow', () => {
     let url = gURLBar.textValue;
     let urlWidth = 0;
 
@@ -297,22 +297,26 @@ const {
       urlWidth = [...url, ...nonASCIIs].length;
     }
 
-    if (urlWidth <= kMaxWidthShortURL) {
-      gURLBar._contentIsCropped = false;
-    }
-  });
+    return urlWidth <= kMaxWidthShortURL;
+  }
 
   // @modified chrome://browser/content/urlbarBindings.xml::_initURLTooltip
   gURLBar._initURLTooltip =
   function ucjsMisc_uncropTooltip_initURLTooltip() {
-    if (this.focused || !this._contentIsCropped || mTooltipTimer) {
+    if (this.focused || mTooltipTimer) {
+      return;
+    }
+
+    // WORKAROUND: Don't show a useless tooltip for a short URL within the URL
+    // bar.
+    if (isShortURL()) {
       return;
     }
 
     mTooltipTimer = setTimeout(() => {
       fillInTooltip(this.value);
 
-      // Set the max width to the width of the URLbar.
+      // Set the max width to the width of the URL bar.
       mTooltip.maxWidth = this.boxObject.width;
 
       mTooltip.openPopup(this, 'after_start', 0, 0, false, false);
