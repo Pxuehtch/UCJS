@@ -133,6 +133,8 @@ function makeUI() {
   let filterButtonContainer = lastFilterButton.parentNode;
 
   // Make tab indexes of our buttons follow after the native buttons.
+  // @note The last native button has the last tab index.
+  // @see chrome://devtools/content/webconsole/webconsole.xul::tabindex
   let tabIndex = lastFilterButton.tabIndex;
 
   kItemList.forEach(({category, description}, i) => {
@@ -151,12 +153,6 @@ function makeUI() {
 
     filterButtonContainer.appendChild(toolbarButton);
   });
-
-  // Re-index the tab index of the clear button.
-  // @note The clear button is the only element that has a large tab index than
-  // the last native filter button's on Fx47.
-  // @see chrome://devtools/content/webconsole/webconsole.xul::tabindex
-  $S1('.webconsole-clear-console-button').tabIndex = ++tabIndex;
 }
 
 function setObserver() {
