@@ -594,13 +594,6 @@ function MouseGesture() {
       mMouseEvent.update(aEvent);
 
       progress(aEvent);
-
-      // Suppress the wheel event in the content area.
-      PageEvents.preventEvent('wheel');
-
-      // WORKAROUND: Suppress the wheel event for non-e10s.
-      // @note Remove this when e10s is enabled.
-      aEvent.preventDefault();
     }
   }
 
@@ -851,14 +844,29 @@ function MouseEventManager() {
         break;
       }
 
-      // @note 'mousemove' and 'wheel' events work only when a gesture is in
-      // progress.
+      // @note the 'mousemove' event works only when a gesture is in progress.
       // @see |MouseGesture::addEvents|
-      case 'mousemove':
+      case 'mousemove': {
+        if (!mSuppressMenu) {
+          mSuppressMenu = true;
+        }
+
+        break;
+      }
+
+      // @note the 'wheel' event works only when a gesture is in progress.
+      // @see |MouseGesture::addEvents|
       case 'wheel': {
         if (!mSuppressMenu) {
           mSuppressMenu = true;
         }
+
+        // Suppress the wheel event in the content area.
+        PageEvents.preventEvent('wheel');
+
+        // WORKAROUND: Suppress the wheel event for non-e10s.
+        // @note Remove this when e10s is enabled.
+        aEvent.preventDefault();
 
         break;
       }
