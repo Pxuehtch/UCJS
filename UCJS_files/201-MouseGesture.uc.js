@@ -994,13 +994,14 @@ function GestureManager() {
 
       // 1.A selected text.
       if (!type) {
-        let text = yield BrowserUtils.promiseSelectionTextAtPoint(x, y, {
-          requestDetails: true
-        });
+        let selectionDetails =
+          yield BrowserUtils.promiseSelectionTextAtPoint(x, y, {
+            requestDetails: true
+          });
 
-        if (text) {
+        if (selectionDetails && selectionDetails.currentIndex > -1) {
           type = kGestureSign.text;
-          data = text;
+          data = selectionDetails;
         }
       }
 
@@ -1358,10 +1359,6 @@ function doCommand(aCommand) {
 }
 
 function getDragText(dragData, options = {}) {
-  if (!dragData) {
-    return '';
-  }
-
   // @see |ucjsUtil.BrowserUtils.promiseSelectionTextAtPoint|
   let {texts, currentIndex} = dragData;
   let {joinSeparator} = options;
@@ -1370,13 +1367,7 @@ function getDragText(dragData, options = {}) {
     return texts.filter(Boolean).join(joinSeparator);
   }
 
-  if (currentIndex > -1) {
-    return texts[currentIndex];
-  }
-
-  // Returns the whole text if the array index for the drag text cannot be
-  // found.
-  return texts.join('');
+  return texts[currentIndex];
 }
 
 function inPrintPreviewMode() {
