@@ -236,6 +236,8 @@ function PageRelated_init() {
 }
 
 function createMenu(aContextMenu) {
+  // TODO: Make the insertion position of items fixed for useful access.
+  // WORKAROUND: Appends to the end of the context menu items at this time.
   setSeparators(aContextMenu);
 }
 

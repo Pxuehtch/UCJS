@@ -130,6 +130,7 @@ const Menu = (function() {
   }
 
   function createMenu(aContextMenu) {
+    // Inserts to the position before 'View Page Source'.
     aContextMenu.insertBefore($E('menuitem', {
       id: kUI.prettifyPage.id,
       label: kUI.prettifyPage.label,
@@ -144,8 +145,8 @@ const Menu = (function() {
       let viewSource = $ID(kUI.viewSource.id);
       let prettifyPage = $ID(kUI.prettifyPage.id);
 
-      // The showing condition of the native view-source menuitem is suitable
-      // for our prettify-page menuitem.
+      // The showing condition of the native view page source menuitem is
+      // suitable for our prettify-page menuitem.
       // @see chrome://browser/content/nsContextMenu.js::initViewItems
       if (viewSource.hidden) {
         showItem(prettifyPage, false);

@@ -609,7 +609,7 @@ const {
 })();
 
 /**
- * Add 'Open new tab' menu in the tab-context-menu.
+ * Add 'Open new tab' menu in the tab context menu.
  */
 (function() {
 
@@ -640,8 +640,9 @@ const {
     }));
   });
 
-  gBrowser.tabContextMenu.
-    insertBefore(menu, $ID('context_undoCloseTab'));
+  // Inserts to the position before the 'Undo Close Tab' item of the tab
+  // context menu.
+  gBrowser.tabContextMenu.insertBefore(menu, $ID('context_undoCloseTab'));
 
 })();
 

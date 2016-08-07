@@ -454,6 +454,12 @@ function onCommand(aEvent, aAppList) {
   doAction(aAppList[appIndex], element.getAttribute(kDataKey.action));
 }
 
+/**
+ * Build the menu items in the context menu.
+ *
+ * TODO: Make the insertion position of items fixed for useful access.
+ * WORKAROUND: Appends to the end of the context menu items at this time.
+ */
 function makeMainMenu(aContextMenu, aAppList) {
   let menu = $E('menu', {
     id: kUI.mainMenu.id,

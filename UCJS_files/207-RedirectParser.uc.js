@@ -192,6 +192,7 @@ function RedirectParser_init() {
 }
 
 function createMenu(aContextMenu) {
+  // Inserts to the position following 'Copy Link Location'.
   let refItem = $ID('context-sep-copylink');
 
   let ui = kUI.menu;

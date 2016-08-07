@@ -240,6 +240,13 @@ function doCommand(aEvent) {
   }
 }
 
+/**
+ * Build the buttons on the navigation toolbar.
+ *
+ * TODO: Make the insertion position fixed for useful access.
+ * WORKAROUND: Inserts to the position before the 'Panel UI' button at this
+ * time.
+ */
 function makeButtons() {
   setStyleSheet();
 

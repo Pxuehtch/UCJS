@@ -6,7 +6,7 @@
 
 // @require Util.uc.js
 
-// @note A preference menu is added in 'tools' of the menu bar.
+// @note A preference menu is added in the 'Tools' menu of the menu bar.
 
 
 (function(window) {
@@ -936,6 +936,12 @@ const NoisyURLFilter = (function() {
  *   init: {function}
  */
 const PrefMenu = (function() {
+  /**
+   * Build the menu in the 'Tools' menu in the menu bar.
+   *
+   * TODO: Make the insertion position fixed for useful access.
+   * WORKAROUND: Appends to the end of the items of 'Tools' at this time.
+   */
   function init() {
     let menu = $E('menu', {
       id: kUI.prefMenu.id,

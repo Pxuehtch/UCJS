@@ -143,7 +143,7 @@ function handleEvent(event) {
 
 function createMenu(contextMenu) {
   // TODO: Make the insertion position of the menu fixed for useful access.
-  // WORKAROUND: Inserts to the top of the context menu at this point in time.
+  // WORKAROUND: Inserts to the top of the context menu at this time.
   let referenceNode = contextMenu.firstChild;
 
   let addSeparator = (separatorUI) => {
