@@ -107,6 +107,12 @@ const kPref = {
  * UI settings.
  */
 const kUI = {
+  // The native menu separator for the combined navigation controls block in
+  // the context menu.
+  navigationSeparator: {
+    id: 'context-sep-navigation'
+  },
+
   historyMenu: {
     id: 'ucjs_ListEx_historyMenu',
     label: 'History Tab/Recent',
@@ -201,10 +207,9 @@ const MainMenu = (function() {
   }
 
   function createMenu(contextMenu) {
-    // TODO: Make the insertion position of items fixed for useful access.
-    // WORKAROUND: Inserts to the top of the context menu at this point in
-    // time.
-    let referenceNode = contextMenu.firstChild;
+    // Inserts to the position following the combined navigation controls
+    // TODO: Fix the insertion position if a new item is inserted there.
+    let referenceNode = $ID(kUI.navigationSeparator.id).nextSibling;
 
     let addSeparator = (separatorUI) => {
       contextMenu.insertBefore($E('menuseparator', {
@@ -254,10 +259,10 @@ const MainMenu = (function() {
       // @see chrome://browser/content/nsContextMenu.js
       const {gContextMenu} = window;
 
-      let hidden =
-        gContextMenu.onLink ||
-        gContextMenu.onTextInput ||
-        gContextMenu.isTextSelected;
+      // The showing condition of the native combined navigation controls is
+      // suitable for our menus.
+      // @see chrome://browser/content/nsContextMenu.js::initNavigationItems
+      let hidden = $ID(kUI.navigationSeparator.id).hidden;
 
       [
         kUI.historyMenu,

@@ -257,7 +257,12 @@ function SendTo_init() {
 }
 
 function createMenu(aContextMenu) {
-  setSeparators(aContextMenu, aContextMenu.firstChild);
+  // TODO: Make the insertion position of items fixed for useful access.
+  // WORKAROUND: Inserts to the position following the combined navigation
+  // controls at this time.
+  let referenceNode = $ID('context-sep-navigation').nextSibling;
+
+  setSeparators(aContextMenu, referenceNode);
 }
 
 function onPopupShowing(event) {
