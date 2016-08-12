@@ -238,11 +238,19 @@ const SignPanel = (function() {
 
     Animation.stop();
 
-    // Determine the proper height of the panel for the first showing.
-    // TODO: Implement in a reliable way.
+    /**
+     * Determine the proper height of the panel for the first showing.
+     * WORKAROUND: Make a hidden temporary panel box with a base content.
+     * TODO: Implement in a reliable way.
+     */
     panelBox.label = kUI.IMESign['OFF'];
     panelBox.openPopupAtScreen(0, 0);
-    setTimeout(panelBox.hidePopup, 0);
+    panelBox.style.visibility = 'hidden';
+
+    setTimeout(() => {
+      panelBox.hidePopup();
+      panelBox.style.visibility = '';
+    }, 0);
   }
 
   function uninit() {
