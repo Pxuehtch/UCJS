@@ -210,29 +210,46 @@ const Highlighting = (function() {
  */
 const FindCommandObserver = (function() {
   /**
-   * Detects a short time interval of calls of command.
+   * 'keyup' event observer.
    *
-   * @note Perform only the native processing when the command is called in
-   * quick repeating (e.g. holding <F3> key down) because a highlighting is
-   * useless when it is reset in a short time.
+   * - Wait for the keyup event after the find command and highlight a find
+   *   result.
+   * - Skip the highlighting when the find-again command is called in quick
+   *   repeating by holding <F3/ctrl+g> key down.
    */
-  let isRepeating = (function() {
-    /**
-     * Max threshold interval time for a repeating command.
-     *
-     * @value {integer} [millisecond]
-     */
-    const kMaxInterval = 500;
+  const KeyupEvent = (function() {
+    let listener = null;
 
-    let lastTime = 0;
+    function addListener(resolve) {
+      // Clear existing listener.
+      removeListener();
 
-    return () => {
-      let currentTime = window.performance.now();
-      let interval = currentTime - lastTime;
+      listener = () => {
+        removeListener();
 
-      lastTime = currentTime;
+        resolve();
+      };
 
-      return interval < kMaxInterval;
+      // @note Use the capture mode to catch the event anytime.
+      window.addEventListener('keyup', listener, true);
+    }
+
+    function removeListener() {
+      if (!listener) {
+        return;
+      }
+
+      window.removeEventListener('keyup', listener, true);
+
+      listener = null;
+    }
+
+    function wait() {
+      return new Promise(addListener);
+    }
+
+    return {
+      wait
     };
   })();
 
@@ -249,19 +266,17 @@ const FindCommandObserver = (function() {
     // Terminate the active highlighting.
     Highlighting.stop();
 
-    // Don't highlight in quick repeating of command.
-    if (isRepeating()) {
-      return;
-    }
+    KeyupEvent.wait().then(() => {
+      // TODO: Check whether tasks could be queued or not. If they could, we
+      // must terminate the elders.
+      promiseFindResultInfo().then((findResultInfo) => {
+        if (!findResultInfo) {
+          return;
+        }
 
-    // TODO: Check whether tasks could be queued or not. If they could, we
-    // must terminate the elders.
-    promiseFindResultInfo().then((findResultInfo) => {
-      if (!findResultInfo) {
-        return;
-      }
-
-      Highlighting.start(findResultInfo);
+        Highlighting.start(findResultInfo);
+      }).
+      catch(Cu.reportError);
     }).
     catch(Cu.reportError);
   }
