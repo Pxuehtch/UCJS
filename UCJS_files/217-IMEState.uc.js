@@ -49,7 +49,6 @@ const {
 const kUI = {
   signPanel: {
     id: 'ucjs_IMEState_panel',
-    animationName: 'ucjs_IMEState_panelAnimation',
     imeDisabled: 'ucjs_IMEState_imeDisabled'
   },
 
@@ -195,13 +194,30 @@ const SignPanel = (function() {
    */
   const Animation = {
     start() {
-      // Start animation from the beginning.
-      panelBox.style.animation = '';
+      this.animation = panelBox.animate(
+        [
+          {
+            textShadow: '0 0 1px'
+          },
+          {
+            textShadow: '0 0 10px'
+          }
+        ],
+        {
+          duration: 1000,
+          direction: 'alternate',
+          iterations: Infinity
+        }
+      );
     },
 
     stop() {
-      // Suppress animation.
-      panelBox.style.animation = 'none';
+      if (!this.animation) {
+        return;
+      }
+
+      this.animation.cancel();
+      this.animation = null;
     }
   };
 
@@ -209,7 +225,7 @@ const SignPanel = (function() {
   init();
 
   function init() {
-    let {id, animationName, imeDisabled} = kUI.signPanel;
+    let {id, imeDisabled} = kUI.signPanel;
 
     // @note Remove the native margin of our panel to show at the right
     // position.
@@ -217,26 +233,15 @@ const SignPanel = (function() {
       #${id} {
         margin: 0;
         color: rgb(255, 0, 0);
-        animation: ${animationName} 1s infinite alternate;
       }
       .${imeDisabled} {
         color: rgb(100, 100, 100) !important;
-      }
-      @keyframes ${animationName} {
-        from {
-          text-shadow: 0 0 1px;
-        }
-        to {
-          text-shadow: 0 0 10px;
-        }
       }
     `);
 
     panelBox = $ID('mainPopupSet').appendChild($E('tooltip', {
       id
     }));
-
-    Animation.stop();
 
     /**
      * Determine the proper height of the panel for the first showing.

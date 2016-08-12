@@ -51,8 +51,7 @@ const {
  */
 const kUI = {
   highlightBox: {
-    id: 'ucjs_SpotFindResult_highlightBox',
-    animationName: 'ucjs_SpotFindResult_highlightAnimation'
+    id: 'ucjs_SpotFindResult_highlightBox'
   }
 };
 
@@ -372,6 +371,41 @@ const FindCommandObserver = (function() {
  *   clear: {function}
  */
 function HighlightBox(findResultInfo) {
+  /**
+   * Animation manager.
+   */
+  const Animation = {
+    start() {
+      this.animation = vars.box.animate(
+        [
+          {
+            opacity: 0.2
+          },
+          {
+            opacity: 1
+          }
+        ],
+        {
+          // The duration time for one cycle of a highlighting animation.
+          // @note Divide the whole duration of highlighting by a proper value
+          // for smooth animation.
+          duration: kPref.highlightDuration / 10,
+          direction: 'alternate',
+          iterations: Infinity
+        }
+      );
+    },
+
+    stop() {
+      if (!this.animation) {
+        return;
+      }
+
+      this.animation.cancel();
+      this.animation = null;
+    }
+  };
+
   let vars = {
     box: null
   };
@@ -414,15 +448,13 @@ function HighlightBox(findResultInfo) {
 
     vars.box.openPopupAtScreen(vars.box.left, vars.box.top);
 
-    // Start animation from the beginning.
-    vars.box.style.animation = '';
+    Animation.start();
   }
 
   function hide() {
     vars.box.hidePopup();
 
-    // Suppress animation.
-    vars.box.style.animation = 'none';
+    Animation.stop();
   }
 
   function clear() {
@@ -432,18 +464,13 @@ function HighlightBox(findResultInfo) {
   }
 
   function getBox() {
-    let {id, animationName} = kUI.highlightBox;
+    let {id} = kUI.highlightBox;
 
     let box = $ID(id);
 
     if (box) {
       return box;
     }
-
-    // The duration time for one cycle of a highlighting animation.
-    // @note Divide the whole duration of highlighting by a proper value for
-    // smooth animation.
-    let animationDuration = kPref.highlightDuration / 10;
 
     let {
       inner: {
@@ -475,15 +502,6 @@ function HighlightBox(findResultInfo) {
         border-right: none;
         -moz-border-top-colors: ${borderColors};
         -moz-border-bottom-colors: ${borderColors};
-        animation: ${animationName} ${animationDuration}ms infinite alternate;
-      }
-      @keyframes ${animationName} {
-        from {
-          opacity: .2;
-        }
-        to {
-          opacity: 1;
-        }
       }
     `);
 
