@@ -467,7 +467,7 @@ function getResult(aParams, aType) {
 
   kPresets.some((preset) => {
     if (preset.type === aType && preset.name === aParams.name) {
-      result = evaluate(aParams, preset);
+      result = evaluate(preset, aParams);
 
       return true;
     }
@@ -478,20 +478,9 @@ function getResult(aParams, aType) {
   return result;
 }
 
-function evaluate(aParams, aPreset) {
-  let result = {};
-
-  // Copy the preset.
-  for (let key in aPreset) {
-    result[key] = aPreset[key];
-  }
-
-  // Add the option.
-  for (let key in aParams) {
-    if (!(key in result)) {
-      result[key] = aParams[key];
-    }
-  }
+function evaluate(aPreset, aParams) {
+  // Copy the preset and merge the option parameters.
+  let result = Object.assign({}, aPreset, aParams);
 
   // Build a URL.
   if (!result.url) {
