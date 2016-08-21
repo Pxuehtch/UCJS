@@ -260,7 +260,7 @@ const Console = (function() {
       replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
 
     let output =
-      '[%file%]\n::%function%\n%message%'.
+      '[%file%] ::%function%\n%message%'.
       replace('%file%', getFileName(stackCaller.filename || '[N/A]')).
       replace('%function%', stackCaller.name || '[anonymous function]').
       replace('%message%', messages.join('\n'));

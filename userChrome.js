@@ -792,8 +792,6 @@ function UtilManager() {
   }
 
   function log(aMessage, aCaller) {
-    const kLogFormat = '[%file%]\n::%function%\n%message%';
-
     if (!aCaller) {
       aCaller = Components.stack.caller;
     }
@@ -805,7 +803,7 @@ function UtilManager() {
     let getFileName = (aURL) =>
       aURL.replace(/[?#].*$/, '').replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
 
-    let output = kLogFormat.
+    let output = '[%file%] ::%function%\n%message%'.
       replace('%file%', getFileName(aCaller.filename)).
       replace('%function%', aCaller.name || '(anonymous function)').
       replace('%message%', aMessage.join('\n'));
