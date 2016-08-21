@@ -1459,9 +1459,11 @@ function appendMenuItem(menuItem, listUI, referenceNode) {
  * Helper functions.
  */
 function fixPluralForm({format, count, labels}) {
+  // @note Make a plural form for an empty value. There can be only two cases,
+  // 'No tabs' or 'No history entries'.
   return format.
     replace('#1', count || 'No').
-    replace('#2', labels[(count < 2) ? 0 : 1]);
+    replace('#2', labels[count === 1 ? 0 : 1]);
 }
 
 function limitListRange({index, length, maxNumItems}) {
