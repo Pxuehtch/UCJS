@@ -252,10 +252,10 @@ const MainMenu = (function() {
 
     if (menupopup === contextMenu) {
       // @see chrome://browser/content/nsContextMenu.js
-      const {gContextMenu} = window;
+      const {gContextMenu, gContextMenuContentData} = window;
 
       // Check the trigger key to show our menus.
-      let doShow = event.ctrlKey;
+      let doShow = gContextMenuContentData.event.ctrlKey;
 
       [
         kUI.historyMenu,
