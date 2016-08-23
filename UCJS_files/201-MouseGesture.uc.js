@@ -468,6 +468,10 @@ function MouseGesture() {
     $event(pc, 'mouseup', onMouseUp);
 
     // Observe a dragging operation.
+    // TODO: Use capture mode for 'dragstart' to catch it on the panel
+    // container for e10s.
+    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1257790
+    // $event(pc, 'dragstart', onDragStart, true);
     $event(pc, 'dragstart', onDragStart);
     $event(pc, 'dragend', onDragEnd);
 
