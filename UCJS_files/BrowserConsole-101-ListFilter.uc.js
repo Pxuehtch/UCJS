@@ -156,31 +156,18 @@ function makeUI() {
 }
 
 function setObserver() {
-  function observeMessageAdded(aBrowserConsole) {
-    aBrowserConsole.ui.on('new-messages', onMessageAdded);
-
-    // Clean up when the console window closes.
-    $shutdown(() => {
-      aBrowserConsole.ui.off('new-messages', onMessageAdded);
-    });
-  }
-
   // @see resource://devtools/client/webconsole/hudservice.js
   const HUDService = Modules.require('devtools/client/webconsole/hudservice');
 
-  let browserConsole = HUDService.getBrowserConsole();
+  HUDService.openBrowserConsoleOrFocus().then((browserConsole) => {
+    browserConsole.ui.on('new-messages', onMessageAdded);
 
-  if (browserConsole) {
-    observeMessageAdded(browserConsole);
-
-    return;
-  }
-
-  Services.obs.addObserver(function observer(aSubject, aTopic) {
-    Services.obs.removeObserver(observer, aTopic);
-
-    observeMessageAdded(HUDService.getBrowserConsole());
-  }, 'web-console-created', false);
+    // Clean up when the console window closes.
+    $shutdown(() => {
+      browserConsole.ui.off('new-messages', onMessageAdded);
+    });
+  }).
+  catch(Cu.reportError);
 }
 
 /**
