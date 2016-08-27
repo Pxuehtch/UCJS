@@ -254,14 +254,18 @@ const Console = (function() {
     }).
     map(formatter.format);
 
-    let getFileName = (url) =>
-      url.
-      replace(/[?#].*$/, '').
-      replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
+    let getFileName = (url) => {
+      if (!url) {
+        return '';
+      }
 
-    let output =
-      '[%file%] ::%function%\n%message%'.
-      replace('%file%', getFileName(stackCaller.filename || '[N/A]')).
+      return url.
+        replace(/[?#].*$/, '').
+        replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
+    };
+
+    let output = '[%file%] ::%function%\n%message%'.
+      replace('%file%', getFileName(stackCaller.filename) || '[N/A]').
       replace('%function%', stackCaller.name || '[anonymous function]').
       replace('%message%', messages.join('\n'));
 
