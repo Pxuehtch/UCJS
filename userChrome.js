@@ -800,12 +800,16 @@ function UtilManager() {
       aMessage = [aMessage];
     }
 
+    // @note This will always return 'userChrome.js' for logs called in this
+    // file. I make this function to prevent hardcoding of the file name.
     let getFileName = (aURL) =>
-      aURL.replace(/[?#].*$/, '').replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
+      aURL.
+      replace(/[?#].*$/, '').
+      replace(/^.+?([^\/.]+(?:\.\w+)+)$/, '$1');
 
     let output = '[%file%] ::%function%\n%message%'.
       replace('%file%', getFileName(aCaller.filename)).
-      replace('%function%', aCaller.name || '(anonymous function)').
+      replace('%function%', aCaller.name || '[anonymous function]').
       replace('%message%', aMessage.join('\n'));
 
     let scriptError = $I('@mozilla.org/scripterror;1', 'nsIScriptError');
