@@ -1005,6 +1005,7 @@ const MovingTabObserver = {
         let originalData = originalBrowser[kDataKey.tabData];
 
         if (originalData) {
+          // Delete the temporary property that is not used anymore.
           delete originalBrowser[kDataKey.tabData];
         }
         else {
