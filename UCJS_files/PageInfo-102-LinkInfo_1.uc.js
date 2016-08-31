@@ -321,11 +321,11 @@ const LinkInfoCollector = (function() {
 
     let setInfo = (info) => {
       for (let key in info) {
-        // Sanitize a falsy value except {number} 0.
+        // Remove a useless falsy value except {number} 0.
         if (info[key] === 0) {
           info[key] = '0';
         }
-        else if (key in info && !info[key]) {
+        else if (!info[key]) {
           delete info[key];
         }
       }
