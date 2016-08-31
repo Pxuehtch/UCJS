@@ -154,8 +154,7 @@ const Menu = (function() {
         return;
       }
 
-      TextDocument.test().
-      then((shouldShow) => {
+      TextDocument.test().then((shouldShow) => {
         showItem(prettifyPage, shouldShow);
       }).
       catch(Cu.reportError);
@@ -532,8 +531,7 @@ const TextDocument = (function() {
 
   function test() {
     return Task.spawn(function*() {
-      let contentType = gBrowser.selectedBrowser.documentContentType;
-      let textType = getTextType(contentType);
+      let textType = getTextType();
 
       if (!textType) {
         return false;
@@ -568,15 +566,35 @@ const TextDocument = (function() {
     });
   }
 
-  function getTextType(aContentType) {
-    switch (aContentType) {
+  function getTextType() {
+    let contentType = gBrowser.selectedBrowser.documentContentType;
+
+    switch (contentType) {
       case 'text/javascript':
       case 'application/javascript':
-      case 'application/x-javascript':
+      case 'application/x-javascript': {
         return kTextType.js;
+      }
 
-      case 'text/css':
+      case 'text/css': {
         return kTextType.css;
+      }
+
+      case 'text/plain': {
+        let extension =
+          gBrowser.currentURI.QueryInterface(Ci.nsIURL).fileExtension;
+
+        switch (extension) {
+          case 'js': {
+            return kTextType.js;
+          }
+
+          case 'css':
+          case 'scss': {
+            return kTextType.css;
+          }
+        }
+      }
     }
 
     return null;
