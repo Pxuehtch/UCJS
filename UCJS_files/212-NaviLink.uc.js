@@ -2559,8 +2559,9 @@ const NaviLinkScorer = (function() {
       let otherParts = otherURL.parts;
 
       let originalLength = originalParts.length;
+      let otherLength = otherParts.length;
 
-      if (!originalLength || !otherParts.length) {
+      if (!originalLength || !otherLength) {
         return 0;
       }
 
@@ -2572,11 +2573,12 @@ const NaviLinkScorer = (function() {
         if (matchIndex > -1) {
           matches++;
 
-          // Remove the matched item to avoid matching with the same value of
+          // Disable the matched item to avoid matching with the same value of
           // another item of the original parts.
-          delete otherParts[matchIndex];
+          otherParts[matchIndex] = null;
+          otherLength--;
 
-          if (!otherParts.length) {
+          if (!otherLength) {
             break;
           }
         }
