@@ -166,7 +166,7 @@ const kPreset = [
   {
     url: 'https://docs.google.com/viewer?url=%enc%',
     types: ['LINK'],
-    // @see https://support.google.com/drive/answer/2423485
+    // @see https://support.google.com/drive/answer/37603
     extensions: ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf'],
     label: '%type%を Google Docs Viewer で表示'
   },
@@ -184,7 +184,7 @@ const kPreset = [
   {
     url: 'http://dic.search.yahoo.co.jp/search?ei=UTF-8&fr=dic&p=%enc%',
     types: ['TEXT'],
-    label: '%type%を Yahoo!辞書 で引く'
+    label: '%type%を Yahoo!辞書 で検索'
   }
 ];
 

@@ -6,8 +6,8 @@
 
 // @require LinkInfo.uc.xul
 // @require Util.uc.js
-// @note The page info window has to be opened from the browser window which
-// has |window.ucjsUtil|.
+// @note The page info window has to be opened by the browser window which has
+// |window.ucjsUtil|.
 
 // @note Some functions are exported (window.ucjsLinkInfo.XXX).
 

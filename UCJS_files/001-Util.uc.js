@@ -1117,8 +1117,8 @@ const MessageManager = (function() {
      *
      * [Format]
      * function() {
-     *   '${ContentScripts.XXX}';
-     *   '${ContentScripts.YYY}';
+     *   '${[context module name].ContentScripts.XXX}';
+     *   '${[context module name].ContentScripts.YYY}';
      *
      *   and your code...
      * }

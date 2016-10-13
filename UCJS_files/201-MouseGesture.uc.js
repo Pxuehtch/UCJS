@@ -848,7 +848,7 @@ function MouseEventManager() {
         break;
       }
 
-      // @note the 'mousemove' event works only when a gesture is in progress.
+      // @note The 'mousemove' event works only when a gesture is in progress.
       // @see |MouseGesture::addEvents|
       case 'mousemove': {
         if (!mSuppressMenu) {
@@ -858,7 +858,7 @@ function MouseEventManager() {
         break;
       }
 
-      // @note the 'wheel' event works only when a gesture is in progress.
+      // @note The 'wheel' event works only when a gesture is in progress.
       // @see |MouseGesture::addEvents|
       case 'wheel': {
         if (!mSuppressMenu) {
