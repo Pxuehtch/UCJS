@@ -317,8 +317,6 @@ const LinkInfoCollector = (function() {
   function getLinkInfo(node, strings) {
     const XLinkNS = 'http://www.w3.org/1999/xlink';
 
-    let linkInfo;
-
     let setInfo = (info) => {
       for (let key in info) {
         // Remove a useless falsy value except {number} 0.
@@ -330,99 +328,133 @@ const LinkInfoCollector = (function() {
         }
       }
 
-      linkInfo = info;
+      return info;
     };
 
-    if (node.localName === 'script' && node.src) {
-      setInfo({
-        name: getText(node, strings.type.script),
-        address: node.src,
-        type: strings.type.script
-      });
-    }
-    else if (node.localName === 'link' && node.href) {
-      let target = node.rel || node.rev;
-
-      setInfo({
-        name: getText(node, target),
-        address: node.href,
-        type: strings.type.link,
-        target
-      });
-    }
-    else if ((node.localName === 'input' || node.localName === 'button') &&
-             node.type) {
-      let name, address, target;
-      let type = node.type.toLowerCase();
-
-      if (type === 'submit' || type === 'image') {
-        name = '';
-
-        if (type === 'image') {
-          name += strings.note.image;
-        }
-
-        name += getText(node, node.value || node.alt || strings.type.submit);
-
-        if (node.form) {
-          address = node.form.action;
-          target = node.form.target;
-        }
+    if (node.localName === 'script') {
+      if (node.src) {
+        return setInfo({
+          name: getText(node, strings.type.script),
+          address: node.src,
+          type: strings.type.script
+        });
       }
 
-      if (address) {
-        setInfo({
-          name,
-          address,
-          type: strings.type.submit,
+      return null;
+    }
+
+    if (node.localName === 'link') {
+      if (node.href) {
+        let target = node.rel || node.rev;
+
+        return setInfo({
+          name: getText(node, target),
+          address: node.href,
+          type: strings.type.link,
           target
         });
       }
+
+      return null;
     }
-    else if (node.localName === 'area' && node.href) {
-      setInfo({
-        name: getText(node),
-        address: node.href,
-        type: strings.type.area,
-        target: node.target
-      });
+
+    if (node.localName === 'input' ||
+        node.localName === 'button') {
+      if (node.type) {
+        let name, address, target;
+        let type = node.type.toLowerCase();
+
+        if (type === 'submit' || type === 'image') {
+          name = '';
+
+          if (type === 'image') {
+            name += strings.note.image;
+          }
+
+          name += getText(node, node.value || node.alt || strings.type.submit);
+
+          if (node.form) {
+            address = node.form.action;
+            target = node.form.target;
+          }
+        }
+
+        if (address) {
+          return setInfo({
+            name,
+            address,
+            type: strings.type.submit,
+            target
+          });
+        }
+      }
+
+      return null;
     }
-    else if ((node.localName === 'q' || node.localName === 'blockquote' ||
-              node.localName === 'ins' || node.localName === 'del') &&
-              node.cite) {
-      setInfo({
-        name: getText(node),
-        address: node.cite,
-        type: strings.type[node.localName]
-      });
+
+    if (node.localName === 'area') {
+      if (node.href) {
+        return setInfo({
+          name: getText(node),
+          address: node.href,
+          type: strings.type.area,
+          target: node.target
+        });
+      }
+
+      return null;
     }
-    else if (node.hasAttributeNS(XLinkNS, 'href')) {
+
+    if (node.localName === 'q' ||
+        node.localName === 'blockquote' ||
+        node.localName === 'ins' ||
+        node.localName === 'del') {
+      if (node.cite) {
+        return setInfo({
+          name: getText(node),
+          address: node.cite,
+          type: strings.type[node.localName]
+        });
+      }
+
+      return null;
+    }
+
+    if (node.hasAttributeNS(XLinkNS, 'href')) {
       let href = node.getAttributeNS(XLinkNS, 'href');
       let address = resolveURL(href, node.baseURI);
 
       if (address) {
         // TODO: get |target| and |accesskey|.
-        setInfo({
+        return setInfo({
           name: getText(node),
           address,
           type: strings.type.xlink
         });
       }
-    }
-    else if (node.localName === 'a' && node.href) {
-      let imgs = node.getElementsByTagName('img');
-      let note = (imgs && imgs.length) ? strings.note.image : '';
 
-      setInfo({
-        name: note + getText(node),
-        address: node.href,
-        type: strings.type.a,
-        target: node.target,
-        accesskey: node.accessKey
-      });
+      return null;
     }
 
-    return linkInfo;
+    if (node.localName === 'a') {
+      if (node.href) {
+        let imgs = node.getElementsByTagName('img');
+        let note = (imgs && imgs.length) ? strings.note.image : '';
+
+        return setInfo({
+          name: note + getText(node),
+          address: node.href,
+          type: strings.type.a,
+          target: node.target,
+          accesskey: node.accessKey
+        });
+      }
+
+      return null;
+    }
+
+    // No link info found.
+    return null;
   }
 
   function resolveURL(url, baseURL) {
