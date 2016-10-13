@@ -68,15 +68,15 @@ const kUI = {
    */
   type: {
     a: '<a>',
-    area: '<area>',
-    submit: 'submit', // for <input> or <button> of <form>.
     script: '<script>',
     link: '<link>',
-    xlink: 'XLink',
+    submit: 'submit', // for <input> or <button> of <form>.
+    area: '<area>',
     q: '<q>',
     blockquote: '<blockquote>',
     ins: '<ins>',
-    del: '<del>'
+    del: '<del>',
+    xlink: 'XLink'
   },
 
   /**
@@ -331,6 +331,23 @@ const LinkInfoCollector = (function() {
       return info;
     };
 
+    if (node.localName === 'a') {
+      if (node.href) {
+        let imgs = node.getElementsByTagName('img');
+        let note = (imgs && imgs.length) ? strings.note.image : '';
+
+        return setInfo({
+          name: note + getText(node),
+          address: node.href,
+          type: strings.type.a,
+          target: node.target,
+          accesskey: node.accessKey
+        });
+      }
+
+      return null;
+    }
+
     if (node.localName === 'script') {
       if (node.src) {
         return setInfo({
@@ -430,23 +447,6 @@ const LinkInfoCollector = (function() {
           name: getText(node),
           address,
           type: strings.type.xlink
-        });
-      }
-
-      return null;
-    }
-
-    if (node.localName === 'a') {
-      if (node.href) {
-        let imgs = node.getElementsByTagName('img');
-        let note = (imgs && imgs.length) ? strings.note.image : '';
-
-        return setInfo({
-          name: note + getText(node),
-          address: node.href,
-          type: strings.type.a,
-          target: node.target,
-          accesskey: node.accessKey
         });
       }
 
