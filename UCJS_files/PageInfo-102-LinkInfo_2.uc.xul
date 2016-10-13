@@ -44,7 +44,7 @@
       ondblclick="ucjsLinkInfo.openLink(event);">
       <treecols>
         <treecol id="ucjs_LinkInfo_indexColumn" label="#"
-          persist="hidden" style="min-width:2em;"/>
+          persist="hidden" style="min-width:3em;"/>
         <splitter class="tree-splitter"/>
         <treecol id="ucjs_LinkInfo_nameColumn" label="名前"
           persist="hidden width" width="5" flex="5"/>
