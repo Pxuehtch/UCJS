@@ -273,7 +273,10 @@ const Console = (function() {
       Modules.$I('@mozilla.org/scripterror;1', 'nsIScriptError');
 
     scriptError.init(
-      output,
+      // TODO: Allow line breaks in messages.
+      // |Services.console.logMessage| ignores line breaks from Fx50. I don't
+      // know a bugzilla page about it.
+      output.replace(/\n/g, ' | '),
       stackCaller.filename,
       stackCaller.sourceLine,
       stackCaller.lineNumber,
