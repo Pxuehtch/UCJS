@@ -117,6 +117,11 @@ const UIEvent = (function() {
       case 'click':
       case 'pageselect':
       case 'pageshow': {
+        // Perform by the left button click.
+        if (event.type === 'click' && event.button !== 0) {
+          return;
+        }
+
         // Try to show a sign on a textbox.
         showSign();
 
