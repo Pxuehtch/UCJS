@@ -1768,7 +1768,7 @@ const NaviLink = (function() {
       naviLinkType = NaviLinkTypeFixup.registered(naviLinkType);
 
       if (naviLinkType) {
-        // Make a temporary attributes to append the array of 'rel' values
+        // Make a temporary attributes list to append the array of 'rel' values
         // except for this link type.
         let thisAttributes = attributes.slice();
 

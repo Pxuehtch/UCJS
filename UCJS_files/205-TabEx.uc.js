@@ -1650,7 +1650,7 @@ function closeTabsFromAdjacentToEnd(aBaseTab, aDirection) {
     last = tabs.length - 1;
   }
 
-  for (let i = last; i >= top ; i--) {
+  for (let i = last; i >= top; i--) {
     TabUtils.removeTab(tabs[i], {safetyLock: true});
   }
 }
@@ -1660,7 +1660,7 @@ function closeReadTabs() {
   let tabs = getTabs('active');
 
   // Closing from the last tab.
-  for (let i = tabs.length - 1, tab; i >= 0 ; i--) {
+  for (let i = tabs.length - 1, tab; i >= 0; i--) {
     tab = tabs[i];
 
     if (TabData.get(tab, 'read')) {

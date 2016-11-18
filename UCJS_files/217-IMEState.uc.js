@@ -66,13 +66,14 @@ const UIEvent = (function() {
 
   function init() {
     // Show a sign when an editable element is clicked or hide it for the
-    // other place.
+    // other place is clicked.
     $event(window, 'click', handleEvent);
 
     // Show a sign when an IME key is pressed or hide it for the other keys.
     $event(window, 'keyup', handleEvent);
 
-    // Show a sign when a content page shows and a textbox is focused.
+    // Show a sign when a content page shows and a textbox is automatically
+    // focused.
     $page('pageselect', handleEvent);
     $page('pageshow', handleEvent);
 
