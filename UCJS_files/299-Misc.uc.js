@@ -1066,7 +1066,10 @@ const {
               FindBar.findText.value = vars.findString;
             }
 
-            gFindBar.updateControlState();
+            // TODO: Update the findbar status. I don't know how to do it
+            // properly. |gFindBar.updateControlState| can't work well from
+            // Fx50.
+            // gFindBar.updateControlState();
           });
         }
 
