@@ -33,7 +33,8 @@ const {
   EventManager,
   Listeners: {
     $event,
-    $page
+    $page,
+    $shutdown
   },
   DOMUtils: {
     init$E,
@@ -449,13 +450,24 @@ const Tooltip = (function() {
     // Create the tooltip panel.
     Panel.create();
 
-    // Clear the tooltip content when the page changes.
-    $page('pageselect', onPageChange);
-    $page('pagehide', onPageChange);
-
     // Observe mouse moving to show the tooltip only while trigger keys are
     // pressed down in an HTML document.
     let isObserving = false;
+
+    // Limit the execution rate of an event that is dispatched more often
+    // than we need to process.
+    let onMouseMoveThrottled = EventManager.throttleEvent(onMouseMove);
+
+    let stopObserving = () => {
+      isObserving = false;
+
+      let pc = gBrowser.mPanelContainer;
+
+      pc.removeEventListener('mousemove', onMouseMoveThrottled);
+
+      // Stop observing when any key (usually a trigger key) is released.
+      window.removeEventListener('keyup', stopObserving);
+    };
 
     $event(window, 'keydown', (event) => {
       let triggerKey = event.ctrlKey && event.altKey;
@@ -465,37 +477,28 @@ const Tooltip = (function() {
 
         let pc = gBrowser.mPanelContainer;
 
-        // Limit the execution rate of an event that is dispatched more often
-        // than we need to process.
-        let onMouseMoveThrottled = EventManager.throttleEvent(onMouseMove);
-
-        let stopObserving = () => {
-          isObserving = false;
-
-          pc.removeEventListener('mousemove', onMouseMoveThrottled);
-          window.removeEventListener('keyup', stopObserving);
-          window.removeEventListener('unload', stopObserving);
-        };
-
         pc.addEventListener('mousemove', onMouseMoveThrottled);
-
-        // Stop observing when any key is released.
         window.addEventListener('keyup', stopObserving);
-
-        // Clean up all when shutdown.
-        window.addEventListener('unload', stopObserving);
       }
     });
+
+    // Clean up function.
+    let cleanup = () => {
+      stopObserving();
+      clear();
+    };
+
+    // Clear the tooltip for an old content page when the page closes.
+    $page('pageselect', cleanup);
+    $page('pagehide', cleanup);
+
+    // Clean up when the browser closes.
+    $shutdown(cleanup);
   }
 
   function onMouseMove(event) {
     // Show the tooltip of a target node in the content area.
     show(event);
-  }
-
-  function onPageChange(event) {
-    // Close the tooltip when the document changes.
-    clear();
   }
 
   function onCommand(event) {
