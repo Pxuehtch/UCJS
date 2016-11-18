@@ -255,7 +255,8 @@ const MainMenu = (function() {
       const {gContextMenu, gContextMenuContentData} = window;
 
       // Check the trigger key to show our menus.
-      let doShow = gContextMenuContentData.event.ctrlKey;
+      const {shiftKey, ctrlKey, altKey} = gContextMenuContentData.event;
+      let doShow = ctrlKey && !shiftKey && !altKey;
 
       [
         kUI.historyMenu,
