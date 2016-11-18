@@ -465,6 +465,9 @@ const Tooltip = (function() {
 
       pc.removeEventListener('mousemove', onMouseMoveThrottled);
 
+      // Stop observing for any mouse action.
+      pc.removeEventListener('mousedown', stopObserving);
+
       // Stop observing when any key (usually a trigger key) is released.
       window.removeEventListener('keyup', stopObserving);
     };
@@ -478,6 +481,7 @@ const Tooltip = (function() {
         let pc = gBrowser.mPanelContainer;
 
         pc.addEventListener('mousemove', onMouseMoveThrottled);
+        pc.addEventListener('mousedown', stopObserving);
         window.addEventListener('keyup', stopObserving);
       }
     });
