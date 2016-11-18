@@ -785,7 +785,7 @@ function doAction(appInfo, action) {
           targetURL = gContextMenu.mediaURL;
         }
         else if (gContextMenu.onCanvas) {
-          targetURL = yield promiseCanvasDataURL();
+          targetURL = yield promiseCanvasBlobURL();
         }
  
         break;
@@ -832,10 +832,10 @@ function promiseDocInfo() {
   });
 }
 
-function promiseCanvasDataURL() {
+function promiseCanvasBlobURL() {
   let messageName = {
-    request: 'ContextMenu:Canvas:ToDataURL',
-    response: 'ContextMenu:Canvas:ToDataURL:Result'
+    request: 'ContextMenu:Canvas:ToBlobURL',
+    response: 'ContextMenu:Canvas:ToBlobURL:Result'
   };
 
   let paramsAsCPOW = {
@@ -843,7 +843,9 @@ function promiseCanvasDataURL() {
   };
 
   return promiseMessage(messageName, null, paramsAsCPOW).then((data) => {
-    return data.dataURL;
+    // WORKAROUND: Put a tag for canvas image. The tag is referenced by
+    // |makeFileName|.
+    return data.blobURL + '?canvas';
   });
 }
 
@@ -1058,6 +1060,7 @@ function makeFileName(uri, docInfo) {
   }
 
   const kDataImageBaseName = 'data_image';
+  const kCanvasImageBaseName = 'canvas_image';
   const kMaxBaseNameLen = 32;
   const kEllipsis = '__';
 
@@ -1083,6 +1086,14 @@ function makeFileName(uri, docInfo) {
     if (match) {
       baseName = kDataImageBaseName;
       extension = match[1];
+    }
+  }
+  else if (/^blob$/.test(uri.scheme)) {
+    // WORKAROUND: Check a tag for canvas image. The tag is attached by
+    // |promiseCanvasBlobURL|.
+    if (uri.path.endsWith('?canvas')) {
+      baseName = kCanvasImageBaseName;
+      extension = 'png';
     }
   }
 
