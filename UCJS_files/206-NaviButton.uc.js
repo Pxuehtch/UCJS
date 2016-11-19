@@ -484,10 +484,10 @@ const History = {
       let border = historyIndex + step;
 
       let within = backward ? (i) => -1 < i : (i) => i < historyCount;
-      let host = getHost(historyEntries[historyIndex].url);
+      let hostId = getHostId(historyEntries[historyIndex].url);
 
       for (/**/; within(border); border += step) {
-        if (host !== getHost(historyEntries[border].url)) {
+        if (hostId !== getHostId(historyEntries[border].url)) {
           break;
         }
       }
@@ -560,18 +560,27 @@ const History = {
 /**
  * Helper function.
  */
-function getHost(url) {
-  if (!url) {
-    return null;
-  }
 
-  try {
-    return Modules.BrowserUtils.makeURI(url).host;
-  }
-  catch (ex) {}
+/**
+ * Makes an identifier using the scheme and host for the URL.
+ *
+ * @param url {string}
+ * @return {string}
+ */
+function getHostId(url) {
+  // @note |url| is a valid URL string that is retrieved from the browser
+  // session history.
+  // @see |updateHistoryData|
+  let [scheme, mainScheme, innerScheme] =
+    url.match(/^([a-z0-9+-.]+:)([a-z0-9+-.]+:)?/i);
 
-  // Return scheme.
-  return /^(\w+):/.exec(url)[1];
+  let hostMatchRE = /^(?:https?|ftp):$/.test(innerScheme || mainScheme) ?
+    /^\/\/(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?(?:\/|$)/ :
+    /^(?:\/+)?(.+?)(?:[#?\/]|$)/;
+
+  let host = url.replace(scheme, '').match(hostMatchRE)[1];
+
+  return scheme + host;
 }
 
 function selectOrOpen(aURL, aOption = {}) {
