@@ -552,7 +552,14 @@ const History = {
       catch(Cu.reportError);
     }
     else {
-      gBrowser.gotoIndex(index);
+      try {
+        // TODO: Check |NS_ERROR_FILE_NOT_FOUND| exception.
+        // This error raises for the history of a not-exist internal file
+        // (e.g. chrome://browser/content/notexist), but an expected
+        // aboutNetError page shows.
+        gBrowser.gotoIndex(index);
+      }
+      catch (ex) {}
     }
   }
 };
