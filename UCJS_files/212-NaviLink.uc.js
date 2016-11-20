@@ -2936,6 +2936,7 @@ const URIUtil = (function() {
     }
     catch (ex) {}
 
+    // The scheme is (https?|ftp).
     return uri.prePath.
       match(/^(?:[a-z]+:\/\/)?(?:[^\/]+@)?\[?(.+?)\]?(?::\d+)?$/)[1];
   }

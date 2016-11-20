@@ -125,7 +125,7 @@ const Modules = (function() {
       moduleName: 'Preferences'
     },
     {
-      // @see resource:///modules/SessionStore.jsm
+      // @see resource:///modules/sessionstore/SessionStore.jsm
       name: 'SessionStore',
       moduleURL: '/modules/sessionstore/SessionStore.jsm'
     },

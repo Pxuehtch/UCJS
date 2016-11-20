@@ -118,7 +118,7 @@ function content_createURLUtil() {
    * Half width: 0x0021-0x007E
    * Full width: 0xFF01-0xFF5E
    *
-   * @see http://taken.s101.xrea.com/blog/article.php?id=510
+   * @see https://web.archive.org/web/20130705074403/http://taken.s101.xrea.com/blog/article.php?id=510
    */
   let normalize = (str) => str.replace(/[\uFF01-\uFF5E]/g,
     (char) => {

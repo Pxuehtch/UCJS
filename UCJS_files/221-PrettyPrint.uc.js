@@ -66,7 +66,7 @@ const kTextType = (function() {
  * @see chrome://devtools/content/scratchpad/scratchpad.js::Scratchpad::onLoad
  *
  * Available options in the built-in version:
- * @see chrome://devtools/content/sourceeditor/codemirror/codemirror.js::OPTION DEFAULTS
+ * @see chrome://devtools/content/sourceeditor/codemirror/lib/codemirror.js::OPTION DEFAULTS
  *
  * Available options in the recent version:
  * @see http://codemirror.net/doc/manual.html#config
