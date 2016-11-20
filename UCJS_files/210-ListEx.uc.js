@@ -349,11 +349,14 @@ const HistoryList = (function() {
      * @see chrome://browser/content/browser.js::gotoHistoryIndex
      * @see chrome://browser/content/utilityOverlay.js::checkForMiddleClick
      */
-    function openTabHistory(aIndex) {
+    function openTabHistory(aIndex, aSelectedIndex) {
       return {
         oncommand: 'gotoHistoryIndex(event);',
         onclick: 'checkForMiddleClick(this,event);',
-        index: aIndex // Used in |gotoHistoryIndex|.
+
+        // Set attributes that are used in |gotoHistoryIndex|.
+        index: aIndex,
+        historyindex: aIndex - aSelectedIndex
       };
     }
 
@@ -519,7 +522,7 @@ const HistoryList = (function() {
 
           className.push('unified-nav-' + direction);
 
-          action = Action.openTabHistory(i);
+          action = Action.openTabHistory(i, selectedIndex);
         }
 
         // @note |label| and |icon| will be set asynchronously.
