@@ -829,7 +829,7 @@ function UtilManager() {
       // Just a log message.
       scriptError.infoFlag,
       // [Category]
-      // Javascript in the chrome frame.
+      // JavaScript in the chrome frame.
       // @note The browser console displays, but the web console does not.
       'chrome javascript'
     );

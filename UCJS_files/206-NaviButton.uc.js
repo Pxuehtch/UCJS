@@ -554,7 +554,7 @@ const History = {
     else {
       try {
         // TODO: Check |NS_ERROR_FILE_NOT_FOUND| exception.
-        // This error raises for the history of a not-exist internal file
+        // This error occurs for the history of a not-exist internal file
         // (e.g. chrome://browser/content/notexist), but an expected
         // aboutNetError page shows.
         gBrowser.gotoIndex(index);
