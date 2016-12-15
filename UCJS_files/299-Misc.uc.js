@@ -595,7 +595,7 @@ const {
             // @note [...window.frames] doesn't work since |window.frames|
             // doesn't have [Symbol.iterator].
             hasTargetFrame =
-              Array.some(view.top.frames, (frame) => frame.name === target);
+              Array.some(view.parent.frames, (frame) => frame.name === target);
           }
 
           if (!hasTargetFrame) {
