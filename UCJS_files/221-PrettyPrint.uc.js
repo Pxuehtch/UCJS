@@ -11,6 +11,13 @@
 // @note The menuitem appears with the native 'View Page Source' menuitem.
 
 
+/**
+ * !!! This script is deprecated. It's no more supported. !!!
+ *
+ * You can prettify a JS/CSS source code in Firefox Developer Tools.
+ */
+
+
 (function(window) {
 
 
