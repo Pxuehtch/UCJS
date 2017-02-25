@@ -2675,23 +2675,23 @@ const BrowserUtils = (function() {
     if (!event && window.gContextMenu) {
       let contextMenuEvent = window.gContextMenuContentData.event;
 
-      x = contextMenuEvent.clientX;
-      y = contextMenuEvent.clientY;
+      x = contextMenuEvent.screenX;
+      y = contextMenuEvent.screenY;
     }
     else if (event) {
       x = event.screenX;
       y = event.screenY;
-
-      let {
-        screenX: left,
-        screenY: top
-      } = gBrowser.selectedBrowser.boxObject;
-
-      // Convert the screen coordinates of a cursor to the client ones in the
-      // content area.
-      x -= left;
-      y -= top;
     }
+
+    let {
+      screenX: left,
+      screenY: top
+    } = gBrowser.selectedBrowser.boxObject;
+
+    // Convert the screen coordinates of a cursor to the client ones in the
+    // content area.
+    x -= left;
+    y -= top;
 
     return {x, y};
   }
