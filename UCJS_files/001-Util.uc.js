@@ -624,11 +624,29 @@ const ContentScripts = (function() {
   /**
    * Find an element from the given coordinates.
    *
+   * @param x {float}
+   * @param y {float}
+   * @param options {hash}
+   *   root: {Document}
+   *   requestDetails: {boolean}
+   * @return {Element|hash|null}
+   *   {Element}: A found element.
+   *   {hash}: The details for a found element if |requestDetails| is true.
+   *     node: {Element}
+   *       A actual found element at the given coordinates.
+   *     area: {Element|null}
+   *       An <area> if <img> or <object> is actually found.
+   *     clientOffset: {hash}
+   *       The coordinates of the position of the node in the owner window
+   *       viewport.
+   *       x: {float}
+   *       y: {float}
+   *
    * Additional features:
    * - This method descends through frames.
    *   @see resource://devtools/shared/layout/utils.js
-   * - This method can find an <area> element of the image map on <img> and
-   *   <object>.
+   * - This method can find an <area> element that is associated with the image
+   *   map on <img> and <object>.
    */
   function content_getElementFromPoint(x, y, options = {}) {
     let {root, requestDetails} = options;
@@ -646,7 +664,14 @@ const ContentScripts = (function() {
       }
 
       if (requestDetails) {
-        return {node, area};
+        return {
+          node,
+          area,
+          clientOffset: {
+            x,
+            y
+          }
+        };
       }
 
       return area || node;
@@ -2754,7 +2779,7 @@ const BrowserUtils = (function() {
    *   only white-spaces.
    *   @note The long text string can be cut to a useful length.
    *
-   * TODO: It seems more reliable to find a focused range by using
+   * TODO: It seems more reliable way to find a focused range by using
    * |caretPositionFromPoint| and |range.isPointInRange|. But the former is
    * unstable for editable elements.
    * @see https://developer.mozilla.org/en/docs/Web/API/Document/caretPositionFromPoint#Browser_compatibility
@@ -2764,7 +2789,9 @@ const BrowserUtils = (function() {
   function content_getSelectionTextAtPoint(x, y, options = {}) {
     let {requestDetails} = options;
 
-    let node = DOMUtils.getElementFromPoint(x, y);
+    let {node, clientOffset} = DOMUtils.getElementFromPoint(x, y, {
+      requestDetails: true
+    });
     let selection = content_getSelection(node);
 
     if (!selection || !selection.toString()) {
@@ -2784,10 +2811,10 @@ const BrowserUtils = (function() {
         texts.push(getRangeText(range));
       }
 
-      let rect = range.getBoundingClientRect();
+      let {left, right, top, bottom} = range.getBoundingClientRect();
+      let {x, y} = clientOffset;
 
-      if (rect.left <= x && x <= rect.right &&
-          rect.top <= y && y <= rect.bottom) {
+      if (left <= x && x <= right && top <= y && y <= bottom) {
         if (!requestDetails) {
           return getRangeText(range);
         }
