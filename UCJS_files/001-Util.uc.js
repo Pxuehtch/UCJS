@@ -657,8 +657,9 @@ const ContentScripts = (function() {
 
     let node = root.elementFromPoint(x, y);
     let area = null;
+    let clientOffset = {x, y};
 
-    let createResult = (node, area) => {
+    let createResult = ({node, area, clientOffset}) => {
       if (!node) {
         return null;
       }
@@ -667,10 +668,7 @@ const ContentScripts = (function() {
         return {
           node,
           area,
-          clientOffset: {
-            x,
-            y
-          }
+          clientOffset
         };
       }
 
@@ -693,11 +691,11 @@ const ContentScripts = (function() {
         });
 
         if (subDetails) {
-          return createResult(subDetails.node, subDetails.area);
+          return createResult(subDetails);
         }
       }
 
-      return createResult(node, area);
+      return createResult({node, area, clientOffset});
     }
 
     // Find an <area> element in the image map of <img> or <object>.
@@ -707,7 +705,7 @@ const ContentScripts = (function() {
       area = content_getAreaElementFromPoint(node, x, y);
     }
 
-    return createResult(node, area);
+    return createResult({node, area, clientOffset});
   }
 
   function content_getFrameContentOffset(frame) {
