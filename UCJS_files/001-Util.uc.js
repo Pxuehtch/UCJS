@@ -565,7 +565,6 @@ const ContentScripts = (function() {
    * content document inside it, and then try to match ".sub-container div" in
    * side this document.
    *
-   * The original code:
    * @see resource://devtools/client/shared/frame-script-utils.js
    */
   function content_querySelector(selector, root = content.document) {
@@ -624,29 +623,30 @@ const ContentScripts = (function() {
   /**
    * Find an element from the given coordinates.
    *
+   * This method descends through frames.
+   * @see resource://devtools/shared/layout/utils.js
+   *
    * @param x {float}
    * @param y {float}
    * @param options {hash}
    *   root: {Document}
    *   requestDetails: {boolean}
-   * @return {Element|hash|null}
-   *   {Element}: A found element.
-   *   {hash}: The details for a found element if |requestDetails| is true.
+   * @return {Element|hash|null} |null| if an element is not found.
+   *   {Element|null} A found element.
+   *     @note This method returns an <area> element that is associated with
+   *     the image map on <img> and <object>.
+   *     @note A found <area> isn't present in the given point but an owner
+   *     <img> or <object> actually exists.
+   *   {hash|null} The details for a found element if |requestDetails| is true.
    *     node: {Element}
-   *       A actual found element at the given coordinates.
+   *       A actual found element at the given point.
    *     area: {Element|null}
-   *       An <area> if <img> or <object> is actually found.
+   *       <area> of actually found <img>/<object>.
    *     clientOffset: {hash}
    *       The coordinates of the position of the node in the owner window
    *       viewport.
    *       x: {float}
    *       y: {float}
-   *
-   * Additional features:
-   * - This method descends through frames.
-   *   @see resource://devtools/shared/layout/utils.js
-   * - This method can find an <area> element that is associated with the image
-   *   map on <img> and <object>.
    */
   function content_getElementFromPoint(x, y, options = {}) {
     let {root, requestDetails} = options;
@@ -699,8 +699,6 @@ const ContentScripts = (function() {
     }
 
     // Find an <area> element in the image map of <img> or <object>.
-    // @note A found <area> element isn't present in the given point. An node
-    // that has the map image actually exists.
     if (node && node.useMap) {
       area = content_getAreaElementFromPoint(node, x, y);
     }
@@ -1739,7 +1737,6 @@ const Listeners = (function() {
 /**
  * Content task manager.
  *
- * The original code:
  * @see http://dxr.mozilla.org/mozilla-release/source/testing/mochitest/BrowserTestUtils/ContentTask.jsm
 */
 const ContentTask = (function() {
