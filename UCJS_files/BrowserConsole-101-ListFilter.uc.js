@@ -117,10 +117,7 @@ function setStyleSheet() {
       background-color: transparent !important;
     }
     .theme-light .${kUI.button.id}[checked] {
-      background-color: rgb(76, 158, 217, .2) !important;
-    }
-    .theme-light .${kUI.button.id}[checked]:hover {
-      background-color: rgb(76, 158, 217, .4) !important;
+      background-color: rgb(76, 158, 217, .3) !important;
     }
   `);
 }
