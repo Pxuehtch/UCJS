@@ -401,8 +401,8 @@ const kSiteList = [
           }
           h2.hd + div > ol,  #mn #ires > ol,
           h2.hd + div > div, #mn #ires > div {
-            -moz-column-count: 2;
-            -moz-column-gap: 1em;
+            column-count: 2;
+            column-gap: 1em;
           }
         `;
       }
