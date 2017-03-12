@@ -798,7 +798,7 @@ const ContentScripts = (function() {
             // X/Y coordinates of the circle's center, and radius.
             let [cx, cy, r] = coords;
 
-            if (Math.pow(x - cx, 2) + Math.pow(y - cy, 2) <= r * r) {
+            if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) {
               return area;
             }
           }
