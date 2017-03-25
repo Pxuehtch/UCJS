@@ -76,13 +76,13 @@ const {
 const kPresetNavi = [
   {
     name: 'Google Search',
-    url: /^https?:\/\/www\.google\.(?:com|co\.jp)\/(?:#|search|webhp).+/,
+    url: /^https:\/\/www\.google\.(?:com|co\.jp)\/(?:#|search|webhp).+/,
     prev: 'id("nav")//td[1]/a | id("nf")/parent::a',
     next: 'id("nav")//td[last()]/a | id("nn")/parent::a'
   },
   {
     name: 'DuckDuckGo Search',
-    url: /^https?:\/\/duckduckgo.com\/(?:html|lite)/,
+    url: /^https:\/\/duckduckgo.com\/(?:html|lite)/,
     prev: './/input[@class="navbutton" and @value[contains(.,"Prev")]]',
     next: './/input[@class="navbutton" and @value[contains(.,"Next")]]'
   }
