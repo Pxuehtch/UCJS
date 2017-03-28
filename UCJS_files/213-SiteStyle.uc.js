@@ -581,7 +581,7 @@ const kSiteList = [
   },
   {
     name: 'Youtube Player',
-    include: /^https?:\/\/(?:www\.)?youtube\.com\/(?:watch|channel|user)/,
+    include: /^https:\/\/(?:www\.)?youtube\.com\/(?:watch|channel|user)/,
     preload(uri, browser) {
       // WORKAROUND: Changes a parameter for the start time of a video page
       // coming from 'Play in Youtube.com' of an embedded player so that we can

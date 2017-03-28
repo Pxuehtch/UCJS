@@ -110,7 +110,7 @@ const kPreset = [
   },
   {
     name: 'Google 画像検索',
-    link: /^https?:\/\/(?:www|images)\.google\..+?\/imgres\?(?=.*?imgurl=([^&]+))(?=.*?imgrefurl=([^&]+)).*$/,
+    link: /^https:\/\/(?:www|images)\.google\..+?\/imgres\?(?=.*?imgurl=([^&]+))(?=.*?imgrefurl=([^&]+)).*$/,
     items: [
       {
         replacement: '$1',
@@ -124,7 +124,7 @@ const kPreset = [
   },
   {
     name: 'Yahoo! Japan リンク',
-    link: /^(?:https?:\/\/ard\.yahoo\.co\.jp\/.+?\/\*)?https?:\/\/rdsig\.yahoo\.co\.jp\/.+?\/RU=(\w+).*$/,
+    link: /^(?:https:\/\/ard\.yahoo\.co\.jp\/.+?\/\*)?https:\/\/rdsig\.yahoo\.co\.jp\/.+?\/RU=(\w+).*$/,
     items: [
       {
         replacement: (match, $1) => {

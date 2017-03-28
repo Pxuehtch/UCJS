@@ -1300,7 +1300,7 @@ const PageEvents = (function() {
    */
   const SpecialURLs = (function() {
     const kSpecialURLs = [
-      /^https?:\/\/www\.google\.(?:com|co\.jp)\/.*q=/
+      /^https:\/\/www\.google\.(?:com|co\.jp)\/.*q=/
     ];
 
     function test(targetURL) {
