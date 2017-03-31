@@ -123,8 +123,10 @@ const kPreset = [
     ]
   },
   {
+    // Redirect URL in Yahoo! JAPAN pages.
     name: 'Yahoo! Japan リンク',
-    link: /^(?:https:\/\/ard\.yahoo\.co\.jp\/.+?\/\*)?https:\/\/rdsig\.yahoo\.co\.jp\/.+?\/RU=(\w+).*$/,
+    // @note HTTP URL still exists.
+    link: /^https?:\/\/(?:ard|ord|rdsig)\.yahoo\.co\.jp\/.+?\/RU=(\w+).*$/,
     items: [
       {
         replacement: (match, $1) => {
