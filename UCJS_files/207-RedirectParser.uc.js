@@ -672,7 +672,8 @@ function setAttributeForCommand(aNode, aActionData) {
     case 'open': {
       command =
         'ucjsUtil.TabUtils.openTab("%url%",' +
-        '{inBackground:event.ctrlKey||event.button===1});';
+        '{inBackground:event.ctrlKey||event.button===1,' +
+        'relatedToCurrent:true});';
 
       break;
     }
