@@ -2430,6 +2430,7 @@ const TabUtils = (function() {
       allowThirdPartyFixup,
       fromExternal,
       allowMixedContent,
+      disallowInheritPrincipal,
       triggeringPrincipal,
       skipSecurityCheck,
       trustURL,
@@ -2456,6 +2457,10 @@ const TabUtils = (function() {
 
     if (allowMixedContent) {
       flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
+    }
+
+    if (disallowInheritPrincipal) {
+      flags |= Ci.nsIWebNavigation.LOAD_FLAGS_DISALLOW_INHERIT_PRINCIPAL;
     }
 
     gBrowser.loadURIWithFlags(url, {

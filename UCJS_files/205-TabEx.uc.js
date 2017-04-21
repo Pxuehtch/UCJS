@@ -457,29 +457,31 @@ const TabOpener = {
 
     function setOpenInfo(aTab, aParams) {
       Task.spawn(function*() {
-        let aURI, // {string}
+        let aURI = aParams[0], // {string}
             aReferrerURI, // {nsIURI}
             aReferrerPolicy,
             aCharset,
             aAllowThirdPartyFixup,
             aRelatedToCurrent,
             aFromExternal,
-            aAllowMixedContent;
+            aAllowMixedContent,
+            aDisallowInheritPrincipal;
 
         if (aParams.length === 2 &&
             typeof aParams[1] === 'object' &&
             !(aParams[1] instanceof Ci.nsIURI)) {
-          aURI                  = aParams[0];
-          aReferrerURI          = aParams[1].referrerURI;
-          aReferrerPolicy       = aParams[1].referrerPolicy;
-          aCharset              = aParams[1].charset;
-          aAllowThirdPartyFixup = aParams[1].allowThirdPartyFixup;
-          aRelatedToCurrent     = aParams[1].relatedToCurrent;
-          aFromExternal         = aParams[1].fromExternal;
-          aAllowMixedContent    = aParams[1].allowMixedContent;
+          let params = aParams[1];
+
+          aReferrerURI = params.referrerURI;
+          aReferrerPolicy = params.referrerPolicy;
+          aCharset = params.charset;
+          aAllowThirdPartyFixup = params.allowThirdPartyFixup;
+          aRelatedToCurrent = params.relatedToCurrent;
+          aFromExternal = params.fromExternal;
+          aAllowMixedContent = params.allowMixedContent;
+          aDisallowInheritPrincipal = params.disallowInheritPrincipal;
         }
         else {
-          aURI                  = aParams[0];
           aReferrerURI          = aParams[1];
           aCharset              = aParams[2];
           // aParams[3]: POST data.
@@ -531,6 +533,10 @@ const TabOpener = {
 
           if (aAllowMixedContent) {
             flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
+          }
+
+          if (aDisallowInheritPrincipal) {
+            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_DISALLOW_INHERIT_PRINCIPAL;
           }
 
           // TODO: Handle POST data.
