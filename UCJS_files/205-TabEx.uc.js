@@ -840,14 +840,18 @@ const TabSuspender = {
       let loadPage;
 
       if (openInfo) {
-        // TODO: Handle POST data.
-        // TODO: Handle triggering principal.
-        browser.loadURIWithFlags(loadingURL, {
-          flags: openInfo.flags,
-          referrerURI: makeURI(openInfo.referrerURL),
-          referrerPolicy: openInfo.referrerPolicy,
-          charset: openInfo.charset
-        });
+        // WORKAROUND: In Fx53, the page sometimes stays blank if try to load
+        // URL immediately.
+        setTimeout(() => {
+          // TODO: Handle POST data.
+          // TODO: Handle triggering principal.
+          browser.loadURIWithFlags(loadingURL, {
+            flags: openInfo.flags,
+            referrerURI: makeURI(openInfo.referrerURL),
+            referrerPolicy: openInfo.referrerPolicy,
+            charset: openInfo.charset
+          });
+        }, 0);
       }
       else {
         browser.loadURI(loadingURL);
