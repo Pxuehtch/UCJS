@@ -482,8 +482,8 @@ const TabOpener = {
           aURI                  = aParams[0];
           aReferrerURI          = aParams[1];
           aCharset              = aParams[2];
-          // aParams[3]: the POST data.
-          // aParams[4]: the owner tab.
+          // aParams[3]: POST data.
+          // aParams[4]: owner tab.
           aAllowThirdPartyFixup = aParams[5];
         }
 
@@ -533,7 +533,8 @@ const TabOpener = {
             flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
           }
 
-          // TODO: Handle the POST data.
+          // TODO: Handle POST data.
+          // TODO: Handle triggering principal.
           openInfo = {
             url: aURI,
             flags,
@@ -833,7 +834,8 @@ const TabSuspender = {
       let loadPage;
 
       if (openInfo) {
-        // TODO: Handle the POST data.
+        // TODO: Handle POST data.
+        // TODO: Handle triggering principal.
         browser.loadURIWithFlags(loadingURL, {
           flags: openInfo.flags,
           referrerURI: makeURI(openInfo.referrerURL),

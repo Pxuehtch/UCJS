@@ -2430,6 +2430,7 @@ const TabUtils = (function() {
       allowThirdPartyFixup,
       fromExternal,
       allowMixedContent,
+      triggeringPrincipal,
       skipSecurityCheck,
       trustURL,
       allowImageData
@@ -2462,7 +2463,8 @@ const TabUtils = (function() {
       referrerURI,
       referrerPolicy,
       charset,
-      postData
+      postData,
+      triggeringPrincipal
     });
 
     return gBrowser.selectedTab;
