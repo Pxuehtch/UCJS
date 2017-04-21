@@ -838,8 +838,7 @@ const TabSuspender = {
           flags: openInfo.flags,
           referrerURI: makeURI(openInfo.referrerURL),
           referrerPolicy: openInfo.referrerPolicy,
-          charset: openInfo.charset,
-          postData: null
+          charset: openInfo.charset
         });
       }
       else {
