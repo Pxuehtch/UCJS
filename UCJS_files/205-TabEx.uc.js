@@ -533,16 +533,15 @@ const TabOpener = {
             flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
           }
 
-          // @note Set |undefined| not to record a falsy value.
           // TODO: Handle the POST data.
           openInfo = {
             url: aURI,
             flags,
-            referrerURL: aReferrerURI || undefined,
-            referrerPolicy: aReferrerPolicy || undefined,
-            charset: aCharset || undefined,
-            relatedToCurrent: aRelatedToCurrent || undefined,
-            fromVisit: fromVisit || undefined
+            referrerURL: aReferrerURI,
+            referrerPolicy: aReferrerPolicy,
+            charset: aCharset,
+            relatedToCurrent: aRelatedToCurrent,
+            fromVisit: fromVisit
           };
         }
 
