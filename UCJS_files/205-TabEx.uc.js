@@ -459,6 +459,7 @@ const TabOpener = {
       Task.spawn(function*() {
         let aURI, // {string}
             aReferrerURI, // {nsIURI}
+            aReferrerPolicy,
             aCharset,
             aAllowThirdPartyFixup,
             aRelatedToCurrent,
@@ -470,6 +471,7 @@ const TabOpener = {
             !(aParams[1] instanceof Ci.nsIURI)) {
           aURI                  = aParams[0];
           aReferrerURI          = aParams[1].referrerURI;
+          aReferrerPolicy       = aParams[1].referrerPolicy;
           aCharset              = aParams[1].charset;
           aAllowThirdPartyFixup = aParams[1].allowThirdPartyFixup;
           aRelatedToCurrent     = aParams[1].relatedToCurrent;
@@ -537,6 +539,7 @@ const TabOpener = {
             url: aURI,
             flags,
             referrerURL: aReferrerURI || undefined,
+            referrerPolicy: aReferrerPolicy || undefined,
             charset: aCharset || undefined,
             relatedToCurrent: aRelatedToCurrent || undefined,
             fromVisit: fromVisit || undefined
@@ -832,13 +835,13 @@ const TabSuspender = {
 
       if (openInfo) {
         // TODO: Handle the POST data.
-        browser.loadURIWithFlags(
-          loadingURL,
-          openInfo.flags,
-          makeURI(openInfo.referrerURL) || null,
-          openInfo.charset || null,
-          null // POST data.
-        );
+        browser.loadURIWithFlags(loadingURL, {
+          flags: openInfo.flags,
+          referrerURI: makeURI(openInfo.referrerURL),
+          referrerPolicy: openInfo.referrerPolicy,
+          charset: openInfo.charset,
+          postData: null
+        });
       }
       else {
         browser.loadURI(loadingURL);

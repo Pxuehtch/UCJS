@@ -2424,6 +2424,7 @@ const TabUtils = (function() {
 
     let {
       referrerURI,
+      referrerPolicy,
       charset,
       postData,
       allowThirdPartyFixup,
@@ -2456,7 +2457,13 @@ const TabUtils = (function() {
       flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
     }
 
-    gBrowser.loadURIWithFlags(url, flags, referrerURI, charset, postData);
+    gBrowser.loadURIWithFlags(url, {
+      flags,
+      referrerURI,
+      referrerPolicy,
+      charset,
+      postData
+    });
 
     return gBrowser.selectedTab;
   }
