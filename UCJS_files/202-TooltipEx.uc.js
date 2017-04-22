@@ -371,15 +371,17 @@ const Tooltip = (function() {
     }
 
     function content_collectInfo(node) {
-      // @see resource://devtools/server/css-logic.js
-      const {CssLogic} = Modules.require('devtools/server/css-logic');
+      // @see resource://devtools/shared/inspector/css-logic.js
+      const {findCssSelector} = Modules.
+        require('devtools/shared/inspector/css-logic');
 
       let selector = '';
       let nodeTree = [];
 
       let setSelector = (node) => {
-        // TODO: Handle exception and no value returned.
-        let thisSelector = CssLogic.findCssSelector(node) || node.localName;
+        // TODO: Handle exception.
+        // TODO: Consider processing in case of no value returned.
+        let thisSelector = findCssSelector(node) || node.localName;
 
         if (selector) {
           // Add a frame separator.
