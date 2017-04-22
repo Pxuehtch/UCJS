@@ -565,7 +565,7 @@ const ContentScripts = (function() {
    * content document inside it, and then try to match ".sub-container div" in
    * side this document.
    *
-   * @see resource://devtools/client/shared/frame-script-utils.js
+   * @see chrome://devtools/content/shared/frame-script-utils.js
    */
   function content_querySelector(selector, root = content.document) {
     const kFrameSeparator = '|>';
