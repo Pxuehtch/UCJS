@@ -243,16 +243,15 @@ const Console = (function() {
 
     let formatter = new Log.ParameterFormatter();
     let messages = logData.map((data) => {
-      // TODO: Add other exceptions if error occurs in ParameterFormatter.
+      // TODO: Add other exceptions if error occurs in |ParameterFormatter|.
       if (data instanceof Element ||
           data instanceof Document ||
           data instanceof Window) {
-        return data.toString();
+        data = data.toString();
       }
 
-      return data;
-    }).
-    map(formatter.format);
+      return formatter.format(data);
+    });
 
     let getFileName = (url) => {
       if (!url) {
