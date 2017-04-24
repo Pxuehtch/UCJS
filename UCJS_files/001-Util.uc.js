@@ -229,7 +229,7 @@ const Modules = (function() {
  * Log function.
  */
 const Console = (function() {
-  function logMessage(logData, stackCaller) {
+  function log(logData, stackCaller) {
     if (!stackCaller) {
       stackCaller = Components.stack.caller;
     }
@@ -275,7 +275,7 @@ const Console = (function() {
   }
 
   return {
-    log: logMessage
+    log
   };
 })();
 
