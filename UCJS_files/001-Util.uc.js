@@ -269,30 +269,8 @@ const Console = (function() {
       replace('%function%', stackCaller.name || '[anonymous function]').
       replace('%message%', messages.join('\n'));
 
-    let scriptError =
-      Modules.$I('@mozilla.org/scripterror;1', 'nsIScriptError');
-
-    scriptError.init(
-      // TODO: Allow line breaks in messages.
-      // |Services.console.logMessage| ignores line breaks from Fx50. I don't
-      // know a bugzilla page about it.
-      output.replace(/\n/g, ' | '),
-      stackCaller.filename,
-      stackCaller.sourceLine,
-      stackCaller.lineNumber,
-      // [Column number]
-      // TODO: How can I get a column number?
-      null,
-      // [Flags]
-      // Just a log message.
-      scriptError.infoFlag,
-      // [Category]
-      // JavaScript in the chrome frame.
-      // @note The browser console displays, but the web console does not.
-      'chrome javascript'
-    );
-
-    Services.console.logMessage(scriptError);
+    // |console.error| shows stack trace list.
+    window.console.error(output);
 
     return output;
   }

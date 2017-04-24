@@ -812,30 +812,8 @@ function UtilManager() {
       replace('%function%', aCaller.name || '[anonymous function]').
       replace('%message%', aMessage.join('\n'));
 
-    let scriptError = $I('@mozilla.org/scripterror;1', 'nsIScriptError');
-
-    scriptError.init(
-      // TODO: Allow line breaks in messages.
-      // |Services.console.logMessage| ignores line breaks from Fx50. I don't
-      // know a bugzilla page about it.
-      output.replace(/\n/g, ' | '),
-      aCaller.filename,
-      aCaller.sourceLine,
-      aCaller.lineNumber,
-      // [Column number]
-      // TODO: How can I get a column number?
-      null,
-      // [Flags]
-      // Just a log message.
-      scriptError.infoFlag,
-      // [Category]
-      // JavaScript in the chrome frame.
-      // @note The browser console displays, but the web console does not.
-      'chrome javascript'
-    );
-
-    $S('@mozilla.org/consoleservice;1', 'nsIConsoleService').
-      logMessage(scriptError);
+    // |console.error| shows stack trace list.
+    window.console.error(output);
   }
 
   /**
