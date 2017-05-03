@@ -2380,12 +2380,13 @@ const NaviLinkScorer = (function() {
 
       let makeWordRE = (str) => RegExp(`(?:^|[-_])(?:${str})(?:$|[-_])`, 'i');
 
+      let naviWordRE = makeWordRE(navi);
       let match = (attribute) => {
         if (!attribute) {
           return;
         }
 
-        return attribute.split(' ').find((s) => makeWordRE(navi).test(s));
+        return attribute.split(' ').find((s) => naviWordRE.test(s));
       };
 
       let makeDirections = (forward, backward) => {
