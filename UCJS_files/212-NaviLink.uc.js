@@ -2378,8 +2378,15 @@ const NaviLinkScorer = (function() {
     const kNaviAttribute = (function() {
       const navi = 'nav|navi|navigation|page|pager|paging|pagination';
 
-      let makeWordRE =
-        (str) => RegExp(`(?:^|[-_ ])(?:${str})(?:$|[-_ ])`, 'i');
+      let makeWordRE = (str) => RegExp(`(?:^|[-_])(?:${str})(?:$|[-_])`, 'i');
+
+      let match = (attribute) => {
+        if (!attribute) {
+          return;
+        }
+
+        return attribute.split(' ').find((s) => makeWordRE(navi).test(s));
+      };
 
       let makeDirections = (forward, backward) => {
         return {
@@ -2388,13 +2395,11 @@ const NaviLinkScorer = (function() {
         };
       };
 
-      let naviRE = makeWordRE(navi);
-
       let prev = kNaviWord.list.prev;
       let next = kNaviWord.list.next;
 
       return {
-        test: (str) => naviRE.test(str),
+        match,
         direction: {
           prev: makeDirections(prev, next),
           next: makeDirections(next, prev)
@@ -2414,8 +2419,7 @@ const NaviLinkScorer = (function() {
       matchWord: 100,
       noBackwardWord: 50,
       lessText: 50,
-      matchWordInAttribute: 50,
-      noBackwardWordInAttribute: 25
+      matchAttribute: 100
     });
 
     let vars = {
@@ -2518,13 +2522,12 @@ const NaviLinkScorer = (function() {
       }
 
       // Test the attribute for navigation.
-      if (attribute && kNaviAttribute.test(attribute)) {
-        if (vars.AttributeWordTester.match(attribute)) {
-          point += kScoreWeight.matchWordInAttribute;
+      let matchKey = kNaviAttribute.match(attribute);
 
-          if (!vars.AttributeWordTester.hasBackward(attribute)) {
-            point += kScoreWeight.noBackwardWordInAttribute;
-          }
+      if (matchKey) {
+        if (vars.AttributeWordTester.match(matchKey) &&
+            !vars.AttributeWordTester.hasBackward(matchKey)) {
+          point += kScoreWeight.matchAttribute;
         }
       }
 
