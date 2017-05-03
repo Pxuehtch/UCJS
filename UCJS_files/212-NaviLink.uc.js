@@ -2016,7 +2016,7 @@ const SiblingNavi = (function() {
 
       let links = yield promiseLinkList();
 
-      for (let {url, texts} of links) {
+      for (let {url, texts, attribute} of links) {
         if (entries.has(url) ||
             !/^https?:/.test(url) ||
             pageURI.isSamePage(url) ||
@@ -2036,7 +2036,7 @@ const SiblingNavi = (function() {
           }
 
           if (text) {
-            let score = naviLinkScorer.score({url, text});
+            let score = naviLinkScorer.score({url, text, attribute});
 
             if (score) {
               entries.add({url, text, score});
@@ -2119,6 +2119,7 @@ const SiblingNavi = (function() {
    *     @param {hash[]}
    *       url: {string}
    *       texts: {string[]}
+   *       attribute: {string}
    */
   function promiseLinkList() {
     return ContentTask.spawn({
@@ -2153,7 +2154,24 @@ const SiblingNavi = (function() {
             return;
           }
 
-          linkList.push({url, texts});
+          let attribute = '';
+          let elementNums = 3;
+
+          for (let element = node; element; element = element.parentElement) {
+            if (elementNums-- === 0) {
+              break;
+            }
+
+            attribute = [attribute, element.className, element.id].join(' ');
+          }
+
+          attribute = attribute.trim().replace(/\s+/g, ' ');
+
+          linkList.push({
+            url,
+            texts,
+            attribute
+          });
         };
 
         // Collect <a> and <area> with the 'href' attribute.
@@ -2345,6 +2363,38 @@ const NaviLinkScorer = (function() {
       };
 
       return {
+        list: {
+          prev: prev.en,
+          next: next.en
+        },
+        direction: {
+          prev: makeDirections(prev, next),
+          next: makeDirections(next, prev)
+        }
+      };
+    })();
+
+    // Data for examining an element with a navigation-like attribute.
+    const kNaviAttribute = (function() {
+      const navi = 'nav|navi|navigation|page|pager|paging|pagination';
+
+      let makeWordRE =
+        (str) => RegExp(`(?:^|[-_ ])(?:${str})(?:$|[-_ ])`, 'i');
+
+      let makeDirections = (forward, backward) => {
+        return {
+          forward: makeWordRE(forward),
+          backward: makeWordRE(backward)
+        };
+      };
+
+      let naviRE = makeWordRE(navi);
+
+      let prev = kNaviWord.list.prev;
+      let next = kNaviWord.list.next;
+
+      return {
+        test: (str) => naviRE.test(str),
         direction: {
           prev: makeDirections(prev, next),
           next: makeDirections(next, prev)
@@ -2360,21 +2410,25 @@ const NaviLinkScorer = (function() {
 
     // Score weighting.
     const kScoreWeight = initScoreWeight({
-      matchSign: 50,
-      matchWord: 50,
-      noBackwardWord: 25,
-      lessText: 20
+      matchSign: 100,
+      matchWord: 100,
+      noBackwardWord: 50,
+      lessText: 50,
+      matchWordInAttribute: 50,
+      noBackwardWordInAttribute: 25
     });
 
     let vars = {
       SignTester: null,
       WordTester: null,
+      AttributeWordTester: null
     };
 
     function init(direction) {
       let testers = [
         ['SignTester', kNaviSign],
-        ['WordTester', kNaviWord]
+        ['WordTester', kNaviWord],
+        ['AttributeWordTester', kNaviAttribute]
       ];
 
       for (let [tester, data] of testers) {
@@ -2413,7 +2467,7 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score({text}) {
+    function score({text, attribute}) {
       let point = 0;
       let match;
 
@@ -2460,6 +2514,17 @@ const NaviLinkScorer = (function() {
         else {
           // Exact match.
           point += kScoreWeight.lessText;
+        }
+      }
+
+      // Test the attribute for navigation.
+      if (attribute && kNaviAttribute.test(attribute)) {
+        if (vars.AttributeWordTester.match(attribute)) {
+          point += kScoreWeight.matchWordInAttribute;
+
+          if (!vars.AttributeWordTester.hasBackward(attribute)) {
+            point += kScoreWeight.noBackwardWordInAttribute;
+          }
         }
       }
 
@@ -2632,8 +2697,8 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score({url, text}) {
-      let point = TextScorer.score({text});
+    function score({url, text, attribute}) {
+      let point = TextScorer.score({text, attribute});
 
       if (point) {
         point += URLScorer.score({url});
