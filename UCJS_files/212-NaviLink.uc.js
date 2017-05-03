@@ -1986,8 +1986,8 @@ const SiblingNavi = (function() {
    * Promise for a list of the prev/next page by searching links.
    *
    * @param direction {string} 'prev' or 'next'
-   * @param pageURI {nsIURI}
-   *   The URI of the document to be searched (usually in the current tab).
+   * @param uri {nsIURI}
+   *   The URI of the document to be examined (usually in the current tab).
    * @return {Promise}
    *   resolve: {function}
    *     Resolved with the array of data item of sibling page.
@@ -2001,26 +2001,26 @@ const SiblingNavi = (function() {
    * @note Allows only URL that has the same as the base domain of the document
    * to avoid jumping to the outer domain.
    */
-  function guessBySearching(direction, pageURI) {
+  function guessBySearching(direction, uri) {
     return Task.spawn(function*() {
       if (!BrowserUtils.isHTMLDocument()) {
         return null;
       }
 
-      let uri = URIUtil.createURI(pageURI, {
+      let pageURI = URIUtil.createURI(uri, {
         hash: false
       });
 
-      let naviLinkScorer = NaviLinkScorer.create(uri, direction);
+      let naviLinkScorer = NaviLinkScorer.create(pageURI, direction);
       let entries = createSearchEntries();
 
       let links = yield promiseLinkList();
 
-      for (let {href, texts} of links) {
-        if (entries.has(href) ||
-            !/^https?:/.test(href) ||
-            uri.isSamePage(href) ||
-            !uri.isSameBaseDomain(href)) {
+      for (let {url, texts} of links) {
+        if (entries.has(url) ||
+            !/^https?:/.test(url) ||
+            pageURI.isSamePage(url) ||
+            !pageURI.isSameBaseDomain(url)) {
           continue;
         }
 
@@ -2036,10 +2036,10 @@ const SiblingNavi = (function() {
           }
 
           if (text) {
-            let score = naviLinkScorer.score(text, href);
+            let score = naviLinkScorer.score({url, text});
 
             if (score) {
-              entries.add(text, href, score);
+              entries.add({url, text, score});
 
               break;
             }
@@ -2064,8 +2064,8 @@ const SiblingNavi = (function() {
       urls.length = 0;
     }
 
-    function add(text, url, score) {
-      entries[entries.length] = {text, url, score};
+    function add({url, text, score}) {
+      entries[entries.length] = {url, text, score};
 
       // Cache for |has()|.
       urls[urls.length] = url;
@@ -2087,7 +2087,7 @@ const SiblingNavi = (function() {
       // Sort items in a *descending* of the score.
       entries.sort((a, b) => b.score - a.score);
 
-      let list = entries.map(({text, url, score}) => {
+      let list = entries.map(({url, text, score}) => {
         return {
           // [Data item format for sibling by searching]
           title: text,
@@ -2117,7 +2117,7 @@ const SiblingNavi = (function() {
    *   resolve {function}
    *     Resolved with the array of link data.
    *     @param {hash[]}
-   *       href: {string}
+   *       url: {string}
    *       texts: {string[]}
    */
   function promiseLinkList() {
@@ -2131,9 +2131,9 @@ const SiblingNavi = (function() {
         let linkList = [];
 
         let addData = (node) => {
-          let href = node.href;
+          let url = node.href;
 
-          if (!href) {
+          if (!url) {
             return;
           }
 
@@ -2153,10 +2153,10 @@ const SiblingNavi = (function() {
             return;
           }
 
-          linkList.push({href, texts});
+          linkList.push({url, texts});
         };
 
-        // <a> or <area> with the 'href' attribute.
+        // Collect <a> and <area> with the 'href' attribute.
         let links = content.document.links;
         let count = links.length;
 
@@ -2188,6 +2188,8 @@ const SiblingNavi = (function() {
    * Promise for a list of the prev/next page by numbering of URL.
    *
    * @param direction {string} 'prev' or 'next'
+   * @param uri {nsIURI}
+   *   The URI of the document to be examined (usually in the current tab).
    * @return {hash[]|null}
    *
    * [Data item format]
@@ -2195,7 +2197,7 @@ const SiblingNavi = (function() {
    *   there: {string}
    *   url: {string}
    */
-  function guessByNumbering(direction, pageURI) {
+  function guessByNumbering(direction, uri) {
     /**
      * RegExp patterns for string like the page number in URL.
      *
@@ -2212,26 +2214,26 @@ const SiblingNavi = (function() {
     // @note This task doesn't receive any iterators but this function must
     // return a promise for |createSiblingData|.
     return Task.spawn(function*() {
-      let uri = URIUtil.createURI(pageURI, {
+      let pageURI = URIUtil.createURI(uri, {
         hash: false
       });
 
-      if (!uri.hasPath()) {
+      if (!pageURI.hasPath()) {
         return null;
       }
 
-      direction = (direction === 'next') ? 1 : -1;
+      let pageURL = pageURI.spec;
+      let directionNum = (direction === 'next') ? 1 : -1;
 
       let list = [];
 
       kPageNumberRE.forEach((pattern) => {
-        let url = uri.spec;
         let matches;
 
-        while ((matches = pattern.exec(url))) {
+        while ((matches = pattern.exec(pageURL))) {
           let [match, leading , oldNum, trailing] = matches;
 
-          let newNum = parseInt(oldNum, 10) + direction;
+          let newNum = parseInt(oldNum, 10) + directionNum;
 
           if (newNum > 0) {
             newNum = newNum + '';
@@ -2246,7 +2248,7 @@ const SiblingNavi = (function() {
               // [Data item format for sibling by numbering]
               here: match,
               there: newVal,
-              url: url.replace(match, newVal)
+              url: pageURL.replace(match, newVal)
             });
           }
         }
@@ -2349,7 +2351,7 @@ const NaviLinkScorer = (function() {
 
       backward = RegExp(kNaviSign[opposite]);
 
-      vars.naviSign = initNaviData(forward, backward);
+      vars.naviSign = initNaviData({forward, backward});
 
       // Set up data for finding a text string or an image filename like a
       // navigation.
@@ -2368,10 +2370,10 @@ const NaviLinkScorer = (function() {
       word = kNaviWord[opposite];
       backward = RegExp(word.en + '|' + word.ja, 'i');
 
-      vars.naviWord = initNaviData(forward, backward);
+      vars.naviWord = initNaviData({forward, backward});
     }
 
-    function initNaviData(forward, backward) {
+    function initNaviData({forward, backward}) {
       function hasOpposite(text) {
         if (!text) {
           return false;
@@ -2402,7 +2404,7 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score(text) {
+    function score({text}) {
       let point = 0;
       let match;
 
@@ -2435,12 +2437,14 @@ const NaviLinkScorer = (function() {
         }
       }
 
+      // Test the length of the navigation-like text.
       if (point > 0) {
-        // Test the text length.
         if (text) {
           // The text seems less to be for navigation if more than 10
           // characters remain.
-          let rate = (text.length < 10) ? 1 - (text.length / 10) : 0;
+          const maxLenToBeNavi = 10;
+          let rate = (text.length < maxLenToBeNavi) ?
+            1 - (text.length / maxLenToBeNavi) : 0;
 
           point += (kScoreWeight.lessText * rate);
         }
@@ -2470,12 +2474,12 @@ const NaviLinkScorer = (function() {
     };
 
     function init(uri) {
-      vars.URLData = initURLData(uri);
+      vars.URLData = initURLData({uri});
     }
 
-    function initURLData(originalURI) {
-      let originalPrePath = originalURI.prePath;
-      let originalPath = originalURI.path;
+    function initURLData({uri}) {
+      let originalPrePath = uri.prePath;
+      let originalPath = uri.path;
 
       let originalURL = createData(originalPath);
 
@@ -2525,7 +2529,7 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score(url) {
+    function score({url}) {
       let URLData = vars.URLData.match(url);
 
       if (!URLData) {
@@ -2619,11 +2623,11 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score(text, url) {
-      let point = TextScorer.score(text);
+    function score({url, text}) {
+      let point = TextScorer.score({text});
 
       if (point) {
-        point += URLScorer.score(url);
+        point += URLScorer.score({url});
       }
 
       // Integer ranges:
@@ -2713,8 +2717,8 @@ const UpperNavi = (function() {
     return Cache.update().then((data) => data.upperURLList);
   }
 
-  function createUpperURLList(pageURI) {
-    let uri = URIUtil.createURI(pageURI, {
+  function createUpperURLList(uri) {
+    let currentURI = URIUtil.createURI(uri, {
       search: false
     });
 
@@ -2722,10 +2726,10 @@ const UpperNavi = (function() {
 
     let parentURL;
 
-    while ((parentURL = getParent(uri))) {
+    while ((parentURL = getParentURL(currentURI))) {
       list.push(parentURL);
 
-      uri = URIUtil.createURI(parentURL);
+      currentURI = URIUtil.createURI(parentURL);
     }
 
     if (!list.length) {
@@ -2735,7 +2739,7 @@ const UpperNavi = (function() {
     return list;
   }
 
-  function getParent(uri) {
+  function getParentURL(uri) {
     if (uri.hasPath()) {
       let path = uri.path.replace(/\/(?:index\.html?)?$/i, '')
       let segments = path.split('/');
@@ -2755,7 +2759,7 @@ const UpperNavi = (function() {
     return getUpperHost(uri);
   }
 
-  function getTop(uri) {
+  function getTopURL(uri) {
     if (uri.scheme === 'file') {
       // Test a drive letter.
       let match = /^(file:\/\/\/[a-z]:\/).+/i.exec(uri.spec);
@@ -2791,7 +2795,7 @@ const UpperNavi = (function() {
   /**
    * Wrappers for the exposed functions.
    */
-  function getCurrentParent() {
+  function getCurrentParentURL() {
     let uri = URIUtil.getCurrentURI({
       search: false
     });
@@ -2800,10 +2804,10 @@ const UpperNavi = (function() {
       return '';
     }
 
-    return getParent(uri);
+    return getParentURL(uri);
   }
 
-  function getCurrentTop() {
+  function getCurrentTopURL() {
     let uri = URIUtil.getCurrentURI({
       search: false
     });
@@ -2812,7 +2816,7 @@ const UpperNavi = (function() {
       return '';
     }
 
-    return getTop(uri);
+    return getTopURL(uri);
   }
 
   /**
@@ -2820,8 +2824,8 @@ const UpperNavi = (function() {
    */
   return {
     promiseUpperURLList,
-    getParent: getCurrentParent,
-    getTop: getCurrentTop
+    getParent: getCurrentParentURL,
+    getTop: getCurrentTopURL
   };
 })();
 
