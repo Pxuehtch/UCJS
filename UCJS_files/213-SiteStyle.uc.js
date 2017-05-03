@@ -376,6 +376,10 @@ const kSiteList = [
           .fl[href^="https://translate.google."] {
             display: none !important
           }
+          /* Inline map. */
+          .rrm {
+            display: none !important
+          }
         `;
       }
 
