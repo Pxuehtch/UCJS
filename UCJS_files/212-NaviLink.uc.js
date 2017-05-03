@@ -2707,8 +2707,8 @@ const NaviLinkScorer = (function() {
       // Integer ranges:
       // - Text score [0,1]
       // - URL score  [0,1]
-      // - Text + URL [0,2]
-      return point;
+      // - Return value [0,1]
+      return point / 2;
     }
 
     return {
