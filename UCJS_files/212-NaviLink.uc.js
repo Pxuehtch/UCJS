@@ -2292,32 +2292,67 @@ const SiblingNavi = (function() {
  */
 const NaviLinkScorer = (function() {
   const TextScorer = (function() {
-    const kNaviSign = {
+    // Data for finding a navigation sign.
+    const kNaviSign = (function() {
       // «(&laquo;):\u00ab, ‹(&lsaquo;):\u2039, ←(&larr;):\u2190,
       // ≪(&Lt;):\u226a, ◀:\u25c0, ◂(&ltrif;):\u25c2, ＜:\uff1c
-      prev: '<|\\u00ab|\\u2039|\\u2190|\\u226a|\\u25c0|\\u25c2|\\uff1c',
+      const prev = '<|\\u00ab|\\u2039|\\u2190|\\u226a|\\u25c0|\\u25c2|\\uff1c';
 
       // »(&raquo;):\u00bb, ›(&rsaquo;):\u203a, →(&rarr;):\u2192,
       // ≫(&Gt;):\u226b, ▶:\u25b6, ▸(&rtrif;):\u25b8, ＞:\uff1e
-      next: '>|\\u00bb|\\u203a|\\u2192|\\u226b|\\u25b6|\\u25b8|\\uff1e'
-    };
+      const next = '>|\\u00bb|\\u203a|\\u2192|\\u226b|\\u25b6|\\u25b8|\\uff1e';
 
-    const kNaviWord = {
-      prev: {
+      let makeDirections = (forward, backward) => {
+        return {
+          forward: RegExp(`^(?:${forward})+|(?:${forward})+$`),
+          backward: RegExp(backward)
+        };
+      };
+
+      return {
+        direction: {
+          prev: makeDirections(prev, next),
+          next: makeDirections(next, prev)
+        }
+      };
+    })();
+
+    // Data for finding a text string or an image filename like a
+    // navigation.
+    const kNaviWord = (function() {
+      const prev = {
         en: 'prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
-
         // 前:\u524D, 古い:\u53e4\u3044
         ja: '\\u524d|\\u53e4\\u3044'
-      },
-      next: {
-        en: 'next|new(?:er)?|forward|more',
+      };
 
+      const next = {
+        en: 'next|new(?:er)?|later|forward|more|continue',
         // 次:\u6b21, 新し:\u65b0\u3057
         ja: '\\u6b21|\\u65b0\\u3057'
-      }
-    };
+      };
 
-    // List of text not navigation-like.
+      let makeDirections = (forward, backward) => {
+        // Allows the short leading words before an english navigation word
+        // (e.g. 'Go to next page', 'goto-next-page.png').
+        let en = `(?:^|^[- \\w]{0,10}[-_ ])(?:${forward.en})(?:$|[-_. ])`,
+            ja = `^(?:${forward.ja})`;
+
+        return {
+          forward: RegExp(`(?:${en})|(?:${ja})`, 'i'),
+          backward: RegExp(`${backward.en}|${backward.ja}`, 'i')
+        };
+      };
+
+      return {
+        direction: {
+          prev: makeDirections(prev, next),
+          next: makeDirections(next, prev)
+        }
+      };
+    })();
+
+    // RegExp list of text not navigation-like.
     const kNGTextList = [
       // "response anchor" on BBS.
       /^(?:>|\uff1e){2,}[-\d ]+$/
@@ -2327,54 +2362,28 @@ const NaviLinkScorer = (function() {
     const kScoreWeight = initScoreWeight({
       matchSign: 50,
       matchWord: 50,
-      noOppositeWord: 25,
+      noBackwardWord: 25,
       lessText: 20
     });
 
     let vars = {
-      naviSign: null,
-      naviWord: null
+      SignTester: null,
+      WordTester: null,
     };
 
     function init(direction) {
-      let sign, word;
-      let forward, backward;
+      let testers = [
+        ['SignTester', kNaviSign],
+        ['WordTester', kNaviWord]
+      ];
 
-      let opposite = (direction === 'prev') ? 'next' : 'prev';
-
-      // Set up data for finding a navigation sign.
-      // @note Assume that the white-spaces of a test text have been
-      // normalized.
-      // @see |guessBySearching|
-      sign = kNaviSign[direction];
-      forward = RegExp('^(?:' + sign + ')+|(?:' + sign + ')+$');
-
-      backward = RegExp(kNaviSign[opposite]);
-
-      vars.naviSign = initNaviData({forward, backward});
-
-      // Set up data for finding a text string or an image filename like a
-      // navigation.
-      // @note Assume that the white-spaces of a test text have been
-      // normalized.
-      // @see |guessBySearching|
-      // @note Allows the short leading words before an english navigation
-      // word (e.g. 'Go to next page', 'goto-next-page.png').
-      word = kNaviWord[direction];
-
-      let en = '(?:^|^[- \\w]{0,10}[-_ ])(?:' + word.en + ')(?:$|[-_. ])';
-      let ja = '^(?:' + word.ja + ')';
-
-      forward = RegExp(en + '|' + ja, 'i');
-
-      word = kNaviWord[opposite];
-      backward = RegExp(word.en + '|' + word.ja, 'i');
-
-      vars.naviWord = initNaviData({forward, backward});
+      for (let [tester, data] of testers) {
+        vars[tester] = initNaviTester(data.direction[direction]);
+      }
     }
 
-    function initNaviData({forward, backward}) {
-      function hasOpposite(text) {
+    function initNaviTester({forward, backward}) {
+      function hasBackward(text) {
         if (!text) {
           return false;
         }
@@ -2399,7 +2408,7 @@ const NaviLinkScorer = (function() {
       }
 
       return {
-        hasOpposite,
+        hasBackward,
         match
       };
     }
@@ -2414,8 +2423,8 @@ const NaviLinkScorer = (function() {
       }
 
       // Test signs for navigation.
-      if (!vars.naviSign.hasOpposite(text)) {
-        match = vars.naviSign.match(text);
+      if (!vars.SignTester.hasBackward(text)) {
+        match = vars.SignTester.match(text);
 
         if (match) {
           point += kScoreWeight.matchSign;
@@ -2425,15 +2434,15 @@ const NaviLinkScorer = (function() {
       }
 
       // Test words for navigation.
-      match = vars.naviWord.match(text);
+      match = vars.WordTester.match(text);
 
       if (match) {
         point += kScoreWeight.matchWord;
 
         text = match.remainingText;
 
-        if (!vars.naviWord.hasOpposite(text)) {
-          point += kScoreWeight.noOppositeWord;
+        if (!vars.WordTester.hasBackward(text)) {
+          point += kScoreWeight.noBackwardWord;
         }
       }
 
@@ -2470,14 +2479,14 @@ const NaviLinkScorer = (function() {
     });
 
     let vars = {
-      URLData: null
+      URLTester: null
     };
 
     function init(uri) {
-      vars.URLData = initURLData({uri});
+      vars.URLTester = initURLTester({uri});
     }
 
-    function initURLData({uri}) {
+    function initURLTester({uri}) {
       let originalPrePath = uri.prePath;
       let originalPath = uri.path;
 
@@ -2530,7 +2539,7 @@ const NaviLinkScorer = (function() {
     }
 
     function score({url}) {
-      let URLData = vars.URLData.match(url);
+      let URLData = vars.URLTester.match(url);
 
       if (!URLData) {
         return 0;
