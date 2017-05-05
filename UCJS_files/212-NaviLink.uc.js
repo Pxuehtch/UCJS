@@ -2351,6 +2351,8 @@ const NaviLinkScorer = (function() {
       };
 
       let makeDirections = (forward, backward) => {
+        // Expects the navi word at the first word of string;
+        // 'prev', 'Previous *', 'next-*', 'newer.jpg', ...
         // Allows the short leading words before an english navigation word
         // (e.g. 'Go to next page', 'goto-next-page.png').
         let en = `(?:^|^[- \\w]{0,10}[-_ ])(?:${forward.en})(?:$|[-_. ])`,
@@ -2376,9 +2378,13 @@ const NaviLinkScorer = (function() {
 
     // Data for examining an element with a navigation-like attribute.
     const kNaviAttribute = (function() {
-      const navi = 'nav|navi|navigation|page|pager|paging|pagination';
+      // Expects nav-next, navigation_Next, paginationNext, nextlink, ...
+      // XXX: We would get false positive matches since the compound word like
+      // nextlink is allowed. But I think there are few cases in the attribute
+      // values.
+      const navi = 'nav|page|pagi|link';
 
-      let makeWordRE = (str) => RegExp(`(?:^|[-_])(?:${str})(?:$|[-_])`, 'i');
+      let makeWordRE = (str) => RegExp(`(?:${str})`, 'i');
 
       let naviWordRE = makeWordRE(navi);
       let match = (attribute) => {
