@@ -867,11 +867,11 @@ const PageObserver = (function() {
     $pageOnce('pageready', onPageReady);
 
     function onPageReady() {
-      Task.spawn(function*() {
+      (async () => {
         let css = site.style && site.style(newURI, browser);
 
         if (css) {
-          yield ContentTask.spawn({
+          await ContentTask.spawn({
             params: {css},
             task: function*(params) {
               '${ContentTask.ContentScripts.CSSUtils}';
@@ -894,7 +894,7 @@ const PageObserver = (function() {
             task: script.contentTask
           });
         }
-      }).
+      })().
       catch(Cu.reportError);
     }
   }

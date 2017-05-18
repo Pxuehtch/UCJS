@@ -362,14 +362,14 @@ const MenuUI = (function() {
       });
     }
     else if (data.submit) {
-      Task.spawn(function*() {
+      (async () => {
         let browser;
 
         if (inTab) {
           let newTab = gBrowser.duplicateTab(gBrowser.selectedTab);
 
           // Wait for the duplicated tab to complete.
-          yield EventManager.promiseEvent(newTab, 'SSTabRestored');
+          await EventManager.promiseEvent(newTab, 'SSTabRestored');
 
           browser = gBrowser.getBrowserForTab(newTab);
 
@@ -411,7 +411,7 @@ const MenuUI = (function() {
             catch(Cu.reportError);
           }
         });
-      }).
+      })().
       catch(Cu.reportError);;
     }
   }
@@ -480,8 +480,8 @@ const MenuUI = (function() {
 
     contextMenu.insertBefore(placeholder, endSeparator);
 
-    return Task.spawn(function*() {
-      let item = yield builder();
+    return (async () => {
+      let item = await builder();
 
       // Do nothing if the context menu has been closed.
       if (!URLBarContextMenu.isOpen()) {
@@ -491,7 +491,7 @@ const MenuUI = (function() {
       if (item) {
         contextMenu.replaceChild(item, placeholder);
       }
-    });
+    })();
   }
 
   /**
@@ -507,33 +507,31 @@ const MenuUI = (function() {
     return createPromiseBuild(placeholder, buildUpperNavi);
   }
 
-  function buildUpperNavi() {
-    return Task.spawn(function*() {
-      let upperURLList = yield UpperNavi.promiseUpperURLList();
+  async function buildUpperNavi() {
+    let upperURLList = await UpperNavi.promiseUpperURLList();
 
-      if (!upperURLList) {
-        return null;
-      }
+    if (!upperURLList) {
+      return null;
+    }
 
-      let upperNaviPopup = $E('menupopup');
+    let upperNaviPopup = $E('menupopup');
 
-      upperURLList.forEach((url) => {
-        upperNaviPopup.appendChild($E('menuitem', {
-          crop: 'start',
-          label: url,
-          [$a('open')]: url
-        }));
-      });
-
-      let upperNaviMenu = $E('menu', {
-        id: kUI.upper.id,
-        label: kUI.upper.label
-      });
-
-      upperNaviMenu.appendChild(upperNaviPopup);
-
-      return upperNaviMenu;
+    upperURLList.forEach((url) => {
+      upperNaviPopup.appendChild($E('menuitem', {
+        crop: 'start',
+        label: url,
+        [$a('open')]: url
+      }));
     });
+
+    let upperNaviMenu = $E('menu', {
+      id: kUI.upper.id,
+      label: kUI.upper.label
+    });
+
+    upperNaviMenu.appendChild(upperNaviPopup);
+
+    return upperNaviMenu;
   }
 
   /**
@@ -548,94 +546,92 @@ const MenuUI = (function() {
     return createPromiseBuild(placeholder, () => buildSiblingNavi(direction));
   }
 
-  function buildSiblingNavi(direction) {
-    return Task.spawn(function*() {
-      let siblingData = yield SiblingNavi.promiseSiblingData(direction);
+  async function buildSiblingNavi(direction) {
+    let siblingData = await SiblingNavi.promiseSiblingData(direction);
 
-      if (!siblingData) {
-        return null;
+    if (!siblingData) {
+      return null;
+    }
+
+    let {scanType, dataItems} = siblingData;
+
+    let siblingNaviMenuElement;
+
+    if (dataItems.length === 1) {
+      let data = dataItems[0];
+
+      let tooltiptext, command;
+
+      if (data.url) {
+        tooltiptext = data.url;
+        command = {
+          key: 'open',
+          value: data.url
+        };
       }
-
-      let {scanType, dataItems} = siblingData;
-
-      let siblingNaviMenuElement;
-
-      if (dataItems.length === 1) {
-        let data = dataItems[0];
-
-        let tooltiptext, command;
-
-        if (data.url) {
-          tooltiptext = data.url;
-          command = {
-            key: 'open',
-            value: data.url
-          };
-        }
-        else if (data.formIndex) {
-          tooltiptext = kUI.items.presetSubmitMode;
-          command = {
-            key: 'submit',
-            value: {
-              name: data.name,
-              formIndex: data.formIndex
-            }
-          };
-        }
-        else {
-          tooltiptext = kUI.items.presetNoNavigation;
-        }
-
-        tooltiptext = formatTooltip(
-          formatText(data, {
-            siblingScanType: scanType
-          }),
-          tooltiptext
-        );
-
-        siblingNaviMenuElement = $E('menuitem', {
-          tooltiptext
-        });
-
-        if (command) {
-          $E(siblingNaviMenuElement, {
-            [$a(command.key)]: command.value
-          });
-        }
-        else {
-          $E(siblingNaviMenuElement, {
-            disabled: true
-          });
-        }
+      else if (data.formIndex) {
+        tooltiptext = kUI.items.presetSubmitMode;
+        command = {
+          key: 'submit',
+          value: {
+            name: data.name,
+            formIndex: data.formIndex
+          }
+        };
       }
       else {
-        let siblingNaviPopup = $E('menupopup');
-
-        dataItems.forEach((data) => {
-          let text = formatText(data, {
-            siblingScanType: scanType
-          });
-
-          siblingNaviPopup.appendChild($E('menuitem', {
-            label: text,
-            tooltiptext: formatTooltip(text, data.url),
-            [$a('open')]: data.url
-          }));
-        });
-
-        siblingNaviMenuElement = $E('menu');
-        siblingNaviMenuElement.appendChild(siblingNaviPopup);
+        tooltiptext = kUI.items.presetNoNavigation;
       }
 
-      $E(siblingNaviMenuElement, {
-        id: kUI[direction].id,
-        label: $f(kUI[direction].label, {
-          scanType: kSiblingScanType[scanType]
-        })
+      tooltiptext = formatTooltip(
+        formatText(data, {
+          siblingScanType: scanType
+        }),
+        tooltiptext
+      );
+
+      siblingNaviMenuElement = $E('menuitem', {
+        tooltiptext
       });
 
-      return siblingNaviMenuElement;
+      if (command) {
+        $E(siblingNaviMenuElement, {
+          [$a(command.key)]: command.value
+        });
+      }
+      else {
+        $E(siblingNaviMenuElement, {
+          disabled: true
+        });
+      }
+    }
+    else {
+      let siblingNaviPopup = $E('menupopup');
+
+      dataItems.forEach((data) => {
+        let text = formatText(data, {
+          siblingScanType: scanType
+        });
+
+        siblingNaviPopup.appendChild($E('menuitem', {
+          label: text,
+          tooltiptext: formatTooltip(text, data.url),
+          [$a('open')]: data.url
+        }));
+      });
+
+      siblingNaviMenuElement = $E('menu');
+      siblingNaviMenuElement.appendChild(siblingNaviPopup);
+    }
+
+    $E(siblingNaviMenuElement, {
+      id: kUI[direction].id,
+      label: $f(kUI[direction].label, {
+        scanType: kSiblingScanType[scanType]
+      })
     });
+
+    return siblingNaviMenuElement;
   }
 
   /**
@@ -651,71 +647,71 @@ const MenuUI = (function() {
     return createPromiseBuild(placeholder, buildNaviLink);
   }
 
-  function buildNaviLink() {
-    return Task.spawn(function*() {
-      let naviLinkList = yield NaviLink.promiseNaviLinkList();
-      let subNaviLinkList = yield NaviLink.promiseSubNaviLinkList();
+  async function buildNaviLink() {
+    let [naviLinkList, subNaviLinkList] = await Promise.all([
+      NaviLink.promiseNaviLinkList(),
+      NaviLink.promiseSubNaviLinkList()
+    ]);
 
-      if (!naviLinkList && !subNaviLinkList) {
-        return null;
+    if (!naviLinkList && !subNaviLinkList) {
+      return null;
+    }
+
+    let naviLinkPopup = $E('menupopup');
+
+    [naviLinkList, subNaviLinkList].forEach((linkList) => {
+      if (!linkList) {
+        return;
       }
 
-      let naviLinkPopup = $E('menupopup');
+      if (naviLinkPopup.hasChildNodes()) {
+        naviLinkPopup.appendChild($E('menuseparator'));
+      }
 
-      [naviLinkList, subNaviLinkList].forEach((linkList) => {
-        if (!linkList) {
-          return;
-        }
+      linkList.forEach(({type, dataItems}) => {
+        let typeMenu = $E('menu');
+        let typePopup = typeMenu.appendChild($E('menupopup'));
 
-        if (naviLinkPopup.hasChildNodes()) {
-          naviLinkPopup.appendChild($E('menuseparator'));
-        }
+        let maxNumMenuItems = kUI.items.maxNumMenuItems;
+        let typeItems = dataItems.slice(0, maxNumMenuItems);
 
-        linkList.forEach(({type, dataItems}) => {
-          let typeMenu = $E('menu');
-          let typePopup = typeMenu.appendChild($E('menupopup'));
+        typeItems.forEach((data) => {
+          let text = formatText(data);
 
-          let maxNumMenuItems = kUI.items.maxNumMenuItems;
-          let typeItems = dataItems.slice(0, maxNumMenuItems);
-
-          typeItems.forEach((data) => {
-            let text = formatText(data);
-
-            typePopup.appendChild($E('menuitem', {
-              crop: 'center',
-              label: text,
-              tooltiptext: formatTooltip(text, data.url),
-              [$a('open')]: data.url
-            }));
-          });
-
-          let label = $f(kUI.items.type, {
-            title: getLabelForType(kNaviLinkType, type),
-            count: formatMenuItemsCount(dataItems)
-          });
-
-          let tooltiptext;
-
-          if (dataItems.length > maxNumMenuItems) {
-            tooltiptext = formatTooltip(label, kUI.items.tooManyMenuItems);
-          }
-
-          naviLinkPopup.appendChild($E(typeMenu, {
-            label,
-            tooltiptext
+          typePopup.appendChild($E('menuitem', {
+            crop: 'center',
+            label: text,
+            tooltiptext: formatTooltip(text, data.url),
+            [$a('open')]: data.url
           }));
         });
+
+        let label = $f(kUI.items.type, {
+          title: getLabelForType(kNaviLinkType, type),
+          count: formatMenuItemsCount(dataItems)
+        });
+
+        let tooltiptext;
+
+        if (dataItems.length > maxNumMenuItems) {
+          tooltiptext = formatTooltip(label, kUI.items.tooManyMenuItems);
+        }
+
+        naviLinkPopup.appendChild($E(typeMenu, {
+          label,
+          tooltiptext
+        }));
       });
-
-      let naviLinkMenu = $E('menu', {
-        id: kUI.naviLink.id,
-        label: kUI.naviLink.label
-      });
-
-      naviLinkMenu.appendChild(naviLinkPopup);
-
-      return naviLinkMenu;
     });
+
+    let naviLinkMenu = $E('menu', {
+      id: kUI.naviLink.id,
+      label: kUI.naviLink.label
+    });
+
+    naviLinkMenu.appendChild(naviLinkPopup);
+
+    return naviLinkMenu;
   }
 
   /**
@@ -731,116 +727,114 @@ const MenuUI = (function() {
     return createPromiseBuild(placeholder, buildPageInfo);
   }
 
-  function buildPageInfo() {
-    return Task.spawn(function*() {
-      let pageInfoList = yield NaviLink.promisePageInfoList();
+  async function buildPageInfo() {
+    let pageInfoList = await NaviLink.promisePageInfoList();
 
-      if (!pageInfoList) {
-        return null;
-      }
+    if (!pageInfoList) {
+      return null;
+    }
 
-      let pageInfoPopup = $E('menupopup');
+    let pageInfoPopup = $E('menupopup');
 
-      pageInfoList.forEach(({type, dataItems}) => {
-        let typeMenu = $E('menu');
-        let typePopup = typeMenu.appendChild($E('menupopup'));
+    pageInfoList.forEach(({type, dataItems}) => {
+      let typeMenu = $E('menu');
+      let typePopup = typeMenu.appendChild($E('menupopup'));
 
-        let maxNumMenuItems = kUI.items.maxNumMenuItems;
-        let metaInfo = type === 'meta';
+      let maxNumMenuItems = kUI.items.maxNumMenuItems;
+      let metaInfo = type === 'meta';
 
-        if (metaInfo) {
-          dataItems.sort((a, b) => {
-            return a.name.localeCompare(b.name) ||
-                   a.content.localeCompare(b.content);
-          });
-
-          let metaGroupList = {};
-          let metaAloneItems = [];
-
-          dataItems.forEach((data) => {
-            let metaGroupName = (/^(.+?)[:.].+/.exec(data.name) || [])[1];
-
-            if (metaGroupName) {
-              if (!(metaGroupName in metaGroupList)) {
-                metaGroupList[metaGroupName] = [];
-              }
-
-              metaGroupList[metaGroupName].push(data);
-            }
-            else {
-              metaAloneItems.push(data);
-            }
-          });
-
-          metaAloneItems.forEach((data) => {
-            typePopup.appendChild(createMetaMenuItem(data));
-          });
-
-          for (let metaGroupName in metaGroupList) {
-            let metaGroupPopup = $E('menupopup');
-
-            let metaGroupItems = metaGroupList[metaGroupName];
-
-            metaGroupItems.forEach((data) => {
-              metaGroupPopup.appendChild(createMetaMenuItem(data));
-            });
-
-            let metaGroupMenu = $E('menu', {
-              label: $f(kUI.items.type, {
-                title: metaGroupName,
-                count: formatMenuItemsCount(metaGroupItems, {
-                  noLimit: true
-                })
-              })
-            });
-
-            metaGroupMenu.appendChild(metaGroupPopup);
-            typePopup.appendChild(metaGroupMenu);
-          }
-        }
-        else {
-          let typeItems = dataItems.slice(0, maxNumMenuItems);
-
-          typeItems.forEach((data) => {
-            let text = formatText(data);
-
-            typePopup.appendChild($E('menuitem', {
-              crop: 'center',
-              label: text,
-              tooltiptext: formatTooltip(text, data.url),
-              [$a('open')]: data.url
-            }));
-          });
-        }
-
-        let label = $f(kUI.items.type, {
-          title: getLabelForType(kPageInfoType, type),
-          count: formatMenuItemsCount(dataItems, {
-            noLimit: metaInfo
-          })
+      if (metaInfo) {
+        dataItems.sort((a, b) => {
+          return a.name.localeCompare(b.name) ||
+                 a.content.localeCompare(b.content);
         });
 
-        let tooltiptext;
+        let metaGroupList = {};
+        let metaAloneItems = [];
 
-        if (!metaInfo && dataItems.length > maxNumMenuItems) {
-          tooltiptext = formatTooltip(label, kUI.items.tooManyMenuItems);
+        dataItems.forEach((data) => {
+          let metaGroupName = (/^(.+?)[:.].+/.exec(data.name) || [])[1];
+
+          if (metaGroupName) {
+            if (!(metaGroupName in metaGroupList)) {
+              metaGroupList[metaGroupName] = [];
+            }
+
+            metaGroupList[metaGroupName].push(data);
+          }
+          else {
+            metaAloneItems.push(data);
+          }
+        });
+
+        metaAloneItems.forEach((data) => {
+          typePopup.appendChild(createMetaMenuItem(data));
+        });
+
+        for (let metaGroupName in metaGroupList) {
+          let metaGroupPopup = $E('menupopup');
+
+          let metaGroupItems = metaGroupList[metaGroupName];
+
+          metaGroupItems.forEach((data) => {
+            metaGroupPopup.appendChild(createMetaMenuItem(data));
+          });
+
+          let metaGroupMenu = $E('menu', {
+            label: $f(kUI.items.type, {
+              title: metaGroupName,
+              count: formatMenuItemsCount(metaGroupItems, {
+                noLimit: true
+              })
+            })
+          });
+
+          metaGroupMenu.appendChild(metaGroupPopup);
+          typePopup.appendChild(metaGroupMenu);
         }
+      }
+      else {
+        let typeItems = dataItems.slice(0, maxNumMenuItems);
 
-        pageInfoPopup.appendChild($E(typeMenu, {
-          label,
-          tooltiptext
-        }));
+        typeItems.forEach((data) => {
+          let text = formatText(data);
+
+          typePopup.appendChild($E('menuitem', {
+            crop: 'center',
+            label: text,
+            tooltiptext: formatTooltip(text, data.url),
+            [$a('open')]: data.url
+          }));
+        });
+      }
+
+      let label = $f(kUI.items.type, {
+        title: getLabelForType(kPageInfoType, type),
+        count: formatMenuItemsCount(dataItems, {
+          noLimit: metaInfo
+        })
       });
 
-      let pageInfoMenu = $E('menu', {
-        id: kUI.pageInfo.id,
-        label: kUI.pageInfo.label
-      });
+      let tooltiptext;
 
-      pageInfoMenu.appendChild(pageInfoPopup);
+      if (!metaInfo && dataItems.length > maxNumMenuItems) {
+        tooltiptext = formatTooltip(label, kUI.items.tooManyMenuItems);
+      }
 
-      return pageInfoMenu;
+      pageInfoPopup.appendChild($E(typeMenu, {
+        label,
+        tooltiptext
+      }));
     });
+
+    let pageInfoMenu = $E('menu', {
+      id: kUI.pageInfo.id,
+      label: kUI.pageInfo.label
+    });
+
+    pageInfoMenu.appendChild(pageInfoPopup);
+
+    return pageInfoMenu;
   }
 
   function createMetaMenuItem(data) {
@@ -1170,27 +1164,25 @@ const PresetNavi = (function() {
       presetData: null
     };
 
-    function promiseData(state, params) {
+    async function promiseData(state, params) {
       let [direction] = params;
 
-      return Task.spawn(function*() {
-        if (!state.uri || !BrowserUtils.isHTMLDocument()) {
-          data.presetData = null;
-
-          return data;
-        }
-
-        if (state.doUpdate) {
-          data.presetData = {};
-        }
-
-        if (!(direction in data.presetData)) {
-          data.presetData[direction] =
-            yield createPresetData(direction, state.uri);
-        }
+      if (!state.uri || !BrowserUtils.isHTMLDocument()) {
+        data.presetData = null;
 
         return data;
-      });
+      }
+
+      if (state.doUpdate) {
+        data.presetData = {};
+      }
+
+      if (!(direction in data.presetData)) {
+        data.presetData[direction] =
+          await createPresetData(direction, state.uri);
+      }
+
+      return data;
     }
 
     return {
@@ -1228,78 +1220,75 @@ const PresetNavi = (function() {
   }
 
   function createPresetData(direction, uri) {
-    return Task.spawn(function*() {
-      let item;
+    let item;
+    let url = uri.spec;
 
-      let url = uri.spec;
+    for (let i = 0, l = kPresetNavi.length; i < l; i++) {
+      if (kPresetNavi[i].url.test(url)) {
+        item = kPresetNavi[i];
 
-      for (let i = 0, l = kPresetNavi.length; i < l; i++) {
-        if (kPresetNavi[i].url.test(url)) {
-          item = kPresetNavi[i];
-
-          break;
-        }
+        break;
       }
+    }
 
-      if (!item) {
-        return null;
-      }
+    if (!item) {
+      return Promise.resolve(null);
+    }
 
-      return ContentTask.spawn({
-        params: {
-          xpath: item[direction]
-        },
-        task: function*(params) {
-          '${ContentTask.ContentScripts.DOMUtils}';
+    return ContentTask.spawn({
+      params: {
+        xpath: item[direction]
+      },
+      task: function*(params) {
+        '${ContentTask.ContentScripts.DOMUtils}';
 
-          let {xpath} = params;
+        let {xpath} = params;
 
-          let node = DOMUtils.$X1(xpath);
+        let node = DOMUtils.$X1(xpath);
 
-          if (node && node.href) {
-            return {
-              title: node.title || node.textContent,
-              url: node.href
-            };
-          }
-
-          if (node && node.localName === 'input' && node.form && node.value) {
-            let formIndex = 0;
-
-            for (let form of content.document.forms) {
-              if (node.form === form) {
-                break;
-              }
-
-              formIndex++;
-            }
-
-            return {
-              title: node.value,
-              formIndex
-            };
-          }
-
-          return null;
-        }
-      }).
-      then((result) => {
-        if (!result) {
-          // The preset page matches but the navigation element is not found.
+        if (node && node.href) {
           return {
-            name: item.name,
-            title : capitalize(direction)
+            title: node.title || node.textContent,
+            url: node.href
           };
         }
 
+        if (node && node.localName === 'input' && node.form && node.value) {
+          let formIndex = 0;
+
+          for (let form of content.document.forms) {
+            if (node.form === form) {
+              break;
+            }
+
+            formIndex++;
+          }
+
+          return {
+            title: node.value,
+            formIndex
+          };
+        }
+
+        return null;
+      }
+    }).
+    then((result) => {
+      if (!result) {
+        // The preset page matches but the navigation element is not found.
         return {
-          // [Preset data format for preset]
           name: item.name,
-          title : trim(result.title) || capitalize(direction),
-          url: result.url,
-          formIndex: result.formIndex
+          title : capitalize(direction)
         };
-      });
+      }
+
+      return {
+        // [Preset data format for preset]
+        name: item.name,
+        title : trim(result.title) || capitalize(direction),
+        url: result.url,
+        formIndex: result.formIndex
+      };
     });
   }
 
@@ -1371,26 +1360,24 @@ const NaviLink = (function() {
       pageInfoList: null
     };
 
-    function promiseData(state) {
-      return Task.spawn(function*() {
-        if (!state.uri || !BrowserUtils.isHTMLDocument()) {
-          data.naviLinkList = null;
-          data.subNaviLinkList = null;
-          data.pageInfoList = null;
-
-          return data;
-        }
-
-        if (state.doUpdate) {
-          [
-            data.naviLinkList,
-            data.subNaviLinkList,
-            data.pageInfoList
-          ] = yield createLists();;
-        }
+    async function promiseData(state) {
+      if (!state.uri || !BrowserUtils.isHTMLDocument()) {
+        data.naviLinkList = null;
+        data.subNaviLinkList = null;
+        data.pageInfoList = null;
 
         return data;
-      });
+      }
+
+      if (state.doUpdate) {
+        [
+          data.naviLinkList,
+          data.subNaviLinkList,
+          data.pageInfoList
+        ] = await createLists();;
+      }
+
+      return data;
     }
 
     return {
@@ -1445,70 +1432,68 @@ const NaviLink = (function() {
    *     ['rel', ['rel-value1', 'rel-value2', ...]]
    *   ]
    */
-  function promiseFirstDataForType(type) {
-    return Task.spawn(function*() {
-      let naviLinkList = yield promiseNaviLinkList();
-      let pageInfoList = yield promisePageInfoList();
+  async function promiseFirstDataForType(type) {
+    let [naviLinkList, pageInfoList] = await Promise.all([
+      NaviLink.promiseNaviLinkList(),
+      NaviLink.promisePageInfoList()
+    ]);
 
-      let list = [];
+    let list = [];
 
-      if (naviLinkList) {
-        list = list.concat(naviLinkList);
-      }
+    if (naviLinkList) {
+      list = list.concat(naviLinkList);
+    }
 
-      if (pageInfoList) {
-        list = list.concat(pageInfoList);
-      }
+    if (pageInfoList) {
+      list = list.concat(pageInfoList);
+    }
 
-      if (list.length) {
-        for (let i = 0, l = list.length; i < l; i++) {
-          if (list[i].type === type) {
-            return list[i].dataItems[0];
-          }
+    if (list.length) {
+      for (let i = 0, l = list.length; i < l; i++) {
+        if (list[i].type === type) {
+          return list[i].dataItems[0];
         }
       }
+    }
 
-      return null;
-    });
+    return null;
   }
 
-  function createLists() {
-    return Task.spawn(function*() {
-      let {metaInfo, scriptInfo, linkInfo} = yield promiseInfoData();
+  async function createLists() {
+    let {metaInfo, scriptInfo, linkInfo} = await promiseInfoData();
 
-      let naviLinkList = {};
-      let subNaviLinkList = {};
-      let pageInfoList = {};
+    let naviLinkList = {};
+    let subNaviLinkList = {};
+    let pageInfoList = {};
 
-      addMetaInfo(pageInfoList, metaInfo);
-      addScriptInfo(pageInfoList, scriptInfo);
+    addMetaInfo(pageInfoList, metaInfo);
+    addScriptInfo(pageInfoList, scriptInfo);
 
-      linkInfo.forEach((info) => {
-        let {rel, href} = info;
+    linkInfo.forEach((info) => {
+      let {rel, href} = info;
 
-        let rels = createRelList(rel);
+      let rels = createRelList(rel);
 
-        // Process from the list that needs to test special rel values.
-        updatePageInfoList(pageInfoList, info, rels) ||
-        updateNaviLinkList(naviLinkList, info, rels) ||
-        updateSubNaviLinkList(subNaviLinkList, info, rels);
-      });
-
-      return [
-        {
-          list: naviLinkList,
-          typeOrder: kNaviLinkType
-        },
-        {
-          list: subNaviLinkList
-          // @note No typeOrder will sort the types in alphabetical order.
-        },
-        {
-          list: pageInfoList,
-          typeOrder: kPageInfoType
-        }
-      ].map(formatList);
+      // Process from the list that needs to test special rel values.
+      updatePageInfoList(pageInfoList, info, rels) ||
+      updateNaviLinkList(naviLinkList, info, rels) ||
+      updateSubNaviLinkList(subNaviLinkList, info, rels);
     });
+
+    return [
+      {
+        list: naviLinkList,
+        typeOrder: kNaviLinkType
+      },
+      {
+        list: subNaviLinkList
+        // @note No typeOrder will sort the types in alphabetical order.
+      },
+      {
+        list: pageInfoList,
+        typeOrder: kPageInfoType
+      }
+    ].map(formatList);
   }
 
   function createRelList(relAttribute) {
@@ -1857,27 +1842,25 @@ const SiblingNavi = (function() {
       siblingData: null
     };
 
-    function promiseData(state, params) {
+    async function promiseData(state, params) {
       let [direction] = params;
 
-      return Task.spawn(function*() {
-        if (!state.uri) {
-          data.siblingData = null;
-
-          return data;
-        }
-
-        if (state.doUpdate) {
-          data.siblingData = {};
-        }
-
-        if (!(direction in data.siblingData)) {
-          data.siblingData[direction] =
-            yield createSiblingData(direction, state.uri);
-        }
+      if (!state.uri) {
+        data.siblingData = null;
 
         return data;
-      });
+      }
+
+      if (state.doUpdate) {
+        data.siblingData = {};
+      }
+
+      if (!(direction in data.siblingData)) {
+        data.siblingData[direction] =
+          await createSiblingData(direction, state.uri);
+      }
+
+      return data;
     }
 
     return {
@@ -1943,43 +1926,41 @@ const SiblingNavi = (function() {
     });
   }
 
-  function createSiblingData(direction, uri) {
-    return Task.spawn(function*() {
-      let scanType;
-      let dataItems;
+  async function createSiblingData(direction, uri) {
+    let scanType;
+    let dataItems;
 
-      let handlers = [
-        ['preset', PresetNavi.promisePresetData],
-        ['official', NaviLink.promiseFirstDataForType],
-        ['searching', guessBySearching],
-        ['numbering', guessByNumbering]
-      ];
+    let handlers = [
+      ['preset', PresetNavi.promisePresetData],
+      ['official', NaviLink.promiseFirstDataForType],
+      ['searching', guessBySearching],
+      ['numbering', guessByNumbering]
+    ];
 
-      for (let [type, handler] of handlers) {
-        let data = yield handler(direction, uri);
+    for (let [type, handler] of handlers) {
+      let data = await handler(direction, uri);
 
-        if (data) {
-          dataItems = data;
-          scanType = type;
+      if (data) {
+        dataItems = data;
+        scanType = type;
 
-          break;
-        }
+        break;
       }
+    }
 
-      if (!dataItems) {
-        return null;
-      }
+    if (!dataItems) {
+      return null;
+    }
 
-      if (!Array.isArray(dataItems)) {
-        dataItems = [dataItems];
-      }
+    if (!Array.isArray(dataItems)) {
+      dataItems = [dataItems];
+    }
 
-      return {
-        // [Sibling page info format]
-        scanType,
-        dataItems
-      };
-    });
+    return {
+      // [Sibling page info format]
+      scanType,
+      dataItems
+    };
   }
 
   /**
@@ -2001,58 +1982,56 @@ const SiblingNavi = (function() {
    * @note Allows only URL that has the same as the base domain of the document
    * to avoid jumping to the outer domain.
    */
-  function guessBySearching(direction, uri) {
-    return Task.spawn(function*() {
-      if (!BrowserUtils.isHTMLDocument()) {
-        return null;
-      }
+  async function guessBySearching(direction, uri) {
+    if (!BrowserUtils.isHTMLDocument()) {
+      return null;
+    }
 
-      let pageURI = URIUtil.createURI(uri, {
-        hash: false
-      });
-
-      let naviLinkScorer = NaviLinkScorer.create(pageURI, direction);
-      let entries = createSearchEntries();
-
-      let links = yield promiseLinkList();
-
-      for (let {url, texts, attribute} of links) {
-        if (entries.has(url) ||
-            !/^https?:/.test(url) ||
-            pageURI.isSamePage(url) ||
-            !pageURI.isSameBaseDomain(url)) {
-          continue;
-        }
-
-        for (let text of texts) {
-          // Normalize white-spaces.
-          text = trim(text);
-
-          // Examine the filename of a URL-like text.
-          if (/^https?:\S+$/.test(text)) {
-            text = getLeaf(text, {
-              removeParams: true
-            });
-          }
-
-          if (text) {
-            let score = naviLinkScorer.score({url, text, attribute});
-
-            if (score) {
-              entries.add({url, text, score});
-
-              break;
-            }
-          }
-        }
-
-        if (entries.isFull()) {
-          break;
-        }
-      }
-
-      return entries.collect();
+    let pageURI = URIUtil.createURI(uri, {
+      hash: false
     });
+
+    let naviLinkScorer = NaviLinkScorer.create(pageURI, direction);
+    let entries = createSearchEntries();
+
+    let links = await promiseLinkList();
+
+    for (let {url, texts, attribute} of links) {
+      if (entries.has(url) ||
+          !/^https?:/.test(url) ||
+          pageURI.isSamePage(url) ||
+          !pageURI.isSameBaseDomain(url)) {
+        continue;
+      }
+
+      for (let text of texts) {
+        // Normalize white-spaces.
+        text = trim(text);
+
+        // Examine the filename of a URL-like text.
+        if (/^https?:\S+$/.test(text)) {
+          text = getLeaf(text, {
+            removeParams: true
+          });
+        }
+
+        if (text) {
+          let score = naviLinkScorer.score({url, text, attribute});
+
+          if (score) {
+            entries.add({url, text, score});
+
+            break;
+          }
+        }
+      }
+
+      if (entries.isFull()) {
+        break;
+      }
+    }
+
+    return entries.collect();
   }
 
   function createSearchEntries() {
@@ -2214,8 +2193,11 @@ const SiblingNavi = (function() {
    *   here: {string}
    *   there: {string}
    *   url: {string}
+   *
+   * @note This function has no await, but must return a promise for
+   * |createSiblingData|.
    */
-  function guessByNumbering(direction, uri) {
+  async function guessByNumbering(direction, uri) {
     /**
      * RegExp patterns for string like the page number in URL.
      *
@@ -2229,55 +2211,51 @@ const SiblingNavi = (function() {
       /(\/[a-z0-9_-]{0,20}?)(\d{1,12})(\.\w+|\/)?(?=$|\?)/ig
     ];
 
-    // @note This task doesn't receive any iterators but this function must
-    // return a promise for |createSiblingData|.
-    return Task.spawn(function*() {
-      let pageURI = URIUtil.createURI(uri, {
-        hash: false
-      });
-
-      if (!pageURI.hasPath()) {
-        return null;
-      }
-
-      let pageURL = pageURI.spec;
-      let directionNum = (direction === 'next') ? 1 : -1;
-
-      let list = [];
-
-      kPageNumberRE.forEach((pattern) => {
-        let matches;
-
-        while ((matches = pattern.exec(pageURL))) {
-          let [match, leading , oldNum, trailing] = matches;
-
-          let newNum = parseInt(oldNum, 10) + directionNum;
-
-          if (newNum > 0) {
-            newNum = newNum + '';
-
-            while (newNum.length < oldNum.length) {
-              newNum = '0' + newNum;
-            }
-
-            let newVal = leading + newNum + (trailing || '');
-
-            list.push({
-              // [Data item format for sibling by numbering]
-              here: match,
-              there: newVal,
-              url: pageURL.replace(match, newVal)
-            });
-          }
-        }
-      });
-
-      if (!list.length) {
-        return null;
-      }
-
-      return trimSiblingsList(list);
+    let pageURI = URIUtil.createURI(uri, {
+      hash: false
     });
+
+    if (!pageURI.hasPath()) {
+      return null;
+    }
+
+    let pageURL = pageURI.spec;
+    let directionNum = (direction === 'next') ? 1 : -1;
+
+    let list = [];
+
+    kPageNumberRE.forEach((pattern) => {
+      let matches;
+
+      while ((matches = pattern.exec(pageURL))) {
+        let [match, leading , oldNum, trailing] = matches;
+
+        let newNum = parseInt(oldNum, 10) + directionNum;
+
+        if (newNum > 0) {
+          newNum = newNum + '';
+
+          while (newNum.length < oldNum.length) {
+            newNum = '0' + newNum;
+          }
+
+          let newVal = leading + newNum + (trailing || '');
+
+          list.push({
+            // [Data item format for sibling by numbering]
+            here: match,
+            there: newVal,
+            url: pageURL.replace(match, newVal)
+          });
+        }
+      }
+    });
+
+    if (!list.length) {
+      return null;
+    }
+
+    return trimSiblingsList(list);
   }
 
   function trimSiblingsList(list) {
@@ -2766,22 +2744,20 @@ const UpperNavi = (function() {
       upperURLList: null
     };
 
-    function promiseData(state) {
-      // @note This task doesn't receive any iterators but this function must
-      // return a promise for |DataCache.update|.
-      return Task.spawn(function*() {
-        if (!state.uri) {
-          data.upperURLList = null;
-
-          return data;
-        }
-
-        if (state.doUpdate) {
-          data.upperURLList = createUpperURLList(state.uri);
-        }
+    // @note This function has no await, but must return a promise for
+    // |DataCache.update|.
+    async function promiseData(state) {
+      if (!state.uri) {
+        data.upperURLList = null;
 
         return data;
-      });
+      }
+
+      if (state.doUpdate) {
+        data.upperURLList = createUpperURLList(state.uri);
+      }
+
+      return data;
     }
 
     return {

@@ -954,86 +954,92 @@ function GestureManager() {
     mError = null;
   }
 
-  function init(aEvent) {
-    return Task.spawn(function*() {
-      setOverLink(false);
+  /**
+   * Promise for the gesture start.
+   *
+   * @param event {MouseEvent|DragEvent}
+   * @return {Promise}
+   *   resolve: {boolean}
+   *     true if there is the valid data in the drag event, false if no data.
+   *     always true for the other event.
+   */
+  async function init(event) {
+    setOverLink(false);
 
-      mTracer.init(aEvent);
+    mTracer.init(event);
 
-      if (aEvent.type === 'dragstart') {
-        let info = yield getDragInfo(aEvent);
+    if (event.type === 'dragstart') {
+      let info = await getDragInfo(event);
 
-        if (!info.type || !info.data) {
-          return false;
-        }
-
-        mDragType = info.type;
-        mDragData = info.data;
+      if (!info.type || !info.data) {
+        return false;
       }
 
-      return true;
-    });
+      mDragType = info.type;
+      mDragData = info.data;
+    }
+
+    return true;
   }
 
   /**
-   * Gets information of the dragging data.
+   * Promise for the information of the dragging data.
    *
-   * @param aEvent {DragEvent}
-   * @return {hash}
-   *   type: {string}
-   *     'text' or 'link' or 'image' of |kGestureSign|.
-   *   data: {string|hash}
-   *     {string} for a link <href> URL or an image <src> URL.
-   *     {hash} for a selection details.
-   *       @see |ucjsUtil.BrowserUtils.promiseSelectionTextAtPoint|
+   * @param event {DragEvent}
+   * @return {Promise}
+   *   resolve: {hash}
+   *     type: {string}
+   *       'text' or 'link' or 'image' of |kGestureSign|.
+   *     data: {string|hash}
+   *       {string} for a link <href> URL or an image <src> URL.
+   *       {hash} for a selection details.
+   *         @see |ucjsUtil.BrowserUtils.promiseSelectionTextAtPoint|
    *
    * @note Retrieves only one data in a composite case:
    * - A selection text in a link string.
    * - A link URL of a linked image.
    */
-  function getDragInfo(event) {
-    return Task.spawn(function*() {
-      let type, data;
-      let {x, y} = BrowserUtils.getCursorPointInContent(event);
+  async function getDragInfo(event) {
+    let type, data;
+    let {x, y} = BrowserUtils.getCursorPointInContent(event);
 
-      // 1.A selected text.
-      if (!type) {
-        let selectionDetails =
-          yield BrowserUtils.promiseSelectionTextAtPoint(x, y, {
-            requestDetails: true
-          });
+    // 1.A selected text.
+    if (!type) {
+      let selectionDetails =
+        await BrowserUtils.promiseSelectionTextAtPoint(x, y, {
+          requestDetails: true
+        });
 
-        if (selectionDetails && selectionDetails.currentIndex > -1) {
-          type = kGestureSign.text;
-          data = selectionDetails;
-        }
+      if (selectionDetails && selectionDetails.currentIndex > -1) {
+        type = kGestureSign.text;
+        data = selectionDetails;
       }
+    }
 
-      // 2.A link URL.
-      if (!type) {
-        let link = yield promiseLinkURLAtPoint(x, y);
+    // 2.A link URL.
+    if (!type) {
+      let link = await promiseLinkURLAtPoint(x, y);
 
-        if (link) {
-          type = kGestureSign.link;
-          data = link;
-        }
+      if (link) {
+        type = kGestureSign.link;
+        data = link;
       }
+    }
 
-      // 3.An image URL.
-      if (!type) {
-        let image = yield promiseImageURLAtPoint(x, y);
+    // 3.An image URL.
+    if (!type) {
+      let image = await promiseImageURLAtPoint(x, y);
 
-        if (image) {
-          type = kGestureSign.image;
-          data = image;
-        }
+      if (image) {
+        type = kGestureSign.image;
+        data = image;
       }
+    }
 
-      return {
-        type,
-        data
-      };
-    });
+    return {
+      type,
+      data
+    };
   }
 
   function update(aEvent) {

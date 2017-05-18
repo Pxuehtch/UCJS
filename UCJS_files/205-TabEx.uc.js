@@ -447,122 +447,119 @@ const TabOpener = {
     gBrowser.addTab = function ucjsTabEx_addTab(...aParams) {
       let newTab = $addTab.apply(this, aParams);
 
-      // Set 'openInfo' data of a tab.
+      // Set 'openInfo' data to the new tab.
       // @note This dispatches the custom event 'TabOpenInfoSet' and then the
       // other tab data will be newly set.
-      setOpenInfo(newTab, aParams);
+      setOpenInfo(newTab, aParams).catch(Cu.reportError);
 
       return newTab;
     };
 
-    function setOpenInfo(aTab, aParams) {
-      Task.spawn(function*() {
-        let aURI = aParams[0], // {string}
-            aReferrerURI, // {nsIURI}
-            aReferrerPolicy,
-            aCharset,
-            aAllowThirdPartyFixup,
-            aRelatedToCurrent,
-            aFromExternal,
-            aAllowMixedContent,
-            aDisallowInheritPrincipal;
+    async function setOpenInfo(aTab, aParams) {
+      let aURI = aParams[0], // {string}
+          aReferrerURI, // {nsIURI}
+          aReferrerPolicy,
+          aCharset,
+          aAllowThirdPartyFixup,
+          aRelatedToCurrent,
+          aFromExternal,
+          aAllowMixedContent,
+          aDisallowInheritPrincipal;
 
-        if (aParams.length === 2 &&
-            typeof aParams[1] === 'object' &&
-            !(aParams[1] instanceof Ci.nsIURI)) {
-          let params = aParams[1];
+      if (aParams.length === 2 &&
+          typeof aParams[1] === 'object' &&
+          !(aParams[1] instanceof Ci.nsIURI)) {
+        let params = aParams[1];
 
-          aReferrerURI = params.referrerURI;
-          aReferrerPolicy = params.referrerPolicy;
-          aCharset = params.charset;
-          aAllowThirdPartyFixup = params.allowThirdPartyFixup;
-          aRelatedToCurrent = params.relatedToCurrent;
-          aFromExternal = params.fromExternal;
-          aAllowMixedContent = params.allowMixedContent;
-          aDisallowInheritPrincipal = params.disallowInheritPrincipal;
-        }
-        else {
-          aReferrerURI          = aParams[1];
-          aCharset              = aParams[2];
-          // aParams[3]: POST data.
-          // aParams[4]: owner tab.
-          aAllowThirdPartyFixup = aParams[5];
-        }
+        aReferrerURI = params.referrerURI;
+        aReferrerPolicy = params.referrerPolicy;
+        aCharset = params.charset;
+        aAllowThirdPartyFixup = params.allowThirdPartyFixup;
+        aRelatedToCurrent = params.relatedToCurrent;
+        aFromExternal = params.fromExternal;
+        aAllowMixedContent = params.allowMixedContent;
+        aDisallowInheritPrincipal = params.disallowInheritPrincipal;
+      }
+      else {
+        aReferrerURI          = aParams[1];
+        aCharset              = aParams[2];
+        // aParams[3]: POST data.
+        // aParams[4]: owner tab.
+        aAllowThirdPartyFixup = aParams[5];
+      }
 
-        let openInfo;
+      let openInfo;
 
-        if (!aURI || aURI === 'about:blank') {
-          openInfo = {
-            url: 'about:blank',
-            flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
-          };
-        }
-        else {
-          // Convert |nsIURI| into a URL string.
-          aReferrerURI = aReferrerURI && aReferrerURI.spec;
+      if (!aURI || aURI === 'about:blank') {
+        openInfo = {
+          url: 'about:blank',
+          flags: Ci.nsIWebNavigation.LOAD_FLAGS_NONE
+        };
+      }
+      else {
+        // Convert |nsIURI| into a URL string.
+        aReferrerURI = aReferrerURI && aReferrerURI.spec;
 
-          let fromVisit;
+        let fromVisit;
 
-          if (!aReferrerURI) {
-            let testHTTP = (value) => /^https?:/.test(value);
+        if (!aReferrerURI) {
+          let testHTTP = (value) => /^https?:/.test(value);
 
-            if (aRelatedToCurrent) {
-              let currentURL = gBrowser.currentURI.spec;
+          if (aRelatedToCurrent) {
+            let currentURL = gBrowser.currentURI.spec;
 
-              if (testHTTP(currentURL)) {
-                fromVisit = currentURL;
-              }
-            }
-            else {
-              if (testHTTP(aURI)) {
-                fromVisit = yield Referrer.promiseFromVisit(aURI);
-              }
+            if (testHTTP(currentURL)) {
+              fromVisit = currentURL;
             }
           }
-
-          let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
-
-          if (aAllowThirdPartyFixup) {
-            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
-            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FIXUP_SCHEME_TYPOS;
+          else {
+            if (testHTTP(aURI)) {
+              fromVisit = await Referrer.promiseFromVisit(aURI);
+            }
           }
-
-          if (aFromExternal) {
-            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
-          }
-
-          if (aAllowMixedContent) {
-            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
-          }
-
-          if (aDisallowInheritPrincipal) {
-            flags |= Ci.nsIWebNavigation.LOAD_FLAGS_DISALLOW_INHERIT_PRINCIPAL;
-          }
-
-          // TODO: Handle POST data.
-          // TODO: Handle triggering principal.
-          openInfo = {
-            url: aURI,
-            flags,
-            referrerURL: aReferrerURI,
-            referrerPolicy: aReferrerPolicy,
-            charset: aCharset,
-            relatedToCurrent: aRelatedToCurrent,
-            fromVisit: fromVisit
-          };
         }
 
-        TabData.set(aTab, 'openInfo', openInfo);
+        let flags = Ci.nsIWebNavigation.LOAD_FLAGS_NONE;
 
-        let event = new CustomEvent(kNotificationName.TabOpenInfoSet, {
-          // @note Listen the event on |gBrowser.tabContainer|.
-          // @see |TabEvent::init|
-          bubbles: true
-        });
+        if (aAllowThirdPartyFixup) {
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_THIRD_PARTY_FIXUP;
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FIXUP_SCHEME_TYPOS;
+        }
 
-        aTab.dispatchEvent(event);
-      }).
-      catch(Cu.reportError);
+        if (aFromExternal) {
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_FROM_EXTERNAL;
+        }
+
+        if (aAllowMixedContent) {
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_ALLOW_MIXED_CONTENT;
+        }
+
+        if (aDisallowInheritPrincipal) {
+          flags |= Ci.nsIWebNavigation.LOAD_FLAGS_DISALLOW_INHERIT_PRINCIPAL;
+        }
+
+        // TODO: Handle POST data.
+        // TODO: Handle triggering principal.
+        openInfo = {
+          url: aURI,
+          flags,
+          referrerURL: aReferrerURI,
+          referrerPolicy: aReferrerPolicy,
+          charset: aCharset,
+          relatedToCurrent: aRelatedToCurrent,
+          fromVisit: fromVisit
+        };
+      }
+
+      TabData.set(aTab, 'openInfo', openInfo);
+
+      let event = new CustomEvent(kNotificationName.TabOpenInfoSet, {
+        // @note Listen the event on |gBrowser.tabContainer|.
+        // @see |TabEvent::init|
+        bubbles: true
+      });
+
+      aTab.dispatchEvent(event);
     }
   },
 

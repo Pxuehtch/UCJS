@@ -720,9 +720,9 @@ const StatusField = (function() {
       // Clear the message to hide it after the cursor leaves.
       MessageHandler.showMessage('');
 
-      Task.spawn(function*() {
+      (async () => {
         // |newURL| can be updated with its visited date.
-        let {linkState, newURL} = yield examineLinkURL(url, anchorElt);
+        let {linkState, newURL} = await examineLinkURL(url, anchorElt);
 
         // This task is useless any more since it was not completed while over
         // link and a new task has raised on another over link.
@@ -752,9 +752,7 @@ const StatusField = (function() {
 
         // Restore the delayed showing.
         this.hideOverLinkImmediately = false;
-
-      // Make |this| to refer to |window.XULBrowserWindow|.
-      }.bind(this)).
+      })().
       catch(Cu.reportError);
     };
 
@@ -771,64 +769,62 @@ const StatusField = (function() {
      *
      * @note Called from a task in |ucjsUI_StatusField_setOverLink|.
      */
-    function examineLinkURL(aURL, aAnchorElt) {
-      return Task.spawn(function*() {
-        if (!aURL) {
-          return {
-            newURL: '',
-            linkState: null
-          };
-        }
-
-        // |aURL| that is passed to the native function |setOverLink| may be
-        // a processed URL for UI, so we query the Places DB with the raw URL
-        // of an anchor element to fetch the proper result.
-        // @note |Element.href| string returns an absolute path.
-        let rawURL = aAnchorElt && aAnchorElt.href;
-
-        // Get a URL sring of an SVGAElement.
-        if (rawURL && rawURL.baseVal) {
-          // @note |baseVal| may be a relative path.
-          rawURL = URLUtils.resolveURL(rawURL.baseVal, aAnchorElt.baseURI);
-        }
-
-        // Use the cooked URL if a raw URL cannot be retrieved.
-        // TODO: Ensure an absolute |aURL|. I'm not sure whether an absolute
-        // URL is always passed to |setOverLink| in Fx native processing.
-        if (!rawURL) {
-          rawURL = aURL;
-        }
-
-        let newURL = aURL;
-        let linkState = 'unknown';
-
-        // Visited check.
-        let visitedDate = yield getVisitedDate(rawURL);
-
-        if (visitedDate) {
-          // Convert microseconds into milliseconds.
-          let time = (new Date(visitedDate / 1000)).
-            toLocaleFormat(kTimeFormat);
-
-          // Update the URL with the visited date.
-          newURL = kLinkFormat.
-            replace('%url%', newURL).replace('%time%', time);
-
-          linkState = 'visited';
-        }
-
-        // Bookmarked check.
-        let bookmarked = yield checkBookmarked(rawURL);
-
-        if (bookmarked) {
-          linkState = 'bookmarked';
-        }
-
+    async function examineLinkURL(aURL, aAnchorElt) {
+      if (!aURL) {
         return {
-          newURL,
-          linkState
+          newURL: '',
+          linkState: null
         };
-      });
+      }
+
+      // |aURL| that is passed to the native function |setOverLink| may be
+      // a processed URL for UI, so we query the Places DB with the raw URL
+      // of an anchor element to fetch the proper result.
+      // @note |Element.href| string returns an absolute path.
+      let rawURL = aAnchorElt && aAnchorElt.href;
+
+      // Get a URL sring of an SVGAElement.
+      if (rawURL && rawURL.baseVal) {
+        // @note |baseVal| may be a relative path.
+        rawURL = URLUtils.resolveURL(rawURL.baseVal, aAnchorElt.baseURI);
+      }
+
+      // Use the cooked URL if a raw URL cannot be retrieved.
+      // TODO: Ensure an absolute |aURL|. I'm not sure whether an absolute
+      // URL is always passed to |setOverLink| in Fx native processing.
+      if (!rawURL) {
+        rawURL = aURL;
+      }
+
+      let newURL = aURL;
+      let linkState = 'unknown';
+
+      // Visited check.
+      let visitedDate = await getVisitedDate(rawURL);
+
+      if (visitedDate) {
+        // Convert microseconds into milliseconds.
+        let time = (new Date(visitedDate / 1000)).
+          toLocaleFormat(kTimeFormat);
+
+        // Update the URL with the visited date.
+        newURL = kLinkFormat.
+          replace('%url%', newURL).replace('%time%', time);
+
+        linkState = 'visited';
+      }
+
+      // Bookmarked check.
+      let bookmarked = await checkBookmarked(rawURL);
+
+      if (bookmarked) {
+        linkState = 'bookmarked';
+      }
+
+      return {
+        newURL,
+        linkState
+      };
     }
 
     function getVisitedDate(aURL) {

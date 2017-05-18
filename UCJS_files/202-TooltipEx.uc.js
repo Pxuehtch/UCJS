@@ -302,11 +302,11 @@ const Tooltip = (function() {
     function update(event) {
       vars.doUpdate = true;
 
-      return Task.spawn(function*() {
+      return (async () => {
         vars.doUpdate = false;
 
         let point = BrowserUtils.getCursorPointInContent(event);
-        let newInfo = yield getNodeInfo(point, vars.selector);
+        let newInfo = await getNodeInfo(point, vars.selector);
 
         // The new task is requested so that this task should be discarded.
         if (vars.doUpdate) {
@@ -322,7 +322,7 @@ const Tooltip = (function() {
         }
 
         return null;
-      });
+      })();
     }
 
     function getNodeInfo(point, selector) {

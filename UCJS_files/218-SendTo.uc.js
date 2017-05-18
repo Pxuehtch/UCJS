@@ -313,52 +313,48 @@ function onPopupHiding(event) {
   }
 }
 
-function getAvailableItems() {
-  return Task.spawn(function*() {
-    // @see chrome://browser/content/nsContextMenu.js
-    let {onLink, onImage, onTextInput, linkURL, mediaURL} =
-      window.gContextMenu;
-    let pageURL = gBrowser.currentURI.spec;
-    let selection =
-      yield BrowserUtils.promiseSelectionTextAtContextMenuCursor();
-    let onPlainTextLink = selection && !onLink && linkURL;
+async function getAvailableItems() {
+  // @see chrome://browser/content/nsContextMenu.js
+  let {onLink, onImage, onTextInput, linkURL, mediaURL} = window.gContextMenu;
+  let pageURL = gBrowser.currentURI.spec;
+  let selection = await BrowserUtils.promiseSelectionTextAtContextMenuCursor();
+  let onPlainTextLink = selection && !onLink && linkURL;
 
-    let items = [];
+  let items = [];
 
-    kPreset.forEach((service) => {
-      let {disabled, types, extensions} = service;
+  kPreset.forEach((service) => {
+    let {disabled, types, extensions} = service;
 
-      if (disabled) {
-        return;
-      }
+    if (disabled) {
+      return;
+    }
 
-      if (!onLink && !onImage && !onTextInput && !selection &&
-          types.includes('PAGE') &&
-          /^https?:/.test(pageURL)) {
-        items.push(makeItem('PAGE', pageURL, service));
-      }
+    if (!onLink && !onImage && !onTextInput && !selection &&
+        types.includes('PAGE') &&
+        /^https?:/.test(pageURL)) {
+      items.push(makeItem('PAGE', pageURL, service));
+    }
 
-      if ((onLink || onPlainTextLink) &&
-          types.includes('LINK') &&
-          /^https?:/.test(linkURL) &&
-          (!extensions || testExtension(extensions, linkURL))) {
-        items.push(makeItem('LINK', linkURL, service));
-      }
+    if ((onLink || onPlainTextLink) &&
+        types.includes('LINK') &&
+        /^https?:/.test(linkURL) &&
+        (!extensions || testExtension(extensions, linkURL))) {
+      items.push(makeItem('LINK', linkURL, service));
+    }
 
-      if (onImage &&
-          types.includes('IMAGE') &&
-          /^https?:/.test(mediaURL)) {
-        items.push(makeItem('IMAGE', mediaURL, service));
-      }
+    if (onImage &&
+        types.includes('IMAGE') &&
+        /^https?:/.test(mediaURL)) {
+      items.push(makeItem('IMAGE', mediaURL, service));
+    }
 
-      if (selection &&
-          types.includes('TEXT')) {
-        items.push(makeItem('TEXT', selection, service));
-      }
-    });
-
-    return items;
+    if (selection &&
+        types.includes('TEXT')) {
+      items.push(makeItem('TEXT', selection, service));
+    }
   });
+
+  return items;
 }
 
 function makeItem(aType, aData, aService) {

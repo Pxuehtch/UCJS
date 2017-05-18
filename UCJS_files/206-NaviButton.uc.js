@@ -422,94 +422,90 @@ const History = {
     });
   },
 
-  initHistoryData(params) {
-    return Task.spawn(function*() {
-      function Entry() {
-        return {
-          title: '',
-          url: '',
-          index: -1,
-          distance: 0
-        };
-      }
-
-      let {backward, referrer} = params;
-
-      // Make a new property.
-      this.data = {
-        backward,
-        neighbor: Entry(),
-        border:   Entry(),
-        stop:     Entry(),
-        referrer: Entry()
+  async initHistoryData(params) {
+    function Entry() {
+      return {
+        title: '',
+        url: '',
+        index: -1,
+        distance: 0
       };
+    }
 
-      if (referrer) {
-        let referrerInfo = yield Referrer.promiseInfo();
+    let {backward, referrer} = params;
 
-        this.data.referrer.title = referrerInfo.title;
-        this.data.referrer.url = referrerInfo.url;
-      }
+    // Make a new property.
+    this.data = {
+      backward,
+      neighbor: Entry(),
+      border:   Entry(),
+      stop:     Entry(),
+      referrer: Entry()
+    };
 
-      return this.data;
-    }.bind(this));
+    if (referrer) {
+      let referrerInfo = await Referrer.promiseInfo();
+
+      this.data.referrer.title = referrerInfo.title;
+      this.data.referrer.url = referrerInfo.url;
+    }
+
+    return this.data;
   },
 
-  updateHistoryData(params, data) {
-    return Task.spawn(function*() {
-      let {backward, disabled} = params;
+  async updateHistoryData(params, data) {
+    let {backward, disabled} = params;
 
-      if (disabled) {
-        return data;
+    if (disabled) {
+      return data;
+    }
+
+    let sessionHistory = await HistoryUtils.promiseSessionHistory();
+
+    if (!sessionHistory) {
+      return data;
+    }
+
+    let {
+      index: historyIndex,
+      count: historyCount,
+      entries: historyEntries
+    } = sessionHistory;
+
+    if ((backward && historyIndex === 0) ||
+        (!backward && historyIndex === historyCount - 1)) {
+      return data;
+    }
+
+    let step = backward ? -1 : 1;
+    let border = historyIndex + step;
+
+    let within = backward ? (i) => -1 < i : (i) => i < historyCount;
+    let hostId = getHostId(historyEntries[historyIndex].url);
+
+    for (/**/; within(border); border += step) {
+      if (hostId !== getHostId(historyEntries[border].url)) {
+        break;
       }
+    }
 
-      let sessionHistory = yield HistoryUtils.promiseSessionHistory();
+    [
+      [data.neighbor, historyIndex + step],
+      [data.border, border - step],
+      [data.stop, backward ? 0 : historyCount - 1]
+    ].
+    forEach(([entry, index]) => {
+      if (historyIndex !== index) {
+        let info = historyEntries[index];
 
-      if (!sessionHistory) {
-        return data;
+        entry.title = info.title;
+        entry.url = info.url;
+        entry.index = index;
+        entry.distance = Math.abs(index - historyIndex);
       }
-
-      let {
-        index: historyIndex,
-        count: historyCount,
-        entries: historyEntries
-      } = sessionHistory;
-
-      if ((backward && historyIndex === 0) ||
-          (!backward && historyIndex === historyCount - 1)) {
-        return data;
-      }
-
-      let step = backward ? -1 : 1;
-      let border = historyIndex + step;
-
-      let within = backward ? (i) => -1 < i : (i) => i < historyCount;
-      let hostId = getHostId(historyEntries[historyIndex].url);
-
-      for (/**/; within(border); border += step) {
-        if (hostId !== getHostId(historyEntries[border].url)) {
-          break;
-        }
-      }
-
-      [
-        [data.neighbor, historyIndex + step],
-        [data.border, border - step],
-        [data.stop, backward ? 0 : historyCount - 1]
-      ].
-      forEach(([entry, index]) => {
-        if (historyIndex !== index) {
-          let info = historyEntries[index];
-
-          entry.title = info.title;
-          entry.url = info.url;
-          entry.index = index;
-          entry.distance = Math.abs(index - historyIndex);
-        }
-      });
-
-      return data
     });
+
+    return data
   },
 
   jump(aEvent) {
@@ -542,13 +538,13 @@ const History = {
     }
 
     if (button === 1) {
-      Task.spawn(function*() {
-        let sessionHistory = yield HistoryUtils.promiseSessionHistory();
+      (async () => {
+        let sessionHistory = await HistoryUtils.promiseSessionHistory();
         let delta = index - sessionHistory.index;
 
         // @see chrome://browser/content/browser.js::duplicateTabIn
         window.duplicateTabIn(gBrowser.selectedTab, 'tab', delta);
-      }).
+      })().
       catch(Cu.reportError);
     }
     else {

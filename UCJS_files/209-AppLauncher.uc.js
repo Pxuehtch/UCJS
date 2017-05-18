@@ -724,7 +724,9 @@ function getAvailableActions() {
 }
 
 function doAction(appInfo, action) {
-  Task.spawn(function*() {
+  // XXX: I don't write 'async function doAction()' because I want catch
+  // errors of promise only here.
+  (async () => {
     // @see chrome://browser/content/nsContextMenu.js
     const {gContextMenu, gContextMenuContentData} = window;
 
@@ -744,7 +746,7 @@ function doAction(appInfo, action) {
       case 'viewPageSource':
         doSave = true;
         targetURL = gBrowser.currentURI.spec;
-        docInfo = yield promiseDocInfo();
+        docInfo = await promiseDocInfo();
         break;
 
       case 'openFrame':
@@ -754,7 +756,7 @@ function doAction(appInfo, action) {
       case 'viewFrameSource':
         doSave = true;
         targetURL = gContextMenuContentData.docLocation;
-        docInfo = yield promiseDocInfo();
+        docInfo = await promiseDocInfo();
         break;
 
       case 'openLink':
@@ -785,7 +787,7 @@ function doAction(appInfo, action) {
           targetURL = gContextMenu.mediaURL;
         }
         else if (gContextMenu.onCanvas) {
-          targetURL = yield promiseCanvasBlobURL();
+          targetURL = await promiseCanvasBlobURL();
         }
  
         break;
@@ -807,7 +809,7 @@ function doAction(appInfo, action) {
     }
 
     runApp(appInfo, targetURL, doSave, docInfo);
-  }).
+  })().
   catch(Cu.reportError);
 }
 

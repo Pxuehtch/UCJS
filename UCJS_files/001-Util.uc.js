@@ -2909,35 +2909,33 @@ const PlacesUtils = (function() {
    *
    * TODO: Handle cancelling by user.
    */
-  function promisePlacesDBResult(params = {}) {
+  async function promisePlacesDBResult(params = {}) {
     const {
       sql,
       parameters,
       columns
     } = params;
 
-    return Task.spawn(function*() {
-      // Get a readonly connection to the Places database.
-      let dbConnection = yield Modules.PlacesUtils.promiseDBConnection();
+    // Get a readonly connection to the Places database.
+    let dbConnection = await Modules.PlacesUtils.promiseDBConnection();
 
-      let result = [];
+    let result = [];
 
-      yield dbConnection.executeCached(sql, parameters, (row) => {
-        let values = {};
+    await dbConnection.executeCached(sql, parameters, (row) => {
+      let values = {};
 
-        columns.forEach((name) => {
-          values[name] = row.getResultByName(name);
-        });
-
-        result.push(values);
+      columns.forEach((name) => {
+        values[name] = row.getResultByName(name);
       });
 
-      if (!result.length) {
-        return null;
-      }
-
-      return result;
+      result.push(values);
     });
+
+    if (!result.length) {
+      return null;
+    }
+
+    return result;
   }
 
   return {
