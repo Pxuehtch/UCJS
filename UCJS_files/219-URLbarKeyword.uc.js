@@ -278,9 +278,7 @@ function getRestrictKeywordList() {
     }
   }
 
-  return new Promise((resolve) => {
-    resolve(list);
-  });
+  return Promise.resolve(list);
 }
 
 function getBookmarkKeywordList() {
@@ -348,9 +346,7 @@ function getSearchEngineKeywordList() {
     list.sort((a, b) => a.keyword.localeCompare(b.keyword));
   }
 
-  return new Promise((resolve) => {
-    resolve(list);
-  });
+  return Promise.resolve(list);
 }
 
 /**

@@ -1014,9 +1014,7 @@ const ClosedList = (function() {
         }
       } catch (ex) {}
 
-      return new Promise((onResolve) => {
-        onResolve(result);
-      });
+      return Promise.resolve(result);
     }
 
     function promiseClosedWindows() {
@@ -1036,9 +1034,7 @@ const ClosedList = (function() {
         }
       } catch (ex) {}
 
-      return new Promise((onResolve) => {
-        onResolve(result);
-      });
+      return Promise.resolve(result);
     }
 
     function limitData(aData, aMaxNumItems) {

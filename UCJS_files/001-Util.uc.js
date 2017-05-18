@@ -2725,25 +2725,24 @@ const BrowserUtils = (function() {
    *   @see |content_getSelectionTextAtPoint|
    */
   function promiseSelectionTextAtPoint(x, y, options) {
-    return Task.spawn(function*() {
-      if (isNaN(x) || isNaN(y)) {
-        return null;
-      }
+    if (isNaN(x) || isNaN(y)) {
+      // Resolved with |null| as no data available.
+      return Promise.resolve(null);
+    }
 
-      return ContentTask.spawn({
-        params: {x, y, options},
-        task: `function*(params) {
-          ${ContentTask.ContentScripts.DOMUtils}
-          ${ContentTask.ContentScripts.TextUtils}
-          ${content_getSelectionTextAtPoint.toString()}
-          ${content_getSelection.toString()}
-          ${content_trimText.toString()}
+    return ContentTask.spawn({
+      params: {x, y, options},
+      task: `function*(params) {
+        ${ContentTask.ContentScripts.DOMUtils}
+        ${ContentTask.ContentScripts.TextUtils}
+        ${content_getSelectionTextAtPoint.toString()}
+        ${content_getSelection.toString()}
+        ${content_trimText.toString()}
 
-          let {x, y, options} = params;
+        let {x, y, options} = params;
 
-          return content_getSelectionTextAtPoint(x, y, options);
-        }`
-      });
+        return content_getSelectionTextAtPoint(x, y, options);
+      }`
     });
   }
 
