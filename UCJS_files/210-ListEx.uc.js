@@ -997,7 +997,7 @@ const ClosedList = (function() {
    * Utility functions for session store.
    */
   const SessionStore = (function() {
-    function promiseClosedTabs() {
+    function getClosedTabs() {
       const ss = Modules.SessionStore;
 
       let result = null;
@@ -1014,10 +1014,10 @@ const ClosedList = (function() {
         }
       } catch (ex) {}
 
-      return Promise.resolve(result);
+      return result;
     }
 
-    function promiseClosedWindows() {
+    function getClosedWindows() {
       const ss = Modules.SessionStore;
 
       let result = null;
@@ -1034,7 +1034,7 @@ const ClosedList = (function() {
         }
       } catch (ex) {}
 
-      return Promise.resolve(result);
+      return result;
     }
 
     function limitData(aData, aMaxNumItems) {
@@ -1042,8 +1042,8 @@ const ClosedList = (function() {
     }
 
     return {
-      promiseClosedTabs,
-      promiseClosedWindows
+      getClosedTabs,
+      getClosedWindows
     };
   })();
 
@@ -1069,8 +1069,10 @@ const ClosedList = (function() {
   }
 
   function buildClosedTabs() {
+    // @note This task doesn't receive any iterators but this function must
+    // return a promise for |buildMenuItems|.
     return Task.spawn(function*() {
-      let closedTabs = yield SessionStore.promiseClosedTabs();
+      let closedTabs = SessionStore.getClosedTabs();
 
       if (!closedTabs) {
         return null;
@@ -1143,8 +1145,10 @@ const ClosedList = (function() {
   }
 
   function buildClosedWindows() {
+    // @note This task doesn't receive any iterators but this function must
+    // return a promise for |buildMenuItems|.
     return Task.spawn(function*() {
-      let closedWindows = yield SessionStore.promiseClosedWindows();
+      let closedWindows = SessionStore.getClosedWindows();
 
       if (!closedWindows) {
         return null;
