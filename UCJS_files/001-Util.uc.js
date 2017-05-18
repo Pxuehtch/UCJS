@@ -2921,11 +2921,9 @@ const PlacesUtils = (function() {
       // Get a readonly connection to the Places database.
       let dbConnection = yield Modules.PlacesUtils.promiseDBConnection();
 
-      let rows = yield dbConnection.executeCached(sql, parameters);
-
       let result = [];
 
-      for (let row of rows) {
+      yield dbConnection.executeCached(sql, parameters, (row) => {
         let values = {};
 
         columns.forEach((name) => {
@@ -2933,7 +2931,7 @@ const PlacesUtils = (function() {
         });
 
         result.push(values);
-      }
+      });
 
       if (!result.length) {
         return null;
