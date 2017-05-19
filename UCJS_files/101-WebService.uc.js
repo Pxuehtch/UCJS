@@ -545,14 +545,20 @@ function updateFormInput(inputData, options = {}) {
     [...content.document.forms].some((form) => {
       let input = DOMUtils.$X1(kTextInputXpath, form);
 
-      if (input && input.value) {
-        formNode = form;
-        inputNode = input;
-
-        return true;
+      // Skip an empty input element without a string to be updated.
+      if (!input || !input.value) {
+        return false;
       }
 
-      return false;
+      // Skip not-focusable(invisible) input element.
+      if (!Services.focus.elementIsFocusable(input, 0)) {
+        return false;
+      }
+
+      formNode = form;
+      inputNode = input;
+
+      return true;
     });
 
     if (!inputNode) {
