@@ -417,9 +417,8 @@ const Tooltip = {
  */
 const History = {
   scan(params) {
-    return this.initHistoryData(params).then((data) => {
-      return this.updateHistoryData(params, data).then(() => data);
-    });
+    return this.initHistoryData(params).
+      then(() => this.updateHistoryData(params));
   },
 
   async initHistoryData(params) {
@@ -453,8 +452,9 @@ const History = {
     return this.data;
   },
 
-  async updateHistoryData(params, data) {
+  async updateHistoryData(params) {
     let {backward, disabled} = params;
+    let data = this.data;
 
     if (disabled) {
       return data;
