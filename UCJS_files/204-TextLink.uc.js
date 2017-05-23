@@ -94,10 +94,10 @@ function findURL() {
  * Helper functions for URL-like strings.
  *
  * @return {hash}
- *   @key guess {function}
- *   @key extract {function}
- *   @key map {function}
- *   @key fix {function}
+ *   guess: {function}
+ *   extract: {function}
+ *   map: {function}
+ *   fix: {function}
  *
  * TODO: Detect Kana/Kanji characters.
  */
@@ -105,7 +105,7 @@ function content_createURLUtil() {
   /**
    * Converts fullwidth ASCII printable characters into halfwidth ones.
    *
-   * @param aString {string}
+   * @param str {string}
    * @return {string}
    *
    * [94 characters]
@@ -134,7 +134,7 @@ function content_createURLUtil() {
   /**
    * Tests if a string has only ASCII characters.
    *
-   * @param aString {string}
+   * @param str {string}
    * @return {boolean}
    */
   let isASCII = (str) => !/[^!-~]/.test(normalize(str));
@@ -142,7 +142,7 @@ function content_createURLUtil() {
   /**
    * Retrieves an array of URL-like strings.
    *
-   * @param aString {string}
+   * @param str {string}
    * @return {array|null}
    *   |null| if no matches.
    */
@@ -158,7 +158,7 @@ function content_createURLUtil() {
   /**
    * Tests if a selected text has only ASCII characters.
    *
-   * @param aSelection {nsISelection}
+   * @param selection {nsISelection}
    * @return {boolean}
    *
    * @note Guesses the selection string at a part of a URL.
@@ -170,7 +170,7 @@ function content_createURLUtil() {
   /**
    * Extracts an array of URL-like strings from a range text.
    *
-   * @param aRange {nsIDOMRange}
+   * @param range {nsIDOMRange}
    * @return {array|null}
    *   |null| if no matches.
    */
@@ -182,7 +182,7 @@ function content_createURLUtil() {
    * Gets a text that its fullwidth ASCII characters are converted into
    * halfwidth.
    *
-   * @param aRange {nsIDOMRange}
+   * @param range {nsIDOMRange}
    * @return {string}
    *
    * @note Used as a map indicating the position of URL strings.
@@ -194,7 +194,7 @@ function content_createURLUtil() {
   /**
    * Makes a good URL.
    *
-   * @param aString {string}
+   * @param str {string}
    * @return {string}
    */
   function fix(str) {

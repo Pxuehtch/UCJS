@@ -16,12 +16,12 @@
  * <Ctrl+Click>: Go to the first or end stop of history.
  * @note A new tab will open in *foreground* by middle-button-click.
  *
- * [Special usage for the back-button with a referrer.]
+ * [Special usage for the back-button that has a referrer infomation.]
  * <Shift+Ctrl+Click>: Select a tab with the referrer URL if already opens,
  * open a tab in *foreground* otherwise.
  * @note The referrer's tab will open in *background* by middle-button-click.
- * @note Does the same action by <Click> for the back-button without backward
- * history.
+ * @note For the back-button that has a ref info but no backward history, the
+ * same action is performed by <Click>.
  *
  * @see |History.jump()|
  */

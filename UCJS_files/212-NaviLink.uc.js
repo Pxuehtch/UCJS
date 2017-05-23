@@ -2692,7 +2692,7 @@ const NaviLinkScorer = (function() {
         point += URLScorer.score({url});
       }
 
-      // Integer ranges:
+      // Number ranges:
       // - Text score [0,1]
       // - URL score  [0,1]
       // - Return value [0,1]
