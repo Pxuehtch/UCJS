@@ -1996,7 +1996,7 @@ const SiblingNavi = (function() {
 
     let links = await promiseLinkList();
 
-    for (let {url, texts, attribute} of links) {
+    for (let {url, texts, attributes} of links) {
       if (entries.has(url) ||
           !/^https?:/.test(url) ||
           pageURI.isSamePage(url) ||
@@ -2013,7 +2013,7 @@ const SiblingNavi = (function() {
         }
 
         if (text) {
-          let score = naviLinkScorer.score({url, text, attribute});
+          let score = naviLinkScorer.score({url, text, attributes});
 
           if (score) {
             entries.add({url, text, score});
@@ -2095,7 +2095,7 @@ const SiblingNavi = (function() {
    *     @param {hash[]}
    *       url: {string}
    *       texts: {string[]}
-   *       attribute: {string}
+   *       attributes: {string[]}
    */
   function promiseLinkList() {
     return ContentTask.spawn({
@@ -2133,7 +2133,7 @@ const SiblingNavi = (function() {
             return;
           }
 
-          let attribute = '';
+          let attributes = [];
           let elementNums = 3;
 
           for (let element = node; element; element = element.parentElement) {
@@ -2141,15 +2141,21 @@ const SiblingNavi = (function() {
               break;
             }
 
-            attribute = [attribute, element.className, element.id].join(' ');
+            if (element.className) {
+              attributes.push(element.className);
+            }
+
+            if (element.id) {
+              attributes.push(element.id);
+            }
           }
 
-          attribute = trim(attribute);
+          attributes = attributes.map(trim);
 
           linkList.push({
             url,
             texts,
-            attribute
+            attributes
           });
         };
 
@@ -2356,21 +2362,19 @@ const NaviLinkScorer = (function() {
 
     // Data for examining an element with a navigation-like attribute.
     const kNaviAttribute = (function() {
-      // Expects nav-next, navigation_Next, paginationNext, nextlink, ...
-      // XXX: We would get false positive matches since the compound word like
-      // nextlink is allowed. But I think there are few cases in the attribute
-      // values.
+      // Expects navigation-like identifier come from 'navigation', 'pager',
+      // 'pagination'.
       const navi = 'nav|page|pagi|link';
 
       let makeWordRE = (str) => RegExp(`(?:${str})`, 'i');
 
       let naviWordRE = makeWordRE(navi);
-      let match = (attribute) => {
-        if (!attribute) {
+      let match = (attributes) => {
+        if (!attributes.length) {
           return;
         }
 
-        return attribute.split(' ').find((s) => naviWordRE.test(s));
+        return attributes.some((str) => naviWordRE.test(str));
       };
 
       let makeDirections = (forward, backward) => {
@@ -2456,7 +2460,7 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score({text, attribute}) {
+    function score({text, attributes}) {
       let point = 0;
       let match;
 
@@ -2507,11 +2511,11 @@ const NaviLinkScorer = (function() {
       }
 
       // Test the attribute for navigation.
-      let matchKey = kNaviAttribute.match(attribute);
+      if (kNaviAttribute.match(attributes)) {
+        let attribute = attributes.join(' ');
 
-      if (matchKey) {
-        if (vars.AttributeWordTester.match(matchKey) &&
-            !vars.AttributeWordTester.hasBackward(matchKey)) {
+        if (vars.AttributeWordTester.match(attribute) &&
+            !vars.AttributeWordTester.hasBackward(attribute)) {
           point += kScoreWeight.matchAttribute;
         }
       }
@@ -2685,8 +2689,8 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score({url, text, attribute}) {
-      let point = TextScorer.score({text, attribute});
+    function score({url, text, attributes}) {
+      let point = TextScorer.score({text, attributes});
 
       if (point) {
         point += URLScorer.score({url});
