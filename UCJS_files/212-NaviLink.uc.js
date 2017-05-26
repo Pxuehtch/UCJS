@@ -2134,11 +2134,17 @@ const SiblingNavi = (function() {
           }
 
           let attributes = [];
-          let elementNums = 3;
+          // Numbers of ancestor elements to be looked up.
+          // The depth 4 from the typical structure <nav><ul><li><a>.
+          let elementNums = 4;
 
           for (let element = node; element; element = element.parentElement) {
             if (elementNums-- === 0) {
               break;
+            }
+
+            if (element.localName === 'nav') {
+              attributes.push('nav-element');
             }
 
             if (element.className) {
