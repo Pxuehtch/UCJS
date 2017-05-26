@@ -2005,9 +2005,6 @@ const SiblingNavi = (function() {
       }
 
       for (let text of texts) {
-        // Normalize white-spaces.
-        text = trim(text);
-
         // Examine the filename of a URL-like text.
         if (/^https?:\S+$/.test(text)) {
           text = getLeaf(text, {
@@ -2111,6 +2108,8 @@ const SiblingNavi = (function() {
         let linkList = [];
 
         let addData = (node) => {
+          let trim = (str) => str.trim().replace(/\s+/g, ' ');
+
           let url = node.href;
 
           if (!url) {
@@ -2127,7 +2126,8 @@ const SiblingNavi = (function() {
             image && image.title,
             image && image.src
           ].
-          filter(Boolean);
+          filter(Boolean).
+          map(trim);
 
           if (!texts.length) {
             return;
@@ -2144,7 +2144,7 @@ const SiblingNavi = (function() {
             attribute = [attribute, element.className, element.id].join(' ');
           }
 
-          attribute = attribute.trim().replace(/\s+/g, ' ');
+          attribute = trim(attribute);
 
           linkList.push({
             url,
