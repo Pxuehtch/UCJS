@@ -3132,8 +3132,6 @@ function capitalize(str) {
     return '';
   }
 
-  str += '';
-
   return str.substr(0, 1).toUpperCase() + str.substr(1);
 }
 
@@ -3141,8 +3139,6 @@ function trim(str) {
   if (!str) {
     return '';
   }
-
-  str += '';
 
   return str.trim().replace(/\s+/g, ' ');
 }
