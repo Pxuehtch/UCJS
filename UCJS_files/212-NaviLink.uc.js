@@ -2012,14 +2012,12 @@ const SiblingNavi = (function() {
           });
         }
 
-        if (text) {
-          let score = naviLinkScorer.score({url, text, attributes});
+        let score = naviLinkScorer.score({url, text, attributes});
 
-          if (score) {
-            entries.add({url, text, score});
+        if (score) {
+          entries.add({url, text, score});
 
-            break;
-          }
+          break;
         }
       }
 
@@ -2132,8 +2130,7 @@ const SiblingNavi = (function() {
             image && image.title,
             image && image.src
           ].
-          filter(Boolean).
-          map(trim);
+          map(trim).filter(Boolean);
 
           if (!texts.length) {
             return;
@@ -2162,7 +2159,7 @@ const SiblingNavi = (function() {
             }
           }
 
-          attributes = attributes.map(trim);
+          attributes = attributes.map(trim).filter(Boolean);
 
           linkList.push({
             url,
@@ -2381,13 +2378,9 @@ const NaviLinkScorer = (function() {
       let makeWordRE = (str) => RegExp(`(?:${str})`, 'i');
 
       let naviWordRE = makeWordRE(navi);
-      let match = (attributes) => {
-        if (!attributes.length) {
-          return;
-        }
 
-        return attributes.some((str) => naviWordRE.test(str));
-      };
+      let match = (attributes) =>
+        attributes.some((str) => naviWordRE.test(str));
 
       let makeDirections = (forward, backward) => {
         return {
