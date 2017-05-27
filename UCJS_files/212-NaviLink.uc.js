@@ -2107,9 +2107,15 @@ const SiblingNavi = (function() {
 
         let linkList = [];
 
-        let addData = (node) => {
-          let trim = (str) => str.trim().replace(/\s+/g, ' ');
+        let trim = (str) => {
+          if (!str || !/\S/.test(str)) {
+            return '';
+          }
 
+          return str.trim().replace(/\s+/g, ' ');
+        };
+
+        let addData = (node) => {
           let url = node.href;
 
           if (!url) {
@@ -3136,7 +3142,7 @@ function capitalize(str) {
 }
 
 function trim(str) {
-  if (!str) {
+  if (!str || !/\S/.test(str)) {
     return '';
   }
 
