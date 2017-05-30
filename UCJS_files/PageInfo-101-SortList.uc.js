@@ -68,11 +68,15 @@ window.pageInfoTreeView.prototype.cycleHeader =
   }
 
   // Store the natural order at the first time.
+  // XXX: I want to use the spread operator to copy an array, but for a large
+  // array, it seems to be a lot slower than Array.slice().
   if (!state.naturalData) {
+    // state.naturalData = [...this.data];
     state.naturalData = this.data.slice();
   }
 
   if (direction === 'natural') {
+    // this.data = [...state.naturalData];
     this.data = state.naturalData.slice();
   }
   else {

@@ -1753,9 +1753,9 @@ const NaviLink = (function() {
       naviLinkType = NaviLinkTypeFixup.registered(naviLinkType);
 
       if (naviLinkType) {
-        // Make a temporary attributes list to append the array of 'rel' values
-        // except for this link type.
-        let thisAttributes = attributes.slice();
+        // Make a temporary attributes list for appending the array of 'rel'
+        // values except for this link type.
+        let thisAttributes = [...attributes];
 
         let extraRels = rels.exceptFor(naviLinkType);
 
@@ -2630,7 +2630,7 @@ const NaviLinkScorer = (function() {
       // @note We will destruct the array |otherParts|, but |otherURL.parts| is
       // created only for this function this time so that we don't have to copy
       // the array.
-      // let otherParts = otherURL.parts.slice();
+      // let otherParts = [...otherURL.parts];
       let otherParts = otherURL.parts;
 
       let originalLength = originalParts.length;
