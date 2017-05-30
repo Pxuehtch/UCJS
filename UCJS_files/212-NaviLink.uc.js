@@ -2137,8 +2137,10 @@ const SiblingNavi = (function() {
           }
 
           let attributes = [];
+
           // Numbers of ancestor elements to be looked up.
-          // The depth 4 from the typical structure <nav><ul><li><a>.
+          // @value {integer}
+          //   4 from the typical structure <nav><ul><li><a>.
           let elementNums = 4;
 
           for (let element = node; element; element = element.parentElement) {
