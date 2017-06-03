@@ -2128,13 +2128,10 @@ const SiblingNavi = (function() {
             node.title,
             image && image.alt,
             image && image.title,
-            image && image.src
+            image && image.src,
+            '[No text]'
           ].
           map(trim).filter(Boolean);
-
-          if (!texts.length) {
-            return;
-          }
 
           let attributes = [];
 
