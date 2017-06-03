@@ -2360,42 +2360,6 @@ const NaviLinkScorer = (function() {
       };
 
       return {
-        list: {
-          prev: prev.en,
-          next: next.en
-        },
-        direction: {
-          prev: makeDirections(prev, next),
-          next: makeDirections(next, prev)
-        }
-      };
-    })();
-
-    // Data for examining an element with a navigation-like attribute.
-    const kNaviAttribute = (function() {
-      // Expects navigation-like identifier come from 'navigation', 'pager',
-      // 'pagination'.
-      const navi = 'nav|page|pagi|link';
-
-      let makeWordRE = (str) => RegExp(`(?:${str})`, 'i');
-
-      let naviWordRE = makeWordRE(navi);
-
-      let match = (attributes) =>
-        attributes.some((str) => naviWordRE.test(str));
-
-      let makeDirections = (forward, backward) => {
-        return {
-          forward: makeWordRE(forward),
-          backward: makeWordRE(backward)
-        };
-      };
-
-      let prev = kNaviWord.list.prev;
-      let next = kNaviWord.list.next;
-
-      return {
-        match,
         direction: {
           prev: makeDirections(prev, next),
           next: makeDirections(next, prev)
@@ -2414,21 +2378,18 @@ const NaviLinkScorer = (function() {
       matchSign: 100,
       matchWord: 100,
       noBackwardWord: 50,
-      lessText: 50,
-      matchAttribute: 100
+      lessText: 50
     });
 
     let vars = {
       SignTester: null,
-      WordTester: null,
-      AttributeWordTester: null
+      WordTester: null
     };
 
     function init(direction) {
       let testers = [
         ['SignTester', kNaviSign],
-        ['WordTester', kNaviWord],
-        ['AttributeWordTester', kNaviAttribute]
+        ['WordTester', kNaviWord]
       ];
 
       for (let [tester, data] of testers) {
@@ -2467,7 +2428,7 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score({text, attributes}) {
+    function score(text) {
       let point = 0;
       let match;
 
@@ -2517,14 +2478,81 @@ const NaviLinkScorer = (function() {
         }
       }
 
-      // Test the attribute for navigation.
-      if (kNaviAttribute.match(attributes)) {
-        let attribute = attributes.join(' ');
+      return point;
+    }
 
-        if (vars.AttributeWordTester.match(attribute) &&
-            !vars.AttributeWordTester.hasBackward(attribute)) {
-          point += kScoreWeight.matchAttribute;
+    return {
+      init,
+      score
+    };
+  })();
+
+  const AttributeScorer = (function() {
+    const kNaviAttribute = (function() {
+      // Expects navigation-like identifier come from 'navigation', 'page',
+      // 'pagination', 'link'.
+      const navi = 'nav|page|pagi|link';
+
+      // The direction words for navigation.
+      const prev = 'prev|back';
+      const next = 'next|forward';
+
+      // Allows the word anywhere; 'navi next', 'nextpage'.
+      let wordRE = (str) => RegExp(`(?:${str})`, 'i');
+
+      let directionRE = (forward, backward) => {
+        return {
+          forward: wordRE(forward),
+          backward: wordRE(backward)
+        };
+      };
+
+      return {
+        navi: wordRE(navi),
+        direction: {
+          prev: directionRE(prev, next),
+          next: directionRE(next, prev)
         }
+      };
+    })();
+
+    const kScoreWeight = initScoreWeight({
+      matchAttribute: 100
+    });
+
+    let vars = {
+      AttributeTester: null
+    };
+
+    function init(direction) {
+      vars.AttributeTester = initAttributeTester(
+        kNaviAttribute.navi,
+        kNaviAttribute.direction[direction]
+      );
+    }
+
+    function initAttributeTester(navi, {forward, backward}) {
+      function match(attributes) {
+        if (!attributes.length) {
+          return false;
+        }
+
+        let values = attributes.join(' ');
+
+        return navi.test(values) && forward.test(values) &&
+               !backward.test(values);
+      }
+
+      return {
+        match
+      };
+    }
+
+    function score(attributes) {
+      let point = 0;
+
+      if (vars.AttributeTester.match(attributes)) {
+        point += kScoreWeight.matchAttribute;
       }
 
       return point;
@@ -2602,7 +2630,7 @@ const NaviLinkScorer = (function() {
       };
     }
 
-    function score({url}) {
+    function score(url) {
       let URLData = vars.URLTester.match(url);
 
       if (!URLData) {
@@ -2689,6 +2717,7 @@ const NaviLinkScorer = (function() {
         vars.direction = direction;
 
         TextScorer.init(direction);
+        AttributeScorer.init(direction);
       }
 
       return {
@@ -2697,17 +2726,21 @@ const NaviLinkScorer = (function() {
     }
 
     function score({url, text, attributes}) {
-      let point = TextScorer.score({text, attributes});
+      let point = 0;
+
+      point += AttributeScorer.score(attributes);
+      point += TextScorer.score(text);
 
       if (point) {
-        point += URLScorer.score({url});
+        point += URLScorer.score(url);
       }
 
       // Number ranges:
+      // - Attribute score [0,1]
       // - Text score [0,1]
       // - URL score  [0,1]
       // - Return value [0,1]
-      return point / 2;
+      return point / 3;
     }
 
     return {
