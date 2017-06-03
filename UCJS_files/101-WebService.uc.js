@@ -404,9 +404,9 @@ function open(aParams) {
 
   // TODO: Observe the document loaded to manage a form.
   // WORKAROUND:
-  // - Uses an easy delay for a selected tab.
-  // - The URL is just only opened for a background tab.
-  // XXX: I'm unwilling to handle an observer for this.
+  // - Uses a simple delay for a selected tab.
+  // - Just opens the URL for a background tab.
+  // XXX: I'm unwilling to handle observers for this issue.
   if (tab.selected && result.form) {
     setTimeout(inputAndSubmit, 500, result.form, result.data);
   }

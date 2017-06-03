@@ -2301,7 +2301,7 @@ const SiblingNavi = (function() {
 })();
 
 /**
- * Evaluator of the navigation-like text and URL.
+ * Evaluator of the navigation-like values.
  */
 const NaviLinkScorer = (function() {
   const TextScorer = (function() {
@@ -2315,7 +2315,7 @@ const NaviLinkScorer = (function() {
       // ≫(&Gt;):\u226b, ▶:\u25b6, ▸(&rtrif;):\u25b8, ＞:\uff1e
       const next = '>|\\u00bb|\\u203a|\\u2192|\\u226b|\\u25b6|\\u25b8|\\uff1e';
 
-      let makeDirections = (forward, backward) => {
+      let directionRE = (forward, backward) => {
         return {
           forward: RegExp(`^(?:${forward})+|(?:${forward})+$`),
           backward: RegExp(backward)
@@ -2324,8 +2324,8 @@ const NaviLinkScorer = (function() {
 
       return {
         direction: {
-          prev: makeDirections(prev, next),
-          next: makeDirections(next, prev)
+          prev: directionRE(prev, next),
+          next: directionRE(next, prev)
         }
       };
     })();
@@ -2345,13 +2345,13 @@ const NaviLinkScorer = (function() {
         ja: '\\u6b21|\\u65b0\\u3057|\\u7d9a\\u304d'
       };
 
-      let makeDirections = (forward, backward) => {
+      let directionRE = (forward, backward) => {
         // Expects the navi word at the first word of string;
-        // 'prev', 'Previous *', 'next-*', 'newer.jpg', ...
-        // Allows the short leading words before an english navigation word
-        // (e.g. 'Go to next page', 'goto-next-page.png').
-        let en = `(?:^|^[- \\w]{0,10}[-_ ])(?:${forward.en})(?:$|[-_. ])`,
-            ja = `^(?:${forward.ja})`;
+        // 'prev', 'Previous *', 'next-*', 'newer.jpg'.
+        // Allows the short leading words before an english navigation word;
+        // 'Go to next page', 'goto-next-page.png'.
+        let en = `(?:^|^[- \\w]{0,10}[-_ ])(?:${forward.en})(?:$|[-_. ])`;
+        let ja = `^(?:${forward.ja})`;
 
         return {
           forward: RegExp(`(?:${en})|(?:${ja})`, 'i'),
@@ -2361,8 +2361,8 @@ const NaviLinkScorer = (function() {
 
       return {
         direction: {
-          prev: makeDirections(prev, next),
-          next: makeDirections(next, prev)
+          prev: directionRE(prev, next),
+          next: directionRE(next, prev)
         }
       };
     })();
@@ -2467,8 +2467,8 @@ const NaviLinkScorer = (function() {
           // The text seems less to be for navigation if more than 10
           // characters remain.
           const maxLenToBeNavi = 10;
-          let rate = (text.length < maxLenToBeNavi) ?
-            1 - (text.length / maxLenToBeNavi) : 0;
+          let len = text.length;
+          let rate = (len < maxLenToBeNavi) ? 1 - (len / maxLenToBeNavi) : 0;
 
           point += (kScoreWeight.lessText * rate);
         }
@@ -2575,10 +2575,10 @@ const NaviLinkScorer = (function() {
     };
 
     function init(uri) {
-      vars.URLTester = initURLTester({uri});
+      vars.URLTester = initURLTester(uri);
     }
 
-    function initURLTester({uri}) {
+    function initURLTester(uri) {
       let originalPrePath = uri.prePath;
       let originalPath = uri.path;
 
