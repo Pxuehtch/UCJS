@@ -2334,15 +2334,15 @@ const NaviLinkScorer = (function() {
     // navigation.
     const kNaviWord = (function() {
       const prev = {
-        en: 'prev(?:ious)?|old(?:er)?|back(?:ward)?|less',
+        en: 'prev|previous|old|older|back|backward',
         // 前:\u524D, 古い:\u53e4\u3044
         ja: '\\u524d|\\u53e4\\u3044'
       };
 
       const next = {
-        en: 'next|new(?:er)?|later|forward|more|continue',
-        // 次:\u6b21, 新し:\u65b0\u3057
-        ja: '\\u6b21|\\u65b0\\u3057'
+        en: 'next|new|newer|later|forward|more|continue',
+        // 次:\u6b21, 新し:\u65b0\u3057, 続き:\u7d9a\u304d
+        ja: '\\u6b21|\\u65b0\\u3057|\\u7d9a\\u304d'
       };
 
       let makeDirections = (forward, backward) => {
