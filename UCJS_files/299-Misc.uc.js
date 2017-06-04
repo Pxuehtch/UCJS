@@ -968,7 +968,8 @@ const {
     lockButton: {
       id: 'ucjs_Misc_GlobalFindbar_lockButton',
       label: 'Lock',
-      accesskey: 'l',
+      // @note 'l' is applied to 'Highlight All' button.
+      accesskey: 'k',
       tooltiptext: 'Use the global findbar'
     }
   };
@@ -1010,8 +1011,18 @@ const {
       label: kUI.lockButton.label,
       accesskey: kUI.lockButton.accesskey,
       tooltiptext: kUI.lockButton.tooltiptext,
-      type: 'checkbox'
+      type: 'checkbox',
+      class: `${kUI.lockButton.id} findbar-button tabbable`
     }), container.firstChild);
+
+    CSSUtils.setChromeStyleSheet(`
+      .${kUI.lockButton.id} {
+        margin-right: 5px;
+      }
+      .${kUI.lockButton.id} > .toolbarbutton-icon {
+        display: none;
+      }
+    `);
   }
 
   function handleEvent(event) {
