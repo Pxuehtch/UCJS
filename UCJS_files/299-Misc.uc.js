@@ -980,7 +980,7 @@ const {
       // |gFindBar| is called.
       if (gBrowser.isFindBarInitialized &&
           gBrowser.isFindBarInitialized(gBrowser.selectedTab)) {
-        return gFindBar.getElementsByClassName(kUI.lockButton.id)[0];
+        return gFindBar.getElement(kUI.lockButton.id);
       }
 
       return null;
@@ -1001,17 +1001,17 @@ const {
   $page('pageselect', handleEvent);
   $page('pageurlchange', handleEvent);
 
-  function onCreate(aParam) {
-    let {findBar} = aParam;
+  function onCreate() {
+    // XXX: can't insert an element directly in the <findbar> from Fx53.
+    let container = gFindBar.getElement('findbar-container');
 
-    findBar.appendChild($E('toolbarbutton', {
-      // @note Identified by the class name since each tab has a findbar.
-      class: kUI.lockButton.id,
+    container.insertBefore($E('toolbarbutton', {
+      anonid: kUI.lockButton.id,
       label: kUI.lockButton.label,
       accesskey: kUI.lockButton.accesskey,
       tooltiptext: kUI.lockButton.tooltiptext,
       type: 'checkbox'
-    }));
+    }), container.firstChild);
   }
 
   function handleEvent(event) {
@@ -1019,7 +1019,7 @@ const {
 
     switch (event.type) {
       case 'command': {
-        let button = event.target;
+        let button = event.originalTarget;
 
         let lockButton = UI.lockButton;
 
