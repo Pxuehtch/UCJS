@@ -209,14 +209,16 @@ const Highlighting = (function() {
  */
 const FindCommandObserver = (function() {
   /**
-   * 'keyup' event observer.
-   *
-   * - Wait for the keyup event after the find command and highlight a find
-   *   result.
-   * - Skip the highlighting when the find-again command is called in quick
-   *   repeating by holding <F3/ctrl+g> key down.
+   * Wait for trigger events just after the find command, and then highlight
+   * a find result.
+   * - The command event by clicking the triangle button for find-again in the
+   *   findbar.
+   * - The keyup event by typing in the findbar.
+   * - The keyup event by pressing <F3/ctrl+g> for find-again. This provides
+   *   to skip highlighting when the find-again command is called in quick
+   *   repeating by holding <F3/ctrl+g> down.
    */
-  const KeyupEvent = (function() {
+  const HighlightTrigger = (function() {
     let listener = null;
 
     function addListener(resolve) {
@@ -229,7 +231,8 @@ const FindCommandObserver = (function() {
         resolve();
       };
 
-      // @note Use the capture mode to catch the event anytime.
+      gBrowser.mPanelContainer.addEventListener('command', listener);
+      // @note Use the capture mode to catch the key event anytime.
       window.addEventListener('keyup', listener, true);
     }
 
@@ -238,6 +241,7 @@ const FindCommandObserver = (function() {
         return;
       }
 
+      gBrowser.mPanelContainer.removeEventListener('command', listener);
       window.removeEventListener('keyup', listener, true);
 
       listener = null;
@@ -265,7 +269,7 @@ const FindCommandObserver = (function() {
     // Terminate the active highlighting.
     Highlighting.stop();
 
-    KeyupEvent.wait().then(() => {
+    HighlightTrigger.wait().then(() => {
       // TODO: Check whether tasks could be queued or not. If they could, we
       // must terminate the elders.
       promiseFindResultInfo().then((findResultInfo) => {
