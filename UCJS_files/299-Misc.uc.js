@@ -1002,6 +1002,15 @@ const {
   $page('pageselect', handleEvent);
   $page('pageurlchange', handleEvent);
 
+  CSSUtils.setChromeStyleSheet(`
+    .${kUI.lockButton.id} {
+      margin-right: 5px;
+    }
+    .${kUI.lockButton.id} > .toolbarbutton-icon {
+      display: none;
+    }
+  `);
+
   function onCreate() {
     // XXX: can't insert an element directly in the <findbar> from Fx53.
     let container = gFindBar.getElement('findbar-container');
@@ -1014,15 +1023,6 @@ const {
       type: 'checkbox',
       class: `${kUI.lockButton.id} findbar-button tabbable`
     }), container.firstChild);
-
-    CSSUtils.setChromeStyleSheet(`
-      .${kUI.lockButton.id} {
-        margin-right: 5px;
-      }
-      .${kUI.lockButton.id} > .toolbarbutton-icon {
-        display: none;
-      }
-    `);
   }
 
   function handleEvent(event) {
