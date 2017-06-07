@@ -11,7 +11,7 @@
 
 
 /**
- * !!! This script doesn't yet support e10s. !!!
+ * !!! This script is deprecated. It's no more supported. !!!
  */
 
 
