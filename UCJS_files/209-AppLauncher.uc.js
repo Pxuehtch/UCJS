@@ -340,8 +340,7 @@ const FileExtUtil = {
     let fileExts = kLinkExtension['file'].concat(aExtArray);
 
     // Filter the array with unique extensions.
-    kLinkExtension['file'] =
-      fileExts.filter((ext, i, array) => array.indexOf(ext) === i);
+    kLinkExtension['file'] = [...new Set(fileExts)];
   },
 
   matchExt(aURL, aType) {
