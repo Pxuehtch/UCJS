@@ -1524,9 +1524,7 @@ function fixFaviconURL(iconURL) {
 
 function formatTime(microSeconds) {
   // Format to convert date and time.
-  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
-  const kTimeFormat = '%Y/%m/%d %H:%M:%S';
-  const kTextFormat = '[%time%]';
+  const kTextFormat = '[%datetime%]';
   const kNotAvailable = '[N/A]';
 
   if (!microSeconds) {
@@ -1534,9 +1532,20 @@ function formatTime(microSeconds) {
   }
 
   // Convert microseconds into milliseconds.
-  let time = (new Date(microSeconds / 1000)).toLocaleFormat(kTimeFormat);
+  let date = new Date(microSeconds / 1000);
 
-  return kTextFormat.replace('%time%', time);
+  // Date and time format: 'yyyy/mm/dd h:mm:ss'
+  let datetime = date.toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour12: false,
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  return kTextFormat.replace('%datetime%', datetime);
 }
 
 function formatOrderNumber(num) {

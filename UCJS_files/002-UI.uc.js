@@ -606,9 +606,7 @@ const StatusField = (function() {
     MESSAGE: 'ucjs_UI_StatusField_message'
   };
 
-  // @see http://pubs.opengroup.org/onlinepubs/007908799/xsh/strftime.html
-  const kTimeFormat = '%Y/%m/%d %H:%M:%S';
-  const kLinkFormat = '%url% [%time%]';
+  const kLinkFormat = '%url% [%datetime%]';
 
   /**
    * Fx native UI elements.
@@ -804,12 +802,22 @@ const StatusField = (function() {
 
       if (visitedDate) {
         // Convert microseconds into milliseconds.
-        let time = (new Date(visitedDate / 1000)).
-          toLocaleFormat(kTimeFormat);
+        let date = new Date(visitedDate / 1000);
+
+        // Date and time format: 'yyyy/mm/dd h:mm:ss'
+        let datetime = date.toLocaleDateString('ja-JP', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour12: false,
+          hour: 'numeric',
+          minute: '2-digit',
+          second: '2-digit'
+        });
 
         // Update the URL with the visited date.
         newURL = kLinkFormat.
-          replace('%url%', newURL).replace('%time%', time);
+          replace('%url%', newURL).replace('%datetime%', datetime);
 
         linkState = 'visited';
       }
