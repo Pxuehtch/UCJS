@@ -387,7 +387,9 @@ function ScriptList() {
                    directory.isDirectory() &&
                    !directory.isHidden();
           }
-          catch (ex) {}
+          catch (ex) {
+            Components.utils.reportError(ex);
+          }
         }
 
         return false;
@@ -711,7 +713,9 @@ function UtilManager() {
       localFile.initWithPath(aFile.path);
       return localFile.lastModifiedTime;
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return '';
   }

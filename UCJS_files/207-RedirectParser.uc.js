@@ -138,7 +138,9 @@ const kPreset = [
 
             return url;
           }
-          catch (ex) {}
+          catch (ex) {
+            Cu.reportError(ex);
+          }
 
           return `[Decode error] ${$1}`;
         },

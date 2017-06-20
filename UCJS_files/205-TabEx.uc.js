@@ -1780,7 +1780,9 @@ function makeURI(url) {
   try {
     return Modules.BrowserUtils.makeURI(url);
   }
-  catch (ex) {}
+  catch (ex) {
+    Cu.reportError(ex);
+  }
 
   return null;
 }

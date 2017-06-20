@@ -3026,7 +3026,9 @@ const URIUtil = (function() {
     try {
       return Modules.BrowserUtils.makeURI(url);
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return null;
   }
@@ -3039,7 +3041,9 @@ const URIUtil = (function() {
     try {
       return uri.host;
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     // The scheme is (https?|ftp).
     return uri.prePath.
@@ -3074,7 +3078,9 @@ const URIUtil = (function() {
 
       return IDNService.convertACEtoUTF8(baseDomain);
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return host;
   }

@@ -475,7 +475,9 @@ const SignPanel = (function() {
       isEnabled = utils.IMEStatus === utils.IME_STATUS_ENABLED;
       isActive = isEnabled && utils.IMEIsOpen;
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return {
       isEnabled,

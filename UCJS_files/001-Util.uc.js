@@ -592,7 +592,9 @@ const ContentScripts = (function() {
     try {
       return doc.evaluate(xpath, root, lookupNamespaceURI, type, null);
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return null;
   }
@@ -882,7 +884,9 @@ const ContentScripts = (function() {
     try {
       return makeURI(url, null, makeURI(baseURL)).spec;
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return null;
   }
@@ -2123,7 +2127,9 @@ const DOMUtils = (function() {
     try {
       defaultNS = base.lookupNamespaceURI(null);
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     if (defaultNS) {
       let tmpPrefix = '__NS__';
@@ -2140,7 +2146,9 @@ const DOMUtils = (function() {
     try {
       return doc.evaluate(xpath, base, resolver, type, null);
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return null;
   }
@@ -2253,7 +2261,9 @@ const URLUtils = (function() {
 
       return makeURI(url, null, makeURI(baseURL)).spec
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return null;
   }
@@ -2833,7 +2843,9 @@ const BrowserUtils = (function() {
         return node.QueryInterface(Ci.nsIDOMNSEditableElement).
           editor.selection;
       }
-      catch (ex) {}
+      catch (ex) {
+        Cu.reportError(ex);
+      }
 
       return null;
     }

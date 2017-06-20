@@ -468,7 +468,9 @@ const LinkInfoCollector = (function() {
     try {
       return makeURI(url, null, makeURI(baseURL)).spec;
     }
-    catch (ex) {}
+    catch (ex) {
+      Components.utils.reportError(ex);
+    }
 
     return null;
   }

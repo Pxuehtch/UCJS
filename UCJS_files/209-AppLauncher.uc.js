@@ -947,7 +947,9 @@ function getAppFile(filePath) {
       return file;
     }
   }
-  catch (ex) {}
+  catch (ex) {
+    Cu.reportError(ex);
+  }
 
   return null;
 }
@@ -1181,7 +1183,9 @@ function makeURI(url) {
   try {
     return Modules.BrowserUtils.makeURI(url);
   }
-  catch (ex) {}
+  catch (ex) {
+    Cu.reportError(ex);
+  }
 
   return null;
 }

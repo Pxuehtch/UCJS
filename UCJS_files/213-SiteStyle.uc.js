@@ -816,7 +816,9 @@ const URLFilter = (function() {
 
       return uri.spec;
     }
-    catch (ex) {}
+    catch (ex) {
+      Cu.reportError(ex);
+    }
 
     return url;
   }

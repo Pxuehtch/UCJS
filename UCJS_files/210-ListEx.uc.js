@@ -1004,7 +1004,10 @@ const ClosedList = (function() {
 
           result = limitData(data, maxNumItems);
         }
-      } catch (ex) {}
+      }
+      catch (ex) {
+        Cu.reportError(ex);
+      }
 
       return result;
     }
@@ -1024,7 +1027,10 @@ const ClosedList = (function() {
 
           result = limitData(data, maxNumItems);
         }
-      } catch (ex) {}
+      }
+      catch (ex) {
+        Cu.reportError(ex);
+      }
 
       return result;
     }

@@ -555,7 +555,9 @@ const History = {
         // aboutNetError page shows.
         gBrowser.gotoIndex(index);
       }
-      catch (ex) {}
+      catch (ex) {
+        Cu.reportError(ex);
+      }
     }
   }
 };
