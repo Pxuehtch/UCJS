@@ -709,8 +709,8 @@ const TabSelector = {
   },
 
   select(aTab) {
-    // A tab in loading yet.
-    if (aTab && aTab.hasAttribute('busy')) {
+    // Wait while the tab is in loading.
+    if (isTabBusy(aTab)) {
       return;
     }
 
@@ -794,9 +794,10 @@ const TabSuspender = {
     let [browser, loadingURL] = this.getBrowserForTab(aTab);
 
     if (loadingURL) {
-      // A document in loading.
-      let isBusy = aTab.hasAttribute('busy');
+      // Whether or not the document is in loading.
+      let isBusy = isTabBusy(aTab);
 
+      // Whether or not the document has no content.
       let isBlank =
         browser.currentURI.spec === 'about:blank' ||
         // Handle as a blank page when the native 'tabs on demand' works on
@@ -1782,6 +1783,20 @@ function makeURI(url) {
   catch (ex) {}
 
   return null;
+}
+
+function isTabBusy(tab) {
+  if (!tab) {
+    return false;
+  }
+
+  // TODO: Check the tab loading state in a reliable way.
+  // WORKAROUND:
+  // 1. Check the 'busy' attribute in non-e10s.
+  // 2. Check |browser.userTypedValue| that holds the URL of a document till it
+  //    successfully loads in e10s.
+  return !!(tab.hasAttribute('busy') ||
+    gBrowser.getBrowserForTab(tab).userTypedValue);
 }
 
 /**
