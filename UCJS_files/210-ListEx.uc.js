@@ -396,16 +396,15 @@ const HistoryList = (function() {
   const PlacesDB = (function() {
     function promiseRecentHistory() {
       // Query history entries in thier visited date order from newest.
-      let sql = [
-        "SELECT p.title, p.url, h.visit_date time, f.url icon",
-        "FROM moz_places p",
-        "JOIN moz_historyvisits h ON p.id = h.place_id",
-        "LEFT JOIN moz_favicons f ON p.favicon_id = f.id",
-        "WHERE p.hidden = 0",
-        "GROUP BY p.id",
-        "ORDER BY h.visit_date DESC",
-        "LIMIT :limit"
-      ].join(' ');
+      let sql = `
+        SELECT p.title, p.url, hv.visit_date time
+        FROM moz_places p
+        JOIN moz_historyvisits hv ON p.id = hv.place_id
+        WHERE p.hidden = 0
+        GROUP BY p.id
+        ORDER BY hv.visit_date DESC
+        LIMIT :limit
+      `;
 
       let maxNumItems = kPref.maxNumListItems.recentHistory;
 
@@ -415,11 +414,11 @@ const HistoryList = (function() {
       return PlacesUtils.promisePlacesDBResult({
         sql,
         parameters: {'limit': limit},
-        columns: ['title', 'url', 'time', 'icon']
+        columns: ['title', 'url', 'time']
       });
     }
 
-    function promiseTimeAndIcon(aURL) {
+    function promiseVisitDateTime(aURL) {
       // Don't query schemes which are excluded from history in Places DB.
       if (!/^(?:https?|ftp|file):/.test(aURL)) {
         // Resolved with an empty hash.
@@ -427,20 +426,19 @@ const HistoryList = (function() {
       }
 
       // Query a newest item with the URL.
-      let sql = [
-        "SELECT h.visit_date time, f.url icon",
-        "FROM moz_places p",
-        "JOIN moz_historyvisits h ON p.id = h.place_id",
-        "LEFT JOIN moz_favicons f ON p.favicon_id = f.id",
-        "WHERE p.url = :url",
-        "ORDER BY h.visit_date DESC",
-        "LIMIT 1"
-      ].join(' ');
+      let sql = `
+        SELECT hv.visit_date time
+        FROM moz_places p
+        JOIN moz_historyvisits hv ON p.id = hv.place_id
+        WHERE p.url = :url
+        ORDER BY hv.visit_date DESC
+        LIMIT 1
+      `;
 
       return PlacesUtils.promisePlacesDBResult({
         sql,
         parameters: {'url': aURL},
-        columns: ['time', 'icon']
+        columns: ['time']
       }).
       // Resolved with the hash including time and icon, or empty hash if no
       // data.
@@ -450,7 +448,7 @@ const HistoryList = (function() {
 
     return {
       promiseRecentHistory,
-      promiseTimeAndIcon
+      promiseVisitDateTime
     };
   })();
 
@@ -524,34 +522,28 @@ const HistoryList = (function() {
         action = Action.openTabHistory(i, selectedIndex);
       }
 
-      // @note |label| and |icon| will be set asynchronously.
+      // @note |label| will be set asynchronously.
       let menuitem = fragment.appendChild($E('menuitem', {
         tooltip: {
           title,
           url
         },
+        icon: url,
         class: className.join(' '),
         action
       }));
 
-      asyncGetTimeAndIcon(url, ({time, icon}) => {
+      PlacesDB.promiseVisitDateTime(url).then(({time}) => {
         $E(menuitem, {
           label: {
-            prefix: formatTime(time),
+            prefix: formatDateTime(time),
             value: title
-          },
-          icon
+          }
         });
       });
     }
 
     return fragment;
-  }
-
-  function asyncGetTimeAndIcon(aURL, aCallback) {
-    PlacesDB.promiseTimeAndIcon(aURL).then((aResult) => {
-      aCallback(aResult);
-    });
   }
 
   async function buildRecentHistory() {
@@ -582,14 +574,14 @@ const HistoryList = (function() {
 
       fragment.appendChild($E('menuitem', {
         label: {
-          prefix: formatTime(entry.time),
+          prefix: formatDateTime(entry.time),
           value: title
         },
         tooltip: {
           title,
           url
         },
-        icon: entry.icon,
+        icon: url,
         class: className.join(' '),
         action
       }));
@@ -823,6 +815,8 @@ const OpenedList = (function() {
         action = Action.selectTab(i);
       }
 
+      let url = browser.currentURI.spec
+
       let menuitem = fragment.appendChild($E('menuitem', {
         label: {
           prefix: formatOrderNumber(i + 1),
@@ -830,10 +824,10 @@ const OpenedList = (function() {
         },
         tooltip: {
           title: tab.label,
-          url: browser.currentURI.spec,
+          url,
           list: history
         },
-        icon: gBrowser.getIcon(tab),
+        icon: url,
         class: className.join(' '),
         action
       }));
@@ -868,7 +862,7 @@ const OpenedList = (function() {
 
         title = b.contentTitle || b.selectedTab.label || b.currentURI.spec;
         url = b.currentURI.spec;
-        icon = b.getIcon(b.selectedTab);
+        icon = url;
 
         // Scan visible tabs in their position order from start to end around
         // the selected tab in this window.
@@ -1131,7 +1125,7 @@ const ClosedList = (function() {
           url,
           list: history
         },
-        icon: closedTab.image,
+        icon: url,
         class: 'menuitem-iconic',
         action: Action.undoCloseTab(i)
       }));
@@ -1205,7 +1199,7 @@ const ClosedList = (function() {
           url,
           list: tabList
         },
-        icon: tabs[closedWindow.selected - 1].image,
+        icon: url,
         class: 'menuitem-iconic',
         action: Action.undoCloseWindow(i)
       }));
@@ -1367,7 +1361,7 @@ function handleAttribute(aNode, aName, aValue) {
     }
 
     case 'icon': {
-      aNode.style.listStyleImage = 'url(' + fixFaviconURL(aValue) + ')';
+      aNode.setAttribute('image', fixIconURL(aValue));
 
       return true;
     }
@@ -1516,19 +1510,20 @@ function fitIntoLabel(text, wrapping) {
   };
 }
 
-function fixFaviconURL(iconURL) {
-  if (!iconURL) {
-    return Modules.PlacesUtils.favicons.defaultFavicon.spec;
+function fixIconURL(url) {
+  let iconURL;
+
+  if (/^(?:https?|file):.+\.(?:ico|jpg|png)$/.test(url)) {
+    iconURL = url;
+  }
+  else {
+    iconURL = `page-icon:${url}`;
   }
 
-  if (/^https?:/.test(iconURL)) {
-    iconURL = 'moz-anno:favicon:' + iconURL;
-  }
-
-  return iconURL;
+  return Modules.PlacesUtils.urlWithSizeRef(window, iconURL, 16);
 }
 
-function formatTime(microSeconds) {
+function formatDateTime(microSeconds) {
   // Format to convert date and time.
   const kTextFormat = '[%datetime%]';
   const kNotAvailable = '[N/A]';
