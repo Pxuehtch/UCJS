@@ -1755,7 +1755,17 @@ const ContentTask = (function() {
       let mm = browser.messageManager;
 
       mm.addMessageListener('ucjs:ContentTask:response', listener);
-      mm.sendAsyncMessage('ucjs:ContentTask:spawn', data, objects);
+
+      // TODO: Find what brings the (NS_ERROR_UNEXPECTED) expection that occurs
+      // on restart.
+      try {
+        mm.sendAsyncMessage('ucjs:ContentTask:spawn', data, objects);
+      }
+      catch (ex) {
+        Cu.reportError(ex);
+
+        mm.removeMessageListener('ucjs:ContentTask:response', listener);
+      }
     }
 
     function get(browser, messageId) {
