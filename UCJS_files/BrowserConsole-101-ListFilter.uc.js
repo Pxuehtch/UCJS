@@ -101,9 +101,6 @@ function setStyleSheet() {
     kItemList.map(({category}) => '.' + kDataKey.filteredBy + category).
     join(',');
 
-  // Set the style of our 'checkbox' type button to the same style of the
-  // native 'menu-button' type button.
-  // @note This is adjusted to the light theme.
   // @see https://developer.mozilla.org/en/docs/Tools/DevToolsColors
   CSSUtils.setChromeStyleSheet(`
     ${filteredBy} {
@@ -116,8 +113,9 @@ function setStyleSheet() {
     .${kUI.button.id}:not(:hover) {
       background-color: transparent !important;
     }
-    .theme-light .${kUI.button.id}[checked] {
-      background-color: rgb(76, 158, 217, .3) !important;
+    .${kUI.button.id}[checked] {
+      color: var(--theme-selection-color) !important;
+      background-color: var(--theme-selection-background) !important;
     }
   `);
 }
