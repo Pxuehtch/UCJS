@@ -670,7 +670,8 @@ const kSiteList = [
         }
 
         function getStartTime(url) {
-          let time = /[?&#]t=(\d+h)?(\d+m)?(\d+s?)?/.exec(url);
+          let time = /[?&#](?:t|time_continue)=(\d+h)?(\d+m)?(\d+s?)?/.
+            exec(url);
 
           if (!time) {
             return 0;
