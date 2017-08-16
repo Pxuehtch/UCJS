@@ -2563,6 +2563,8 @@ const CSSUtils = (function() {
       uri = Modules.BrowserUtils.makeURI(dataURL);
     }
     catch (ex) {
+      Cu.reportError(ex);
+
       return;
     }
 
