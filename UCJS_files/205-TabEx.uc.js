@@ -1762,9 +1762,9 @@ function promisePageTitle(url) {
     return Promise.resolve(url);
   }
 
-  return Modules.PlacesUtils.promisePlaceInfo(uri).then(
+  return Modules.PlacesUtils.history.fetch(uri).then(
     function resolve(info) {
-      return info.title || url;
+      return (info && info.title) || url;
     },
     function reject() {
       return url;
