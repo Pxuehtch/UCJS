@@ -820,7 +820,9 @@ function promiseDocInfo() {
 
   let params = {
     strings: {},
-    frameOuterWindowID: gContextMenu.frameOuterWindowID
+    // WORKAROUND: For top-level content window ID 0, the error
+    // |window is null| occurs from Fx55.
+    frameOuterWindowID: gContextMenu.frameOuterWindowID || undefined
   };
 
   return promiseMessage(messageName, params).then((data) => {
