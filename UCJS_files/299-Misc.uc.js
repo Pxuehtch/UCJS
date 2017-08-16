@@ -457,48 +457,6 @@ const {
 })();
 
 /**
- * Relocates the scroll-buttons when tabs overflowed on the tab bar.
- */
-(function relocateTabbarScrollButtons() {
-
-  // @note The margin of a pinned tab is set to 3px.
-  CSSUtils.setChromeStyleSheet(`
-    .tabbrowser-arrowscrollbox > .arrowscrollbox-scrollbox {
-      -moz-box-ordinal-group: 1;
-    }
-    .tabbrowser-arrowscrollbox > .scrollbutton-up {
-      -moz-box-ordinal-group: 2;
-    }
-    .tabbrowser-arrowscrollbox > .scrollbutton-down {
-      -moz-box-ordinal-group: 3;
-    }
-    .tabbrowser-arrowscrollbox > .scrollbutton-up {
-      margin-left: 3px !important;
-    }
-    .tabbrowser-tab[pinned] {
-      margin-right: 3px !important;
-    }
-  `);
-
-  // @modified chrome://browser/content/tabbrowser.xml::_positionPinnedTabs
-  Function('gBrowser.tabContainer._positionPinnedTabs =' +
-    gBrowser.tabContainer._positionPinnedTabs.toString().
-    replace(
-      'let scrollButtonWidth = this.mTabstrip._scrollButtonDown.getBoundingClientRect().width;',
-      'let scrollButtonWidth = 0;'
-    ).replace(
-      'width += tab.getBoundingClientRect().width;',
-      // Add the margin of a pinned tab.
-      'width += tab.getBoundingClientRect().width + 3;'
-    )
-  )();
-
-  // Recalc the positions.
-  gBrowser.tabContainer._positionPinnedTabs();
-
-})();
-
-/**
  * Handler of focusing by the <Tab> key.
  *
  * @require UI.uc.js
