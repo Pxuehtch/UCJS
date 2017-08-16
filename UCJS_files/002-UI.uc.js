@@ -606,7 +606,7 @@ const StatusField = (function() {
     MESSAGE: 'ucjs_UI_StatusField_message'
   };
 
-  const kLinkFormat = '%url% [%datetime%]';
+  const kLinkInfoFormat = '%url% [%datetime%]';
 
   /**
    * Fx native UI elements.
@@ -816,7 +816,7 @@ const StatusField = (function() {
         });
 
         // Update the URL with the visited date.
-        newURL = kLinkFormat.
+        newURL = kLinkInfoFormat.
           replace('%url%', newURL).replace('%datetime%', datetime);
 
         linkState = 'visited';

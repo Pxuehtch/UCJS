@@ -584,11 +584,11 @@ const kSiteList = [
     }
   },
   {
-    name: 'Youtube Player',
+    name: 'YouTube Player',
     include: /^https:\/\/(?:www\.)?youtube\.com\/(?:watch|channel|user)/,
     preload(uri, browser) {
       // WORKAROUND: Changes a parameter for the start time of a video page
-      // coming from 'Play in Youtube.com' of an embedded player so that we can
+      // coming from 'Play in youtube.com' of an embedded player so that we can
       // pause at that time.
       if (/#at=\d+/.test(uri.spec)) {
         browser.loadURI(uri.spec.replace('#at=', '#t='));
@@ -638,7 +638,7 @@ const kSiteList = [
          * @return {boolean}
          *   true if a video is paused, false otherwise.
          *
-         * @note Using Youtube Player API.
+         * @note Using YouTube Player API.
          * @see https://developers.google.com/youtube/js_api_reference
          */
         function pauseVideo() {

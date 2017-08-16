@@ -444,7 +444,7 @@ const {
 })();
 
 /**
- * Ensure that a popup menu is detected.
+ * Ensure that all ancestor popup menus are closed.
  */
 (function() {
 

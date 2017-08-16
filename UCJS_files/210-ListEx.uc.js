@@ -1525,7 +1525,7 @@ function fixIconURL(url) {
 
 function formatDateTime(microSeconds) {
   // Format to convert date and time.
-  const kTextFormat = '[%datetime%]';
+  const kTimeInfoFormat = '[%datetime%]';
   const kNotAvailable = '[N/A]';
 
   if (!microSeconds) {
@@ -1546,7 +1546,7 @@ function formatDateTime(microSeconds) {
     second: '2-digit'
   });
 
-  return kTextFormat.replace('%datetime%', datetime);
+  return kTimeInfoFormat.replace('%datetime%', datetime);
 }
 
 function formatOrderNumber(num) {
