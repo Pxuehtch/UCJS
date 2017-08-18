@@ -696,9 +696,15 @@ const TabSelector = {
 
     // Repeatly observes a tab until its document completely loads while the
     // tab is selected.
-    this.timer = setInterval((tab) => {
-      this.select(tab);
-    }, kPref.SELECTED_DELAY, aTab);
+    let tryCount = 5;
+
+    this.timer = setInterval(() => {
+      if (--tryCount < 0) {
+        this.clear();
+      }
+
+      this.select(aTab);
+    }, kPref.SELECTED_DELAY);
   },
 
   clear() {
