@@ -21,9 +21,7 @@ const {
   Modules: {
     Timer: {
       setTimeout,
-      clearTimeout,
-      setInterval,
-      clearInterval
+      clearTimeout
     }
   },
   Listeners: {
