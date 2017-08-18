@@ -1792,13 +1792,20 @@ function isTabBusy(tab) {
     return false;
   }
 
+  return tab.hasAttribute('busy');
+
+  // For e10s:
   // TODO: Check the tab loading state in a reliable way.
-  // WORKAROUND:
-  // 1. Check the 'busy' attribute in non-e10s.
-  // 2. Check |browser.userTypedValue| that holds the URL of a document till it
-  //    successfully loads in e10s.
-  return !!(tab.hasAttribute('busy') ||
-    gBrowser.getBrowserForTab(tab).userTypedValue);
+  // WORKAROUND: Check |bgetBrowserForTabrowser.userTypedValue| that holds the
+  // URL of a document till it successfully loads.
+  // WORKAROUND: |getBrowserForTab| is undefined on startup.
+  /*
+  if (!gBrowser.getBrowserForTab) {
+    return false;
+  }
+
+  return !!gBrowser.getBrowserForTab(tab).userTypedValue;
+  */
 }
 
 /**
