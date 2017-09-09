@@ -440,8 +440,7 @@ const HistoryList = (function() {
         parameters: {'url': aURL},
         columns: ['time']
       }).
-      // Resolved with the hash including time and icon, or empty hash if no
-      // data.
+      // Resolved with the hash including time, or empty hash if no data.
       // @note We ordered a single row.
       then((aRows) => aRows ? aRows[0] : {});
     }
