@@ -203,7 +203,13 @@ const kPref = {
   // @value {integer} [second>=1]
   // @note The marking is cancelled when the other tab is selected in a short
   // time (e.g. while flipping tabs with a shortcut key or mouse wheeling).
-  SELECTED_DELAY: 1
+  READ_DELAY: 1,
+
+  // The max delay time for |READ_DELAY|. The tab is forcibly marked as 'read
+  // it' after this delay time in loading.
+  //
+  // @value {integer} [second>=1]
+  MAX_READ_DELAY: 5
 };
 
 /**
@@ -696,15 +702,36 @@ const TabSelector = {
 
     // Repeatedly observes a tab until its document completely loads while the
     // tab is selected.
-    let tryCount = 5;
+    const {READ_DELAY, MAX_READ_DELAY} = kPref;
+
+    let readDelay = READ_DELAY;
+    let maxReadDelay = MAX_READ_DELAY;
+
+    if (maxReadDelay < 1) {
+      maxReadDelay = 1;
+    }
+
+    if (readDelay < 1) {
+      readDelay = 1;
+    }
+    else if (readDelay > maxReadDelay) {
+      readDelay = maxReadDelay;
+    }
+
+    let tryCount = maxReadDelay / readDelay;
 
     this.timer = setInterval(() => {
+      let forceSelect = false;
+
       if (--tryCount < 0) {
         this.clear();
+        forceSelect = true;
       }
 
-      this.select(aTab);
-    }, kPref.SELECTED_DELAY * 1000);
+      this.select(aTab, {
+        forceSelect
+      });
+    }, readDelay * 1000);
   },
 
   clear() {
@@ -714,9 +741,11 @@ const TabSelector = {
     }
   },
 
-  select(aTab) {
+  select(aTab, option = {}) {
+    let {forceSelect} = option;
+
     // Wait while the tab is in loading.
-    if (isTabBusy(aTab)) {
+    if (!forceSelect && isTabBusy(aTab)) {
       return;
     }
 
