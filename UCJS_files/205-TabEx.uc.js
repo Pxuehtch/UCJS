@@ -186,10 +186,10 @@ const kPref = {
 
   // The delay time until the loading is suspended.
   //
-  // @value {integer} [millisecond]
+  // @value {integer} [second>=0]
   //   0: Try to stop loading immediately.
   //   @note It may take time because our processing works after the native
-  //   process for a background tab.
+  //   processing for a background tab.
   SUSPEND_DELAY: 0,
 
   // Auto-reloads the suspended tab in the next adjacent of a selected tab.
@@ -200,10 +200,10 @@ const kPref = {
   // The delay time until it considers that "a user has read it" after the tab
   // is selected and loaded completely.
   //
-  // @value {integer} [millisecond]
+  // @value {integer} [second>=1]
   // @note The marking is cancelled when the other tab is selected in a short
   // time (e.g. while flipping tabs with a shortcut key or mouse wheeling).
-  SELECTED_DELAY: 1000
+  SELECTED_DELAY: 1
 };
 
 /**
@@ -694,7 +694,7 @@ const TabSelector = {
     // that the other tab is *surely* selected after the tab is closed.
     this.clear();
 
-    // Repeatly observes a tab until its document completely loads while the
+    // Repeatedly observes a tab until its document completely loads while the
     // tab is selected.
     let tryCount = 5;
 
@@ -704,7 +704,7 @@ const TabSelector = {
       }
 
       this.select(aTab);
-    }, kPref.SELECTED_DELAY);
+    }, kPref.SELECTED_DELAY * 1000);
   },
 
   clear() {
@@ -1121,7 +1121,7 @@ const TabEvent = {
     TabOpener.set(aTab, 'NewTab');
 
     if (kPref.SUSPEND_LOADING) {
-      TabSuspender.set(aTab, kPref.SUSPEND_DELAY);
+      TabSuspender.set(aTab, kPref.SUSPEND_DELAY * 1000);
     }
 
     let openPos =
