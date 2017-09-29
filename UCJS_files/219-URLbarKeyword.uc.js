@@ -20,7 +20,6 @@
  * Imports
  */
 const {
-  Modules,
   DOMUtils: {
     $E,
     $ID
@@ -254,31 +253,38 @@ function buildList(params) {
 
 function getRestrictKeywordList() {
   // @note Displayed in the declared order.
-  // @see http://kb.mozillazine.org/Location_Bar_search
-  const kRestrictKeys = {
-    'browser.urlbar.restrict.history': 'History',
-    'browser.urlbar.restrict.bookmark': 'Bookmarks',
-    'browser.urlbar.restrict.tag': 'Tagged',
-    'browser.urlbar.restrict.openpage': 'In open tabs',
-    'browser.urlbar.restrict.typed': 'User typed',
-    'browser.urlbar.match.title': 'Page titles',
-    'browser.urlbar.match.url': 'Page urls'
-  };
-
-  let list = [];
-
-  for (let key in kRestrictKeys) {
-    let keyword = Modules.Prefs.get(key);
-
-    if (keyword) {
-      list.push({
-        name: kRestrictKeys[key],
-        keyword
-      });
+  const kRestrictKeywords = [
+    {
+      name: 'History',
+      keyword: '^'
+    },
+    {
+      name: 'Bookmarks',
+      keyword:  '*'
+    },
+    {
+      name: 'Tagged',
+      keyword: '+'
+    },
+    {
+      name: 'User typed',
+      keyword: '%'
+    },
+    {
+      name: 'In open tabs',
+      keyword: '~'
+    },
+    {
+      name: 'Page titles',
+      keyword: '#'
+    },
+    {
+      name: 'Page urls',
+      keyword: '@'
     }
-  }
+  ];
 
-  return Promise.resolve(list);
+  return Promise.resolve(kRestrictKeywords);
 }
 
 function getBookmarkKeywordList() {
