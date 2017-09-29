@@ -87,7 +87,8 @@ const kAppList = [
   {
     name: 'Chrome',
     type: 'browse',
-    path: '%ProgF%/Google/Chrome/Application/chrome.exe'
+    path: '%ProgF%/Google/Chrome/Application/chrome.exe',
+    args: ['--profile-directory=Default', '%url%']
   },
   {
     name: 'WMP',
