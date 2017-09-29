@@ -377,7 +377,7 @@ const SignPanel = (function() {
      */
     if (focusedWindow.top === window) {
     // For e10s: if (focusedElement !== gBrowser.selectedBrowser) {
-      return Task.spawn(function*() {
+      return (async () => {
         let node = getFocusedEditableNode(focusedElement);
 
         if (!node) {
@@ -387,7 +387,7 @@ const SignPanel = (function() {
         return {
           rect: getNodeRect(node)
         };
-      });
+      })();
     }
 
     // Focused on the content area.

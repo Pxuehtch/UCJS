@@ -254,7 +254,7 @@ const LinkInfoCollector = (function() {
 
         // Periodically repeats the link info fetching to avoid blocking the
         // content process.
-        Task.spawn(() => processFrames(frameList, strings));
+        processFrames(frameList, strings);
       }`
     }).
     catch(Components.utils.reportError);
@@ -284,7 +284,7 @@ const LinkInfoCollector = (function() {
   /**
    * Generator for periodically fetching of link info through all frames.
    */
-  function* processFrames(frameList, strings) {
+  async function processFrames(frameList, strings) {
     const kNodeNumsInOneGo = 500;
     let nodeCount = 0;
 
@@ -303,7 +303,7 @@ const LinkInfoCollector = (function() {
 
         if (++nodeCount % kNodeNumsInOneGo === 0) {
           // Breath regularly so we don't keep blocking the content process.
-          yield new Promise((resolve) => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
         }
       }
     }

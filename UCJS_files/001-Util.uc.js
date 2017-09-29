@@ -1801,6 +1801,8 @@ const ContentTask = (function() {
     let content_script = () => {
       '${MessageManager.ContentScripts.Listeners}';
 
+      Cu.import('resource://gre/modules/Task.jsm', this);
+
       function receiveMessage(message) {
         let messageId = message.data.messageId;
         let task = message.data.task || '()=>{}';
