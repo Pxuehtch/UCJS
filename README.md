@@ -1,5 +1,5 @@
 # UCJS
-Firefox userChromeJS 用のスクリプト
+Firefox Addon [userChromeJS](http://userchromejs.mozdev.org/) 用のスクリプト
 
 ## Note
 * 多くのスクリプトは単体では動かない。
