@@ -1,6 +1,9 @@
 # UCJS
 Firefox Addon [userChromeJS](http://userchromejs.mozdev.org/) 用のスクリプト
 
+## DISCONTINUED!
+userChromeJS doesn't work from Firefox 57. I don't use this module any more.
+
 ## Note
 * 多くのスクリプトは単体では動かない。
 * 一般的でない自家用設定がある。
